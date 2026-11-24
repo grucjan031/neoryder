@@ -111,7 +111,10 @@ it('registers, loads scene data, switches on weapon1..3 pressed and retains heat
   expect(scene.query('weaponHeat')).toEqual({
     beam: 0,
     blaster: 0,
+    crossbow: 0,
     emp: 0,
+    revolver: 0,
+    smg: 0,
     pistol: 9,
     rifle: 10,
     scatter: 28,

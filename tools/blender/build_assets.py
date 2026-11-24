@@ -1152,6 +1152,8 @@ def weapon_root(name, frame, vents, cell, muzzle_pos, extra=(), trim=None, grip=
         "rifle": (0, 0.28, 0.012), "scatter": (0, 0.28, -0.008),
         "sniper_rifle": (0, 0.30, 0.017), "beam": (0, 0.22, 0.018),
         "emp_launcher": (0, 0.20, 0.014),
+        "revolver": (0, -0.032, -0.100), "smg": (0, 0.18, 0.012),
+        "mag_crossbow": (0, 0.24, 0.012),
     }
     empty("support", parent=root, location=support_positions[name], size=0.025)
     return root
@@ -1312,6 +1314,94 @@ def build_pistol():
     )
     cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09, bevel=0.002)
     return weapon_root("pistol", frame, vents, cell, (0, 0.155, 0.052), trim=trim, grip=grip)
+
+
+def build_revolver():
+    frame = bm_merge(
+        slab([(-.039, .018), (.064, .018), (.068, .037), (.050, .041),
+              (-.009, .036), (-.014, .064), (-.038, .065)], -.014, .014, ch=.002),
+        lathe([(.064, .015), (.22, .013), (.224, .011)], 6, z=.056),
+        block(-.006, .006, -.026, .217, .068, .075),
+        _u_sight(-.026, -.014, .012, .074, .091, .004, .081),
+        block(-.002, .002, .206, .214, .074, .0845),
+    )
+    # Sześć zagłębień na czole bębna: obrzeże i cofnięte dno każdego gniazda.
+    chambers = []
+    for i in range(6):
+        angle = math.tau * i / 6
+        chambers.append(lathe([(.058, .005), (.061, .005), (.061, .0037), (.0585, .0037)],
+                              8, x=.013 * math.cos(angle), z=.048 + .013 * math.sin(angle)))
+    trim = bm_merge(
+        tube(-.008, .058, .021, .021, 16, z=.048), *chambers,
+        slab([(-.045, .050), (-.033, .052), (-.033, .068), (-.047, .077),
+              (-.052, .073), (-.044, .064)], -.005, .005),
+        _fpp_trigger(.020, .021),
+    )
+    grip = slab([(-.041, -.101), (-.020, -.098), (-.014, -.090), (.003, .019),
+                 (-.026, .029), (-.053, -.080), (-.051, -.094)], -.018, .018, ch=.004)
+    vents = tube(.001, .007, .022, .022, 16, z=.048)
+    cell = block(-.002, .002, .011, .201, .074, .076)
+    return weapon_root("revolver", frame, vents, cell, (0, .225, .056), trim=trim, grip=grip)
+
+
+def build_smg():
+    frame = bm_merge(
+        block(-.024, .024, -.062, .154, .022, .080, bevel=.004),
+        tube(.15, .265, .012, .012, z=.055),
+        # Ażurowa osłona: między obręczami są otwarte okna.
+        block(-.009, .009, .148, .246, .067, .077),
+        block(-.009, .009, .147, .246, .033, .043),
+        *[tube(y, y + .007, .022, .022, z=.055) for y in (.15, .179, .208, .239)],
+        _u_sight(-.036, -.024, .013, .079, .105, .004, .095),
+        block(-.002, .002, .196, .204, .076, .098),
+    )
+    trim = bm_merge(
+        block(-.015, .015, .055, .094, -.097, .023, bevel=.002),
+        *[tube(-.19, -.056, .004, .004, 6, x=x, z=.055) for x in (-.018, .018)],
+        block(-.022, .022, -.197, -.188, -.002, .060, bevel=.002),
+        _side_plaque(-.024, -.045, -.014, .037, .052), _fpp_trigger(.007, .024),
+    )
+    grip = bm_merge(
+        block(-.018, .018, -.068, -.018, -.104, .026, bevel=.004),
+        block(-.016, .016, .16, .20, -.020, .040, bevel=.003),
+    )
+    vents = bm_merge(*_vent_bars(4, .151, .029, .003, .049, .062, .022, lean=.003))
+    cell = block(-.016, -.014, .064, .082, -.076, -.040)
+    return weapon_root("smg", frame, vents, cell, (0, .266, .055), trim=trim, grip=grip)
+
+
+def build_mag_crossbow():
+    frame = bm_merge(
+        block(-.026, .026, -.075, .372, .016, .051, bevel=.004),
+        *[block(x-.003, x+.003, -.041, .369, .050, .064) for x in (-.009, .009)],
+        _u_sight(-.046, -.034, .015, .05, .103, .005, .090),
+        block(-.002, .002, .346, .354, .051, .093),
+    )
+    # Skrzydła wyginają się do tyłu, ich końce znajdują się poniżej szyny.
+    limbs = []
+    coils = []
+    for side in (-1, 1):
+        wing = slab_xz([(0, .010), (.095, -.002), (.17, .014), (.17, .042),
+                        (.095, .030), (0, .058)], .298, .336)
+        for v in wing.verts:
+            v.co.y -= .42 * v.co.x
+            v.co.x *= side
+        bmesh.ops.recalc_face_normals(wing, faces=wing.faces)
+        limbs.extend([wing, tube(.205, .272, .014, .014, x=side*.16, z=.028)])
+        coils.extend(tube(y, y+.006, .019, .019, x=side*.16, z=.028)
+                     for y in (.212, .226, .240, .254))
+    trim = bm_merge(*limbs,
+                    lathe([(-.017, .0055), (.262, .0055), (.264, .011), (.312, .001)], 6, z=.066),
+                    _fpp_trigger(.010, .018))
+    grip = bm_merge(
+        block(-.018, .018, -.069, -.019, -.105, .019, bevel=.003),
+        block(-.018, .018, .192, .282, .004, .027, bevel=.003),
+        block(-.014, .014, -.22, -.067, .028, .045),
+        slab([(-.22, -.035), (-.21, -.036), (-.065, .016), (-.065, .027),
+              (-.21, -.021), (-.21, .039), (-.22, .039)], -.011, .011),
+    )
+    cell = block(-.017, -.013, -.024, .341, .050, .053)
+    return weapon_root("mag_crossbow", frame, bm_merge(*coils), cell, (0, .373, .064), trim=trim, grip=grip)
 
 
 def build_rifle():
@@ -5430,7 +5520,8 @@ def render_hand_previews():
     # Broń palna: chwyt dopasowany do modelu (pole `grip` w src/data/weapons/*.json), jak FppBlaster.
     for model, builder in (("pistol", build_pistol), ("blaster", build_blaster), ("rifle", build_rifle),
                            ("scatter", build_scatter), ("sniper_rifle", build_sniper_rifle),
-                           ("beam", build_beam), ("emp_launcher", build_emp_launcher)):
+                           ("beam", build_beam), ("emp_launcher", build_emp_launcher),
+                           ("revolver", build_revolver), ("smg", build_smg), ("mag_crossbow", build_mag_crossbow)):
         reset_scene()
         item = builder()
         right, left, two = _hold_weapon(item, model)
@@ -5514,6 +5605,9 @@ def main() -> None:
         "sniper_rifle": build_sniper_rifle,
         "beam": build_beam,
         "emp_launcher": build_emp_launcher,
+        "revolver": build_revolver,
+        "smg": build_smg,
+        "mag_crossbow": build_mag_crossbow,
         "blade_twin": build_blade_twin,
         "blade_staff": build_blade_staff,
         "player_arm_R": lambda: build_player_arm("R"),

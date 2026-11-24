@@ -109,7 +109,7 @@ Kolejność losowań `Rng` na pocisk: kąt `float(0, 2π)`, potem promień
 
 ### Widok przez przyrządy w ADS
 
-Pola `ironSight.rear` i `ironSight.front` w danych siedmiu broni wyznaczają
+Pola `ironSight.rear` i `ironSight.front` w danych broni wyznaczają
 linię od szczerbinki do czubka muszki w metrach, w osiach modelu GLB
 (przód to −Z). Położenie oka leży na przedłużeniu tej linii za szczerbinką,
 w odległości `ironSight.eyeReliefM` albo `tuning.player.aim.ironEyeReliefM`.
@@ -149,6 +149,9 @@ Wszystkie dane mają tag `#gun`. Wstępny balans względem blastera (F2-18 dopra
 | `rifle` / Karabin       | projectile / auto | 12         | 10        | 10     | 75           | 2       | 1,1      | Szybka seria, mniejsze obrażenia pocisku.                               |
 | `scatter` / Rozpraszacz | spread / semi     | 10 na śrut | 1,5       | 28     | 45           | 0,3     | 6        | 8 śrutów, maksymalny zasięg 13,5 m.                                     |
 | `sniper` / Snajperka    | pierce / semi     | 80         | 0,8       | 45     | 180          | 2       | 0        | 3 cele; spadek 0,25: obrażenia 80 → 60 → 45; odnowienie 1,25 s (F2-18). |
+| `revolver` / Rewolwer | projectile / semi | 58 | 1,9 | 20 | 95 | 2 | 0,2 | Do dwóch celów, drugi otrzymuje 70% obrażeń. |
+| `smg` / Pistolet maszynowy | projectile / auto | 8 | 15 | 5,5 | 65 | 1,2 | 2,4 | Szybka seria na bliski dystans. |
+| `crossbow` / Kusza magnetyczna | pierce / semi | 95 | 0,9 | 38 | 60 | 2,5 | 0 | Do czterech celów, spadek obrażeń o 15% na cel i ogłuszenie na 0,5 s. |
 
 ## Ciepło
 
@@ -404,7 +407,7 @@ wybuchy od kolizji i czasu, promień, deduplikacja, właściciel, statusy i rend
 
 Opcjonalne pole `model` w danych broni (`weaponSchema.ts`) wskazuje plik
 `public/assets/models/<model>.glb` (blaster, pistol, rifle, scatter, sniper_rifle, beam,
-emp_launcher). `FppBlaster` (`src/render/fppBlaster.ts`) ładuje model bieżącej broni przy
+emp_launcher, revolver, smg, mag_crossbow). `FppBlaster` (`src/render/fppBlaster.ts`) ładuje model bieżącej broni przy
 `weapon_switched` (cache per model); fallback to `blaster.glb`, potem bryła zastępcza.
 Kolor ciepła (`heat_vents`, `heat_cell`) i odrzut działają dla każdego modelu. Arena i
 `weapons-test` podają rozwiązywanie modelu (`weaponModelOf`); `weapons-test` emituje

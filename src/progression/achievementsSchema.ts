@@ -26,6 +26,9 @@ export const ACHIEVEMENT_COUNTERS = [
   'kills_sniper',
   'kills_beam',
   'kills_emp',
+  'kills_revolver',
+  'kills_smg',
+  'kills_crossbow',
   'runs_ended',
   'victories',
 ] as const;

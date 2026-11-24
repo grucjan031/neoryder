@@ -6,7 +6,7 @@ Kod: `src/progression/achievementsSchema.ts` (schemat, dane), `achievements.ts` 
 
 ## Dane
 
-`src/data/meta/achievements.json` (33 pozycje), walidacja zod przy ładowaniu (obiekt ścisły; id unikalne, format kebab-case):
+`src/data/meta/achievements.json` (36 pozycje), walidacja zod przy ładowaniu (obiekt ścisły; id unikalne, format kebab-case):
 
 ```ts
 { id, title, description, hint,
@@ -32,7 +32,7 @@ Liczniki (`counter`) to zamknięty zbiór `ACHIEVEMENT_COUNTERS`: `parry_success
 | Upadek Brandta | Kurtyna Brandta |
 | Weteran hut    | Żar hut         |
 
-Siedem naszywek mistrzowskich ma kategorię „Walka”. Każda wymaga 150 zabójstw jedną bronią i daje 1 Rdzeń oraz jej własny skin „Wzorzec”. Liczniki `kills_blaster`, `kills_pistol`, `kills_rifle`, `kills_scatter`, `kills_sniper`, `kills_beam` i `kills_emp` korzystają z broni gracza w chwili trafienia oznaczonego `#gun`. Zmiana broni między tym trafieniem a śmiercią celu zachowuje przypisanie.
+Dziesięć naszywek mistrzowskich ma kategorię „Walka”. Każda wymaga 150 zabójstw jedną bronią i daje 1 Rdzeń oraz jej własny skin „Wzorzec”. Liczniki `kills_blaster`, `kills_pistol`, `kills_rifle`, `kills_scatter`, `kills_sniper`, `kills_beam`, `kills_emp`, `kills_revolver` („Sześć komór”), `kills_smg` („Ulewa ołowiu”) i `kills_crossbow` („Cewka i bełt”) korzystają z broni gracza w chwili trafienia oznaczonego `#gun`. Zmiana broni między tym trafieniem a śmiercią celu zachowuje przypisanie.
 
 ### Pozostałe naszywki i ich nagrody walutowe
 
@@ -94,6 +94,7 @@ Ikony (23 klucze): `spark`, `mirror`, `execute`, `chain`, `rings`, `dash`, `aegi
 | `power:focus`           | `glos-rezonansu` (120 zabójstw mocą)   |
 | `module:superconductor` | `reka-strzelca` (200 zabójstw bronią)  |
 | `slot:weapon3`          | `weteran-hut` (5 zwycięstw)            |
+| `weapon:crossbow`       | `droga-strzelca` (zwycięstwo z co najmniej 80% obrażeń z broni palnej) |
 
 Każdą z tych naszywek da się zdobyć z wyposażeniem startowym (ostrze plazmowe, Pchnięcie, Blaster), czyli bez przedmiotu, który odblokowuje; pilnuje tego test na danych.
 
@@ -103,7 +104,7 @@ Symulacja `metaSim` (`src/balance/metaSim.ts`) nie symuluje zdarzeń w runie: za
 
 ## Panel w kryjówce
 
-Zakładka **„Naszywki Iskry”** w terminalu drzewek (`talents`): to miejsce trwałej progresji postaci, a tablica misji ma już sektor, zagrożenie i briefingi. Zakładki mają role `tablist`/`tab`/`tabpanel`, strzałki Lewo/Prawo przełączają. Panel jest tylko do odczytu: nagłówek, licznik „Zdobyte: X z 33”, wprowadzenie i siatka kart pogrupowana w cztery kategorie (Walka, Ścieżki, Misje i tryby, Progres); zdobyte mają bursztynową ramkę i jasną ikonę, brakujące są szare z `hint`, a licznikowe mają pasek postępu (`role="progressbar"`) i napis „x / cel” (postęp licznika obcięty do celu; zdobyta pokazuje cel/cel). Każda karta pokazuje nagrodę („Nagroda: 20 Danych”, „2 Rdzenie”, „Nagroda: sama naszywka”); karta bramkująca dodatkowo „Pozwala kupić: <przedmiot>”. Karty są fokusowalne (roving tabindex: strzałki, Home, End).
+Zakładka **„Naszywki Iskry”** w terminalu drzewek (`talents`): to miejsce trwałej progresji postaci, a tablica misji ma już sektor, zagrożenie i briefingi. Zakładki mają role `tablist`/`tab`/`tabpanel`, strzałki Lewo/Prawo przełączają. Panel jest tylko do odczytu: nagłówek, licznik „Zdobyte: X z 36”, wprowadzenie i siatka kart pogrupowana w cztery kategorie (Walka, Ścieżki, Misje i tryby, Progres); zdobyte mają bursztynową ramkę i jasną ikonę, brakujące są szare z `hint`, a licznikowe mają pasek postępu (`role="progressbar"`) i napis „x / cel” (postęp licznika obcięty do celu; zdobyta pokazuje cel/cel). Każda karta pokazuje nagrodę („Nagroda: 20 Danych”, „2 Rdzenie”, „Nagroda: sama naszywka”); karta bramkująca dodatkowo „Pozwala kupić: <przedmiot>”. Karty są fokusowalne (roving tabindex: strzałki, Home, End).
 
 Podsumowanie runu pokazuje sekcję „Nowe naszywki Iskry” z nagrodami (linia „<tytuł> — <nagroda>” albo sam tytuł).
 

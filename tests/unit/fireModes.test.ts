@@ -64,10 +64,13 @@ describe('fire mode data', () => {
     expect([...weaponDefinitions.keys()].sort()).toEqual([
       'beam',
       'blaster',
+      'crossbow',
       'emp',
       'pistol',
+      'revolver',
       'rifle',
       'scatter',
+      'smg',
       'sniper',
     ]);
     for (const def of weaponDefinitions.values()) {

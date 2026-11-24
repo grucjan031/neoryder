@@ -28,14 +28,14 @@ import { achievementDefinitions } from '../../src/progression/achievementsSchema
 const carbon = skinDefinitions.get('nocny-karbon')!;
 describe('skiny broni', () => {
   it('ładuje katalog, sprawdza nazwę pliku, broń i identyfikatory odblokowań', () => {
-    expect(skinDefinitions.size).toBe(16);
+    expect(skinDefinitions.size).toBe(19);
     const sources = [...skinDefinitions.values()].map((s) => {
       expect(skinSchema.safeParse(s).success).toBe(true);
       expect(unlockIdSchema.safeParse('skin:' + s.id).success).toBe(true);
       return skinSource(s.id).kind;
     });
     expect(sources.filter((s) => s === 'shop')).toHaveLength(5);
-    expect(sources.filter((s) => s === 'achievement')).toHaveLength(11);
+    expect(sources.filter((s) => s === 'achievement')).toHaveLength(14);
     expect(loadSkinDefinitions.bind(null, { 'inny.json': carbon })).toThrow();
     expect(
       skinSchema.safeParse({ ...carbon, weapons: ['nieznana'] }).success,

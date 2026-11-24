@@ -433,5 +433,50 @@
       "cores": 1,
       "unlocks": ["skin:mistrz-emp"]
     }
+  },
+  {
+    "id": "mistrz-revolver",
+    "title": "Sześć komór",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_revolver",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Rewolwer”.",
+    "hint": "Wybierz broń „Rewolwer” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-revolver"]
+    }
+  },
+  {
+    "id": "mistrz-smg",
+    "title": "Ulewa ołowiu",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_smg",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Pistolet maszynowy”.",
+    "hint": "Wybierz broń „Pistolet maszynowy” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-smg"]
+    }
+  },
+  {
+    "id": "mistrz-crossbow",
+    "title": "Cewka i bełt",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_crossbow",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Kusza magnetyczna”.",
+    "hint": "Wybierz broń „Kusza magnetyczna” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-crossbow"]
+    }
   }
 ]

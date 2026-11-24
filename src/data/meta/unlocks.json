@@ -123,6 +123,28 @@
     "minLevel": 4
   },
   {
+    "id": "weapon:smg",
+    "cost": {
+      "data": 130
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "weapon:revolver",
+    "cost": {
+      "data": 160
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "weapon:crossbow",
+    "cost": {
+      "cores": 5
+    },
+    "minLevel": 5,
+    "requiresAchievement": "droga-strzelca"
+  },
+  {
     "id": "power:grab",
     "cost": {
       "data": 80

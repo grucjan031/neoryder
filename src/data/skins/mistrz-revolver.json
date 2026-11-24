@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-revolver",
+  "name": "Wzorzec: Rewolwer",
+  "description": "Szczotkowany mosiądz i ciemne drewno okładzin.",
+  "rarity": "mistrzowski",
+  "weapons": ["revolver"],
+  "colors": {
+    "armor": "#2b2118",
+    "trim": "#b08a5a",
+    "grip": "#3a2414",
+    "accent": "#ffcc65"
+  },
+  "pattern": "brushed",
+  "patternColor": "#4a3a28",
+  "patternScale": 3,
+  "metalness": 0.7,
+  "roughness": 0.3
+}

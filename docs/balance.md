@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-23. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-24. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -93,6 +93,15 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Blaster (blaster) | shielder | 0.683 | 131.707 | 9.350 | 48.128 |
 | Blaster (blaster) | sniper | 0.183 | 190.909 | 2.850 | 61.404 |
 | Blaster (blaster) | turret | 0.517 | 135.484 | 7.183 | 48.724 |
+| Kusza magnetyczna (crossbow) | assaulter | 0.017 | 3600.000 | 4.483 | 66.914 |
+| Kusza magnetyczna (crossbow) | drone | 0.017 | 1080.000 | 4.483 | 20.074 |
+| Kusza magnetyczna (crossbow) | executor | 0.017 | 13200.000 | 4.483 | 245.353 |
+| Kusza magnetyczna (crossbow) | gunner | 0.017 | 2700.000 | 4.483 | 50.186 |
+| Kusza magnetyczna (crossbow) | hacker | 0.017 | 1440.000 | 4.483 | 26.766 |
+| Kusza magnetyczna (crossbow) | rozstrojony | 0.017 | 2700.000 | 4.483 | 50.186 |
+| Kusza magnetyczna (crossbow) | shielder | 0.017 | 5400.000 | 4.483 | 100.372 |
+| Kusza magnetyczna (crossbow) | sniper | 0.017 | 2100.000 | 4.483 | 39.033 |
+| Kusza magnetyczna (crossbow) | turret | 0.017 | 4200.000 | 4.483 | 78.067 |
 | Granat EMP (emp) | assaulter | 5.267 | 11.392 | 35.267 | 8.507 |
 | Granat EMP (emp) | drone | 1.267 | 14.211 | 12.767 | 7.050 |
 | Granat EMP (emp) | executor | 24.767 | 8.883 | ∞ | 8.250 |
@@ -111,6 +120,15 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pistolet (pistol) | shielder | 0.517 | 174.194 | 4.767 | 94.406 |
 | Pistolet (pistol) | sniper | 0.267 | 131.250 | 2.267 | 77.206 |
 | Pistolet (pistol) | turret | 0.517 | 135.484 | 4.767 | 73.427 |
+| Rewolwer (revolver) | assaulter | 0.017 | 3600.000 | 2.150 | 139.535 |
+| Rewolwer (revolver) | drone | 0.017 | 1080.000 | 2.150 | 41.860 |
+| Rewolwer (revolver) | executor | 1.083 | 203.077 | 8.450 | 130.178 |
+| Rewolwer (revolver) | gunner | 0.017 | 2700.000 | 2.150 | 104.651 |
+| Rewolwer (revolver) | hacker | 0.017 | 1440.000 | 2.150 | 55.814 |
+| Rewolwer (revolver) | rozstrojony | 0.017 | 2700.000 | 2.150 | 104.651 |
+| Rewolwer (revolver) | shielder | 0.017 | 5400.000 | 2.150 | 209.302 |
+| Rewolwer (revolver) | sniper | 0.017 | 2100.000 | 2.150 | 81.395 |
+| Rewolwer (revolver) | turret | 0.017 | 4200.000 | 2.150 | 162.791 |
 | Karabin (rifle) | assaulter | 0.417 | 144.000 | 6.617 | 45.340 |
 | Karabin (rifle) | drone | 0.117 | 154.286 | 0.917 | 98.182 |
 | Karabin (rifle) | executor | 4.617 | 47.653 | 30.417 | 36.164 |
@@ -129,6 +147,15 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Rozpraszacz (scatter) | shielder | 0.683 | 131.707 | 6.850 | 65.693 |
 | Rozpraszacz (scatter) | sniper | 0.017 | 2100.000 | 2.683 | 65.217 |
 | Rozpraszacz (scatter) | turret | 0.017 | 4200.000 | 2.683 | 130.435 |
+| Pistolet maszynowy (smg) | assaulter | 0.483 | 124.138 | 5.483 | 54.711 |
+| Pistolet maszynowy (smg) | drone | 0.150 | 120.000 | 0.950 | 94.737 |
+| Pistolet maszynowy (smg) | executor | 3.250 | 67.692 | 25.050 | 43.912 |
+| Pistolet maszynowy (smg) | gunner | 0.350 | 128.571 | 3.383 | 66.502 |
+| Pistolet maszynowy (smg) | hacker | 0.150 | 160.000 | 0.950 | 126.316 |
+| Pistolet maszynowy (smg) | rozstrojony | 0.350 | 128.571 | 3.383 | 66.502 |
+| Pistolet maszynowy (smg) | shielder | 0.750 | 120.000 | 9.683 | 46.472 |
+| Pistolet maszynowy (smg) | sniper | 0.283 | 123.529 | 3.050 | 57.377 |
+| Pistolet maszynowy (smg) | turret | 0.550 | 127.273 | 7.250 | 48.276 |
 | Snajperka (sniper) | assaulter | 0.017 | 3600.000 | 5.017 | 59.801 |
 | Snajperka (sniper) | drone | 0.017 | 1080.000 | 5.017 | 17.940 |
 | Snajperka (sniper) | executor | 1.267 | 173.684 | 11.267 | 97.633 |
@@ -290,14 +317,20 @@ Symulacja korzysta z progów HP i wzorców faz z danych bossa oraz długości ni
 | Laser ciągły (beam) | securityChief | 95.183 | 9.455 | 1 (0.000) → 2 (20.283) → 3 (43.683) |
 | Blaster (blaster) | orbisDirector | 15.683 | 45.909 | 1 (0.000) → 2 (3.350) → 3 (9.517) |
 | Blaster (blaster) | securityChief | 20.517 | 43.867 | 1 (0.000) → 2 (5.183) → 3 (13.517) |
+| Kusza magnetyczna (crossbow) | orbisDirector | 2.250 | 320.000 | 1 (0.000) → 2 (0.017) → 3 (1.133) |
+| Kusza magnetyczna (crossbow) | securityChief | 4.483 | 200.743 | 1 (0.000) → 2 (1.133) → 3 (3.367) |
 | Granat EMP (emp) | orbisDirector | 87.767 | 8.204 | 1 (0.000) → 2 (29.267) → 3 (60.767) |
 | Granat EMP (emp) | securityChief | ∞ | 6.333 | 1 (0.000) → 2 (36.767) → 3 (75.767) |
 | Pistolet (pistol) | orbisDirector | 8.767 | 82.129 | 1 (0.000) → 2 (1.767) → 3 (5.767) |
 | Pistolet (pistol) | securityChief | 13.267 | 67.839 | 1 (0.000) → 2 (2.267) → 3 (7.767) |
+| Rewolwer (revolver) | orbisDirector | 5.350 | 134.579 | 1 (0.000) → 2 (1.083) → 3 (3.217) |
+| Rewolwer (revolver) | securityChief | 6.417 | 140.260 | 1 (0.000) → 2 (1.617) → 3 (4.283) |
 | Karabin (rifle) | orbisDirector | 18.917 | 38.062 | 1 (0.000) → 2 (4.817) → 3 (12.617) |
 | Karabin (rifle) | securityChief | 24.817 | 36.266 | 1 (0.000) → 2 (6.817) → 3 (16.617) |
 | Rozpraszacz (scatter) | orbisDirector | 8.183 | 87.984 | 1 (0.000) → 2 (2.017) → 3 (5.350) |
 | Rozpraszacz (scatter) | securityChief | 8.850 | 101.695 | 1 (0.000) → 2 (2.017) → 3 (5.350) |
+| Pistolet maszynowy (smg) | orbisDirector | 18.150 | 39.669 | 1 (0.000) → 2 (4.950) → 3 (11.983) |
+| Pistolet maszynowy (smg) | securityChief | 22.217 | 40.510 | 1 (0.000) → 2 (5.483) → 3 (13.950) |
 | Snajperka (sniper) | orbisDirector | 6.267 | 114.894 | 1 (0.000) → 2 (1.267) → 3 (3.767) |
 | Snajperka (sniper) | securityChief | 6.267 | 143.617 | 1 (0.000) → 2 (1.267) → 3 (3.767) |
 | Błyskawica (chain) | orbisDirector | 9.150 | 78.689 | 1 (0.000) → 2 (1.267) → 3 (3.767) |
@@ -329,14 +362,20 @@ Symulacja korzysta z progów HP i wzorców faz z danych bossa oraz długości ni
 | Laser ciągły (beam) | securityChief | 95.183 | 9.455 | 1 (0.000) → 2 (20.283) → 3 (43.683) |
 | Blaster (blaster) | orbisDirector | 15.683 | 45.909 | 1 (0.000) → 2 (3.350) → 3 (9.517) |
 | Blaster (blaster) | securityChief | 20.517 | 43.867 | 1 (0.000) → 2 (5.183) → 3 (13.517) |
+| Kusza magnetyczna (crossbow) | orbisDirector | 2.250 | 320.000 | 1 (0.000) → 2 (0.017) → 3 (1.133) |
+| Kusza magnetyczna (crossbow) | securityChief | 4.483 | 200.743 | 1 (0.000) → 2 (1.133) → 3 (3.367) |
 | Granat EMP (emp) | orbisDirector | 87.767 | 8.204 | 1 (0.000) → 2 (29.267) → 3 (60.767) |
 | Granat EMP (emp) | securityChief | ∞ | 6.333 | 1 (0.000) → 2 (36.767) → 3 (75.767) |
 | Pistolet (pistol) | orbisDirector | 8.767 | 82.129 | 1 (0.000) → 2 (1.767) → 3 (5.767) |
 | Pistolet (pistol) | securityChief | 13.267 | 67.839 | 1 (0.000) → 2 (2.267) → 3 (7.767) |
+| Rewolwer (revolver) | orbisDirector | 5.350 | 134.579 | 1 (0.000) → 2 (1.083) → 3 (3.217) |
+| Rewolwer (revolver) | securityChief | 6.417 | 140.260 | 1 (0.000) → 2 (1.617) → 3 (4.283) |
 | Karabin (rifle) | orbisDirector | 18.917 | 38.062 | 1 (0.000) → 2 (4.817) → 3 (12.617) |
 | Karabin (rifle) | securityChief | 24.817 | 36.266 | 1 (0.000) → 2 (6.817) → 3 (16.617) |
 | Rozpraszacz (scatter) | orbisDirector | 8.183 | 87.984 | 1 (0.000) → 2 (2.017) → 3 (5.350) |
 | Rozpraszacz (scatter) | securityChief | 8.850 | 101.695 | 1 (0.000) → 2 (2.017) → 3 (5.350) |
+| Pistolet maszynowy (smg) | orbisDirector | 18.150 | 39.669 | 1 (0.000) → 2 (4.950) → 3 (11.983) |
+| Pistolet maszynowy (smg) | securityChief | 22.217 | 40.510 | 1 (0.000) → 2 (5.483) → 3 (13.950) |
 | Snajperka (sniper) | orbisDirector | 6.267 | 114.894 | 1 (0.000) → 2 (1.267) → 3 (3.767) |
 | Snajperka (sniper) | securityChief | 6.267 | 143.617 | 1 (0.000) → 2 (1.267) → 3 (3.767) |
 | Błyskawica (chain) | orbisDirector | ∞ | 0.000 | 1 (0.000) |

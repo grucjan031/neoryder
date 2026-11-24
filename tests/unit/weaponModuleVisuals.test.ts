@@ -111,7 +111,7 @@ const pairs = [...weaponDefinitions.values()].flatMap((weapon) =>
 );
 const compatiblePairs = pairs.filter((pair) => pair.compatible);
 
-describe('elementy modułów na siedmiu modelach GLB', () => {
+describe('elementy modułów na modelach GLB', () => {
   it('współdzieli geometrie, izoluje materiały i zwalnia cache po ostatnim widoku', () => {
     const gun = () => {
       const root = new Group();
@@ -207,6 +207,9 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
     'scatter',
     'sniper_rifle',
     'emp_launcher',
+    'revolver',
+    'smg',
+    'mag_crossbow',
     'beam',
   ])(
     '%s: kształty wszystkich modułów, położenie, usunięcie i zwolnienie zasobów',

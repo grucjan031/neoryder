@@ -180,6 +180,9 @@
     "pistol": "Półautomat: celny, mocny pojedynczy strzał i mało ciepła.",
     "rifle": "Szybki automat o dużym rozrzucie. Zalewa cel ogniem z bliska.",
     "scatter": "Wiązka pocisków naraz. Niszczy z bliska, słabnie z dystansem.",
+    "revolver": "Celny półautomat. Pocisk może trafić dwóch wrogów.",
+    "smg": "Piętnaście strzałów na sekundę i szeroki rozrzut na bliski dystans.",
+    "crossbow": "Bełt przebija do czterech celów i na krótko je ogłusza.",
     "emp": "Granat po łuku: wybuch obszarowy i przeciążenie elektroniki.",
     "sniper": "Jeden bardzo mocny strzał, który przebija kilka celów.",
     "beam": "Ciągła wiązka o krótkim zasięgu. Zadaje obrażenia bez przerwy."

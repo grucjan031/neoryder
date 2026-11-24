@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-crossbow",
+  "name": "Wzorzec: Kusza magnetyczna",
+  "description": "Heksagonalne płyty osłony cewek.",
+  "rarity": "mistrzowski",
+  "weapons": ["crossbow"],
+  "colors": {
+    "armor": "#24202e",
+    "trim": "#8f86a8",
+    "grip": "#17141f",
+    "accent": "#fff1d6"
+  },
+  "pattern": "hex",
+  "patternColor": "#3a3350",
+  "patternScale": 2.8,
+  "metalness": 0.6,
+  "roughness": 0.32
+}

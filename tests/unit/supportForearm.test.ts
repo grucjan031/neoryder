@@ -15,7 +15,15 @@ afterEach(() => vi.restoreAllMocks());
  * (łokieć poza dolną krawędzią albo w lewym dolnym rogu) i nie przecinać kadru w poprzek.
  */
 describe('przedramię dłoni podpierającej w kadrze', () => {
-  const twoHanded = ['rifle', 'scatter', 'sniper', 'beam', 'emp'] as const;
+  const twoHanded = [
+    'rifle',
+    'scatter',
+    'sniper',
+    'beam',
+    'emp',
+    'smg',
+    'crossbow',
+  ] as const;
 
   it.each(twoHanded)(
     '%s: łokieć pod dolną krawędzią, wąski rzut rękawa',

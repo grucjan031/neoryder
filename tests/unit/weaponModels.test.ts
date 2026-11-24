@@ -59,6 +59,9 @@ describe('modele broni: kontrakt GLB po szlifie', () => {
     'sniper_rifle',
     'beam',
     'emp_launcher',
+    'revolver',
+    'smg',
+    'mag_crossbow',
   ];
   const blades = ['plasma_blade', 'blade_twin', 'blade_staff'];
 

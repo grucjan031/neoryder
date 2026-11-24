@@ -1,0 +1,28 @@
+{
+  "id": "smg",
+  "name": "Pistolet maszynowy",
+  "fireMode": "projectile",
+  "automatic": true,
+  "damage": 8,
+  "fireRateHz": 15,
+  "heatPerShot": 5.5,
+  "projectileSpeed": 65,
+  "projectileLifetimeS": 1.2,
+  "spreadDeg": 2.4,
+  "recoilScale": 0.7,
+  "tags": ["#gun"],
+  "model": "smg",
+  "ironSight": {
+    "rear": [0, 0.1, 0.03],
+    "front": [0, 0.0985, -0.2]
+  },
+  "grip": {
+    "offset": [0.0003, -0.014, 0.032],
+    "pose": "gripRifle",
+    "firePose": "gripRifleFire",
+    "support": {
+      "offset": [0.0165, 0.0024, 0.0001],
+      "pose": "supportRifle"
+    }
+  }
+}
