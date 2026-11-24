@@ -6,7 +6,7 @@ Audyt obejmuje 33 pokoje z `src/data/rooms`, klasyczną arenę, 10 poziomów lin
 
 | Mapa | Ustalenie sprawdzone w danych | Co obejrzeć |
 | --- | --- | --- |
-| `bossRoom` | Oba końce każdego z kabli `decor[3..5]` wypadają na X bliskim ±14,5 m, ponad koroną 4-metrowej ściany i przed fasadą. `props[1..2]` powtarzają środki skrzyń `blocks[23..24]`. Collider skrzyni powstaje z bloku. | Obejrzeć szczelinę przy końcach kabli z boku. Anteny `decor[20..23]` mają podstawy na dachach `blocks[31], [32], [33], [26]`, odpowiednio na 24, 20, 20 i 24 m. |
+| `bossRoom` | Wszystkie sześć końców kabli styka się z fasadami na X = ±16 m. Pod galeriami stoją dwie zniszczalne skrzynie. Prosta od bossa do wejścia jest wolna. | Ze spawnu sprawdzić sylwetkę bossa na tle logo. Po walce podejść do terminala na północy i bursztynowej wnęki windy po lewej. |
 | `arena` | Podłoga w `blocks[0]` ma **40 × 40 m**. Układ korzysta z domyślnego motywu `white`. Brak wpisów `lights`, `decor` i `signs` daje trzy ostrzeżenia. | Ze spawnu sprawdzić czytelność filarów i niskich osłon w świetle bazowym motywu. |
 | `puzzlePlate` | Pokój ma motyw `neonStreet` i trzy puste warstwy oprawy. Płyta i obiekt Chwytu należą do osobnej definicji zagadki. | Ze spawnu ocenić widoczność płyty, przedmiotu i drzwi wyjściowych. |
 | `puzzleLaser` | Ten sam zestaw trzech braków oprawy. Bramka laserowa pochodzi z `hazards`, a obiekt zagadki z `puzzle`. | Zestawić ze spawnem `puzzlePlate`. Sprawdzić widoczność bramki na tle ścian. |
@@ -61,7 +61,7 @@ Obrys podłogi obejmuje płaty połączone ze spawnem w rzucie XZ. Fizyczne ramy
 | arenaPowerPlant | 16 | 45 |
 | arenaRailYard | 14 | 209 |
 | arenaRooftops | 9 | 51 |
-| bossRoom | 0 | 5 |
+| bossRoom | 0 | 0 |
 | combatCorridor | 15 | 10 |
 | combatFloodedTunnel | 12 | 10 |
 | combatLaserYard | 4 | 10 |
@@ -801,11 +801,7 @@ Obrys podłogi obejmuje płaty połączone ze spawnem w rzucie XZ. Fizyczne ramy
 
 ### bossRoom
 
-- warn · overlap · `props[1]` · (-11.5, 0.5, -1.5) · Wpis crate powtarza blocks[23]. Fizykę tworzy blok.
-- warn · overlap · `props[2]` · (11.5, 0.5, -1.5) · Wpis crate powtarza blocks[24]. Fizykę tworzy blok.
-- warn · floatingObject · `decor[3]` · (-14.5, 8.33, -5.55) · city_cable_span: bez zaczepienia 2/2 końców.
-- warn · floatingObject · `decor[4]` · (-14.5, 8.63, 2.45) · city_cable_span: bez zaczepienia 2/2 końców.
-- warn · floatingObject · `decor[5]` · (-14.5, 8.03, 9.45) · city_cable_span: bez zaczepienia 2/2 końców.
+Brak zgłoszeń.
 
 ### combatCorridor
 
