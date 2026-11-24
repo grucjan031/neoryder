@@ -48,6 +48,8 @@ const weaponFields = {
   tags: z.array(z.string().startsWith('#')),
   /** Nazwa modelu FPP: `public/assets/models/<model>.glb`. */
   model: z.string().min(1).optional(),
+  /** Pochylenie kamery podglądu w warsztacie (rad); brak = domyślne. Dla broni z płaskimi elementami na boki (kusza). */
+  previewPitch: z.number().finite().min(0).max(1.2).optional(),
   /** FOV w celowaniu jako ułamek bazowego (domyślnie `tuning.player.aim.fovScale`). */
   aimFovScale: z.number().finite().min(0.2).max(1).optional(),
   /** Chwyt prawej i podpierającej dłoni dla modelu FPP; brak = chwyt domyślny. */

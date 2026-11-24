@@ -100,7 +100,9 @@ Laser nie używa `aim` ani `attackSpeed`. Pozostałe opcjonalne pola definicji,
 wszystkie dodatnie: `aimFovScale` (0,2–1; domyślnie `tuning.player.aim.fovScale`),
 `aimInScale` (mnożnik `aim.inS`), `aimSensitivityScale` (mnożnik `aim.sensitivity`);
 ustawiają je moduły optyki ([weaponModules.md](weaponModules.md)). Pole `model`
-(nazwa GLB) i `grip` (chwyt dłoni, [hands.md](hands.md)) są tylko widokiem FPP.
+(nazwa GLB) i `grip` (chwyt dłoni, [hands.md](hands.md)) są tylko widokiem FPP;
+`previewPitch` (rad, 0–1,2) pochyla kamerę podglądu w warsztacie dla broni z
+elementami rozłożonymi na boki (kusza: 0,65; domyślnie 0,3).
 Pola pocisków mają też `ricochets` (opcjonalne, liczba odbić od świata) oraz
 `pierceCount` (domyślnie 1) i `pierceFalloff` (domyślnie 0) — dla każdego trybu
 pociskowego `pierceCount > 1` włącza przebicie (tak działa moduł Przebicie).

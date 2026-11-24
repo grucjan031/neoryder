@@ -12,6 +12,7 @@
   "recoilScale": 0.8,
   "tags": ["#gun"],
   "model": "mag_crossbow",
+  "previewPitch": 0.65,
   "ironSight": {
     "rear": [0, 0.096, 0.04],
     "front": [0, 0.0935, -0.35]
