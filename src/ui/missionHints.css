@@ -1,0 +1,28 @@
+.tutorial-panel.mission-hint {
+  top: auto;
+  bottom: max(30vh, env(safe-area-inset-bottom));
+  z-index: var(--z-hud-top);
+  width: max-content;
+  max-width: min(520px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 6px 12px;
+  background: var(--hud-surface);
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 150ms ease-out,
+    visibility 0s 150ms;
+}
+.mission-hint[data-mission-hint] {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+:root[data-reduce-motion='true'] .mission-hint {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-panel.mission-hint {
+    transition: none;
+  }
+}

@@ -507,6 +507,8 @@ describe('settings', () => {
       screenShake: 1,
       flashes: true,
       cameraTilt: true,
+      missionHints: true,
+      seenMissionHints: {},
       quality: 'medium',
       bindings: {},
       gamepad: {

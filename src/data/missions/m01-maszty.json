@@ -240,6 +240,61 @@
       "text": "Rano sprawdzimy, kogo jeszcze zwinęli tej nocy, zanim maszty zgasły. Idź odpocząć."
     }
   ],
+  "hints": [
+    {
+      "id": "ruch",
+      "trigger": "runStart",
+      "delayS": 2,
+      "text": "Ruszaj {moveForward}{moveLeft}{moveBack}{moveRight}. Skocz {jump}.",
+      "doneOn": [{ "event": "player_jumped" }]
+    },
+    {
+      "id": "mobilnosc",
+      "trigger": "enterSection:sluza",
+      "text": "Doskok {dash} skraca dystans. Rozpędź się {sprint} i wciśnij {crouch}, żeby wejść w ślizg.",
+      "doneOn": [{ "event": "dash_used" }]
+    },
+    {
+      "id": "ostrze",
+      "trigger": "encounter:patrol-wejscie:started",
+      "text": "Z ostrzem naciskaj {attack} w rytmie serii. Przytrzymaj i puść, by zadać ciężki cios.",
+      "doneOn": [{ "event": "melee_swing", "count": 3 }]
+    },
+    {
+      "id": "parowanie",
+      "trigger": "encounter:oslona-pierwszego:started",
+      "text": "Z ostrzem w ręku wciśnij blok {block} tuż przed trafieniem, by odbić pocisk.",
+      "doneOn": [{ "event": "parry_success" }]
+    },
+    {
+      "id": "bron",
+      "trigger": "encounter:oslona-pierwszego:started",
+      "text": "Zmień broń {swap}. Z bronią palną przytrzymaj {aim}, żeby celować.",
+      "doneOn": [{ "event": "weapon_fired" }]
+    },
+    {
+      "id": "przegrzanie",
+      "trigger": "event:overheated",
+      "text": "Broń przegrzana. Puść spust i daj jej ostygnąć albo dobądź ostrza {swap}."
+    },
+    {
+      "id": "ladunek",
+      "trigger": "objective:mast-1:started",
+      "text": "Zostań przy skrzynce u podstawy masztu, aż uzbroisz ładunek. Potem odejdź poza 4 m."
+    },
+    {
+      "id": "pchniecie",
+      "trigger": "objective:mast-1:started",
+      "text": "Pchnięcie Rezonansu {power} odrzuca wrogów i skrzynie. Zrób sobie miejsce.",
+      "doneOn": [{ "event": "power_used" }]
+    },
+    {
+      "id": "wykonczenie",
+      "trigger": "event:enemy_executable",
+      "text": "Podejdź do ogłuszonego wroga ze znacznikiem. Wyceluj i wykończ go ostrzem {attack}.",
+      "doneOn": [{ "event": "execute_performed" }]
+    }
+  ],
   "radio": [
     {
       "trigger": "runStart",

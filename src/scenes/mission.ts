@@ -14,8 +14,13 @@ import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
 import type { RunSummary } from '../core/runTypes';
 import { Rng } from '../core/rng';
+import { MissionHints } from '../world/missionHints';
+import type { HintEvent } from '../world/missionSchema';
+import { MissionHintPanel } from '../ui/missionHints';
 import {
   createIndexedDbSaveStore,
+  loadSettings,
+  saveSettings,
   SAVE_VERSION,
   type MissionSave,
   type SaveStore,
@@ -63,6 +68,9 @@ export class MissionScene implements Scene {
   private room?: RoomScene;
   private payloadRoom?: PayloadMissionRoom;
   private radio?: MissionRadio;
+  private hints?: MissionHints;
+  private hintPanel?: MissionHintPanel;
+  private displayedHint: MissionHints['current'] = null;
   private direction?: MissionDirection;
   private readonly active = new Map<string, ActiveEncounter>();
   private readonly sections = new Set<string>();
@@ -241,8 +249,8 @@ export class MissionScene implements Scene {
                 o.kind === 'subdue' && trigger === `objective:${o.id}:done`,
             )
           )
-            this.radio?.signal('boss:defeated');
-          this.radio?.signal(trigger);
+            this.signal('boss:defeated');
+          this.signal(trigger);
           if (trigger.endsWith(':done')) {
             this.persist();
             if (trigger === 'objective:exit:done') this.finishPending = true;
@@ -250,6 +258,8 @@ export class MissionScene implements Scene {
         },
       },
     );
+    if (definition.hints?.length && typeof document !== 'undefined')
+      this.initHints();
     if (typeof document !== 'undefined')
       this.radio = new MissionRadio(definition);
     await this.room.init({ ...ctx, rng: new Rng(this.snapshot.seed) }, three);
@@ -329,8 +339,7 @@ export class MissionScene implements Scene {
       }),
       // Boss spotkania nie jest bossem pokoju, więc RoomScene nie zgłasza jego faz.
       ctx.bus.on('boss_phase', ({ phase }) => {
-        if (phase === 2 || phase === 3)
-          this.radio?.signal(`boss:phase:${phase}`);
+        if (phase === 2 || phase === 3) this.signal(`boss:phase:${phase}`);
       }),
     );
     this.registerCommands();
@@ -338,8 +347,62 @@ export class MissionScene implements Scene {
     this.ready = true;
     this.updateGates();
     this.persist();
-    this.radio?.signal('runStart');
+    this.signal('runStart');
     await this.saving;
+  }
+
+  private signal(trigger: string): void {
+    this.radio?.signal(trigger);
+    if (this.hints && loadSettings().missionHints) this.hints.trigger(trigger);
+  }
+
+  private initHints(): void {
+    const { id, hints } = this.definition;
+    this.hints = new MissionHints(hints!, loadSettings().seenMissionHints[id]);
+    this.hintPanel = new MissionHintPanel();
+    const event = (name: HintEvent, actor?: EntityId) => {
+      if (
+        this.state === 'playing' &&
+        (actor === undefined || actor === this.room?.playerId)
+      )
+        this.hints!.event(name);
+    };
+    const bus = this.ctx.bus;
+    let overheated = false;
+    this.off.push(
+      bus.on('player_jumped', (e) => event('player_jumped', e.id)),
+      bus.on('dash_used', (e) => event('dash_used', e.user)),
+      bus.on('melee_swing', (e) => event('melee_swing', e.attacker)),
+      bus.on('parry_success', (e) => event('parry_success', e.defender)),
+      bus.on('weapon_fired', (e) => event('weapon_fired', e.owner)),
+      bus.on('power_used', (e) => event('power_used', e.user)),
+      bus.on('execute_performed', (e) =>
+        event('execute_performed', e.attacker),
+      ),
+      bus.on('heat_changed', (e) => {
+        if (e.id !== this.room?.playerId) return;
+        if (e.overheated && !overheated) event('overheated', e.id);
+        overheated = e.overheated;
+      }),
+      bus.on('enemy_executable', (e) => {
+        if (e.ready) event('enemy_executable');
+      }),
+    );
+  }
+
+  private updateHints(dt: number): void {
+    if (!this.hints) return;
+    const settings = loadSettings();
+    if (settings.missionHints && this.state === 'playing') this.hints.step(dt);
+    else this.hints.clear();
+    const hint = this.hints.current;
+    if (hint === this.displayedHint) return;
+    this.displayedHint = hint;
+    this.hintPanel?.show(hint);
+    if (hint) {
+      settings.seenMissionHints[this.definition.id] = [...this.hints.seen];
+      saveSettings(settings);
+    }
   }
 
   /** Wyzwalacze poziomu muszą wskazywać istniejące sekcje, spotkania i punkty. */
@@ -348,8 +411,12 @@ export class MissionScene implements Scene {
       enterSection: this.level.sections,
       encounter: this.level.encounters,
       checkpoint: this.level.checkpoints,
+      objective: this.definition.objectives,
     };
-    for (const { trigger } of this.definition.radio) {
+    for (const { trigger } of [
+      ...this.definition.radio,
+      ...(this.definition.hints ?? []),
+    ]) {
       const [kind, id] = trigger.split(':');
       if (known[kind!] && !known[kind!]!.some((entry) => entry.id === id))
         throw new Error(`Nieznany wyzwalacz radia: ${trigger}`);
@@ -443,7 +510,7 @@ export class MissionScene implements Scene {
     this.snapshot.completedEncounters = [...this.runtime.completed];
     this.persist();
     this.room?.restoreAllies();
-    this.radio?.signal(`checkpoint:${id}`);
+    this.signal(`checkpoint:${id}`);
   }
 
   private startEncounter(id: string): void {
@@ -483,7 +550,7 @@ export class MissionScene implements Scene {
     this.runtime.active.add(id);
     this.active.set(id, { director, enemies });
     director.start();
-    this.radio?.signal(`encounter:${id}:started`);
+    this.signal(`encounter:${id}:started`);
   }
 
   private updateGates(): void {
@@ -513,6 +580,7 @@ export class MissionScene implements Scene {
     if (!this.ready || this.disposed) return;
     this.radio?.setCombat(this.active.size > 0);
     this.radio?.step(dt);
+    this.updateHints(dt);
     if (this.state === 'respawning') {
       this.deathTimer -= dt;
       if (this.deathTimer <= 0) this.respawn();
@@ -564,7 +632,7 @@ export class MissionScene implements Scene {
         this.active.delete(id);
         this.runtime.clear(id);
         this.room!.allyDependencyDone('encounter', id);
-        this.radio?.signal(`encounter:${id}:done`);
+        this.signal(`encounter:${id}:done`);
         continue;
       }
       if (entry.director.currentPhase === 'done') {
@@ -576,11 +644,11 @@ export class MissionScene implements Scene {
         )?.bossFor;
         if (bossFor) {
           // Kolejność jak w pokoju bossa: ostatnie słowa, potem ukończenie celu.
-          this.radio?.signal('boss:defeated');
+          this.signal('boss:defeated');
           this.room!.objectiveModel()?.done(bossFor);
         }
         this.room!.allyDependencyDone('encounter', id);
-        this.radio?.signal(`encounter:${id}:done`);
+        this.signal(`encounter:${id}:done`);
       }
     }
     for (const section of this.level.sections) {
@@ -589,8 +657,8 @@ export class MissionScene implements Scene {
         insideLevelZone(position, section.zone)
       ) {
         this.sections.add(section.id);
-        if (section.radio) this.radio?.signal(section.radio);
-        this.radio?.signal(`enterSection:${section.id}`);
+        if (section.radio) this.signal(section.radio);
+        this.signal(`enterSection:${section.id}`);
       }
     }
     const currentIndex = this.level.checkpoints.findIndex(
@@ -733,6 +801,31 @@ export class MissionScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('hints', 'hints reset|off|on|list', ([action]) => {
+      const settings = loadSettings();
+      const { id, hints = [] } = this.definition;
+      if (action === 'list')
+        return (
+          hints
+            .map(
+              (h) =>
+                `${h.id}: ${this.hints?.seen.has(h.id) ? 'pokazana' : 'nowa'}`,
+            )
+            .join('\n') || 'Brak podpowiedzi.'
+        );
+      if (action === 'reset') {
+        delete settings.seenMissionHints[id];
+        if (this.hints) {
+          this.hints = new MissionHints(hints);
+          if (settings.missionHints) this.hints.trigger('runStart');
+        }
+      } else if (action === 'off' || action === 'on')
+        settings.missionHints = action === 'on';
+      else return 'hints reset|off|on|list';
+      saveSettings(settings);
+      this.updateHints(0);
+      return 'OK';
+    });
     register('mission start', 'mission start <id>', (args) => {
       const mission = missionDefinitions.get(args[0] ?? '');
       if (args.length !== 1 || !mission?.level)
@@ -785,7 +878,7 @@ export class MissionScene implements Scene {
           this.room!.removeEncounterEnemies([...entry.enemies]);
           this.runtime.clear(id);
           this.room!.allyDependencyDone('encounter', id);
-          this.radio?.signal(`encounter:${id}:done`);
+          this.signal(`encounter:${id}:done`);
           this.active.delete(id);
         }
         this.updateGates();
@@ -809,7 +902,7 @@ export class MissionScene implements Scene {
       });
     }
     register('mission radio', 'mission radio <trigger>', (args) => {
-      this.radio?.signal(args.join(' '));
+      this.signal(args.join(' '));
       return 'Radio.';
     });
     register(
@@ -860,6 +953,7 @@ export class MissionScene implements Scene {
     this.active.clear();
     this.room?.dispose();
     this.radio?.dispose();
+    this.hintPanel?.dispose();
     this.direction?.dispose();
     this.chaseClock?.remove();
     for (const view of this.objectiveNpcs) view.dispose();

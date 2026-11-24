@@ -24,6 +24,8 @@
   "screenShake": "Wstrząsy kamery",
   "flashes": "Błyski ekranu",
   "cameraTilt": "Przechyły i zoom kamery",
+  "missionHints": "Podpowiedzi w misjach",
+  "missionHintsHint": "Pokazuj krótkie instrukcje przy pierwszym spotkaniu z mechaniką.",
   "quality": "Jakość grafiki",
   "qualityHint": "Zmiany jakości są stosowane na bieżąco.",
   "masterVolume": "Głośność główna",

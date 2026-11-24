@@ -643,6 +643,8 @@ export interface Settings {
   flashes: boolean;
   /** Przechyły kamery i kick FOV (ruch boczny, ślizg, dash); false = wyłączone (dostępność). */
   cameraTilt: boolean;
+  missionHints: boolean;
+  seenMissionHints: Record<string, string[]>;
   quality: 'low' | 'medium' | 'high';
   bindings: import('./input').BindingOverrides;
   gamepad: GamepadSettings;
@@ -708,6 +710,8 @@ const settingsSchema = z.object({
   screenShake: z.number().min(0).max(1).catch(1),
   flashes: z.boolean().catch(true),
   cameraTilt: z.boolean().catch(true),
+  missionHints: z.boolean().catch(true),
+  seenMissionHints: z.record(z.string(), z.array(z.string())).catch({}),
   quality: z.enum(['low', 'medium', 'high']).catch('high'),
   gamepad: gamepadSettingsSchema,
   bindings: z
@@ -737,6 +741,8 @@ export const defaultSettings = (): Settings => ({
   screenShake: 1,
   flashes: true,
   cameraTilt: true,
+  missionHints: true,
+  seenMissionHints: {},
   quality: 'medium',
   bindings: {},
   gamepad: defaultGamepadSettings(),
@@ -768,7 +774,10 @@ export function saveSettings(s: Settings, storage?: Storage): void {
   try {
     const parsed = settingsSchema.parse(s);
     (storage ?? localStorage).setItem(settingsKey, JSON.stringify(parsed));
-    if (!storage && typeof window !== 'undefined') sharedSettings = parsed;
+    if (!storage && typeof window !== 'undefined') {
+      if (sharedSettings) Object.assign(sharedSettings, parsed);
+      else sharedSettings = parsed;
+    }
   } catch (error) {
     console.warn('Nie można zapisać ustawień.', error);
   }

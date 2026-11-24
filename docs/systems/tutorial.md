@@ -35,6 +35,11 @@ zapisu), linia statusu, „Poligon”, „Ustawienia”; w trybie debug dodatkow
 
 ## Host sceny (`src/scenes/tutorial.ts`)
 
+W M01 gracz może poznawać sterowanie także podczas misji. Jej instrukcje
+korzystają z tego samego mechanizmu etykiet klawiszy i pada. Historia misji
+jest osobna od postępu poligonu. Wyzwalacze i zapis opisuje
+[specyfikacja misji](missions.md#podpowiedzi-podczas-misji).
+
 - Konfiguracja `src/data/tutorial/config.json`: `loadout: "classic"`, talenty
   `["hybridDoubleJump"]`, `completionSound: "waveCleared"` (odtwarzany przy
   każdym zaliczeniu kroku), `markerRadius 0.7`, `markerColor #fff1d6`,

@@ -288,6 +288,7 @@ export class SettingsScreen {
         settings.reduceMotion = base.reduceMotion;
         settings.flashes = base.flashes;
         settings.cameraTilt = base.cameraTilt;
+        settings.missionHints = base.missionHints;
         settings.screenShake = base.screenShake;
         break;
     }
@@ -448,6 +449,14 @@ export class SettingsScreen {
         s.reduceMotion,
         (value) => {
           s.reduceMotion = value;
+        },
+      );
+      this.toggleRow(
+        text.missionHints,
+        text.missionHintsHint,
+        s.missionHints,
+        (value) => {
+          s.missionHints = value;
         },
       );
       this.toggleRow(text.flashes, text.flashesHint, s.flashes, (value) => {

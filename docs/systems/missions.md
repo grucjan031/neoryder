@@ -311,3 +311,26 @@ Wariant uproszczony do istniejących systemów: dojście gracza zalicza grupę,
 cywile są neutralnymi NPC bez obrażeń; brak porażki za ich śmierć, walk między
 frakcjami, aerozolu, opcjonalnego czytnika i premii za brak strat oraz zmian
 w wystroju kryjówki. Opis mapy i szybkie sprawdzenie: `levels.md`, sekcja M08.
+
+## Podpowiedzi podczas misji
+
+Opcjonalna tablica `hints` w definicji misji używa wyzwalaczy radia lub
+`event:<nazwa>` z listy w `missionSchema.ts`. M01 korzysta ze startu próby,
+wejścia do śluzy, dwóch pierwszych spotkań, podejścia do skrzynki masztu 1,
+przegrzania broni gracza i gotowości wroga do wykończenia. Przy maszcie
+instrukcja ładunku ma pierwszeństwo przed Pchnięciem. Uzbrajanie wymaga
+pozostania w zasięgu przez 2,5 s, a promień wybuchu wynosi 4 m.
+
+`MissionHints` pokazuje po jednej instrukcji w kolejności zgłoszeń. Czas
+`delayS`, czas wyświetlania `timeoutS` (domyślnie 9 s) i odstęp 0,6 s między
+instrukcjami biegną w symulacji. Każdy wpis `doneOn` jest alternatywnym
+warunkiem zamknięcia. Licznik obejmuje działania od początku próby, także
+sprzed wyzwalacza. Wykonanie czynności może więc pominąć całą instrukcję.
+
+Panel używa etykiet sterowania samouczka i siedzi na środku, 20% wysokości
+ekranu od dołu. Cele zajmują górę, a radio prawą część HUD. W ustawieniach
+dostępności przełącznik „Podpowiedzi w misjach” jest domyślnie włączony.
+`neoryder.settings` przechowuje przełącznik i identyfikatory pokazanych
+instrukcji według misji. Konsola misji obsługuje `hints list`, `hints off`,
+`hints on` i `hints reset`. Reset czyści historię bieżącej misji, a przy
+włączonych instrukcjach ponownie zgłasza start.
