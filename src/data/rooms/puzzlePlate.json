@@ -1,10 +1,11 @@
 {
   "id": "puzzlePlate",
-  "name": "Płyta sekcji załadunku",
+  "name": "Śluza wagowa Kurogane Arms",
   "type": "puzzle",
   "theme": "neonStreet",
+  "weather": "rain",
   "playerSpawn": {
-    "x": 0,
+    "x": -2.1,
     "y": 0,
     "z": 4
   },
@@ -105,6 +106,364 @@
       },
       "material": "concrete",
       "model": "wall"
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 4,
+        "z": 0.9
+      },
+      "position": {
+        "x": -4.55,
+        "y": 2,
+        "z": -2.1
+      },
+      "material": "concrete",
+      "model": "pillar"
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 4,
+        "z": 0.9
+      },
+      "position": {
+        "x": 4.55,
+        "y": 2,
+        "z": -2.1
+      },
+      "material": "concrete",
+      "model": "pillar"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 0.12,
+        "z": 0.6
+      },
+      "position": {
+        "x": 0,
+        "y": 4.06,
+        "z": -2.1
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 0.21,
+        "z": 0.24
+      },
+      "position": {
+        "x": 0,
+        "y": 4.225,
+        "z": -2.1
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 0.12,
+        "z": 0.6
+      },
+      "position": {
+        "x": 0,
+        "y": 4.39,
+        "z": -2.1
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 1,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 3.5,
+        "z": -6.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 1,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 3.5,
+        "z": 6.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2.2,
+        "y": 0.24,
+        "z": 8
+      },
+      "position": {
+        "x": -3.9,
+        "y": 3.72,
+        "z": -1.2
+      },
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 2.2,
+        "y": 0.24,
+        "z": 8
+      },
+      "position": {
+        "x": 3.9,
+        "y": 3.72,
+        "z": -1.2
+      },
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 2.235,
+        "z": 0.6238
+      },
+      "position": {
+        "x": 4.6,
+        "y": 1.1175,
+        "z": -3.85
+      },
+      "material": "metal",
+      "model": "city_kiosk"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.4,
+        "z": 1.005
+      },
+      "position": {
+        "x": 4.2,
+        "y": 0.7,
+        "z": 1.2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
+      },
+      "position": {
+        "x": -4.394,
+        "y": 0.795,
+        "z": 1.95
+      },
+      "material": "metal",
+      "model": "city_crates"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
+      },
+      "position": {
+        "x": -4.394,
+        "y": 0.795,
+        "z": -4.15
+      },
+      "material": "metal",
+      "model": "city_crates"
+    },
+    {
+      "size": {
+        "x": 1.97,
+        "y": 1.33,
+        "z": 1.08
+      },
+      "position": {
+        "x": -4.015,
+        "y": 0.665,
+        "z": 5.46
+      },
+      "material": "metal",
+      "model": "city_dumpster"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 14
+      },
+      "position": {
+        "x": -9,
+        "y": 8,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 18,
+        "z": 14
+      },
+      "position": {
+        "x": 9,
+        "y": 9,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 7,
+        "y": 20,
+        "z": 6
+      },
+      "position": {
+        "x": -5.5,
+        "y": 10,
+        "z": -10
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 7,
+        "y": 17,
+        "z": 6
+      },
+      "position": {
+        "x": 5.5,
+        "y": 8.5,
+        "z": -10
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 7,
+        "y": 15,
+        "z": 6
+      },
+      "position": {
+        "x": -5.5,
+        "y": 7.5,
+        "z": 10
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 7,
+        "y": 16,
+        "z": 6
+      },
+      "position": {
+        "x": 5.5,
+        "y": 8,
+        "z": 10
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 1.6
+      },
+      "position": {
+        "x": 0,
+        "y": 3.5,
+        "z": -7.8
+      },
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 12,
+        "z": 0.5
+      },
+      "position": {
+        "x": 0,
+        "y": 10,
+        "z": -8.85
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 1.6
+      },
+      "position": {
+        "x": 0,
+        "y": 3.5,
+        "z": 7.8
+      },
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 12,
+        "z": 0.5
+      },
+      "position": {
+        "x": 0,
+        "y": 10,
+        "z": 8.85
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 1.35,
+        "y": 1.6,
+        "z": 0.85
+      },
+      "position": {
+        "x": 0,
+        "y": 4.8,
+        "z": -6.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.58,
+        "z": 0.06
+      },
+      "position": {
+        "x": -0.78,
+        "y": 3.52,
+        "z": -5.98
+      },
+      "material": "neon_amber"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.58,
+        "z": 0.06
+      },
+      "position": {
+        "x": 0.78,
+        "y": 3.52,
+        "z": -5.98
+      },
+      "material": "neon_amber"
     }
   ],
   "spawnPoints": [],
@@ -158,6 +517,650 @@
       "y": 0,
       "z": -2.1
     },
-    "radiusM": 1.1
-  }
+    "radiusM": 1.1,
+    "workArea": {
+      "kind": "box",
+      "position": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "size": {
+        "x": 4.4,
+        "y": 4,
+        "z": 9.2
+      }
+    }
+  },
+  "lights": [
+    {
+      "position": {
+        "x": -0.6,
+        "y": 3.4,
+        "z": 1.65
+      },
+      "color": "#fff1d6",
+      "intensity": 11,
+      "range": 8,
+      "groundGlow": false
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 3.12,
+        "z": -2.65
+      },
+      "color": "#ffae1a",
+      "intensity": 10,
+      "range": 7,
+      "groundGlow": false
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 2.7,
+        "z": -5.1
+      },
+      "color": "#fff1d6",
+      "intensity": 9,
+      "range": 6,
+      "groundGlow": false
+    },
+    {
+      "position": {
+        "x": -3.9,
+        "y": 3,
+        "z": -0.35
+      },
+      "color": "#ffae1a",
+      "intensity": 6,
+      "range": 6,
+      "groundGlow": false
+    },
+    {
+      "position": {
+        "x": 3.6,
+        "y": 3.02,
+        "z": -3.5
+      },
+      "color": "#3d7bff",
+      "intensity": 8,
+      "range": 7,
+      "groundGlow": false
+    },
+    {
+      "position": {
+        "x": 0.55,
+        "y": 2.9,
+        "z": 5.3
+      },
+      "color": "#8a5cff",
+      "intensity": 6,
+      "range": 6,
+      "groundGlow": false
+    }
+  ],
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": -4.95,
+        "y": 3.05,
+        "z": 1.95
+      },
+      "size": {
+        "w": 1.6,
+        "h": 0.65
+      },
+      "yaw": 1.5708,
+      "tint": "#3d7bff",
+      "flicker": 0.04
+    },
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": -2.45,
+        "y": 2.35,
+        "z": -5.95
+      },
+      "size": {
+        "w": 1.45,
+        "h": 0.62
+      },
+      "yaw": 0,
+      "tint": "#3d7bff",
+      "flicker": 0.04
+    },
+    {
+      "kind": "neon",
+      "texture": "repair",
+      "position": {
+        "x": 4.95,
+        "y": 2.7,
+        "z": 1.15
+      },
+      "size": {
+        "w": 1.6,
+        "h": 0.7
+      },
+      "yaw": -1.5708,
+      "tint": "#6dff4a",
+      "flicker": 0.04
+    },
+    {
+      "kind": "holo",
+      "texture": "holo_kurogane",
+      "position": {
+        "x": 0,
+        "y": 7.84,
+        "z": -6.5
+      },
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#3d7bff",
+      "flicker": 0.04
+    }
+  ],
+  "decals": [
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -1.24,
+        "y": 0,
+        "z": -2.1
+      },
+      "size": {
+        "w": 0.24,
+        "h": 2.4
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.77
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 1.24,
+        "y": 0,
+        "z": -2.1
+      },
+      "size": {
+        "w": 0.24,
+        "h": 2.4
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.77
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 1.35
+      },
+      "size": {
+        "w": 1.42,
+        "h": 1.42
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.57
+    },
+    {
+      "texture": "floor_arrow",
+      "position": {
+        "x": -0.48,
+        "y": 0,
+        "z": -0.24
+      },
+      "size": {
+        "w": 0.95,
+        "h": 1.34
+      },
+      "yaw": -0.2526,
+      "surface": "floor",
+      "opacity": 0.85
+    },
+    {
+      "texture": "floor_arrow",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -4.55
+      },
+      "size": {
+        "w": 0.72,
+        "h": 1.25
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.68
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": -1.19,
+        "y": 0,
+        "z": -4.02
+      },
+      "size": {
+        "w": 1.04,
+        "h": 0.76
+      },
+      "yaw": 0.32,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "puddle2",
+      "position": {
+        "x": 1.09,
+        "y": 0,
+        "z": 3.36
+      },
+      "size": {
+        "w": 1.4,
+        "h": 1.1
+      },
+      "yaw": 0.8,
+      "surface": "floor",
+      "opacity": 0.66
+    },
+    {
+      "texture": "leak_streak",
+      "position": {
+        "x": -5,
+        "y": 2.05,
+        "z": 3.62
+      },
+      "size": {
+        "w": 1.4,
+        "h": 2.2
+      },
+      "yaw": 1.5708,
+      "surface": "wall",
+      "opacity": 0.62
+    },
+    {
+      "texture": "leak_streak",
+      "position": {
+        "x": 5,
+        "y": 2.05,
+        "z": 3.62
+      },
+      "size": {
+        "w": 1.4,
+        "h": 2.2
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.62
+    },
+    {
+      "texture": "poster_torn2",
+      "position": {
+        "x": 5,
+        "y": 1.65,
+        "z": -5.04
+      },
+      "size": {
+        "w": 0.92,
+        "h": 0.92
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.74
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -2.2,
+        "y": 0,
+        "z": -3.55
+      },
+      "size": {
+        "w": 2.1,
+        "h": 0.095
+      },
+      "yaw": 1.5707963267948966,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -2.2,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "w": 2.1,
+        "h": 0.095
+      },
+      "yaw": 1.5707963267948966,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -2.2,
+        "y": 0,
+        "z": 3.55
+      },
+      "size": {
+        "w": 2.1,
+        "h": 0.095
+      },
+      "yaw": 1.5707963267948966,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 2.2,
+        "y": 0,
+        "z": -3.55
+      },
+      "size": {
+        "w": 2.1,
+        "h": 0.095
+      },
+      "yaw": 1.5707963267948966,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 2.2,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "w": 2.1,
+        "h": 0.095
+      },
+      "yaw": 1.5707963267948966,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 2.2,
+        "y": 0,
+        "z": 3.55
+      },
+      "size": {
+        "w": 2.1,
+        "h": 0.095
+      },
+      "yaw": 1.5707963267948966,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -1.76,
+        "y": 0,
+        "z": -4.6
+      },
+      "size": {
+        "w": 0.78,
+        "h": 0.095
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 1.76,
+        "y": 0,
+        "z": -4.6
+      },
+      "size": {
+        "w": 0.78,
+        "h": 0.095
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -1.76,
+        "y": 0,
+        "z": 4.6
+      },
+      "size": {
+        "w": 0.78,
+        "h": 0.095
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.46
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 1.76,
+        "y": 0,
+        "z": 4.6
+      },
+      "size": {
+        "w": 0.78,
+        "h": 0.095
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.46
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 0,
+        "y": 3.55,
+        "z": -2.1
+      },
+      "yaw": 0,
+      "scale": 0.9
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 0,
+        "y": 9.5,
+        "z": -3.5
+      },
+      "yaw": 0,
+      "scale": 1.2
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 0,
+        "y": 10.2,
+        "z": 2.5
+      },
+      "yaw": 0,
+      "scale": 1.2
+    },
+    {
+      "model": "city_holo_projector",
+      "position": {
+        "x": 0,
+        "y": 5.6,
+        "z": -6.5
+      },
+      "yaw": 0,
+      "scale": 1.2
+    },
+    {
+      "model": "city_shutter",
+      "position": {
+        "x": -5,
+        "y": 0,
+        "z": -0.13
+      },
+      "yaw": 1.5708,
+      "scale": 0.84
+    },
+    {
+      "model": "city_door",
+      "position": {
+        "x": 3.25,
+        "y": 0,
+        "z": -6
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -2.68,
+        "y": 0,
+        "z": -4.42
+      },
+      "yaw": 0,
+      "scale": 0.78
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 2.68,
+        "y": 0,
+        "z": 2.46
+      },
+      "yaw": 0,
+      "scale": 0.78
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -6,
+        "y": 4,
+        "z": -4.6
+      },
+      "yaw": 1.5708,
+      "scale": 1.1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 6,
+        "y": 4,
+        "z": 3.5
+      },
+      "yaw": -1.5708,
+      "scale": 1.1
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": -6,
+        "y": 6.2,
+        "z": 1.5
+      },
+      "yaw": 1.5708,
+      "scale": 1.2
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 6,
+        "y": 6.5,
+        "z": -2.1
+      },
+      "yaw": -1.5708,
+      "scale": 1.2
+    }
+  ],
+  "ambientFx": [
+    {
+      "kind": "steam",
+      "position": {
+        "x": -2.68,
+        "y": 0.039,
+        "z": -4.42
+      },
+      "rate": 2.2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 2.68,
+        "y": 0.039,
+        "z": 2.46
+      },
+      "rate": 2.2
+    },
+    {
+      "kind": "sparks",
+      "position": {
+        "x": -4.85,
+        "y": 2.37,
+        "z": 0.98
+      },
+      "rate": 0.45
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -2.8,
+        "y": 3.6,
+        "z": 2.79
+      },
+      "rate": 1.5
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": 2.8,
+        "y": 3.6,
+        "z": -5.19
+      },
+      "rate": 1.4
+    }
+  ],
+  "rainShelters": [
+    {
+      "position": {
+        "x": -3.9,
+        "y": 1.92,
+        "z": -1.2
+      },
+      "size": {
+        "x": 2.2,
+        "y": 3.84,
+        "z": 8
+      }
+    },
+    {
+      "position": {
+        "x": 3.9,
+        "y": 1.92,
+        "z": -1.2
+      },
+      "size": {
+        "x": 2.2,
+        "y": 3.84,
+        "z": 8
+      }
+    }
+  ]
 }

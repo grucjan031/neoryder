@@ -1472,6 +1472,10 @@ F3-19: definicja `GrabPuzzleDefinition` z `src/world/roomSchema.ts` jest wymagan
 dla `type: 'puzzle'` i zawiera `object: { position, size, massKg }` (pozycja środka).
 Cel `kind: 'plate'` ma `position` na podłodze i `radiusM`. Cel `kind: 'laser'`
 wskazuje hazard `laser_gate` przez `laserId`. Laser musi mieć dwa różne końce.
+Płyta może określić `workArea: { kind: 'box', position, size }` (środek i pełne wymiary
+prostopadłościanu). Jeśli środek swobodnej skrzyni opuści tę strefę przed
+zaliczeniem, skrzynia wraca na wolne pole startowe. Podczas Chwytu powrót czeka
+na puszczenie ładunku. Zajęte pole startowe opóźnia powrót.
 `GrabPuzzle` w `src/world/grabPuzzle.ts` rejestruje obiekt w `GrabPhysics`,
 w `step(dt)` po kroku Rapiera sprawdza cel i udostępnia migawkę przez `view()`.
 `HazardSystem` przyjmuje opcjonalny callback `laserBlocked(id): boolean`,

@@ -26,8 +26,8 @@ stosuje `position`, `yaw` w radianach i jednolity `scale`, bez colliderów;
 brak pliku pomija dekorację. Ostrzeżenie i nieudany request występują raz na plik.
 Szablony GLB i ich geometrie są własnością cache renderu, nie sceny.
 `loadModels=false` pomija również dekoracje i modele miejskie, więc RoomScene
-działa nadal bez DOM i sieci. `signs/lights/decals/ambientFx` są zachowywane
-w danych dla integratora; RoomScene i Arena jeszcze ich nie renderują.
+działa nadal bez DOM i sieci. W grze `CityDressing` renderuje szyldy, światła,
+kalkomanie i efekty otoczenia w pokojach oraz na arenie.
 
 `SceneAtmosphere` przywraca poprzedni motyw i tło przy dispose; parametry deszczu
 są dostępne przez `theme.rain` dla modułu VFX. Oprawa nie zmienia symulacji,
@@ -64,6 +64,14 @@ w sekcji `puzzle` i działają na żywo (odczyt co krok symulacji). Czas pokazan
 wyniku w runie to `resultHoldS`. Kolory obiektu i płyty pochodzą z materiałów
 motywu (`neon_amber` / `neon_green`), bez czerwieni. Walidacja danych odrzuca
 obiekt nachodzący na blok układu lub zbyt blisko punktu startu.
+
+W śluzie wagowej Kurogane jasna skrzynia stoi na polu podajnika. Strzałki
+prowadzą pod bramownicę i dalej do północnych drzwi. Pasy boczne i narożniki
+wyznaczają tor o szerokości 4,4 m i długości 9,2 m. Opcjonalne `puzzle.workArea`
+sprawdza położenie środka ładunku. Kiedy swobodna skrzynia opuści tor, trafi
+na dach lub wypadnie pod posadzkę, wraca na pole podajnika. Podczas przenoszenia
+gracz zachowuje Chwyt. Powrót czeka na puszczenie skrzyni i zwolnienie pola.
+Kolejna próba zachowuje stan gracza i zamknięcie bramy.
 
 Sprawdzenie w 30 sekund:
 

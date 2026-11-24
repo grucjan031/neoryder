@@ -3,6 +3,7 @@ import { tuning } from '../core/tuning';
 import { blockMaterialSchema, dressingFields } from './dressingSchema';
 import { NODE_TYPES } from '../core/runTypes';
 import { directorConfigSchema } from '../enemies/director';
+import { insideLevelZone } from './levelRuntime';
 
 const finite = z.number().finite();
 const positive = z.number().finite().positive();
@@ -163,6 +164,13 @@ const grabPuzzleSchema = z.discriminatedUnion('kind', [
     object: puzzleObjectSchema,
     position: vec3Schema,
     radiusM: positive,
+    workArea: z
+      .object({
+        kind: z.literal('box'),
+        position: vec3Schema,
+        size: positiveVec3Schema,
+      })
+      .optional(),
   }),
   z.object({
     kind: z.literal('laser'),
@@ -312,6 +320,13 @@ function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
   if (puzzle.kind === 'plate') {
     if (!onFloor(puzzle.position) || puzzle.position.y !== groundY)
       issue('Płyta naciskowa musi leżeć na podłodze.');
+    const goal = { ...puzzle.position, y: groundY + size.y / 2 };
+    if (
+      puzzle.workArea &&
+      (!insideLevelZone(at, puzzle.workArea) ||
+        !insideLevelZone(goal, puzzle.workArea))
+    )
+      issue('Tor wagowy musi obejmować środek skrzyni na starcie i na płycie.');
   } else {
     const laser = room.hazards?.find((hazard) => hazard.id === puzzle.laserId);
     if (

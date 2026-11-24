@@ -64,11 +64,16 @@ async function setup(id: string, grab = false, objectives?: string[]) {
     new Scene(),
   );
   const state = () => scene.query('puzzle') as GrabPuzzleState;
-  const step = (held: Action[] = [], pressed: Action[] = []) =>
+  const step = (
+    held: Action[] = [],
+    pressed: Action[] = [],
+    released: Action[] = [],
+  ) =>
     scene.step(SIM_DT, {
       ...idle,
       held: new Set(held),
       pressed: new Set(pressed),
+      released: new Set(released),
     });
   return { scene, commands, cleared, skipped, powerUsed, step, state };
 }
@@ -80,9 +85,15 @@ it.each([
   const { scene, commands, cleared, step, state } = await setup(id);
   expect(state()).toMatchObject({ outcome: null, engaged: false });
   expect(scene.query('phase')).toBe('stopped');
-  if (id === 'puzzleLaser')
+  if (id === 'puzzleLaser') {
     expect(scene.query('hazards')).toMatchObject([{ phase: 'on' }]);
-  commands.execute(`tp ${x} 4 0 0`);
+    commands.execute(`tp ${x} 4 0 0`);
+  } else {
+    for (let i = 0; i < 60; i++) {
+      if ((scene.query('playerPos') as { x: number }).x >= x - 0.2) break;
+      step(['moveRight']);
+    }
+  }
   for (let i = 0; i < 180 && !state().outcome; i++) step(['moveForward']);
   expect(state()).toMatchObject({ outcome: 'solved', engaged: true });
   expect(cleared).toHaveBeenCalledExactlyOnceWith({
@@ -119,6 +130,50 @@ it.each([
     expect(cleared).toHaveBeenCalledOnce();
   },
 );
+
+it('przywraca ładunek wypchnięty do doku i otwiera przejście dopiero po zważeniu', async () => {
+  const { scene, commands, cleared, step, state } = await setup('puzzlePlate');
+  const start = state().position;
+  commands.execute('tp -1.7 1.35 0 0');
+  for (let i = 0; i < 100 && state().position.x < 1.7; i++) step(['moveRight']);
+  expect(state().position.x).toBeGreaterThanOrEqual(1.7);
+  for (let i = 0; i < 100 && state().position.x > 0; i++) step(['moveRight']);
+  expect(state().position).toEqual(start);
+  expect(cleared).not.toHaveBeenCalled();
+
+  const doorZ = roomDefinitions
+    .get('puzzlePlate')!
+    .doors.find((d) => d.role === 'exit')!.position.z;
+  const approach = () => {
+    commands.execute('tp 0 -4.8 0 0');
+    for (let i = 0; i < 30; i++) step(['moveForward']);
+    return (scene.query('playerPos') as { z: number }).z;
+  };
+  expect(approach()).toBeGreaterThan(doorZ);
+  expect(scene.query('doors')).toMatchObject({ exit: { open: false } });
+  commands.execute('tp 0 4 0 0');
+  for (let i = 0; i < 180 && !state().outcome; i++) step(['moveForward']);
+  expect(cleared).toHaveBeenCalledOnce();
+  expect(scene.query('doors')).toMatchObject({ exit: { open: true } });
+  expect(approach()).toBeLessThan(doorZ);
+});
+
+it('czeka z powrotem skrzyni na zwolnienie Chwytu i opróżnienie stanowiska', async () => {
+  const { commands, step, state } = await setup('puzzlePlate', true);
+  const start = state().position;
+  commands.execute('tp 0 4 0 -23');
+  step(['power'], ['power']);
+  commands.execute('tp 0 1.35 -90 0');
+  step(['power']);
+  expect(state().position.x).toBeGreaterThan(2.2);
+  step([], [], ['power']);
+  for (let i = 0; i < 20; i++) step();
+  expect(state().position.x).toBeGreaterThan(2.2);
+  commands.execute('tp 0 4 0 0');
+  for (let i = 0; i < 10 && state().position.x > 0; i++) step();
+  expect(state().position).toEqual(start);
+  expect(state().outcome).toBeNull();
+});
 
 it('emituje pominięcie raz i nie emituje ukończenia zagadki', async () => {
   const { scene, cleared, skipped, step, state } = await setup('puzzlePlate');
