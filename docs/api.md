@@ -1646,6 +1646,8 @@ kapsuły. Model korzysta z istniejącego kontraktu `PlayerController.getState()`
 i ruch rąk. Konstruktor przyjmuje bus, właściciela i opcje definicji ostrza,
 modeli broni oraz tuningu. `load(loadModels)`, `root`,
 `setBladeDefinition(def)` i `dispose()` obsługują cykl życia.
+`inspect(): void` uruchamia oglądanie aktualnie pokazywanego przedmiotu. `place()`
+odmierza czas animacji w klatkach renderu i stosuje wspólną transformację obu dłoni i broni.
 `place(cameraMatrix, frameDt, { blade?, held, horizontalSpeed, visible?, aim? })`
 jest wywoływane raz na klatkę; `held` przyjmuje `HeldItemView` albo stałe
 `blade`/`gun` dla scen testowych. `blade` to `BladeView` wymagany przy ostrzu.

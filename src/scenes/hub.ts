@@ -957,6 +957,8 @@ export class HubScene implements Scene {
     if (this.stations.opened || this.isDebriefOpen() || !(dt > 0)) return;
     if (input.pressed.has('map') && this.talk === null) this.hubMap?.toggle();
     const mapOpen = this.hubMap?.isOpen === true;
+    if (!mapOpen && this.talk === null && input.pressed.has('inspect'))
+      this.fppView.inspect();
     this.props.step(dt);
     const seated = this.seat !== null;
     const stick = input.gamepad?.move;

@@ -1169,6 +1169,7 @@ export class Arena implements Scene {
     // F2-06: gracz, ostrze, moce, broń i energia w czasie gracza (Skupienie), reszta w czasie świata.
     const pdt = this.ctx.feel?.playerDt(dt) ?? dt;
     this.hud?.step(pdt);
+    if (input.pressed.has('inspect')) this.fppView.inspect();
     for (const [slot, action] of (
       ['weapon1', 'weapon2', 'weapon3'] as const
     ).entries())

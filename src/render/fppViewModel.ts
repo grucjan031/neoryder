@@ -11,6 +11,7 @@ import { FppBlade } from './fppBlade';
 import { FppBlaster } from './fppBlaster';
 import type { FppBlasterOptions } from './fppBlaster';
 import { FppMotion, shownHeld } from './fppMotion';
+import { FppInspect } from './fppInspect';
 import { FppOffhand } from './fppOffhand';
 import {
   applyViewmodelLayer,
@@ -42,6 +43,11 @@ export class FppViewModel {
   private readonly blaster: FppBlaster;
   private readonly offhand: FppOffhand;
   private readonly motion: FppMotion;
+  private readonly inspector: FppInspect;
+  private readonly inspectMatrix = new Matrix4();
+  private shown: HeldKind = 'blade';
+  private readonly offFired: () => void;
+  private readonly offSwing: () => void;
   private readonly origin = new Vector3();
   private definition: BladeDefinition;
   private loadModels = true;
@@ -61,6 +67,13 @@ export class FppViewModel {
       tuning: t,
     });
     this.motion = new FppMotion(t);
+    this.inspector = new FppInspect(t.hands.inspect);
+    this.offFired = bus.on('weapon_fired', ({ owner: who }) => {
+      if (who === owner) this.inspector.cancel();
+    });
+    this.offSwing = bus.on('melee_swing', ({ attacker }) => {
+      if (attacker === owner) this.inspector.cancel();
+    });
     this.offhand = new FppOffhand(bus, owner, t);
     this.root.add(this.blade.root, this.blaster.root, this.offhand.root);
     this.unregister = registerViewmodel(this.root);
@@ -78,6 +91,10 @@ export class FppViewModel {
     return this.blade.setDefinition(def, this.loadModels);
   }
 
+  inspect(): void {
+    this.inspector.start(this.shown);
+  }
+
   place(
     cameraMatrix: Matrix4,
     frameDt: number,
@@ -87,6 +104,7 @@ export class FppViewModel {
     const shown: HeldKind =
       typeof frame.held === 'string' ? frame.held : shownHeld(frame.held);
     const aim = shown === 'gun' ? (frame.aim ?? 0) : 0;
+    this.shown = shown;
     const handMatrix = this.motion.place(
       cameraMatrix,
       frameDt,
@@ -95,6 +113,9 @@ export class FppViewModel {
       aim,
     );
     const visible = frame.visible ?? true;
+    this.inspector.update(frameDt, shown);
+    if (aim > 0 || held?.swapping) this.inspector.cancel();
+    handMatrix.multiply(this.inspector.matrix(this.inspectMatrix));
     if (frame.blade)
       this.blade.place(
         handMatrix,
@@ -135,6 +156,8 @@ export class FppViewModel {
   }
 
   dispose(): void {
+    this.offFired();
+    this.offSwing();
     this.blade.dispose();
     this.blaster.dispose();
     this.offhand.dispose();

@@ -312,6 +312,27 @@ export const tuning = {
     dripSizeM: 0.025,
   },
   hands: {
+    inspect: {
+      durationS: 3.2,
+      cancelS: 0.18,
+      pivot: [0.2, -0.2, -0.42],
+      gun: [
+        { t: 0, pos: [0, 0, 0], rot: [0, 0, 0] },
+        { t: 0.16, pos: [-0.05, 0.05, 0.03], rot: [0.15, 0.6, 0.55] },
+        { t: 0.44, pos: [-0.05, 0.055, 0.03], rot: [0.18, 0.7, 0.6] },
+        { t: 0.6, pos: [-0.02, 0.04, 0.03], rot: [0.4, -0.2, -0.55] },
+        { t: 0.82, pos: [-0.02, 0.045, 0.03], rot: [0.45, -0.25, -0.6] },
+        { t: 1, pos: [0, 0, 0], rot: [0, 0, 0] },
+      ],
+      blade: [
+        { t: 0, pos: [0, 0, 0], rot: [0, 0, 0] },
+        { t: 0.18, pos: [-0.03, 0.04, 0.02], rot: [0.1, 0.4, 0.5] },
+        { t: 0.45, pos: [-0.03, 0.05, 0.02], rot: [0.12, 0.5, 0.6] },
+        { t: 0.62, pos: [0.02, 0.05, 0.02], rot: [0.2, -0.4, -0.5] },
+        { t: 0.82, pos: [0.02, 0.055, 0.02], rot: [0.22, -0.5, -0.6] },
+        { t: 1, pos: [0, 0, 0], rot: [0, 0, 0] },
+      ],
+    } satisfies import('../render/fppInspect').InspectTuning,
     swapS: 0.24,
     swapBufferS: 0.4,
     /** Render dłoni: metry, radiany i sekundy czasu klatki; bez wpływu na symulację. */

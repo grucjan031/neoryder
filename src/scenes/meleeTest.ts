@@ -700,6 +700,7 @@ export class MeleeTest implements Scene {
     this.previous = this.player.getState();
     const pdt = this.ctx.feel?.playerDt(dt) ?? dt;
     this.player.step(pdt, input);
+    if (input.pressed.has('inspect')) this.fppView.inspect();
     this.blade.step(pdt, input);
     this.stepPowers(pdt, input);
     if (dt <= 0) return;

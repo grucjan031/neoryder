@@ -249,6 +249,12 @@ Cały viewmodel jest na osobnej warstwie i rysowany drugim przebiegiem z ściśn
 
 ### Wygląd przedmiotów FPP (czysto wizualny)
 
+V lub przytrzymanie Y na padzie uruchamia oglądanie przedmiotu. Gracz unosi
+blaster, pokazuje oba boki i wylot lufy, a ostrze obraca wokół rękojeści.
+Ponowne wciśnięcie po połowie animacji zaczyna ją od początku. Strzał, zamach,
+celowanie i zamiana przedmiotu płynnie przywracają zwykłą pozę. Czas, punkt
+obrotu i klatki obu animacji można stroić w panelu `hands.inspect`.
+
 - **Materiały** (`src/render/fppMaterials.ts`): broń, rękojeści, rękawica i karwasz nie używają
   współdzielonego `mat_interactive` (w motywie neon jest jasny), tylko własnych materiałów toon
   po nazwie węzła: `frame`/`hilt`/`plate_*` grafitowy pancerz, `trim*` stal, `grip*` guma,
