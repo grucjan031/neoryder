@@ -21,14 +21,31 @@ export const MODULE_SHAPES = [
   'holo',
   'laser',
   'foregrip',
+  'suppressor',
+  'choke',
+  'radiator',
+  'angled',
+  'drum',
+  'prism',
+  'overload',
+  'stun',
 ] as const;
 export type ModuleShape = (typeof MODULE_SHAPES)[number];
 export const MODULE_SHAPES_BY_SLOT: Record<ModuleSlot, readonly ModuleShape[]> =
   {
-    muzzle: ['brake', 'rail', 'compensator'],
-    cell: ['coil', 'canister', 'extended', 'pulse'],
-    optic: ['reddot', 'scope', 'holo'],
-    grip: ['laser', 'foregrip'],
+    muzzle: ['brake', 'rail', 'compensator', 'suppressor', 'choke'],
+    cell: [
+      'coil',
+      'canister',
+      'extended',
+      'pulse',
+      'radiator',
+      'drum',
+      'overload',
+      'stun',
+    ],
+    optic: ['reddot', 'scope', 'holo', 'prism'],
+    grip: ['laser', 'foregrip', 'angled'],
   };
 
 export const modulePatchSchema = z

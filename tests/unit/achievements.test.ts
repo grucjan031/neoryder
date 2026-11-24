@@ -78,7 +78,7 @@ describe('dane osiągnięć (S4b-01)', () => {
     expect(achievementsSchema.safeParse([valid]).success).toBe(true);
   });
 
-  it('requiresAchievement wskazuje istniejące osiągnięcie dla pięciu odblokowań', () => {
+  it('requiresAchievement przypisuje przedmiotom właściwe naszywki z katalogu', () => {
     const gates = loadUnlocks(unlocksData)
       .filter((unlock) => unlock.requiresAchievement !== undefined)
       .map((unlock) => [unlock.id, unlock.requiresAchievement]);
@@ -89,6 +89,8 @@ describe('dane osiągnięć (S4b-01)', () => {
       'weapon:crossbow': 'droga-strzelca',
       'power:focus': 'glos-rezonansu',
       'module:superconductor': 'reka-strzelca',
+      'module:overloadCell': 'rezonator',
+      'module:stunCell': 'egzekutor',
       'slot:weapon3': 'weteran-hut',
     });
   });
@@ -100,6 +102,8 @@ describe('dane osiągnięć (S4b-01)', () => {
       kills_melee: ['blade:'],
       kills_power: ['power:'],
       kills_gun: ['weapon:'],
+      execute_performed: ['blade:'],
+      synergy_triggered: [],
       victories: [],
     };
     for (const unlock of loadUnlocks(unlocksData)) {

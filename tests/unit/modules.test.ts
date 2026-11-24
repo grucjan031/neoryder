@@ -30,21 +30,31 @@ const loadout = (weaponId: string, ids: string[]) =>
   });
 
 describe('moduły broni', () => {
-  it('ładuje dwanaście modułów, waliduje prefiks odblokowań, operacje i brak target', () => {
-    expect([...moduleDefinitions.keys()].sort()).toEqual([
-      'collimator',
-      'compensator',
-      'extendedCell',
-      'foregrip',
-      'holo',
-      'incendiary',
-      'laser',
-      'pierce',
-      'pulseCell',
-      'ricochet',
-      'scope',
-      'superconductor',
-    ]);
+  it('ładuje katalog modułów, waliduje prefiks odblokowań, operacje i brak target', () => {
+    expect([...moduleDefinitions.keys()].sort()).toEqual(
+      [
+        'collimator',
+        'compensator',
+        'extendedCell',
+        'foregrip',
+        'holo',
+        'incendiary',
+        'laser',
+        'pierce',
+        'pulseCell',
+        'ricochet',
+        'scope',
+        'superconductor',
+        'suppressor',
+        'choke',
+        'radiator',
+        'stabilizer',
+        'drumCell',
+        'prism',
+        'overloadCell',
+        'stunCell',
+      ].sort(),
+    );
     const sample = moduleDefinitions.get('incendiary')!;
     expect(() => loadModuleDefinitions([sample, sample])).toThrow('Powtórzone');
     expect(

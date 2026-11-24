@@ -1,0 +1,34 @@
+{
+  "id": "prism",
+  "name": "Celownik pryzmatyczny",
+  "description": "Pole widzenia ×0,7, czas wejścia w celowanie ×0,85, rozrzut podczas celowania ×0,45.",
+  "slot": "optic",
+  "visual": {
+    "shape": "prism",
+    "color": "green",
+    "sight": {
+      "target": [0, 0.38, 0.32],
+      "rearZ": 0.5,
+      "eyeReliefM": 0.24
+    }
+  },
+  "tags": ["#optic"],
+  "weaponKinds": ["projectile", "pierce", "beam"],
+  "patches": [
+    {
+      "op": "set",
+      "path": "aimFovScale",
+      "value": 0.7
+    },
+    {
+      "op": "set",
+      "path": "aimInScale",
+      "value": 0.85
+    },
+    {
+      "op": "set",
+      "path": "aimSpreadScale",
+      "value": 0.45
+    }
+  ]
+}
