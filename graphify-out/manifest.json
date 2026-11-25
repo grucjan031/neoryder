@@ -5034,9 +5034,9 @@
     "semantic_hash": ""
   },
   "docs/systems/rooms.md": {
-    "mtime": 1795646293.4987237,
-    "seen": 1795646360.9084384,
-    "ast_hash": "6eeb4cf85dd22f399bf48d4708ec9d35",
+    "mtime": 1795646477.398003,
+    "seen": 1795646991.0318937,
+    "ast_hash": "eb70ecbfb7125b8c93c5f50f34cc2104",
     "semantic_hash": ""
   },
   "docs/systems/run.md": {
@@ -18207,6 +18207,180 @@
     "mtime": 1795646293.5523129,
     "seen": 1795646360.9102738,
     "ast_hash": "8b389cb2614a3e38870577c1e38ee477",
+    "semantic_hash": ""
+  },
+  "src/world/roomChain.ts": {
+    "mtime": 1795646352.6612422,
+    "seen": 1795646991.0300224,
+    "ast_hash": "fffd5c824ac03e7a7b005d0c38c73274",
+    "semantic_hash": ""
+  },
+  "tests/unit/roomChain.test.ts": {
+    "mtime": 1795646352.6797557,
+    "seen": 1795646991.0312433,
+    "ast_hash": "31975742e049a9ed5302dd21d23a704b",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_bench.png": {
+    "mtime": 1795646543.8594515,
+    "seen": 1795646991.0319812,
+    "ast_hash": "c54bc4d311111a60ecf1ba61285b188e",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_cafe_set.png": {
+    "mtime": 1795646543.869451,
+    "seen": 1795646991.0319836,
+    "ast_hash": "d441171ea5d0ce69861e63f351315f8e",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_ceiling_panel.png": {
+    "mtime": 1795646543.8784509,
+    "seen": 1795646991.031985,
+    "ast_hash": "5e26caa763fd117b45330134f9c20e22",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_checkout_counter.png": {
+    "mtime": 1795646543.8869624,
+    "seen": 1795646991.0319872,
+    "ast_hash": "59f52cdcb2faf446a9c64d3506ed6581",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_clothes_rack.png": {
+    "mtime": 1795646543.8959646,
+    "seen": 1795646991.0319884,
+    "ast_hash": "b82c4b5c51b29662aefbde1ba6f5ca08",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_clothes_rack_amber.png": {
+    "mtime": 1795646543.9049616,
+    "seen": 1795646991.0320013,
+    "ast_hash": "e82539e9063f26ec04213e30185103af",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_directory.png": {
+    "mtime": 1795646543.910964,
+    "seen": 1795646991.032004,
+    "ast_hash": "17f92258547ec01a7458ea4450f59b25",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_display_table.png": {
+    "mtime": 1795646543.9159632,
+    "seen": 1795646991.032006,
+    "ast_hash": "9aea0256c9364e2df4bdc9b685a2ed16",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_electronics_shelf.png": {
+    "mtime": 1795646543.9229617,
+    "seen": 1795646991.0320077,
+    "ast_hash": "d1cbc07c10b72b090191120980ccc827",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_elevator.png": {
+    "mtime": 1795646543.9269624,
+    "seen": 1795646991.0320094,
+    "ast_hash": "1c450730fad9b77e9fd4e8e0e875ebd3",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_entrance_doors.png": {
+    "mtime": 1795646543.9324768,
+    "seen": 1795646991.032011,
+    "ast_hash": "d570f382ecc8905998e034577c3e0958",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_escalator.png": {
+    "mtime": 1795646543.9384785,
+    "seen": 1795646991.0320134,
+    "ast_hash": "bc0b81dbc39c35e25bf18845517ffab1",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_fountain.png": {
+    "mtime": 1795646543.9434774,
+    "seen": 1795646991.0320148,
+    "ast_hash": "471c8e24cda651b7a5e32a67093f5688",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_glass_rail.png": {
+    "mtime": 1795646543.9499922,
+    "seen": 1795646991.0320163,
+    "ast_hash": "ff1744d08249e63aab9e260cd791aab1",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_kiosk.png": {
+    "mtime": 1795646543.955992,
+    "seen": 1795646991.0320184,
+    "ast_hash": "869d4f6a77024bd5c54d440eb0334243",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_kurogane_display.png": {
+    "mtime": 1795646543.9619925,
+    "seen": 1795646991.0320203,
+    "ast_hash": "882e64d30535829121adc1eca0623855",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_mannequin.png": {
+    "mtime": 1795646543.967992,
+    "seen": 1795646991.032022,
+    "ast_hash": "63a6d157f556ad816d6183e41ef40d42",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_pharmacy_counter.png": {
+    "mtime": 1795646543.9739938,
+    "seen": 1795646991.0320244,
+    "ast_hash": "e5b114a5652fa31cbd6f9de751e0759e",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_planter.png": {
+    "mtime": 1795646543.9790225,
+    "seen": 1795646991.032026,
+    "ast_hash": "80c86206ef692c037aa14d6dc2bb286f",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_promo_stand.png": {
+    "mtime": 1795646543.985022,
+    "seen": 1795646991.032028,
+    "ast_hash": "f7f284c4274568ac5b12c9a59caa89e4",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_security_fixture.png": {
+    "mtime": 1795646543.9910228,
+    "seen": 1795646991.0320294,
+    "ast_hash": "e2da6630b1a7645fea086f760b53667d",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_security_gates.png": {
+    "mtime": 1795646543.996535,
+    "seen": 1795646991.0320313,
+    "ast_hash": "6ef3960ac586c0173f8d9b2ef6396bf4",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_shoe_wall.png": {
+    "mtime": 1795646544.003535,
+    "seen": 1795646991.0320675,
+    "ast_hash": "40e52829b3378b544b081af2e7c336ba",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_shutter_grille.png": {
+    "mtime": 1795646544.0095353,
+    "seen": 1795646991.0320728,
+    "ast_hash": "f112f8114040b086396fb0ab1237e6ad",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_skylight.png": {
+    "mtime": 1795646544.0145435,
+    "seen": 1795646991.0320747,
+    "ast_hash": "17700a68918b4fb72d9884a3c959c082",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_storefront.png": {
+    "mtime": 1795646544.0205436,
+    "seen": 1795646991.0320768,
+    "ast_hash": "51159a477e38560ed7f126f4f787e1df",
+    "semantic_hash": ""
+  },
+  "artifacts/models/mall/mall_trash_bin.png": {
+    "mtime": 1795646544.0265436,
+    "seen": 1795646991.0320783,
+    "ast_hash": "9596d840e27c5f0a8416e5a9d5a72cab",
     "semantic_hash": ""
   },
   "package-lock.json": {
