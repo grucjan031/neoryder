@@ -3,6 +3,24 @@ import type { Tuning } from '../core/tuning';
 
 export type PayloadParams = Tuning['prototypes']['payload'];
 
+/** Decyzja pojedynczego sabotażysty w czasie symulacji. null przekazuje wybór drużynie. */
+export function saboteurFocus(
+  role: { until: number },
+  now: number,
+  enemy: Vec3,
+  player: Vec3 | undefined,
+  payload: RailPayload,
+  t: Tuning['missions'],
+): 'gracz' | 'wagon' | null {
+  if (player && horizontal(enemy, player) < t.saboteurPlayerAggroM)
+    role.until = now + t.saboteurAggroS;
+  if (player && now < role.until) return 'gracz';
+  return !payload.finished &&
+    horizontal(enemy, payload.position) <= t.saboteurRangeM
+    ? 'wagon'
+    : null;
+}
+
 export interface PayloadStop {
   id: string;
   name: string;

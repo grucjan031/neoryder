@@ -1,6 +1,6 @@
 # Balans misji aktu I — fale i eskorta
 
-Data wygenerowania (UTC): 2026-11-24. Generator: `npm run balance:missions`.
+Data wygenerowania (UTC): 2026-11-25. Generator: `npm run balance:missions`.
 
 ## Założenia
 
@@ -105,11 +105,11 @@ Flagi ścieżek według niezaokrąglonego wyniku: powyżej 60% HP ciężkie, pow
 
 | Misja / cel | HP | m/s | Trasa (m) | Jazda bez postojów (s) | Postoje | Celujących | Celowany DPS | Zapas HP | Flaga <25% |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| m04-ladunek-klasy-k / payload | 400 | 3,5 | 228,0 | 65,1 | 6 | 0 | 0 | 100,0% | — |
+| m04-ladunek-klasy-k / payload | 400 | 3,5 | 228,0 | 65,1 | 6 | 6 | 20,6 | 59,4% | — |
 
-RoomScene przekazuje AI gracza i sojuszników. Neutralny wagon przyjmuje przypadkowe trafienia przez hurtbox. Ich częstość zależy od ustawienia drużyny i linii ognia. Zapas opisuje wyłącznie ogień celowany. RailPayload mierzy długość łamanej w 3D; wymaga gracza w promieniu 9 m, a wróg w promieniu 22 m blokuje ruch. W playteście warto zmierzyć HP na mecie oraz czas unieruchomienia przy każdym postoju.
+Celowany DPS to najwyższa wśród tur oczekiwana suma DPS sabotażystów. Model uśrednia tasowaną kolejkę spawnów i trzy ścieżki gracza. Na zauważenie zasadzki zakłada 1,5 s (jeden odcinek dojścia z modelu). Następnie na każdy cel przypada dojście i pojedynczy TTK. Ekspozycja kolejnego celu uwzględnia odstęp spawnów. Przy czystej linii ognia model zakłada trafienie dużego wagonu każdym atakiem. Osłony, prowokacja i przypadkowe trafienia zmieniają rzeczywisty wynik. HUD pokazuje bieżące i maksymalne HP wagonu.
 
-Próg dla m04-ladunek-klasy-k: utrata ponad 300,0 HP zostawi mniej niż 25% zapasu. Przy samym czasie jazdy odpowiada to średnio ponad 4,6 HP/s przypadkowych trafień. Postoje wydłużają ekspozycję.
+m04-ladunek-klasy-k: oczekiwana utrata 162,3 HP z 400, zapas 59,4%.
 
 ## Krzywa aktu I
 

@@ -11,8 +11,13 @@ import { CommandRegistry } from '../../src/ui/debugCommands';
 import type { InputSnapshot } from '../../src/core/input';
 import { levelDefinitions, levelWaves } from '../../src/world/levels';
 import { loadLevel } from '../../src/world/levelSchema';
-import { RailPayload, type PayloadSnapshot } from '../../src/world/railPayload';
+import {
+  RailPayload,
+  saboteurFocus,
+  type PayloadSnapshot,
+} from '../../src/world/railPayload';
 import { missionDefinitions } from '../../src/world/missions';
+import { RADIO_TRIGGER } from '../../src/world/missionSchema';
 import { MetaManager } from '../../src/progression/meta';
 import {
   saveMetaManager,
@@ -67,6 +72,96 @@ const idle: InputSnapshot = {
   released: new Set(),
   lookDelta: { x: 0, y: 0 },
 };
+it('sabotażysta przechodzi z wagonu na drużynę poza zasięgiem i po zniszczeniu, a bliskość prowokuje na cztery sekundy', () => {
+  const cart = new RailPayload(
+    level.payload!.route,
+    [],
+    tuning.prototypes.payload,
+    { reinforce() {} },
+  );
+  const enemy = { ...cart.position };
+  const role = { until: 0 };
+  const decide = (now: number, x: number) =>
+    saboteurFocus(role, now, enemy, { ...enemy, x }, cart, tuning.missions);
+  expect(decide(0, 100)).toBe('wagon');
+  expect(decide(1, enemy.x + 3)).toBe('gracz');
+  expect(decide(4.9, 100)).toBe('gracz');
+  expect(decide(5, 100)).toBe('wagon');
+  enemy.x += tuning.missions.saboteurRangeM + 1;
+  expect(decide(6, 100)).toBeNull();
+  enemy.x = cart.position.x;
+  cart.setHp(0);
+  expect(decide(7, 100)).toBeNull();
+});
+
+it('trafienie gracza prowokuje oznaczonych wrogów na rogatce', async () => {
+  const { scene, commands } = await setup();
+  commands.execute('god');
+  expect(commands.execute('payload ambush')).toContain('Rogatka');
+  steps(scene, 180);
+  const targets = () =>
+    JSON.parse(commands.execute('payload saboteurs')) as {
+      id: number;
+      target: string;
+    }[];
+  expect(targets()).toHaveLength(2);
+  expect(targets().every((s) => s.target === 'wagon')).toBe(true);
+  commands.execute('hit 1');
+  steps(scene, 2);
+  expect(targets().every((s) => s.target === 'gracz')).toBe(true);
+});
+
+it('niebroniony wagon ginie od rzeczywistych ataków przy rogatce', async () => {
+  const { scene, commands } = await setup();
+  commands.execute('god');
+  commands.execute('payload ambush');
+  commands.execute('tp 61 4 -90');
+  for (let i = 0; i < 60 * 120 && payload(scene).hp > 0; i++)
+    scene.step(SIM_DT, idle);
+  expect(payload(scene).hp, commands.execute('payload saboteurs')).toBe(0);
+  expect(scene.query('screen')).toBe('failed');
+});
+
+it('na rozjeździe wschodnim atak wręcz trafia hurtbox wagonu', async () => {
+  const { scene, commands, bus, wagonId } = await setup();
+  commands.execute('god');
+  for (const id of ['barricade', 'laser', 'switch-1'])
+    commands.execute(`objective done ${id}`);
+  for (let stop = 0; stop < 4; stop++) commands.execute('payload skip');
+  commands.execute('tp 108 8 -90');
+  const struck = new Set<number>();
+  bus.on('damage_dealt', (e) => {
+    if (e.target === wagonId && e.source !== null && e.tags.includes('#melee'))
+      struck.add(e.source);
+  });
+  for (let tick = 0; tick < 1800 && !struck.size; tick++)
+    scene.step(SIM_DT, idle);
+  const roles = JSON.parse(commands.execute('payload saboteurs')) as {
+    id: number;
+    target: string;
+  }[];
+  expect(
+    roles.some((role) => struck.has(role.id) && role.target === 'wagon'),
+    JSON.stringify(roles),
+  ).toBe(true);
+  expect(payload(scene).hp).toBeLessThan(400);
+});
+
+it('wyzwalacz trafienia wagonu ma taktyczną kwestię Szrona', () => {
+  expect(RADIO_TRIGGER.test('payload:attacked')).toBe(true);
+  expect(RADIO_TRIGGER.test('payload:attack')).toBe(false);
+  expect(mission.radio.filter((e) => e.trigger === 'payload:attacked')).toEqual(
+    [
+      {
+        trigger: 'payload:attacked',
+        priority: 'tactical',
+        lines: [
+          { speaker: 'szron', text: 'Biją w wagon! Zdejmij ich z toru.' },
+        ],
+      },
+    ],
+  );
+});
 const active: MissionScene[] = [];
 afterEach(() => active.splice(0).forEach((scene) => scene.dispose()));
 async function unlockedStore() {
@@ -81,6 +176,10 @@ async function setup(store?: SaveStore, resume = false) {
   const commands = new CommandRegistry();
   const navigate = vi.fn();
   const bus = new EventBus();
+  let wagonId: number | undefined;
+  bus.on('entity_spawned', ({ id, kind }) => {
+    if (kind === 'payloadWagon') wagonId = id;
+  });
   const scene = new MissionScene({
     store,
     loadModels: false,
@@ -101,7 +200,7 @@ async function setup(store?: SaveStore, resume = false) {
     },
     new ThreeScene(),
   );
-  return { scene, commands, navigate, store, bus };
+  return { scene, commands, navigate, store, bus, wagonId };
 }
 const payload = (scene: MissionScene) =>
   scene.query('payload') as PayloadSnapshot;
@@ -163,6 +262,15 @@ it('M04: pełny poziom, Szron, osiem celów, dialogi, nagrody i następna misja'
 
 it('odrzuca błędną trasę, postój, cel i checkpoint wagonu', () => {
   for (const change of [
+    (d: typeof data) => {
+      d.encounters[1]!.saboteurs = 5;
+    },
+    (d: typeof data) => {
+      d.encounters[1]!.saboteurs = -1;
+    },
+    (d: typeof data) => {
+      d.encounters[1]!.saboteurs = 1.5;
+    },
     (d: typeof data) => {
       d.payload.stops[0]!.unlockAfter = 'missing';
     },

@@ -102,6 +102,13 @@
   ],
   "radio": [
     {
+      "trigger": "payload:attacked",
+      "priority": "tactical",
+      "lines": [
+        { "speaker": "szron", "text": "Biją w wagon! Zdejmij ich z toru." }
+      ]
+    },
+    {
       "trigger": "runStart",
       "lines": [
         {

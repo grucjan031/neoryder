@@ -31,7 +31,7 @@ export type RadioPriority = (typeof RADIO_PRIORITIES)[number];
  * misji liniowej (id sekcji, spotkania i punktu kontrolnego poziomu).
  */
 export const RADIO_TRIGGER =
-  /^(runStart|objectivesDone|boss:phase:[23]|boss:defeated|enterNode:[1-9]\d*|enterSection:[^:\s]+|encounter:[^:\s]+:(started|done)|checkpoint:[^:\s]+|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/;
+  /^(runStart|objectivesDone|payload:attacked|boss:phase:[23]|boss:defeated|enterNode:[1-9]\d*|enterSection:[^:\s]+|encounter:[^:\s]+:(started|done)|checkpoint:[^:\s]+|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/;
 const hintEvents = [
   'player_jumped',
   'dash_used',

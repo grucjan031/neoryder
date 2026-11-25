@@ -57,6 +57,14 @@ export const tuning = {
     groundColor: '#151923',
     flySpeedMps: 55,
   },
+  missions: {
+    saboteurRangeM: 28,
+    saboteurPlayerAggroM: 5,
+    saboteurAggroS: 4,
+    /** Mnożnik obrażeń od wrogów dla wagonu eskorty: sabotażyści mają dawać presję, nie natychmiastową porażkę. */
+    payloadEnemyDamageScale: 0.7,
+    payloadHitFlashS: 0.18,
+  },
   level: {
     maxAlive: 12,
     staticCellSizeM: 24,
