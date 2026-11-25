@@ -90,12 +90,13 @@ describe('pogoda z danych', () => {
       dressing.dispose();
     }
   });
-  it('waliduje osiem profili, limity i kolory wyładowań', () => {
+  it('waliduje profile, limity i kolory wyładowań', () => {
     expect([...weatherDefinitions.keys()].sort()).toEqual([
       'ashfall',
       'clearNight',
       'drizzleWind',
       'indoorIndustrial',
+      'kuroganeWarehouse',
       'rain',
       'smog',
       'snow',

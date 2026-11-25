@@ -479,3 +479,35 @@ Twierdzenia o silniku z sekcji 1 zweryfikowane w kodzie (nawigacja tylko w conqu
 - **B — modele (Codex, Blender, równolegle z A):** F-06 + `wh_hall_column`, `wh_crane_rail`, `wh_wall_terminal`, `wh_catwalk` (moduł pomostu z barierkami, `4.0 × 1.2 × 1.5 m`?) — każdy z podglądem PNG z 3 stron.
 - **C — mapa run1 (Codex):** generator `tools/arenas/run/run1.mjs` → `src/data/rooms/run1.json`; mapAudit 0/0.
 - **D — ocena:** zrzuty, przegląd Gemini, ocena Opusa ≥ 7/10, poprawki, dopiero wtedy commit „gotowe”.
+
+## 6. Wdrożenie
+
+Generator `node tools/arenas/run/run1.mjs` zapisuje pokój `src/data/rooms/run1.json`. Ze śluzy przy `(-15, 0, 27)` można dotrzeć do doku 9 przez warsztat albo rozdzielnię. Obie drogi łączą się także nad posadzką. Wyjście leży przy `(10, 1.5, -24.5)`. Współrzędne wszystkich 14 spawnów odpowiadają tabeli w §3.10.
+
+| Pomieszczenie | Bloki | Dekoracje GLB | Światła | Decale | Co widać z trasy gracza |
+| --- | ---: | ---: | ---: | ---: | --- |
+| P1 · Śluza ochrony | 70 | 6 | 5 | 8 | Przed skanerem stoją zapora i projektor znaku Kurogane. Ze startu widać front dyżurki, nad jej dachem okno warsztatu. |
+| P2 · Rozdzielnia | 57 | 12 | 4 | 4 | Ekrany szaf są zwrócone do przejścia serwisowego i podestu transformatora. Dwa emitery wyznaczają pole na posadzce. |
+| P3 · Warsztat | 46 | 5 | 4 | 9 | Od wejścia ze śluzy droga biegnie obok wyspy odbioru i trzech stołów na posadzce. Czwarty stół stoi nad kanałem kalibracji. |
+| P4 · Hala składowania | 489 | 31 | 21 | 34 | Ażurowy most nad czterema wyspami regałów, trzy wózki, suwnica z ładunkiem i sześcioczęściowy znak doku 9. |
+| **Razem** | **662** | **54** | **34** | **55** | **5 hazardów** |
+
+Liczby obejmują kolidery i elementy konstrukcyjne. Ściany wspólne policzono raz, w pomieszczeniu, którego część generatora je stawia. Modele z własnym blokiem, m.in. skaner, wózki i regały, są ujęte w kolumnie bloków.
+
+Obrys 52 × 54 m wynika z projektu wnętrza. Osobny profil dużych aren walki używany przez `tools/arenas/build.mjs --run` wymaga co najmniej 70 m długości, 3500 m² powierzchni chodzenia i 8 m przesłonięcia prostej start–wyjście. W magazynie wartości te wynoszą 54 m, około 2472 m² i 6,5 m.
+
+### Geometria i odstępstwa od szkicu
+
+- **P1.** Trzymetrowa rampa biegnie wzdłuż wschodniej ściany do dachu dyżurki na wysokości 2,591 m. Pochyła poręcz i pas BHP pokazują przebieg wejścia. Cienki spocznik nad przejściem do P2 zostawia wolną posadzkę. Chłodny beton stropu na 5,2 m przecinają trzy stalowe belki. W śluzie światło dają oprawy i terminal przy zachodniej ścianie.
+- **P2.** Transformator na podeście 1,6 m kończy się na 6,6 m pod siedmiometrowym stropem. Dwie belki na wieszakach niosą lampy na 4,83 m. Ich końce omijają transformator i skrajnię galerii. Poręcz prowadzi wzdłuż pochyłego biegu. Pole elektryczne ma wpuszczoną w posadzkę ramę BHP, dwa emitery i miejscowe fioletowe światło. Na poprzednim kadrze `09-high-east` czerwono wyglądające kreski pokrywały się z pozycjami dwóch bursztynowych naklejek na brzegach pola. Obie zastąpiła rama. Laser w P3 używa wspólnego bursztynowego efektu.
+- **P3.** Strop ma 5,4 m. Rampa po północnej stronie osiąga 3 m przed spocznikiem. Skrócenie biegu zapewnia prześwit przy spawnie pod jego krawędzią. Łącznik pokonuje pozostałe 0,6 m już po stronie wysokiej hali, dzięki czemu w ościeżu zostaje miejsce nad głową. Górne stanowisko oświetla ekran przy galerii.
+- **P4.** Hala ma 12,5 m wysokości. Dwanaście słupów podpiera dziesięć sześciometrowych belek podsuwnicowych. Główki szyn leżą na 8,84 m, koła suwnicy stykają się z nimi przy początku modelu na 8,50 m. Pod hakiem pracuje trawersa z czterema linami narożnymi. Spód kontenera znajduje się na 5,5 m przy `Z = −12`. Płytsze kratownice pod dachem zapewniają prześwit nad wciągnikiem.
+- **Most.** Pojedynczy moduł `wh_catwalk` ma szerokość 1,5 m, a powiększenie go wraz z dolną kratownicą zasłaniało ładunek. Nowy pokład ma szerokość 3 m, prześwity między stalowymi prętami, ciągłą kolizję i poręcze na 1,1 m. Z antresol na 3,6 m dwa sześciometrowe wjazdy prowadzą na środkowe przęsło na 5,8 m. Spód wjazdów jest powyżej 3,4 m. Pod mostem widać cyfrę 9 z trzema poziomymi segmentami na wysokościach 3,4, 4,1 i 4,8 m. Północne zejścia obu antresol mają po 9 m biegu, barierki zgodne ze spadkiem i 3,5 m szerokości. Rury przy zachodnim zejściu wskazują ścianę hali.
+- **Składowanie.** Każda wyspa ma sześć załadowanych modułów ustawionych parami plecami, łącznie 24 regały o wysokości 6 m. Południowe wyspy kończą się przy `Z = 10`, na krawędzi antresoli. Wózki stoją widłami do ładunków i alejek, a linie ruchu, koperty odkładcze i ślady opon wskazują drogę do wysyłki.
+- **Oznakowanie i osłony.** Cztery neony na czołach regałów wskazują alejki. Wózek i wyspa skrzyń osłaniają przejście. Środek wyspy przesunięto na `X = 5,2`, żeby zostawić miejsce obok wózka i zachować widok na dok. Na mapie są dwa oznaczenia K09 i cztery koperty paletowe. W hali mniejsze strzałki mają zgaszoną, ciepłą barwę. Krycie strzałek podłogowych wynosi 52%. W P3 przewód i króciec łączą odpylacz ze ścianą przy wyspie odbioru.
+- **Światło.** 27 źródeł ma oprawę `wh_ceiling_lamp`. Pozostałe przypadają na cztery oprawy na frontach regałów, dwa terminale i emiter pola. Dodatkowe oprawy są nad centralną aleją, pod mostem, na wspornikach doku i na ładunku. Profil `kuroganeWarehouse` dziedziczy parametry wnętrza z projektu `indoorIndustrial` przez ich kopię w danych. Silniejsze światło półkuliste (3,6) i kierunkowe (1,8) poprawia widoczność stali także poza zasięgiem lamp. Budżet renderera to odpowiednio 2, 4 i 8 aktywnych świateł punktowych na ustawieniach niskich, średnich i wysokich.
+- **Ujęcia audytowe.** Wszystkie sześć kratownic dachowych ma `ceiling: true`, więc można je ukryć razem z dachem w widoku z góry. W całym pokoju pozostały dwa krótkie stożki, nad dachem dyżurki (2,16 m) i galerią P2 (2,44 m). Ich krawędź i pasma wynikają ze wspólnego efektu. Proponowana poprawka renderera to wygaszenie przy brzegu i dithering gradientu. Scena audytu przekazuje do puli lamp zerowy czas klatki, przez co nowo przydzielone źródła zachowują zerowe natężenie. Przy kolejnej zmianie audytu warto ustalić jasność puli dla danej kamery przed odczytem obrazu.
+
+### Sprawdzenie
+
+W menu „Testy map” wybierz „Pokoje: walka” → „Magazyn Kurogane Arms”. Fale uruchamia `?scene=room-test&room=run1`. Test `run1Navigation.test.ts` sprawdza dojście od startu do 14 spawnów, progu wyjścia i wszystkich podestów oraz przejście z P2 do P3 przez przęsło na 5,8 m bez zejścia poniżej 3 m. Drugi test sprawdza linie widzenia przez bryły hali z pozycji `02-north` do ładunku, suwnicy i każdego z sześciu segmentów cyfry. Na nowych kadrach do oceny pozostają jasność oświetlonych frontów regałów względem zakresu ADR 0006 (`#2a3344–#56627a`), czytelność oznakowania i ogólny próg 7/10.
