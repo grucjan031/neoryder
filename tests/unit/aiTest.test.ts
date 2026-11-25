@@ -1,6 +1,10 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { PerspectiveCamera, Scene as ThreeScene } from 'three';
-import { AiTest, createStatusTest } from '../../src/scenes/aiTest';
+import {
+  AiTest,
+  createStatusTest,
+  createHelixTest,
+} from '../../src/scenes/aiTest';
 import { scenes } from '../../src/scenes';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 import { EventBus } from '../../src/core/events';
@@ -192,4 +196,32 @@ it('status-test applies statuses with the debug command; stunned enemies stop at
   for (let i = 0; i < 1 / SIM_DT; i++) scene.step(SIM_DT, input);
   // Reset zdejmuje podpalenie — żadnych tików po nowym starcie.
   expect(discharged.length).toBe(before);
+});
+
+it('mgła odświeża jeden status gracza, zadaje DoT i przywraca bazową prędkość po wyjściu', async () => {
+  const { scene, commands, bus } = await setup(createHelixTest(false));
+  commands.execute('helix freeze');
+  const targets = new Set<number>();
+  bus.on('status_applied', (e) => {
+    if (e.status === 'slowed') targets.add(e.target);
+  });
+  const stats = () =>
+    JSON.parse(commands.execute('helix stats')) as {
+      speed: number;
+      base: number;
+      slowed: boolean;
+      zones: number;
+    };
+  commands.execute('helix fog');
+  commands.execute('helix fog');
+  for (let i = 0; i < 66; i++) scene.step(SIM_DT, input);
+  expect(stats().zones).toBe(2);
+  expect(targets.size).toBe(1);
+  expect(stats().speed).toBeCloseTo(stats().base * 0.65);
+  expect(scene.query('playerHp')).toBe(96);
+  const walk = { ...input, held: new Set(['moveRight' as const]) };
+  for (let i = 0; i < 130; i++) scene.step(SIM_DT, walk);
+  expect(stats().zones).toBe(2);
+  expect(stats().slowed).toBe(false);
+  expect(stats().speed).toBeCloseTo(stats().base);
 });

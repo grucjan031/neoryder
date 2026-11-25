@@ -1,0 +1,67 @@
+{
+  "id": "helixMedic",
+  "threatCost": 1.5,
+  "kind": "medic",
+  "model": "enemy_helix_medic",
+  "grabbable": false,
+  "maxHealth": 32,
+  "moveSpeed": 3.4,
+  "turnRateDegS": 360,
+  "attackRange": 16,
+  "telegraphS": 1.15,
+  "swingActiveS": 0.32,
+  "recoveryS": 0.6,
+  "cooldownS": 1.6,
+  "damage": 4,
+  "knockbackResist": 0,
+  "stunOnHeavyS": 0.6,
+  "repathJitter": 0.15,
+  "body": {
+    "locomotionScale": 1,
+    "height": 1.8,
+    "halfHeight": 0.35,
+    "radius": 0.3,
+    "centerY": 1.05,
+    "headY": 1.65,
+    "headRadius": 0.22,
+    "headMultiplier": 1.5,
+    "controllerOffset": 0.02,
+    "knockbackDamping": 8,
+    "attackHalfWidth": 0.55,
+    "attackHalfHeight": 0.65
+  },
+  "animation": {
+    "strideM": 1.8,
+    "clipStrideM": {
+      "Walk_Loop": 1.41,
+      "Jog_Fwd_Loop": 4.61
+    },
+    "walkAngle": 0.5,
+    "telegraphAngle": -2.4,
+    "swingAngle": 1.2,
+    "elbowAngle": -1,
+    "stunAngle": 0.3,
+    "pulseHz": 6,
+    "pulseScale": 0.4,
+    "aimAngle": -1.5707963267948966,
+    "recoilM": 0.08,
+    "recoilS": 0.1
+  },
+  "preferredRange": 13,
+  "rangeTolerance": 3,
+  "projectileSpeed": 12,
+  "muzzle": {
+    "x": -0.22,
+    "y": 1.55,
+    "z": 0.32
+  },
+  "missionOnly": true,
+  "medic": {
+    "throwCooldownS": 5,
+    "fogRadiusM": 2.6,
+    "fogDurationS": 4.5,
+    "lingerS": 0.35,
+    "panicRangeM": 7,
+    "arcHeightM": 2.3
+  }
+}

@@ -216,6 +216,23 @@ export const enemySchema = z
     /** Wróg tylko do misji fabularnych — nie musi występować w falach areny. */
     missionOnly: z.boolean().optional(),
     stationary: z.boolean().optional(),
+    damageTakenScale: z
+      .object({
+        ranged: positive.optional(),
+        melee: positive.optional(),
+        power: positive.optional(),
+      })
+      .optional(),
+    medic: z
+      .object({
+        throwCooldownS: positive,
+        fogRadiusM: positive,
+        fogDurationS: positive,
+        lingerS: positive,
+        panicRangeM: positive,
+        arcHeightM: positive,
+      })
+      .optional(),
     hack: z
       .object({
         hackCooldownS: positive,
@@ -330,6 +347,23 @@ export const enemySchema = z
         path: ['stationary'],
         message:
           'Wieżyczka wymaga stationary, grabbable false i knockbackResist 1.',
+      });
+    if (
+      definition.kind === 'medic' &&
+      (!definition.medic ||
+        !definition.body ||
+        !definition.muzzle ||
+        !definition.projectileSpeed ||
+        !definition.preferredRange ||
+        !definition.rangeTolerance ||
+        definition.preferredRange <= definition.rangeTolerance ||
+        definition.medic.panicRangeM >
+          definition.preferredRange - definition.rangeTolerance)
+    )
+      ctx.addIssue({
+        code: 'custom',
+        path: ['medic'],
+        message: 'Sanitariusz wymaga parametrów rzutu.',
       });
     if (definition.kind === 'hacker' && !definition.hack)
       ctx.addIssue({

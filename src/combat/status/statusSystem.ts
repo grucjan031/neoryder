@@ -105,7 +105,17 @@ export class StatusSystem implements StatusQuery {
       statuses = new Map();
       this.active.set(target, statuses);
     }
-    const instance = statuses.get(def.id) ?? {
+    const active = statuses.get(def.id);
+    if (
+      active &&
+      def.moveSpeedScale !== undefined &&
+      active.stacks === def.maxStacks &&
+      active.source === source
+    ) {
+      active.remainingS = Math.max(active.remainingS, app.durationS);
+      return true;
+    }
+    const instance = active ?? {
       id: def.id,
       stacks: 0,
       remainingS: 0,
@@ -194,16 +204,28 @@ export class StatusSystem implements StatusQuery {
     def: StatusDefinition,
     stacks: number,
   ): void {
-    if (def.damageTakenPerStack === undefined) return;
+    if (
+      def.damageTakenPerStack === undefined &&
+      def.moveSpeedScale === undefined
+    )
+      return;
     const stats = this.damage.stats(target);
     if (!stats) return;
     stats.removeBySource(modifierSource(def.id));
-    stats.add({
-      stat: 'damageTaken',
-      type: 'percent',
-      value: def.damageTakenPerStack * stacks,
-      source: modifierSource(def.id),
-    });
+    if (def.moveSpeedScale !== undefined)
+      stats.add({
+        stat: 'moveSpeed',
+        type: 'mult',
+        value: def.moveSpeedScale,
+        source: modifierSource(def.id),
+      });
+    if (def.damageTakenPerStack !== undefined)
+      stats.add({
+        stat: 'damageTaken',
+        type: 'percent',
+        value: def.damageTakenPerStack * stacks,
+        source: modifierSource(def.id),
+      });
   }
 
   private trigger(

@@ -351,6 +351,10 @@ ENEMY_CLIPS = {
 }
 
 
+ENEMY_CLIPS["helix_guard"] = ENEMY_CLIPS["gunner"]
+ENEMY_CLIPS["helix_medic"] = ("Idle_Loop", "Sword_Idle", "Sword_Attack")
+
+
 def _enemy_bone_child(obj, rig, bone, world):
     """Sztywne wyposażenie; kość niesie je w każdym klipie."""
     obj.parent = rig
@@ -502,6 +506,10 @@ def build_enemy_cc0(archetype):
                   bm_prism(length, r0 * .7, r0, sides=4, top_at_origin=False, offset=(0, 0, length / 2)))
             piece(f"{name}_{i}", bone, bm, RED, tuple(pos), (rx, ry, 0))
             pos = pos + _enemy_rot(rx, ry).to_3x3() @ Vector((0, 0, length * .92))
+
+    if archetype.startswith("helix_"):
+        _helix_plates(archetype, plate, piece)
+        return _finish_enemy(archetype, rig, root, scale, keep, before, after)
 
     # Sylwetki ról (czytelne z 20–30 m, w konturze tuszu):
     # Szturmowiec — legionista: wysoka płetwa na hełmie, okrągłe naramienniki, fartuchy ud, długa pałka.
@@ -693,8 +701,84 @@ def build_enemy_cc0(archetype):
             _enemy_local("shield_chevron_" + str(sign), bm_box(.28, .02, .055), GLOW, shield,
                          (sign * .1, -.072, -.05), (0, sign * 32, 0))
             _enemy_local("shield_rail_" + str(sign), bm_box(.035, .02, .8), GLOW, shield, (sign * .345, -.072, -.05))
+    return _finish_enemy(archetype, rig, root, scale, keep, before, after)
+
+
+PALETTE.setdefault("mat_helix_shell", ((0.79, 0.78, 0.75, 1), None))
+
+
+def _helix_plates(archetype, plate, piece):
+    """Helixa: gładkie, zaokrąglone płyty sterylnej bieli (nie kule) na ciemnym kombinezonie."""
+    shell = "mat_helix_shell"
+    joint = DARK
+    guard = archetype == "helix_guard"
+
+    def oval(name, bone, radii, offset):
+        obj = piece(name, bone, bm_ico(1, subdiv=2, scale=radii), shell, offset)
+        for polygon in obj.data.polygons:
+            polygon.use_smooth = True
+        return obj
+
+    def slab(name, bone, size, offset, taper=(1.0, 1.0), bevel=.035, mat=shell):
+        obj = plate(name, bone, size, offset, mat=mat, bevel=bevel, taper=taper)
+        return obj
+
+    # Owalny, zamknięty hełm bez rysów — mniejszy niż głowa Kurogane z hełmem, by nie robił balonu.
+    oval("sealed_mask", "DEF-head", (.138, .165, .17), (0, .022, .118))
+    plate("visor", "DEF-head", (.17, .02, .016), (0, -.15, .125), mat=GLOW, bevel=.005)
+    plate("mask_seam", "DEF-head", (.012, .02, .1), (0, -.143, .04), mat=joint, bevel=.003)
+    chest = "DEF-spine.003"
+    belly = "DEF-spine.001"
+    if guard:
+        # Szeroki napierśnik zwężający się do pasa i płyta brzucha: sylwetka „trójkąta” z daleka.
+        slab("chest_plate", chest, (.40, .14, .31), (0, -.085, -.03), taper=(1.06, 1.0), bevel=.045)
+        slab("chest_rim", chest, (.28, .04, .045), (0, -.15, .11), bevel=.015, mat=joint)
+        slab("belly_plate", belly, (.27, .14, .15), (0, -.07, .02), taper=(1.15, 1.0), bevel=.035)
+        slab("back_plate", chest, (.36, .08, .34), (0, .1, .05), bevel=.04)
+    else:
+        slab("chest_plate", chest, (.31, .12, .25), (0, -.08, -.02), bevel=.035)
+        slab("belly_plate", belly, (.26, .08, .14), (0, -.125, .03), bevel=.025)
+    for side, sign in (("R", -1), ("L", 1)):
+        upper = "DEF-upper_arm." + side
+        fore = "DEF-forearm." + side
+        thigh = "DEF-thigh." + side
+        shin = "DEF-shin." + side
+        if guard:
+            # Spłaszczone kopuły naramienników + płyta ramienia: duże barki bez efektu kul.
+            oval("pauldron_" + side, upper, (.15, .14, .085), (sign * .06, 0, .065))
+            slab("arm_plate_" + side, upper, (.17, .15, .14), (sign * .17, 0, -.005), bevel=.035)
+            if side == "L":
+                plate("id_stripe", upper, (.09, .016, .026), (.07, -.13, .06), mat=GLOW, bevel=.004)
+            slab("bracer_" + side, fore, (.18, .125, .12), (sign * .14, 0, 0), bevel=.03)
+            slab("thigh_plate_" + side, thigh, (.14, .06, .22), (0, -.07, -.16), bevel=.03)
+            slab("greave_" + side, shin, (.11, .07, .30), (0, -.05, -.17), taper=(1.1, 1.0), bevel=.03)
+            slab("knee_" + side, shin, (.10, .07, .08), (0, -.07, .0), bevel=.025)
+        else:
+            piece("filter_" + side, "DEF-head", bm_prism(.05, .045, .045, sides=12, axis="X"),
+                  joint, (sign * .125, -.07, .04))
+            slab("bracer_" + side, fore, (.14, .11, .105), (sign * .13, 0, 0), bevel=.02, mat=joint)
+            # Poły płaszcza: przód, tył i bok przy każdym udzie, rozszerzone ku dołowi.
+            for label, size, offset in [
+                ("front", (.17, .022, .48), (sign * -.005, -.105, -.21)),
+                ("back", (.18, .022, .50), (sign * -.005, .115, -.22)),
+                ("side", (.022, .22, .48), (sign * .095, .005, -.21)),
+            ]:
+                plate("coat_" + label + side, thigh, size, offset, mat=shell, bevel=.008, taper=(.88, .88))
+    if not guard:
+        # Górna część płaszcza na tułowiu, żeby poły nie wisiały jak deski: kołnierz i plecy.
+        slab("coat_back", chest, (.36, .05, .44), (0, .1, -.12), bevel=.02)
+        slab("coat_collar", chest, (.26, .2, .05), (0, .0, .17), bevel=.02)
+        plate("case_back", chest, (.24, .05, .30), (0, .155, -.03), mat=joint, bevel=.01)
+        for i in range(3):
+            x = (i - 1) * .065
+            piece("vial_" + str(i), chest, bm_prism(.18, .017, .017, sides=10), shell, (x, .205, .05))
+            plate("plunger_" + str(i), chest, (.04, .036, .024), (x, .205, .075), mat=GLOW)
+        plate("case_glass", chest, (.25, .10, .31), (0, .2, -.03), mat=shell)
+
+
+def _finish_enemy(archetype, rig, root, scale, keep, before, after):
     # Calibrate held equipment in its actual aiming / sword-ready pose, not the T-pose.
-    calibration = "Pistol_Aim_Neutral" if archetype in ("gunner", "sniper") else "Sword_Idle"
+    calibration = "Pistol_Aim_Neutral" if archetype in ("gunner", "sniper", "helix_guard") else "Sword_Idle"
     rig.animation_data_create()
     rig.animation_data.action = bpy.data.actions[calibration]
     rig.animation_data.action_slot = bpy.data.actions[calibration].slots[0]
@@ -703,10 +787,10 @@ def build_enemy_cc0(archetype):
     grip = rig.matrix_world @ rig.pose.bones["DEF-hand.R"].matrix @ Vector((0, .075, 0))
     hand = empty("hand_R")
     # Rifle aims forward; sword / baton rises above the hand in the ready pose.
-    hand_rotation = Matrix.Identity(4) if archetype in ("gunner", "sniper") else Matrix.Rotation(-math.pi/2, 4, "X")
+    hand_rotation = Matrix.Identity(4) if archetype in ("gunner", "sniper", "helix_guard") else Matrix.Rotation(-math.pi/2, 4, "X")
     hand_world = Matrix.Translation(grip) @ hand_rotation @ Matrix.Scale(scale, 4)
     _enemy_bone_child(hand, rig, "DEF-hand.R", hand_world)
-    if archetype in ("gunner", "sniper"):
+    if archetype in ("gunner", "sniper", "helix_guard"):
         # Calibrate a pistol clip's grip: gun bore follows the hand's local aim axis.
         weapon = empty("rifle", parent=hand)
         weapon.matrix_parent_inverse = Matrix.Identity(4)
@@ -722,6 +806,9 @@ def build_enemy_cc0(archetype):
             lens = mesh_object("eye", bm_prism(.015, .031, .031, sides=8, axis="Y", top_at_origin=False), GLOW)
             lens.parent = weapon
             lens.location = (0, -.24, .11)
+    elif archetype == "helix_medic":
+        _enemy_local("syringe", bm_prism(.20, .02, .02, sides=10), "mat_helix_shell", hand)
+        _enemy_local("syringe_plunger", bm_prism(.05, .026, .026, sides=10), GLOW, hand, (0, 0, .04))
     else:
         _enemy_baton(hand, archetype == "executor")
     for action in list(bpy.data.actions):
@@ -729,7 +816,7 @@ def build_enemy_cc0(archetype):
             bpy.data.actions.remove(action)
     # Only retained actions exist, so the standard ACTIONS export cannot leak other clips.
     rig.animation_data_create()
-    idle = "Pistol_Idle_Loop" if archetype in ("gunner", "sniper") else "Idle_Loop"
+    idle = "Pistol_Idle_Loop" if archetype in ("gunner", "sniper", "helix_guard") else "Idle_Loop"
     rig.animation_data.action = bpy.data.actions[idle]
     rig.animation_data.action_slot = bpy.data.actions[idle].slots[0]
     rig.data.pose_position = "POSE"
@@ -5595,6 +5682,8 @@ def main() -> None:
     builders = {
         "enemy_trooper": build_enemy_trooper,
         "enemy_gunner": build_enemy_gunner,
+        "enemy_helix_guard": lambda: build_enemy_cc0("helix_guard"),
+        "enemy_helix_medic": lambda: build_enemy_cc0("helix_medic"),
         "enemy_sniper": build_enemy_sniper,
         "enemy_shielder": build_enemy_shielder,
         "enemy_executor": build_enemy_executor,

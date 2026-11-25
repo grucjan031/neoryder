@@ -229,7 +229,10 @@ export function simulate(
     for (const modifier of options.targetModifiers ?? [])
       targetStats.add(modifier);
     const health = new Health(() => targetStats.get('maxHealth'));
-    damage.register(id, health, { stats: targetStats });
+    damage.register(id, health, {
+      stats: targetStats,
+      damageTakenScale: enemy.damageTakenScale,
+    });
     return { id, health, boss: null };
   };
   let { id: target, health, boss } = createTarget();

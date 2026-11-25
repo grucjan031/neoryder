@@ -116,7 +116,11 @@ export interface EnemyDependencies {
   /** F3-17: punkty spawnu pokoju (y = 0) dla wezwań bossa. */
   spawnPoints?: readonly Vec3[];
   /** F2-02: status 'stunned' ogłusza wroga na czas trwania statusu. */
-  statuses?: StatusQuery;
+  statuses?: StatusQuery &
+    Partial<
+      Pick<import('../combat/status/statusSystem').StatusSystem, 'apply'>
+    >;
+  medicFog?: import('./medic').MedicFog;
   /** F4-05: modyfikatory Poziomu zagrożenia nakładane na Stats przy konstrukcji wroga (przed utworzeniem Health). */
   spawnModifiers?: readonly StatModifier[];
 }

@@ -832,3 +832,17 @@ Poza zasięgiem wagonu i po zakończeniu eskorty wraca zwykły wybór celu druż
 ## Wykrywanie
 
 Spotkanie z polem `stealth` tworzy strażników z osobną warstwą czujności. `EnemyManager` aktualizuje ją przed krokiem archetypu. Patrol używa istniejącego celu marszu, a cel walki staje się dostępny przy namierzeniu. W zwykłych starciach manager przekazuje archetypom dotychczasowe zależności. Model, strojenie i instrukcja sceny znajdują się w [opisie skradania](stealth.md).
+
+## Helixa Dynamics
+
+Oba archetypy mają `missionOnly: true`. Scena `?scene=helix-test&debug=1` ustawia dwóch ochroniarzy i sanitariusza w hali z osłonami.
+
+**Ochroniarz** używa AI strzelca. Ma 72 HP, prędkość 2,72 m/s, obrót 245°/s, odporność na odrzut 55% i telegraf serii 0,85 s przed skalowaniem trudnością. Pociski zadają ×0,90, ostrze ×1,60. Opcjonalna mapa `damageTakenScale` skaluje trafienie we wspólnym `DamageSystem`, po obronie i przed zmianą HP. Kolejność dopasowania to `#melee`, `#power`, `#gun`. Brak pola lub zgodnego tagu daje mnożnik 1. Symulator korzysta z tego samego mechanizmu.
+
+**Sanitariusz** ma 32 HP i utrzymuje 10–16 m. Poniżej 7 m porzuca osłonę i wycofuje się. Pisk celowania i zamach trwają 1,15 s. AI przewiduje poziomy ruch celu, szuka podłoża pod miejscem upadku i sprawdza odcinki paraboli w świecie Rapiera. Po rzucie szuka zasłoniętej pozycji. Odnowienie trwa 5 s.
+
+Mgła ma promień 2,6 m i trwa 4,5 s. Przy stopach gracza odświeża pojedynczy status `slowed`. Jego modyfikator `Stats.moveSpeed` wynosi ×0,65. Tik zadaje 1 obrażenie co 0,25 s. Po wyjściu lub rozproszeniu chmury status wygasa po 0,35 s i usuwa wyłącznie własny modyfikator. Wrogowie mogą przechodzić przez chmurę. Limit sceny wynosi cztery strefy. Po lądowaniu piątej strzykawki znika najstarsza strefa. `EnemyManager.medicFog` przechowuje stan także po śmierci rzucającego. `MedicFogView` interpoluje strzykawki i rysuje niskie obłoki jedną instancjonowaną siatką, a pod nimi chorobliwie zieloną plamę na ziemi. Gracz stojący w chmurze widzi ją pod nogami, a czerwona krawędź pokazuje zasięg.
+
+Płyty pancerza Helixy mają materiał `mat_helix_shell`. Ten rodzaj stylu ma kolor `tuning.render.helixShell` (sterylna, brudna biel) i słabszą czerwoną poświatę krawędzi wroga. Kombinezon pod płytami to zwykły `mat_enemy_dark`.
+
+Do zrzutów włącz `god`. Komenda `helix freeze` zatrzymuje lub wznawia AI. Na zatrzymanej scenie `helix spawn guard` ustawia ochroniarza 4 m przed kamerą. `helix spawn medic` dodaje sanitariusza w odległości 13 m, a `helix freeze throw` zatrzymuje AI podczas zamachu. `helix fog` wymusza lądowanie pod graczem. `helix stats` wypisuje HP i stan każdego wroga, liczbę stref, status gracza i jego prędkość bazową oraz wynikową.

@@ -1,0 +1,71 @@
+{
+  "id": "helixGuard",
+  "threatCost": 1.5,
+  "kind": "gunner",
+  "model": "enemy_helix_guard",
+  "grabbable": true,
+  "maxHealth": 72,
+  "moveSpeed": 2.72,
+  "turnRateDegS": 245,
+  "attackRange": 1.8,
+  "telegraphS": 0.4,
+  "swingActiveS": 0.12,
+  "recoveryS": 0.6,
+  "cooldownS": 1.6,
+  "damage": 15,
+  "knockbackResist": 0.55,
+  "stunOnHeavyS": 0.6,
+  "repathJitter": 0.15,
+  "body": {
+    "locomotionScale": 1,
+    "height": 1.8,
+    "halfHeight": 0.35,
+    "radius": 0.3,
+    "centerY": 1.05,
+    "headY": 1.65,
+    "headRadius": 0.22,
+    "headMultiplier": 1.5,
+    "controllerOffset": 0.02,
+    "knockbackDamping": 8,
+    "attackHalfWidth": 0.55,
+    "attackHalfHeight": 0.65
+  },
+  "animation": {
+    "strideM": 1.8,
+    "clipStrideM": {
+      "Walk_Loop": 1.41,
+      "Jog_Fwd_Loop": 4.61
+    },
+    "walkAngle": 0.5,
+    "telegraphAngle": -2.4,
+    "swingAngle": 1.2,
+    "elbowAngle": -1,
+    "stunAngle": 0.3,
+    "pulseHz": 6,
+    "pulseScale": 0.4,
+    "aimAngle": -1.5707963267948966,
+    "recoilM": 0.08,
+    "recoilS": 0.1
+  },
+  "preferredRange": 9,
+  "rangeTolerance": 2,
+  "aimTelegraphS": 0.85,
+  "burstCount": 3,
+  "burstIntervalS": 0.22,
+  "projectileSpeed": 11,
+  "projectileDamage": 12,
+  "projectileLifetimeS": 4,
+  "spreadDeg": 2,
+  "losRequired": true,
+  "strafeScale": 0.2,
+  "muzzle": {
+    "x": -0.25,
+    "y": 1.44,
+    "z": 1.27
+  },
+  "missionOnly": true,
+  "damageTakenScale": {
+    "ranged": 0.9,
+    "melee": 1.6
+  }
+}

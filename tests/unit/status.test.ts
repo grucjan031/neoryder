@@ -241,6 +241,7 @@ describe('StatusSystem — efekty', () => {
       'burning',
       'jammed',
       'overload',
+      'slowed',
       'stunned',
     ]);
     expect(() => loadStatusDefinitions([stunnedRaw, stunnedRaw])).toThrow(

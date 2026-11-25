@@ -57,6 +57,7 @@ export const themeSchema = z.object({
       enemy: color,
       enemyGlow: color,
       interactive: color,
+      helixShell: color,
       player: color,
       power: color,
       outline: unit,

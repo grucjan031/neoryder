@@ -477,6 +477,8 @@ export const tuning = {
     enemy: '#e0262b',
     enemyGlow: '#ff5050',
     interactive: '#080808',
+    /** Płyty pancerza Helixy Dynamics (sterylna, brudna biel). */
+    helixShell: '#e2dfd8',
     player: '#00e5ff',
     power: '#ff2bd6',
     outline: 1,
@@ -984,6 +986,7 @@ export const tuning = {
     },
   },
   enemies: {
+    medic: { maxZones: 4, arcSegments: 12, fogHeightM: 0.65 },
     perception: {
       visionRangeM: 18,
       visionAngleDeg: 90,

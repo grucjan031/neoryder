@@ -50,6 +50,7 @@
     "enemy": "#e0262b",
     "enemyGlow": "#ff5050",
     "interactive": "#d9dde3",
+    "helixShell": "#e2dfd8",
     "player": "#00e5ff",
     "power": "#ff2bd6",
     "outline": 1,
