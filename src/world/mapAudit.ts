@@ -32,8 +32,19 @@ const WALL_FIXTURES = new Set([
   'city_sign_box',
   'city_neon_sign_frame',
   'wh_wall_terminal',
+  'mall_storefront',
+  'mall_shutter_grille',
+  'mall_shoe_wall',
+  'mall_security_fixture',
+  'mall_floor_sign',
+  'mall_entrance_doors',
 ]);
-const CEILING_FIXTURES = new Set(['wh_ceiling_lamp']);
+const CEILING_FIXTURES = new Set([
+  'wh_ceiling_lamp',
+  'mall_ceiling_panel',
+  'mall_skylight',
+  'mall_hanging_banner',
+]);
 const EDGE = 0.35;
 const LARGE_HEIGHT = 0.6;
 const LARGE_BASE = 0.5;

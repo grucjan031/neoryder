@@ -9,7 +9,11 @@ import {
   type DifficultyId,
 } from './difficulty';
 
-const point = z.object({ x: z.number().finite(), z: z.number().finite() });
+const point = z.object({
+  x: z.number().finite(),
+  y: z.number().finite().optional(),
+  z: z.number().finite(),
+});
 
 export const wavesSchema = z.object({
   id: z.string().min(1),
@@ -257,6 +261,6 @@ export class WaveDirector {
       minSpawnDistance,
       this.rng,
     );
-    return point ? { x: point.x, y: 0, z: point.z } : null;
+    return point ? { x: point.x, y: point.y ?? 0, z: point.z } : null;
   }
 }

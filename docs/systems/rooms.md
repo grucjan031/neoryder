@@ -219,6 +219,19 @@ Opcjonalne `blocks[].rotation` (radiany XYZ) obraca render i statyczny collider;
 `blocks[].instance` pozwala grupować powtarzalne bryły portu.
 Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
 
+## Spawn na wyższej kondygnacji (`y`)
+
+`spawnPoints[]` pokoju i punkty fal mają opcjonalne `y` (wysokość stóp). Bez `y` obowiązuje dotychczasowa reguła: punkt na podłodze `playerSpawn.y`, w obrysie podłogi i poza przeszkodami, osiągalny flood-fillem 1 m. Z `y` różnym od `playerSpawn.y` walidator wymaga:
+
+- bloku `walkable: true` (bez obrotu wokół X i Z), którego górna powierzchnia leży na `y` (tolerancja 0,000001 m) i obejmuje `(x, z)`;
+- braku innego bloku w korpusie nad punktem, czyli w przedziale `(y, y + 1,8 m]`.
+
+Punkt w powietrzu, poza podestem albo w bloku jest odrzucany. Osiągalność takiego punktu po rampach, schodach i ruchomych schodach nie wchodzi w flood-fill, tylko w `ArenaNavigation` (test w stylu `run1Navigation.test.ts`). Selektor spawnów fal (`selectWavePoint`, `selectWaveSpawn`) liczy zasłonięcie i długość trasy po siatce od faktycznej wysokości punktu, a wróg pojawia się na tej wysokości. Testy: `tests/unit/spawnElevation.test.ts`.
+
+## Materiały galerii
+
+`glass_clear` (`mat_glass_clear`) to przezroczyste szkło (`opacity` w `arenaMaterials.json`, `depthWrite: false`, poświata Fresnela) dostępne jako `block.material` i w modelach glTF; kolizja bloku z takim materiałem jest pełna. Wnętrza galerii (run2) używają `mall_stone_floor`, `mall_terrazzo_inlay` i `mall_acoustic_ceiling` oraz profilu pogody `mallAfterHours`.
+
 ## Audyt danych i oględziny
 
 `node tools/levels/mapAudit.mjs` podaje liczbę znalezisk dla każdej mapy. Po podaniu id wypisuje ścieżki JSON i współrzędne. Opcja `--json` zwraca pełne wyniki, a `--report` odświeża tabele i listy w raporcie. Test jednostkowy sprawdza osobny limit błędów dla każdej mapy w `tests/unit/mapAudit.baseline.json`. Po usunięciu błędów należy obniżyć odpowiedni limit.

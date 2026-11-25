@@ -1,7 +1,7 @@
 {
-  "totalBytes": 1247807,
+  "totalBytes": 1908346,
   "budgetBytes": 6000000,
-  "fileCount": 17,
+  "fileCount": 20,
   "edgeLimit255": 6.0,
   "paletteRule": "HSV: S>=0.25, V>=0.12, delta>=10/255, alpha>=16; red [0,20)/[345,360), cyan [165,200], magenta [290,345)",
   "files": [
@@ -356,6 +356,69 @@
       "borderAlphaMax255": 0,
       "alphaMax255": 255,
       "coverage": 0.1285
+    },
+    {
+      "id": "komiks_mall_stone_floor",
+      "category": "surfaces",
+      "path": "surfaces/komiks_mall_stone_floor.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#8b8d91",
+      "description": "Kamienne płyty galerii w wersji komiksowej",
+      "bytes": 39624,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        2.5277,
+        2.6592
+      ]
+    },
+    {
+      "id": "komiks_mall_terrazzo_inlay",
+      "category": "surfaces",
+      "path": "surfaces/komiks_mall_terrazzo_inlay.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#4b4b4a",
+      "description": "Terrazzo galerii w wersji komiksowej",
+      "bytes": 365682,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        2.6911,
+        2.9984
+      ]
+    },
+    {
+      "id": "komiks_mall_acoustic_ceiling",
+      "category": "surfaces",
+      "path": "surfaces/komiks_mall_acoustic_ceiling.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#797d83",
+      "description": "Komiksowy strop akustyczny galerii",
+      "bytes": 254352,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        3.2064,
+        3.2946
+      ]
     }
   ],
   "errors": []

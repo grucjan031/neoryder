@@ -20,11 +20,14 @@ export function pickWaveSpawnByDistance<T extends GroundPoint>(
 }
 
 export function arenaSpawnPoints(room: RoomDefinition): Vec3[] {
+  const arenaPoints = room.arena?.spawnPoints;
   const spawns: readonly { x: number; y?: number | undefined; z: number }[] =
-    room.arena?.spawnPoints ?? room.spawnPoints;
+    arenaPoints ?? room.spawnPoints;
+  // Punkty areny wymagają spawnRing do użycia y; zwykłe punkty pokoju zawsze honorują y.
+  const useY = arenaPoints ? room.arena?.spawnRing !== undefined : true;
   return spawns.map(({ x, y, z }) => ({
     x,
-    y: (room.arena?.spawnRing ? y : undefined) ?? room.playerSpawn.y,
+    y: (useY ? y : undefined) ?? room.playerSpawn.y,
     z,
   }));
 }

@@ -140,6 +140,8 @@ export const arenaSchema = z.object({
 
 export const roomSpawnPointSchema = z.object({
   x: finite,
+  /** Wysokość stóp; bez niej punkt leży na podłodze `playerSpawn.y`. */
+  y: finite.optional(),
   z: finite,
 });
 
@@ -257,6 +259,8 @@ export type RoomDefinition = z.infer<typeof roomSchema>;
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 
 export const FLOOR_EPSILON_M = 1e-6;
+/** Wysokość korpusu sprawdzana nad punktem spawnu na wyższej kondygnacji (m). */
+const SPAWN_BODY_HEIGHT_M = 1.8;
 
 function footprint(block: z.infer<typeof roomBlockSchema>): Rect {
   // Układ walidacji używa prostokątów. Ćwierćobrót zachowuje ten kształt dokładnie.
@@ -488,8 +492,49 @@ export function validateLayout(
         );
     }
   }
+  const elevated = points.map(
+    (point) =>
+      point.y !== undefined && Math.abs(point.y - groundY) > FLOOR_EPSILON_M,
+  );
+  const upperFloors = room.blocks.filter(
+    (block) =>
+      block.walkable === true && !block.rotation?.x && !block.rotation?.z,
+  );
   const valid = points.map((point, index) => {
     const path = index === 0 ? ['playerSpawn'] : ['spawnPoints', index - 1];
+    if (elevated[index]) {
+      // Wyższa kondygnacja: górna powierzchnia bloku `walkable`, bez przeszkód w korpusie.
+      const y = point.y!;
+      const supported = upperFloors.some(
+        (block) =>
+          Math.abs(block.position.y + block.size.y / 2 - y) <=
+            FLOOR_EPSILON_M && contains(footprint(block), point.x, point.z),
+      );
+      if (!supported) {
+        ctx.addIssue({
+          code: 'custom',
+          path,
+          message:
+            'Punkt spawnu z y nie leży na górnej powierzchni bloku walkable.',
+        });
+        return false;
+      }
+      const blocked = room.blocks.some(
+        (block) =>
+          block.position.y - block.size.y / 2 < y + SPAWN_BODY_HEIGHT_M &&
+          block.position.y + block.size.y / 2 > y + FLOOR_EPSILON_M &&
+          contains(footprint(block), point.x, point.z),
+      );
+      if (blocked) {
+        ctx.addIssue({
+          code: 'custom',
+          path,
+          message: 'Punkt spawnu znajduje się w bloku.',
+        });
+        return false;
+      }
+      return true;
+    }
     if (!floors.some((floor) => contains(floor, point.x, point.z))) {
       ctx.addIssue({
         code: 'custom',
@@ -555,6 +600,7 @@ export function validateLayout(
   room.spawnPoints.forEach((point, index) => {
     if (
       valid[index + 1] &&
+      !elevated[index + 1] &&
       !visited.has(key(Math.floor(point.x), Math.floor(point.z)))
     )
       ctx.addIssue({
