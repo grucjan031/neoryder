@@ -26,13 +26,18 @@ it('run1: ze śluzy można dojść do wyjścia, spawnów i wszystkich podestów'
     [18.25, 3.6, 12.25],
     [19.25, 1.6, -8.25], // stopień załadunkowy i dach kontenera
     [20.25, 2.591, -13.75],
+    [-5.75, 3.6, -33.75], // rampa sterowni: ląd. u szczytu
+    [-3.75, 3.6, -36.75], // pomost obok sterowni
+    [-6.25, 3.6, -35.25], // wnętrze sterowni, przez drzwi
+    [15.75, 1.6, -28.25], // pomost podnośnika nożycowego
+    [26.25, 1.2, -30.25], // wnętrze naczepy przez tylną rampę
   ] as const;
   const goals = [
     { ...exit.position, y: 0 },
     ...platforms.map(([x, y, z]) => ({ x, y, z })),
     ...room.spawnPoints.map((p) => ({ ...p, y: 0 })),
   ];
-  expect(room.spawnPoints).toHaveLength(14);
+  expect(room.spawnPoints).toHaveLength(17);
   for (const goal of goals) {
     const path = nav.path(room.playerSpawn, goal);
     // Ostatni punkt path() to argument wywołania. Przedostatni należy do siatki.

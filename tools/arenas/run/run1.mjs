@@ -12,7 +12,7 @@ const quarter = Math.PI / 2;
 const guardRoom = R(-24, -6, 14, 30);
 const servers = R(-6, 12, 14, 30);
 const workshop = R(-24, -8, -8, 14);
-const hall = R(-8, 28, -24, 14);
+const hall = R(-8, 28, -38, 14);
 
 function box(k, x, y, z, w, h, d, material, opts = {}) {
   return k.arena.block({
@@ -94,6 +94,7 @@ function wall(
   material,
   openings = [],
   thickness = 0.5,
+  base = 0,
 ) {
   const panel = (a, b, low, high, mat, depth, opts = {}) => {
     if (b <= a || high <= low) return;
@@ -107,16 +108,16 @@ function wall(
     panel(a, b, low, high, material, thickness, { model: 'wall_segment' });
   let cursor = start;
   for (const [a, b, low, high, fill] of openings) {
-    segment(cursor, a - 0.16, 0, height);
+    segment(cursor, a - 0.16, base, height);
     for (const edge of [a - 0.16, b])
-      panel(edge, edge + 0.16, 0, height, 'trim', thickness);
-    panel(a, b, 0, low, material, thickness);
+      panel(edge, edge + 0.16, base, height, 'trim', thickness);
+    panel(a, b, base, low, material, thickness);
     if (fill) panel(a, b, low, high, fill, 0.16);
     panel(a, b, high, high + 0.18, 'hivis', thickness);
     segment(a, b, high + 0.18, height);
     cursor = b + 0.16;
   }
-  segment(cursor, end, 0, height);
+  segment(cursor, end, base, height);
 }
 
 // Open steel guardrails leave the view between the handrail and midrail clear.
@@ -521,15 +522,15 @@ function runway(k) {
   for (const side of [-1, 1]) {
     const railX = craneX + side * 7.68;
     const columnX = railX + side * 0.26;
-    for (const z of [-19, -14.5, -7, -1, 5, 8]) {
+    for (const z of [-37, -31, -25, -19, -14.5, -7, -1, 5, 8]) {
       prop(k, 'wh_hall_column', columnX, z, 0, side < 0 ? 0 : 2);
       box(k, columnX + side * 0.23, 10.69, z, 0.48, 1.38, 0.46, 'metal');
     }
-    for (const z of [-17, -11, -5, 1, 7])
+    for (const z of [-35, -29, -23, -17, -11, -5, 1, 7])
       prop(k, 'wh_crane_rail', railX, z, 8.2);
   }
   // Shallow transverse trusses clear the entire crane envelope at 10.9 m.
-  for (const z of [-19, -14.5, -7, -1, 5, 8]) {
+  for (const z of [-37, -31, -25, -19, -14.5, -7, -1, 5, 8]) {
     box(k, 10, 11.46, z, 36, 0.16, 0.34, 'machine', { ceiling: true });
     box(k, 10, 12.43, z, 36, 0.14, 0.28, 'metal', { ceiling: true });
     for (let i = 0; i < 12; i++) {
@@ -559,9 +560,327 @@ function runway(k) {
   }
 }
 
+// Wire-mesh wall of the deposit cage: grating panels between posts with door gaps.
+function mesh(k, axis, at, a, b, gaps = [], h = 2.5, corners = true) {
+  const runs = [];
+  let cursor = a;
+  for (const [g0, g1] of [...gaps, [b, b]]) {
+    if (g0 > cursor) runs.push([cursor, g0]);
+    cursor = g1;
+  }
+  const put = (mid, y, len, height, depth, material) =>
+    axis === 'x'
+      ? box(k, mid, y, at, len, height, depth, material)
+      : box(k, at, y, mid, depth, height, len, material);
+  for (const [s, e] of runs) {
+    const n = Math.ceil((e - s) / 1.6);
+    for (let i = 0; i <= n; i++)
+      if (corners || !((i === 0 && s === a) || (i === n && e === b)))
+        put(s + ((e - s) * i) / n, (h + 0.1) / 2, 0.1, h + 0.1, 0.1, 'machine');
+    for (let i = 0; i < n; i++) {
+      const p0 = s + ((e - s) * i) / n + 0.06,
+        p1 = s + ((e - s) * (i + 1)) / n - 0.06;
+      put(
+        (p0 + p1) / 2,
+        (h + 0.25) / 2,
+        p1 - p0,
+        h - 0.25,
+        0.04,
+        'steel_grating',
+      );
+      put((p0 + p1) / 2, 0.125, p1 - p0, 0.25, 0.06, 'machine');
+      put((p0 + p1) / 2, h + 0.04, p1 - p0, 0.08, 0.08, 'hivis');
+    }
+  }
+  for (const [g0, g1] of gaps)
+    put((g0 + g1) / 2, h - 0.05, g1 - g0, 0.2, 0.14, 'hazard');
+}
+
+// Roller belt on a solid frame with a rubber top; cases ride on it.
+function belt(k, x0, x1, z, cases = []) {
+  const mid = (x0 + x1) / 2,
+    len = x1 - x0;
+  box(k, mid, 0.4, z, len, 0.8, 1, 'machine');
+  box(k, mid, 0.825, z, len, 0.05, 0.9, 'rubber');
+  for (const [x, mat] of cases) box(k, x, 1.1, z, 0.62, 0.45, 0.55, mat);
+}
+
+// Slim post lamp: the arm and the visible lamp head carry the light.
+function postLamp(k, x, z, y, color, intensity, range) {
+  box(k, x, y / 2, z, 0.12, y, 0.12, 'machine');
+  box(k, x, y + 0.05, z, 0.8, 0.1, 0.12, 'machine');
+  box(k, x, y - 0.06, z, 0.7, 0.1, 0.24, 'light_white');
+  k.light(x, y - 0.12, z, color, intensity, range);
+}
+
+// North-west: stilted foreman booth with a window on the hall, ramp access.
+function foremanBooth(k) {
+  const top = 3.6;
+  k.ground(R(-8, -3, -38, -33), top, 'steel_grating', { thickness: 0.3 });
+  k.ramp(vec(-6.2, 0, -24.5), vec(-6.2, top, -33), 3.5, 'tread_plate');
+  rail(k, 'z', -4.49, -33, -24.5, top, 0);
+  rail(k, 'z', -3.05, -38, -33, top);
+  rail(k, 'x', -33.05, -4.45, -3.05, top);
+  for (const [x, z] of [
+    [-7.8, -37.8],
+    [-3.2, -37.8],
+    [-3.2, -33.2],
+    [-7.8, -33.4],
+  ])
+    box(k, x, 1.65, z, 0.34, 3.3, 0.34, 'machine');
+  for (const z of [-33.2, -37.8])
+    box(k, -5.5, 3.2, z, 4.8, 0.14, 0.14, 'machine');
+  wall(
+    k,
+    'z',
+    -4.5,
+    -38,
+    -34.6,
+    6.6,
+    'machine',
+    [[-37.4, -35.2, 4.5, 5.8, 'glass']],
+    0.3,
+    top,
+  );
+  wall(
+    k,
+    'x',
+    -34.6,
+    -8,
+    -4.5,
+    6.6,
+    'machine',
+    [[-7.5, -5.5, top, 5.75]],
+    0.3,
+    top,
+  );
+  k.solid(R(-8, -4.5, -38, -34.6), 6.6, 6.8, 'machine');
+  box(k, -6.6, top + 0.4, -37.55, 2.6, 0.8, 0.8, 'machine');
+  for (const x of [-7.4, -6.6, -5.8])
+    box(k, x, top + 1.0, -37.75, 0.62, 0.4, 0.06, 'neon_blue');
+  box(k, -5.3, top + 0.25, -36.4, 0.5, 0.5, 0.5, 'plastic');
+  k.deco('wh_wall_terminal', -8, 4.9, -36.3, quarter);
+  lamp(k, -6.2, 6.6, -36.2, COLOR.warm, 20, 8, top);
+  lamp(k, -5.5, 3.3, -35.5, COLOR.amber, 22, 10);
+  mark(k, 'floor_hazard', -6.2, -23.8, 3.4, 0.7, 0, COLOR.amber);
+  mark(k, 'floor_lane_line', -6.2, -26.8, 4.5, 0.4, quarter, COLOR.amber);
+}
+
+// Two sorting lines with scanner gates, a walking lane between them.
+function sortingLine(k) {
+  belt(k, -3, -0.2, -28, [[-2.1, 'container_ochre']]);
+  prop(k, 'wh_conveyor_scanner', 1.6, -28);
+  belt(k, 3.4, 6.2, -28, [
+    [4.6, 'container_graphite'],
+    [5.4, 'container_ochre'],
+  ]);
+  box(k, 6.3, 0.45, -28, 0.1, 0.9, 1, 'hazard');
+  belt(k, -2.6, 0.8, -34.4, [[-1.4, 'container_graphite']]);
+  prop(k, 'wh_conveyor_scanner', 2.6, -34.4);
+  belt(k, 4.4, 6.4, -34.4, [[5.2, 'container_ochre']]);
+  box(k, 6.5, 0.45, -34.4, 0.1, 0.9, 1, 'hazard');
+  prop(k, 'wh_weapon_case_stack', 7.2, -28, 0, 0);
+  prop(k, 'wh_weapon_case_stack', 7.3, -34.4, 0, 0);
+  postLamp(k, 0.4, -31.2, 3.3, COLOR.warm, 26, 10);
+  postLamp(k, 4.6, -31.2, 3.3, COLOR.amber, 22, 9);
+  prop(k, 'city_barrier', 8.3, -31, 0, 0);
+  prop(k, 'city_barrier', 11.7, -31, 0, 0);
+  mark(k, 'floor_hazard', 1.6, -26.7, 4.4, 0.6, 0, COLOR.amber);
+  mark(k, 'floor_hazard', 2.6, -35.7, 4.4, 0.6, 0, COLOR.amber);
+  mark(k, 'floor_lane_line', -0.6, -31.2, 10, 0.45, 0, COLOR.amber);
+  mark(k, 'oil_stain', 2.8, -30.2, 2.4, 1.4);
+}
+
+// Open dock lane to the exit: cones, bollards, lane lines, high-bay lamps.
+function dockLane(k) {
+  for (const [x, z] of [
+    [7.6, -35.6],
+    [12.4, -35.6],
+    [7.9, -32.8],
+    [12.1, -32.8],
+  ])
+    k.deco('city_traffic_cone', x, 0, z);
+  for (const x of [7.5, 12.5]) prop(k, 'port_bollard', x, -37.2);
+  for (const z of [-30, -25.6])
+    mark(k, 'floor_arrow', 10, z, 1.8, 2.1, 0, '#b4a58b');
+  mark(k, 'floor_hazard', 10, -34.4, 5.4, 0.7, 0, COLOR.amber);
+  mark(k, 'floor_lane_line', 7.2, -31, 14, 0.45, quarter, COLOR.green);
+  mark(k, 'floor_lane_line', 12.8, -31, 14, 0.45, quarter, COLOR.green);
+  mark(k, 'tire_marks', 10, -33, 3.2, 2.2, quarter);
+  mark(k, 'manhole', 7.4, -24.8, 1.1, 1.1);
+  lamp(k, 6, 11.38, -25, COLOR.warm, 52, 22);
+  lamp(k, 0, 11.38, -31, COLOR.warm, 50, 22);
+  lamp(k, 10, 11.38, -31, COLOR.warm, 52, 22);
+  lamp(k, -3.25, 11.38, -25, COLOR.warm, 40, 20);
+}
+
+// Weapons deposit cage: an island of cover behind wire mesh.
+function depositCage(k) {
+  const x0 = 15,
+    x1 = 18.2,
+    z0 = -38,
+    z1 = -31.6;
+  mesh(k, 'z', x0, z0, z1, [[-35.9, -34]]);
+  mesh(k, 'z', x1, z0, z1);
+  mesh(k, 'x', z1, x0, x1, [[16, 17.6]], 2.5, false);
+  box(
+    k,
+    (x0 + x1) / 2,
+    2.63,
+    (z0 + z1) / 2,
+    x1 - x0,
+    0.06,
+    z1 - z0,
+    'steel_grating',
+  );
+  prop(k, 'wh_weapon_case_stack', 17.5, -36.9, 0, 1);
+  prop(k, 'wh_weapon_case_stack', 17.5, -35.1, 0, 1);
+  prop(k, 'wh_weapon_case_stack', 15.85, -36.9, 0, 1);
+  prop(k, 'wh_workbench_weapons', 16.05, -33.1, 0, 1);
+  k.arena.block({
+    position: vec(15.85, 0.5, -35.2),
+    size: vec(1, 1, 1),
+    model: 'crate',
+  });
+  k.arena.block({
+    position: vec(16.62, 0.25, -34.7),
+    size: vec(0.5, 0.5, 0.5),
+    model: 'crate_small',
+  });
+  lamp(k, 16.6, 2.6, -34.8, COLOR.amber, 22, 8);
+  mark(k, 'floor_pallet_bay', 16.6, -34.8, 3, 5.4, 0, COLOR.amber);
+  mark(k, 'floor_stop', 16.8, -30.6, 3.2, 0.8, 0, COLOR.amber);
+}
+
+// Container canyon between a two-high stack and the trailer.
+function containerYard(k) {
+  prop(k, 'port_container_20_olive', 21.4, -34.9, 0, 1);
+  prop(k, 'port_container_20_graphite', 21.4, -28.8, 0, 1);
+  prop(k, 'port_container_20_ochre', 21.4, -34.9, 2.591, 1);
+  lamp(k, 23.8, 11.38, -31, COLOR.warm, 40, 20);
+  mark(k, 'floor_lane_line', 23.9, -31.5, 11, 0.5, quarter, COLOR.amber);
+  mark(k, 'floor_hazard', 23.9, -25.3, 2.4, 0.6, 0, COLOR.amber);
+}
+
+// Trailer docked along the east wall, walkable through the open rear.
+function trailerBay(k) {
+  const x0 = 25.2,
+    x1 = 27.6,
+    z0 = -37.6,
+    z1 = -27;
+  k.ground(R(x0, x1, z0, z1), 1.2, 'tread_plate', { thickness: 0.2 });
+  box(k, 26.4, 0.85, -32.3, 0.3, 0.35, 10.6, 'machine');
+  for (const x of [25.05, 27.75])
+    for (const z of [-29.5, -30.8]) box(k, x, 0.5, z, 0.3, 1, 1, 'rubber');
+  for (const x of [25.5, 27.3]) box(k, x, 0.5, -35, 0.15, 1, 0.15, 'machine');
+  for (const [a, b] of [
+    [x0, x0 + 0.12],
+    [x1 - 0.12, x1],
+  ])
+    k.solid(R(a, b, z0, z1), 1.2, 3.5, 'container_graphite');
+  k.solid(R(x0, x1, z0, z0 + 0.15), 1.2, 3.5, 'container_graphite');
+  k.solid(R(x0, x1, z0, z1), 3.5, 3.62, 'machine');
+  k.solid(R(x0, x1, z1 - 0.12, z1), 3.38, 3.5, 'hazard');
+  k.ramp(vec(26.4, 0, -23.6), vec(26.4, 1.2, z1), 2.2, 'tread_plate');
+  prop(k, 'wh_weapon_case_stack', 26.4, -36.6, 1.2, 1);
+  prop(k, 'wh_weapon_case_stack', 26.4, -34.8, 1.2, 1);
+  box(k, 26.4, 1.45, -32.8, 0.5, 0.5, 0.5, 'container_ochre');
+  lamp(k, 26.4, 3.5, -31.5, COLOR.warm, 22, 8, 1.2);
+  for (const z of [-36.5, -32, -28.5])
+    box(k, 25.14, 3.0, z, 0.08, 0.14, 0.3, 'neon_amber');
+  k.light(25.0, 3.0, -32, COLOR.amber, 16, 8, { groundGlow: false });
+  mark(k, 'floor_stop', 26.4, -22.6, 2.4, 0.7, 0, COLOR.amber);
+  mark(k, 'oil_stain', 26.4, -24.6, 2.4, 1.6);
+}
+
+// Scissor lift raised to 1.6 m with a pallet on top, reached by a ramp.
+function scissorLift(k) {
+  k.ramp(vec(10.6, 0, -28.1), vec(15, 1.6, -28.1), 2, 'tread_plate');
+  k.ground(R(15, 18.2, -29.2, -27), 1.6, 'tread_plate', { thickness: 0.2 });
+  box(k, 16.6, 0.125, -28.1, 2.8, 0.25, 2.1, 'machine');
+  for (const z of [-28.95, -27.25]) {
+    box(k, 16.6, 0.8, z, 2.6, 0.1, 0.12, 'hivis', {
+      rotation: vec(0, 0, 0.395),
+    });
+    box(k, 16.6, 0.8, z + 0.2, 2.6, 0.1, 0.12, 'hivis', {
+      rotation: vec(0, 0, -0.395),
+    });
+  }
+  rail(k, 'x', -29.12, 15.1, 18.1, 1.6);
+  rail(k, 'x', -27.08, 15.1, 18.1, 1.6);
+  rail(k, 'z', 18.12, -29.1, -27.1, 1.6);
+  prop(k, 'wh_weapon_case_stack', 17.3, -28.1, 1.6, 0);
+  box(k, 15.6, 2.35, -29.05, 0.1, 1.5, 0.1, 'machine');
+  box(k, 15.6, 3.2, -29.05, 0.22, 0.22, 0.22, 'neon_amber');
+  k.light(15.6, 3.2, -29.05, COLOR.amber, 14, 7, {
+    floorY: 1.6,
+    groundGlow: false,
+    flicker: { pattern: 'pulse', periodS: 1.4 },
+  });
+  mark(k, 'floor_hazard', 16.6, -25.9, 4.2, 0.6, 0, COLOR.amber);
+}
+
+// A rack frame leans on a crate stack; its load is strewn across the floor.
+function spilledRack(k) {
+  for (const [z, mat, h, d] of [
+    [-24.0, 'hivis', 0.12, 1.2],
+    [-24.8, 'metal', 0.1, 0.1],
+    [-23.2, 'metal', 0.1, 0.1],
+  ])
+    box(k, 17.6, 1.0, z, 4.2, h, d, mat, { rotation: vec(0, 0, 0.49) });
+  for (const [y, z] of [
+    [0.5, -24],
+    [1.5, -24],
+    [0.5, -22.7],
+  ])
+    k.arena.block({
+      position: vec(20, y, z),
+      size: vec(1, 1, 1),
+      model: 'crate',
+    });
+  crates(k, 'crate_small', [
+    [16.1, -23.2],
+    [16.8, -24.9],
+    [17.5, -22.5],
+    [18.4, -25.2],
+    [15.5, -24.3],
+    [19, -22.5],
+  ]);
+  prop(k, 'wh_weapon_case_stack', 16.3, -26.2, 0, 1);
+  prop(k, 'city_crates', 18.9, -26.1);
+  mark(k, 'oil_stain', 17.4, -24.2, 3.4, 2.2);
+  mark(k, 'crack_floor', 18, -23, 2.6, 1.3);
+  mark(k, 'floor_hazard', 17.5, -21.5, 6, 0.6, 0, COLOR.amber);
+}
+
+// Forklift charging stalls under the east gallery, nose to the lanes.
+function chargingStation(k) {
+  for (const z of [-3.8, -1.4, 1]) {
+    prop(k, 'wh_forklift', 26, z, 0, 2);
+    box(k, 27.75, 0.7, z, 0.3, 1.4, 0.4, 'machine');
+    box(k, 27.75, 1.5, z, 0.32, 0.18, 0.26, 'neon_amber');
+    mark(k, 'floor_pallet_bay', 25.9, z, 3.3, 1.7, 0, COLOR.amber);
+  }
+  k.light(27.2, 1.7, -2.6, COLOR.amber, 16, 7, { groundGlow: false });
+  k.light(27.2, 1.7, 1, COLOR.amber, 16, 7, { groundGlow: false });
+  mark(k, 'floor_stop', 22.7, -1.4, 0.8, 5.6, 0, COLOR.amber);
+}
+
+function northYard(k) {
+  foremanBooth(k);
+  sortingLine(k);
+  dockLane(k);
+  depositCage(k);
+  containerYard(k);
+  trailerBay(k);
+  scissorLift(k);
+  spilledRack(k);
+  chargingStation(k);
+}
+
 function dispatch(k) {
-  floor(k, R(-8, 28, -24, -16), 'quay_concrete');
-  floor(k, R(8, 12, -25, -24), 'tread_plate');
+  floor(k, R(-8, 28, -38, -16), 'quay_concrete');
+  floor(k, R(8, 12, -39, -38), 'tread_plate');
   for (const [left, right, mat] of [
     [-8, 2, 'turbine_hall_floor'],
     [2, 10, 'concrete'],
@@ -569,12 +888,15 @@ function dispatch(k) {
   ])
     floor(k, R(left, right, -16, 14), mat);
   roof(k, hall, 12.5);
-  wall(k, 'x', -24.5, -9, 29, 12.5, 'corrugated', [[8, 12, 0, 3]], 1);
-  k.solid(R(28, 28.73, -24, 12), 10, 12.5, 'corrugated', {
+  wall(k, 'x', -38.5, -9, 29, 12.5, 'corrugated', [[8, 12, 0, 3]], 1);
+  k.solid(R(28, 28.73, -38, 12), 10, 12.5, 'corrugated', {
+    model: 'wall_segment',
+  });
+  k.solid(R(28, 28.73, -38, -36), 0, 10, 'corrugated', {
     model: 'wall_segment',
   });
   wall(k, 'z', 28.5, 12, 14, 12.5, 'corrugated', [], 1);
-  wall(k, 'z', -8.5, -24, -8.25, 12.5, 'corrugated', [], 1);
+  wall(k, 'z', -8.5, -38, -8.25, 12.5, 'corrugated', [], 1);
   wall(k, 'z', -8, -8.25, 14, 12.5, 'corrugated', [
     [-7, -3, 2.68, 5.4],
     [-2, 1.65, 3.25, 5.05, 'glass'],
@@ -586,12 +908,13 @@ function dispatch(k) {
   ]);
   // The shutter is raised on the tall hall face of the workshop opening.
   k.deco('city_shutter', -7.747, 3.65, 4.5, quarter);
-  for (const z of [-21, -15, -9, -3, 3, 9]) {
+  for (const z of [-33, -27, -21, -15, -9, -3, 3, 9]) {
     k.deco('port_warehouse_shell_panel', 28.73, 0, z, -quarter);
     box(k, 28.365, 5, z, 0.73, 10, 6, 'corrugated', { visible: false });
   }
   hallGalleries(k);
   runway(k);
+  northYard(k);
 
   for (const x of [0, 12])
     for (const z of [-17, -13, -9, 0, 4, 8])
@@ -685,9 +1008,9 @@ function dispatch(k) {
   for (const x of [-3.25, 18])
     for (const z of [-14.5, 5]) lamp(k, x, 11.38, z, COLOR.warm, 45, 22);
   for (const z of [5, -19]) lamp(k, 6, 11.38, z, COLOR.warm, 58, 24);
-  for (const x of [0, 20]) {
-    box(k, x, 8.65, -22.5, 0.3, 0.24, 3, 'machine', { ceiling: true });
-    lamp(k, x, 8.53, -21.4, COLOR.warm, 42, 16, x === 0 ? 2.591 : 0);
+  for (const x of [2.5, 19.5]) {
+    box(k, x, 8.65, -36.5, 0.3, 0.24, 3, 'machine', { ceiling: true });
+    lamp(k, x, 8.53, -35.4, COLOR.warm, 42, 16);
   }
   for (const x of [5.5, 15.75]) {
     box(k, x, 5.53, -3.5, 1.85, 0.12, 0.64, 'machine');
@@ -709,17 +1032,21 @@ function dispatch(k) {
     lamp(k, x, 11.38, -7, COLOR.blue, 22, 14, 3.6);
   }
   // Segments A B C D F G of a seven-segment nine, with slight gaps at the bends.
-  for (const y of [3.4, 4.1, 4.8])
-    box(k, 10, y, -23.93, 1.03, 0.12, 0.14, 'neon_green');
+  // The digit is scaled up so it reads from the far end of the hall.
+  const gs = 1.35,
+    gy = 3.9,
+    gap = 0.7 * gs;
+  for (const y of [gy, gy + gap, gy + 2 * gap])
+    box(k, 10, y, -37.93, 1.03 * gs, 0.12 * gs, 0.14, 'neon_green');
   for (const [x, y] of [
-    [9.44, 4.45],
-    [10.56, 4.45],
-    [10.56, 3.75],
+    [10 - 0.56 * gs, gy + 1.5 * gap],
+    [10 + 0.56 * gs, gy + 1.5 * gap],
+    [10 + 0.56 * gs, gy + 0.5 * gap],
   ])
-    box(k, x, y, -23.93, 0.12, 0.56, 0.14, 'neon_green');
-  box(k, 10, 5.85, -23.42, 4.7, 0.24, 1.16, 'machine');
-  lamp(k, 10, 5.73, -23.4, COLOR.green, 19, 9);
-  k.deco('wh_wall_terminal', 13.85, 1.32, -24);
+    box(k, x, y, -37.93, 0.12 * gs, 0.56 * gs, 0.14, 'neon_green');
+  box(k, 10, 6.55, -37.42, 4.7, 0.24, 1.16, 'machine');
+  lamp(k, 10, 6.43, -37.4, COLOR.green, 19, 9);
+  k.deco('wh_wall_terminal', 15.85, 1.32, -38);
   k.deco('wh_wall_terminal', 21.8, 1.3, 13.75, Math.PI);
   for (const [x, z] of [
     [-3.7, -17.5],
@@ -767,7 +1094,7 @@ function dispatch(k) {
     [16.5, -21],
   ])
     mark(k, 'oil_stain', x, z, 3, 1.75);
-  mark(k, 'floor_stop', 10, -22.8, 3.8, 0.8, 0, COLOR.green);
+  mark(k, 'floor_stop', 10, -36.6, 3.8, 0.8, 0, COLOR.green);
   mark(k, 'floor_sector_k09', 9.5, -17.6, 3.5, 1.65, 0, COLOR.green);
   mark(k, 'crack_floor', -5, 8.6, 2.4, 1.2);
   mark(k, 'manhole', 21, -20, 1.1, 1.1);
@@ -778,7 +1105,7 @@ export default function generate() {
     id: 'run1',
     name: 'Magazyn Kurogane Arms',
     weather: 'kuroganeWarehouse',
-    bounds: R(-24, 28, -24, 30),
+    bounds: R(-24, 28, -38, 30),
     startX: -15,
     exitX: 10,
   });
@@ -790,7 +1117,7 @@ export default function generate() {
   k.arena.roomMeta({
     doors: [
       ['entry', -15, 30.5],
-      ['exit', 10, -24.5],
+      ['exit', 10, -38.5],
     ].map(([role, x, z]) => ({
       id: role,
       role,
@@ -813,6 +1140,9 @@ export default function generate() {
     [17, -5],
     [5, -16],
     [19, -20],
+    [2.5, -31.2],
+    [23.5, -31],
+    [11.5, -24.2],
   ])
     k.arena.spawn(vec(x, 0, z));
   k.finish({
