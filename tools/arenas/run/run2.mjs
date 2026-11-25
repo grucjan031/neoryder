@@ -271,7 +271,9 @@ function rails(k) {
         : [[-1.8, 1.8]];
     for (const [s0, s1] of spans(-11.5, 11.5, north))
       glassRail(k, 'x', -18.1, s0, s1, y);
-    for (const [s0, s1] of spans(-11.5, 11.5, [[-0.5, 0.5]]))
+    // Tylko podest ESC-3 podpiera przejście przez południową krawędź atrium.
+    const south = level === 2 ? [[-6, -3.6]] : [];
+    for (const [s0, s1] of spans(-11.5, 11.5, south))
       glassRail(k, 'x', 18.1, s0, s1, y);
     // Otwory klatek schodowych (wschodnia krawędź, wzdłuż biegów).
     for (const s of [-1, 1]) glassRail(k, 'z', s * 13.93, -24.8, -18.4, y);
@@ -289,10 +291,10 @@ function rails(k) {
     glassRail(k, 'x', -5.93, s0, s1, LEVELS[2]);
   glassRail(k, 'x', -3.07, -11.9, 11.9, LEVELS[2]);
   // Podesty L2 przy wejściach ruchomych schodów.
-  glassRail(k, 'z', 3.67, -7.5, -6.1, LEVELS[2]);
-  glassRail(k, 'z', 5.93, -7.5, -6.1, LEVELS[2]);
-  glassRail(k, 'z', -5.93, 16.5, 17.9, LEVELS[2]);
-  glassRail(k, 'z', -3.67, 16.5, 17.9, LEVELS[2]);
+  glassRail(k, 'z', 3.67, -7.6, -5.93, LEVELS[2]);
+  glassRail(k, 'z', 5.93, -7.6, -5.93, LEVELS[2]);
+  glassRail(k, 'z', -5.93, 16.4, 18.1, LEVELS[2]);
+  glassRail(k, 'z', -3.67, 16.4, 18.1, LEVELS[2]);
 }
 
 export default function generate() {

@@ -1418,5 +1418,35 @@
     "dominantColor": "#1c1d1d",
     "description": "OTWARCIE 9:00",
     "bytes": 155584
+  },
+  {
+    "id": "mall_pharmacy",
+    "category": "signs",
+    "path": "signs/mall_pharmacy.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#75fb51",
+    "description": "HELIX-MED // APTEKA 24H",
+    "bytes": 13044
+  },
+  {
+    "id": "mall_outdoor",
+    "category": "signs",
+    "path": "signs/mall_outdoor.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fea509",
+    "description": "APEX // OUTDOOR",
+    "bytes": 11864
+  },
+  {
+    "id": "mall_perfume",
+    "category": "signs",
+    "path": "signs/mall_perfume.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#ad74fc",
+    "description": "AURA // SYNTH-PERFUME",
+    "bytes": 10758
   }
 ]

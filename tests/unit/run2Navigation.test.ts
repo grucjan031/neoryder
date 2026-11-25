@@ -1,12 +1,80 @@
 import { expect, it } from 'vitest';
 import { tuning } from '../../src/core/tuning';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
+import { ArenaSurfaceNavigation } from '../../src/world/arenaSurfaceNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
 const room = roomDefinitions.get('run2')!;
 const nav = new ArenaNavigation(room);
 const L1 = 5.2;
 const L2 = 10.4;
+const surfaceNav = new ArenaSurfaceNavigation(room);
+
+// Każdy odcinek przecina grzebień schodów oraz granicę sąsiedniego pasażu/mostka.
+// Samo dojście ze startu nie wykrywa objazdu przez inne schody.
+const escalatorEnds = [
+  { id: 'ESC-1 dolny', x: 4.8, y: 0, aisle: 18.4, ramp: 15.4, rise: 0.5 },
+  { id: 'ESC-1 górny', x: 4.8, y: L1, aisle: 4.8, ramp: 7, rise: -0.5 },
+  { id: 'ESC-2 dolny', x: -4.8, y: 0, aisle: -5.6, ramp: -8.6, rise: 0.5 },
+  { id: 'ESC-2 górny', x: -4.8, y: L1, aisle: -19.4, ramp: -17, rise: -0.5 },
+  { id: 'ESC-3 dolny', x: -4.8, y: L1, aisle: 4.8, ramp: 7, rise: 0.5 },
+  { id: 'ESC-3 górny', x: -4.8, y: L2, aisle: 19.4, ramp: 15.4, rise: -0.5 },
+  { id: 'ESC-4 dolny', x: 4.8, y: L1, aisle: -19.4, ramp: -17, rise: 0.5 },
+  { id: 'ESC-4 górny', x: 4.8, y: L2, aisle: -4.8, ramp: -8.6, rise: -0.5 },
+];
+
+it.each(escalatorEnds)('run2: $id łączy się bezpośrednio z pasażem/mostkiem', (end) => {
+  const aisle = { x: end.x, y: end.y, z: end.aisle };
+  const ramp = { x: end.x, y: end.y + end.rise, z: end.ramp };
+  for (const [from, to] of [[aisle, ramp], [ramp, aisle]] as const) {
+    const path = surfaceNav.path(from, to);
+    expect(path.length).toBeGreaterThan(2);
+    const arrived = path.at(-2)!;
+    expect(Math.abs(arrived.y - to.y)).toBeLessThan(0.3);
+    expect(Math.hypot(arrived.x - to.x, arrived.z - to.z)).toBeLessThan(0.6);
+    // Zakaz objazdu innymi schodami i przeciskania się bokiem poza biegiem.
+    for (const p of path) {
+      expect(Math.abs(p.x - end.x)).toBeLessThan(0.8);
+      expect(p.z).toBeGreaterThanOrEqual(Math.min(end.aisle, end.ramp) - 0.5);
+      expect(p.z).toBeLessThanOrEqual(Math.max(end.aisle, end.ramp) + 0.5);
+      expect(Math.abs(p.y - end.y)).toBeLessThanOrEqual(0.8);
+    }
+  }
+});
+
+it.each(escalatorEnds)('run2: $id ma podparte przejście szerokości 2 m bez progu', (end) => {
+  const edge = end.ramp + Math.sign(end.aisle - end.ramp);
+  const steps = Math.ceil(Math.abs(end.aisle - end.ramp) / 0.1);
+  for (let i = 0; i <= steps; i++) {
+    const z = end.aisle + (end.ramp - end.aisle) * i / steps;
+    const y = end.y + end.rise * Math.max(0, (z - edge) / (end.ramp - edge));
+    for (const offset of [-0.999, -0.5, 0, 0.5, 0.999]) {
+      const x = end.x + offset;
+      const floor = room.blocks.some((b) => {
+        if (!b.walkable || b.rotation?.y || b.rotation?.z) return false;
+        const rx = b.rotation?.x ?? 0;
+        const top = b.position.y - Math.tan(rx) * (z - b.position.z) + b.size.y / (2 * Math.cos(rx));
+        return Math.abs(x - b.position.x) <= b.size.x / 2 + 0.001 &&
+          Math.abs(z - b.position.z) <= Math.cos(rx) * b.size.z / 2 + 0.001 &&
+          Math.abs(top - y) < 0.01;
+      });
+      expect(floor, `${end.id}: posadzka (${x}, ${y}, ${z})`).toBe(true);
+      for (const height of [0.15, 0.6, 1.0, 1.8]) {
+        const hits = room.blocks.filter((b) => {
+          const dx = x - b.position.x, dy = y + height - b.position.y, dz = z - b.position.z;
+          const ry = b.rotation?.y ?? 0, rx = b.rotation?.x ?? 0;
+          const lx = Math.cos(ry) * dx - Math.sin(ry) * dz;
+          const tz = Math.sin(ry) * dx + Math.cos(ry) * dz;
+          const ly = Math.cos(rx) * dy + Math.sin(rx) * tz;
+          const lz = -Math.sin(rx) * dy + Math.cos(rx) * tz;
+          return Math.abs(lx) < b.size.x / 2 - 0.001 &&
+            Math.abs(ly) < b.size.y / 2 - 0.001 && Math.abs(lz) < b.size.z / 2 - 0.001;
+        });
+        expect(hits.map((b) => b.model ?? b.material), `${end.id}: prześwit (${x}, ${y + height}, ${z})`).toEqual([]);
+      }
+    }
+  }
+});
 
 interface Goal {
   x: number;

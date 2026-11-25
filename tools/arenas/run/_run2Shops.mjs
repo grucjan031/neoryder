@@ -1,6 +1,7 @@
 ﻿// 15 sklepów galerii „Atrium Nova” (run2): wnęki 6,5 m za kratami, towar na trzech planach.
 // Układ lokalny sklepu: `u` = głębokość od linii pasażu, `v` = położenie wzdłuż fasady, `h` = wysokość nad posadzką.
 // Gracz i wrogowie nie wchodzą do sklepów (kraty mają kolizję), więc towar to głównie dekoracje i bryły.
+import { readFileSync } from 'node:fs';
 import {
   COLOR,
   Q,
@@ -16,6 +17,11 @@ import {
 const BACK = 6.5; // wewnętrzne lico tylnej ściany (u)
 const WALL = 0.9; // lico ściany frontowej od strony wnętrza (u)
 const C = COLOR;
+const signSizes = new Map(
+  JSON.parse(
+    readFileSync(new URL('../../textures/catalog.json', import.meta.url), 'utf8'),
+  ).map(({ id, width, height }) => [id, { width, height }]),
+);
 
 /** Rozmieszczenie dekoracji w jednym sklepie z kontrolą nakładania się obwiedni. */
 function shopKit(k, def) {
@@ -69,13 +75,16 @@ function shopKit(k, def) {
     /** Neon: `u` = odległość od linii pasażu (0 = lico fasady), `face` jak w M. */
     neon(texture, u, v, h, w, hh, face, tint, flicker = 0) {
       const p = f.at(u, v);
+      const size = signSizes.get(texture);
+      if (!size) throw new Error(`Brak wymiarów tekstury ${texture}.`);
+      const fit = Math.min(w / size.width, hh / size.height);
       k.neon(
         texture,
         p.x,
         y0 + h,
         p.z,
-        w,
-        hh,
+        size.width * fit,
+        size.height * fit,
         f.front + face * Q,
         tint,
         flicker,
@@ -688,7 +697,7 @@ export const SHOPS = [
     side: 'N',
     level: 1,
     c: -6,
-    sign: 'pharmacy',
+    sign: 'mall_pharmacy',
     tint: C.green,
     fill(S) {
       S.common({ checkout: [2.6, 0], accent: 'neon_green' });
@@ -771,7 +780,7 @@ export const SHOPS = [
     side: 'W',
     level: 2,
     c: 12,
-    sign: 'warsztat',
+    sign: 'mall_outdoor',
     tint: C.green,
     fill(S) {
       S.common({ checkout: [4.9, -4.5], accent: 'neon_green' });
@@ -850,7 +859,7 @@ export const SHOPS = [
     side: 'N',
     level: 2,
     c: 6,
-    sign: 'cocktail',
+    sign: 'mall_perfume',
     tint: C.violet,
     fill(S) {
       S.common({ checkout: [2.6, 0], accent: 'neon_violet' });

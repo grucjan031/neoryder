@@ -72,7 +72,7 @@ function groundFloor(k, p) {
   box(k, cx, 0.15, cz, 6.4, 0.3, 3.8, 'mall_terrazzo_inlay', {
     walkable: false,
   });
-  prop(k, 'city_car', cx, cz, 0.3, 0, { material: 'metal' });
+  prop(k, 'mall_showcar', cx, cz, 0.3, 0, { material: 'metal' });
   for (const [x, z, w, d] of [
     [cx, cz - 1.75, 6.1, 0.08],
     [cx, cz + 1.75, 6.1, 0.08],

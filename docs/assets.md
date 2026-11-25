@@ -280,6 +280,7 @@ pochodzą z wcześniejszego etapu, ocenę nowych materiałów wykona Opus na map
 | `mall_promo_stand` | 0,8 × 1,354 × 0,8 | 564 | dwustronny składany stojak promocyjny | [PNG](../artifacts/models/mall/mall_promo_stand.png) |
 | `mall_trash_bin` | 1,36 × 0,94 × 0,606 | 495 | trzy oznaczone frakcje odpadów | [PNG](../artifacts/models/mall/mall_trash_bin.png) |
 | `mall_entrance_doors` | 4,8 × 3 × 0,32 | 424 | zamknięte drzwi rozsuwane z naświetlami bocznymi | [PNG](../artifacts/models/mall/mall_entrance_doors.png) |
+| `mall_showcar` | 4,67 × 1,3 × 2,03 | 7584 | samochód ekspozycyjny, nos +X; 8 siatek (m.in. łuk dachu, tylna szyba, wlot, taśma świetlna, zacisk i tarcza hamulca, fotel), bursztynowy próg, koła na Y = 0 | [PNG](../tools/blender/previews/city/mall_showcar.png) |
 
 **Montaż.** Każdy korzeń leży na poziomie spodu modelu, w połowie jego szerokości. Portal, szafka bezpieczeństwa i ściana obuwnicza opierają się tyłem o lokalne Z = 0. Pozostałe modele są wycentrowane w Z. Przód wystawy jest skierowany w +Z. Kratę można wsunąć w centralny otwór portalu. W polu między prowadnicami, kasetą i listwą dolną 84,4% promieni widoku na wprost przechodzi między prętami. Szyby architektoniczne mają materiał `mat_glass_clear` o kryciu 0,22 i powierzchnie widoczne z obu stron.
 

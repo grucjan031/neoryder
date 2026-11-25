@@ -1163,5 +1163,32 @@
     "description": "OTWARCIE 9:00",
     "subject": "OTWARCIE 9:00",
     "set": "mall"
+  },
+  {
+    "id": "mall_pharmacy",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "HELIX-MED // APTEKA 24H",
+    "subject": "HELIX-MED // APTEKA 24H",
+    "set": "mall"
+  },
+  {
+    "id": "mall_outdoor",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "APEX // OUTDOOR",
+    "subject": "APEX // OUTDOOR",
+    "set": "mall"
+  },
+  {
+    "id": "mall_perfume",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "AURA // SYNTH-PERFUME",
+    "subject": "AURA // SYNTH-PERFUME",
+    "set": "mall"
   }
 ]

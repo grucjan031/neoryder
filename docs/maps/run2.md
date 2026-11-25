@@ -533,7 +533,7 @@ Cel od użytkownika: „zrób tak, jakby to była serio galeria”. Każda poni�
    - 3 kioski;
    - 2 wyspy wypoczynkowe (donice z ławkami);
    - podstawy 4 ruchomych schodów;
-   - ekspozycja promocyjna samochodu: `city_car` na okrągłym podeście z neonowym obrysem i słupkami z taśmą (klasyka galerii, twarda osłona);
+   - ekspozycja promocyjna samochodu: `mall_showcar` na prostokątnym podeście z neonowym obrysem i słupkami z taśmą (klasyka galerii, twarda osłona);
    - informatory.
 
    Żadna otwarta połać parteru bez osłony nie może przekraczać 8 × 8 m. Na L1 i L2 pasaże też mają osłony co 6–10 m: donice, ławki, kosze, informatory, kioski na mostkach.
@@ -567,7 +567,7 @@ Generator `node tools/arenas/run/run2.mjs` (pliki pomocnicze `_run2Kit.mjs`, `_r
 
 **Układ.**
 
-- **Parter.** Fontanna `(0, 0)` z czterema ławkami, trzy kioski (`(−7,5; 9,5)`, `(8,5; −10,5)`, `(8,5; 2)`), `city_car` na podeście `6,4 × 3,8 m` z neonowym obrysem i słupkami z taśmą, trzy wyspy wypoczynkowe (donica i dwie ławki), informatory, ławki, donice i kosze w pasażach. Największy pusty kwadrat bez osłony ma 8 m (test w `run2Navigation.test.ts` liczy widoczne bryły o wysokości co najmniej 0,8 m, bez ruchomych schodów i windy). Zagrożenia: bramka laserowa na południu (`z = 16,5`), pole elektryczne przy fontannie, dwie beczki wybuchowe.
+- **Parter.** Fontanna `(0, 0)` z czterema ławkami, trzy kioski (`(−7,5; 9,5)`, `(8,5; −10,5)`, `(8,5; 2)`), `mall_showcar` na podeście `6,4 × 3,8 m` z neonowym obrysem i słupkami z taśmą, trzy wyspy wypoczynkowe (donica i dwie ławki), informatory, ławki, donice i kosze w pasażach. Największy pusty kwadrat bez osłony ma 8 m (test w `run2Navigation.test.ts` liczy widoczne bryły o wysokości co najmniej 0,8 m, bez ruchomych schodów i windy). Zagrożenia: bramka laserowa na południu (`z = 16,5`), pole elektryczne przy fontannie, dwie beczki wybuchowe.
 - **Komunikacja pionowa.** Cztery ruchome schody (zatrzymane) na krzyż w otworze atrium: ESC-1 `L0 → L1` (`x = 4,8`, `z 16,4 → 6`), ESC-2 `L0 → L1` (`x = −4,8`, `z −7,6 → −18`), ESC-3 `L1 → L2` (`x = −4,8`, `z 6 → 16,4`), ESC-4 `L1 → L2` (`x = 4,8`, `z −18 → −7,6`). Każde ma model `mall_escalator` oraz niewidoczną rampę `walkable` o czystym obrocie `rotation.x`, nachyleniu 26,565° i szerokości 2 m, z niewidocznymi barierkami po bokach (`0,2 × 1,05 m`). ESC-1 kończy się na Moście Południowym L1 (`Z ∈ [3, 6]`), ESC-3 zaczyna się na jego południowej krawędzi i kończy podestem `2,4 × 1,6 m` przy południowym pasażu L2, ESC-4 kończy się podestem przy Moście Północnym L2 (`Z ∈ [−6, −3]`), ESC-2 przy północnym pasażu L1. Dwie klatki narożne (północny zachód i północny wschód) to dwubiegowe schody z biegami 5,2 m i spocznikami na `y = 2,6` i `7,8`. Winda panoramiczna `mall_elevator` stoi przy północnej krawędzi atrium (`(0, −16)`), z niewidocznym blokiem całego szybu. Szklane balustrady (`mall_glass_rail` i panele `glass_clear` na resztę odcinka) obiegają atrium, oba mostki i podesty; przerwy są tylko na schody. Dwanaście słupów `1 × 15,6 × 1 m`, na nich `mall_security_fixture`.
 - **Sklepy** (każdy zamknięty dwiema kratami `mall_shutter_grille` z kolizją, fryz `mall_storefront` ze szyldem neonowym, bramki `mall_security_gates`, lada `mall_checkout_counter`, kasetony `mall_ceiling_panel`, listwy LED i ekrany emisyjne, plakaty, logo na tylnej ścianie):
 
@@ -596,7 +596,7 @@ Generator `node tools/arenas/run/run2.mjs` (pliki pomocnicze `_run2Kit.mjs`, `_r
 
 **Liczby po E1.** 1592 bloki (196 z modelem, 54 `walkable`, 48 niewidocznych), 288 dekoracji, 24 światła, 126 szyldów, 57 decali, 4 zagrożenia i 16 spawnów. Bez zmian `roomPools`.
 
-**Zamienniki zasobów nadal obecne.** Dedykowanych marek nie mają S-04 (`cat_cafe`), S-06 (`mall_fashion` dla NEO-TAILOR), S-08 (`pharmacy`), S-09 (`karaoke`), S-11 (`warsztat`), S-13 (`cocktail`), S-14 (`repair`), S-15 (`ramen`). To pozostały zakres przyszłych szyldów poza wymaganym zestawem etapu C. Oznaczenia `floor_l0…l2`, ekran `screen_mall_directory`, cztery decale galerii, trzy powierzchnie i ich wersje komiksowe oraz plakaty „NOWA KOLEKCJA”, „-30%”, „OTWARCIE 9:00” są już docelowe. Kałuże `puddle1/2`, strzałki `floor_arrow` i pasy `floor_hazard` pozostają przy rzeczywistych kałużach, drogach i hazardach.
+**Zamienniki zasobów nadal obecne.** Dedykowanych marek nie mają S-04 (`cat_cafe`), S-06 (`mall_fashion` dla NEO-TAILOR), S-09 (`karaoke`), S-14 (`repair`), S-15 (`ramen`). To pozostały zakres przyszłych szyldów poza wymaganym zestawem etapu C. Oznaczenia `floor_l0…l2`, ekran `screen_mall_directory`, cztery decale galerii, trzy powierzchnie i ich wersje komiksowe oraz plakaty „NOWA KOLEKCJA”, „-30%”, „OTWARCIE 9:00” są już docelowe. Kałuże `puddle1/2`, strzałki `floor_arrow` i pasy `floor_hazard` pozostają przy rzeczywistych kałużach, drogach i hazardach. Balustrada południowa L2 ma przerwę na wyjście ESC-3, a podesty L2 sięgają do krawędzi biegów.
 
 **Odstępstwa od projektu.**
 
