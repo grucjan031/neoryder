@@ -23,7 +23,10 @@ export const levelZoneSchema = z.discriminatedUnion('kind', [
     radiusM: z.number().finite().positive(),
   }),
 ]);
-const dependency = z.object({ kind: z.enum(['objective', 'encounter']), id });
+const dependency = z.object({
+  kind: z.enum(['objective', 'encounter', 'alarm']),
+  id,
+});
 /**
  * Sojusznik na poziomie: `id` z `src/data/allies`, `spawn` to stopy. Bez `joinAfter` dołącza
  * na starcie; z nim dopiero po ukończeniu celu albo spotkania.
@@ -31,7 +34,9 @@ const dependency = z.object({ kind: z.enum(['objective', 'encounter']), id });
 export const levelAllySchema = z.object({
   id,
   spawn: vec3Schema,
-  joinAfter: dependency.optional(),
+  joinAfter: dependency
+    .extend({ kind: z.enum(['objective', 'encounter']) })
+    .optional(),
 });
 export type LevelAlly = z.infer<typeof levelAllySchema>;
 
@@ -88,6 +93,7 @@ export const levelSchema = z
             patrols: z
               .array(
                 z.object({
+                  enemy: id.optional(),
                   points: z.array(vec3Schema).nonempty(),
                   mode: z.enum(['loop', 'pingpong']),
                   waitS: z.number().finite().nonnegative().optional(),
@@ -151,7 +157,11 @@ export const levelSchema = z
     const known = (entry: z.infer<typeof dependency>) =>
       entry.kind === 'objective'
         ? level.objectiveOrder.includes(entry.id)
-        : level.encounters.some((encounter) => encounter.id === entry.id);
+        : entry.kind === 'alarm'
+          ? level.encounters.some(
+              (e) => e.stealth && (e.stealth.alarmGroup ?? e.id) === entry.id,
+            )
+          : level.encounters.some((encounter) => encounter.id === entry.id);
     for (const entry of [
       ...level.encounters,
       ...level.checkpoints,
@@ -292,6 +302,19 @@ export function loadLevel(
   } else if (mission.objectives.some((o) => o.kind === 'escortPayload')) {
     throw new Error('Cel escortPayload wymaga wagonu poziomu.');
   }
+  const groups = new Set(
+    level.encounters.flatMap((e) =>
+      e.stealth ? [e.stealth.alarmGroup ?? e.id] : [],
+    ),
+  );
+  for (const group of [
+    ...(mission.bonuses ?? []).map((b) => b.alarmGroup),
+    ...mission.objectives.flatMap((o) =>
+      o.kind === 'defend' && o.raiseAlarm ? [o.raiseAlarm.group] : [],
+    ),
+  ])
+    if (!groups.has(group))
+      throw new Error(`Nieznana grupa alarmowa: ${group}`);
   if (mission.level !== level.id)
     throw new Error('Poziom nie odpowiada misji.');
   if (

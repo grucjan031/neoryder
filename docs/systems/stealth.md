@@ -21,4 +21,12 @@ Trafienie ostrzem strażnika w stanie `unaware` lub `suspicious` z tylnego sekto
 
 Otwórz `?scene=stealth-test&debug=1`, wpisz `stealth reset`, potem `stealth cones on`. Przed graczem stoi szturmowiec. Komenda `stealth suspect` ustawia u patroli „?”, a `stealth alarm` ustawia „!”. Podejrzenie można także wywołać strzałem obok strażnika. Komenda `stealth state` wypisuje id, archetyp, stan i czujność ocalałych. Łatwy wariant podejścia od tyłu zaczyna się po resecie i przełączeniu na ostrze komendą `hold blade`.
 
+## M07
+
+Hala i magazyn dzielą grupę `przychodnia`. Stanowisko z polem `patrols[].enemy` przydziela trasę według archetypu i ustawia strażnika w pierwszym punkcie. Pojedynczy punkt oznacza posterunek. Dzięki temu kolejność wylosowana przez dyrektora fali nie przestawia kamery ani ochrony chłodziarki. Ujemna strona hali za przegrodą przy z = −3,4 prowadzi obok patroli.
+
+Cichy patrol ma lokalny cykl fali. Radio pozostaje w trybie spokojnym, a Nadia otwiera ogień do strażnika po jego namierzeniu. Starcie kończy się po śmierci ostatniego wroga albo po opuszczeniu sekcji przed alarmem. Ominięci strażnicy pozostają na mapie. Wykrycie uruchamia pościg i zamyka rolety na czas starcia w hali. Przy 60% transferu serwer zgłasza tę samą grupę. Ten sygnał obsługuje kwestia transferu. Kwestia o meldunku patrolu pada przy wcześniejszym wykryciu. Istniejący rozkaz zabrania próbki przy starcie pościgu ma warunek `beforeObjective: kapsula`, więc po odebraniu kapsuły Bajt nie przerywa transmisji sprzecznym komunikatem.
+
+Do podglądu uruchom odblokowaną M07 z `debug=1`, wpisz `objective done krata`, `checkpoint hala`, potem `tp 132 0 -90`. Wzrok skierowany jest wzdłuż głównego przejścia. `alarm state` zwraca grupy, meldunki, stany strażników i wynik premii. `alarm przychodnia` wymusza meldunek, a `hurt 99999` przy wyłączonej nieśmiertelności pozwala sprawdzić powrót do checkpointu.
+
 Scena pokazuje alarm nad postaciami. Integracja z celami misji, radiem i posiłkami korzysta z identyfikatora grupy w zdarzeniu `alarm_raised`.

@@ -73,6 +73,8 @@ const state = (scene: MissionScene) =>
     objectives: Record<string, string>;
     completedEncounters: string[];
     activeEncounters: string[];
+    inCombat: boolean;
+    bonusStates: Record<string, string>;
     openGates: string[];
   };
 const position = (scene: MissionScene) =>
@@ -94,15 +96,14 @@ function walkTo(
     if (Math.hypot(dx, dz) <= 0.12) return at;
     commands.execute(`look ${(Math.atan2(-dx, -dz) * 180) / Math.PI}`);
     scene.step(SIM_DT, walk);
-    if (state(scene).activeEncounters.length)
-      commands.execute('encounter clear');
+    if (state(scene).inCombat) commands.execute('encounter clear');
   }
   throw new Error(
     `Nie można dojść do (${x}, ${z}): ${JSON.stringify(position(scene))}`,
   );
 }
 
-it('ładuje poziom M07: pięć sekcji, siedem spotkań, cele krata, kapsula, serwer i exit', () => {
+it('ładuje poziom M07: pięć sekcji, dziewięć spotkań, cele krata, kapsula, serwer i exit', () => {
   expect(loadLevel(data, mission, levelWaves)).toEqual(level);
   expect(mission.level).toBe(ID);
   expect(mission.requires).toEqual(['m06-odlewnia']);
@@ -114,6 +115,8 @@ it('ładuje poziom M07: pięć sekcji, siedem spotkań, cele krata, kapsula, ser
     'targ',
   ]);
   expect(level.encounters.map((entry) => entry.id)).toEqual([
+    'cisza-hala',
+    'cisza-magazyn',
     'alarm-hala',
     'wieza-magazynu',
     'czujnik-serwera',
@@ -171,9 +174,12 @@ it('LevelRuntime: alarm tylko w korytarzu środkowym hali; pościg dopiero po se
   const runtime = new LevelRuntime(level);
   const base = { krata: 'done', kapsula: 'active', serwer: 'pending' };
   // Pasy boczne hali (boksy zabiegowe) są ciche.
-  expect(runtime.step({ x: 146, y: 0, z: -9.2 }, base)).toEqual([]);
+  expect(runtime.step({ x: 146, y: 0, z: -9.2 }, base)).toEqual(['cisza-hala']);
+  expect(runtime.inCombat).toBe(false);
   expect(runtime.step({ x: 146, y: 0, z: 9.2 }, base)).toEqual([]);
-  // Oświetlony korytarz środkowy to wykrycie.
+  runtime.raisedAlarms.add('inna');
+  expect(runtime.step({ x: 146, y: 0, z: 0 }, base)).toEqual([]);
+  runtime.raisedAlarms.add('przychodnia');
   expect(runtime.step({ x: 146, y: 0, z: 0 }, base)).toEqual(['alarm-hala']);
   expect(runtime.openGates(base)).not.toContain('gate-rolety');
   runtime.clear('alarm-hala');
@@ -186,7 +192,7 @@ it('LevelRuntime: alarm tylko w korytarzu środkowym hali; pościg dopiero po se
   // Fale celu defend nie startują od strefy.
   expect(
     runtime.step({ x: 241, y: 0, z: 0 }, { ...base, serwer: 'active' }),
-  ).toEqual([]);
+  ).toEqual(['wieza-magazynu']);
 });
 
 it('misja wymaga M06, a cele są ułożone w kolejności', async () => {
@@ -227,6 +233,71 @@ it('bramy mają kolizję do czasu celu: krata, magazyn, serwerownia i winda', as
   expect(state(scene).openGates).not.toContain('gate-winda');
   steps(scene, 2);
 }, 120_000);
+
+it('waliduje grupę i zachowuje 24 pierwotnych wrogów oraz pięciu strażników', () => {
+  const broken = structuredClone(level);
+  broken.encounters.find((e) => e.id === 'alarm-hala')!.after!.id = 'obca';
+  expect(() => loadLevel(broken, mission, levelWaves)).toThrow(/zależność/);
+  const count = level.encounters
+    .flatMap((e) => levelWaves.get(e.wave)!.waves.flatMap((w) => w.groups))
+    .reduce((total, g) => total + g.count, 0);
+  expect(count).toBe(29);
+});
+
+it('przywraca alarm i premię z checkpointu; późny alarm nie odbiera zdobytej premii', async () => {
+  const store = await unlockedStore();
+  const { scene, commands } = await setup(store);
+  commands.execute('objective done krata');
+  commands.execute('checkpoint hala');
+  steps(scene, 10);
+  commands.execute('alarm przychodnia');
+  expect(scene.query('mission')).toMatchObject({
+    bonusStates: { 'ciche-przejscie': 'failed' },
+    inCombat: true,
+  });
+  commands.execute('hurt 99999');
+  steps(scene, Math.ceil(tuning.level.respawnDelayS / SIM_DT) + 15);
+  expect(scene.query('mission')).toMatchObject({
+    raisedAlarms: [],
+    bonusStates: {},
+    inCombat: false,
+  });
+  commands.execute('objective done kapsula');
+  commands.execute('checkpoint serwerownia');
+  commands.execute('god');
+  commands.execute('tp 238 0 -90');
+  steps(scene, 390);
+  expect(scene.query('mission')).toMatchObject({
+    raisedAlarms: ['przychodnia'],
+    bonusStates: { 'ciche-przejscie': 'done' },
+  });
+  commands.execute('checkpoint targ');
+  await vi.waitFor(() => expect(scene.query('savePending')).toBe(false));
+  expect(await store.loadMission!()).toMatchObject({
+    raisedAlarms: ['przychodnia'],
+    bonusStates: { 'ciche-przejscie': 'done' },
+  });
+});
+
+it('wypłaca premię w tej samej transakcji co wynik, także przy powtórce', async () => {
+  const finish = async (store: SaveStore, silent: boolean) => {
+    const { commands, scene } = await setup(store);
+    commands.execute('objective done krata');
+    if (!silent) commands.execute('alarm przychodnia');
+    for (const id of ['kapsula', 'serwer', 'exit'])
+      commands.execute('objective done ' + id);
+    await vi.waitFor(() => expect(scene.query('screen')).toBe('summary'));
+    return (await store.loadMeta())!.meta;
+  };
+  const quiet = await unlockedStore(),
+    loud = await unlockedStore();
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const a = await finish(quiet, true),
+      b = await finish(loud, false);
+    expect(a.data - b.data).toBe(attempt * 20);
+    expect(a.lastRuns[0]!.rewards.data - b.lastRuns[0]!.rewards.data).toBe(20);
+  }
+});
 
 const route: Record<string, [number, number][]> = {
   krata: [
@@ -288,7 +359,7 @@ it('pozwala fizycznie przejść całą trasę po cichym pasie: bramy, kapsuła, 
     expect(state(scene).objectives[id]).toBe('done');
     // Zakradanie: do końca fazy cichej alarm hali nie padł.
     if (id === 'kapsula')
-      expect(state(scene).completedEncounters).not.toContain('alarm-hala');
+      expect(state(scene).bonusStates['ciche-przejscie']).toBe('done');
   }
   expect(state(scene).completedEncounters).toEqual(
     expect.arrayContaining([

@@ -11,9 +11,10 @@ import { lerpPose } from './prototypeScene';
 import { PrototypeHud } from '../ui/prototypeHud';
 import prototypeText from '../data/ui/prototypes.pl.json';
 import type { GameContext } from '../core/context';
-import type { EntityId } from '../core/events';
+import { EventBus, type EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
 import type { RunSummary } from '../core/runTypes';
+import { MetaManager } from '../progression/meta';
 import { Rng } from '../core/rng';
 import { MissionHints } from '../world/missionHints';
 import type { HintEvent } from '../world/missionSchema';
@@ -56,7 +57,11 @@ export interface MissionSceneOptions {
   navigate?: (url: string) => void;
   loadModels?: boolean;
 }
-type ActiveEncounter = { director: WaveDirector; enemies: Set<EntityId> };
+type ActiveEncounter = {
+  director: WaveDirector;
+  enemies: Set<EntityId>;
+  dispose(): void;
+};
 
 /** Host jednej ciągłej mapy; nie tworzy RunState ani RunManager. */
 export class MissionScene implements Scene {
@@ -89,6 +94,7 @@ export class MissionScene implements Scene {
     | 'summary'
     | 'error'
     | 'failed' = 'loading';
+  private scriptedAlarm?: string;
   private deathTimer = 0;
   private disposed = false;
   private ready = false;
@@ -191,6 +197,8 @@ export class MissionScene implements Scene {
     this.runtime = new LevelRuntime(
       this.level,
       this.snapshot.completedEncounters,
+      this.snapshot.raisedAlarms,
+      this.snapshot.bonusStates,
     );
     if (this.snapshot.completed) {
       this.registerCommands();
@@ -240,6 +248,7 @@ export class MissionScene implements Scene {
         linearMission: {
           definition: this.positionedMission(),
           order: this.level.objectiveOrder,
+          bonusState: (id) => this.runtime.bonusStates[id],
           objectives: this.snapshot.objectives,
         },
         reinforce: (_wave, key) => this.pendingReinforcements.add(key),
@@ -251,6 +260,7 @@ export class MissionScene implements Scene {
             )
           )
             this.signal('boss:defeated');
+          this.objectiveSignal(trigger);
           this.signal(trigger);
           if (trigger.endsWith(':done')) {
             this.persist();
@@ -327,6 +337,14 @@ export class MissionScene implements Scene {
         else this.persist();
       });
     this.off.push(
+      ctx.bus.on('alarm_raised', ({ groupId }) => {
+        if (this.runtime.raisedAlarms.has(groupId)) return;
+        this.runtime.raisedAlarms.add(groupId);
+        for (const b of definition.bonuses ?? [])
+          if (b.alarmGroup === groupId && !this.runtime.bonusStates[b.id])
+            this.runtime.bonusStates[b.id] = 'failed';
+        this.signal(`alarm:${groupId}`, this.scriptedAlarm === groupId);
+      }),
       ctx.bus.on('enemy_killed', ({ killer }) => {
         if (
           (this.state === 'playing' || this.state === 'respawning') &&
@@ -353,8 +371,40 @@ export class MissionScene implements Scene {
     await this.saving;
   }
 
-  private signal(trigger: string): void {
-    this.radio?.signal(trigger);
+  private forceAlarm(group: string): void {
+    if (this.runtime.raisedAlarms.has(group)) return;
+    this.room?.forceEncounterAlarm(group);
+    if (!this.runtime.raisedAlarms.has(group))
+      this.ctx.bus.emit('alarm_raised', { groupId: group });
+  }
+
+  private objectiveSignal(trigger: string): void {
+    const [, id, action, percent] = trigger.split(':');
+    if (action === 'done') {
+      for (const b of this.definition.bonuses ?? []) {
+        if (b.until !== id || this.runtime.bonusStates[b.id]) continue;
+        this.runtime.bonusStates[b.id] = 'done';
+        this.signal(`bonus:${b.id}:done`);
+      }
+    }
+    if (action !== 'progress') return;
+    const o = this.definition.objectives.find((o) => o.id === id);
+    if (
+      o?.kind !== 'defend' ||
+      !o.raiseAlarm ||
+      Number(percent) !== Math.round(o.raiseAlarm.atProgress * 100)
+    )
+      return;
+    this.scriptedAlarm = o.raiseAlarm.group;
+    try {
+      this.forceAlarm(this.scriptedAlarm);
+    } finally {
+      this.scriptedAlarm = undefined;
+    }
+  }
+
+  private signal(trigger: string, skipRadio = false): void {
+    if (!skipRadio) this.radio?.signal(trigger, this.objectives());
     if (this.hints && loadSettings().missionHints) this.hints.trigger(trigger);
   }
 
@@ -414,6 +464,10 @@ export class MissionScene implements Scene {
       encounter: this.level.encounters,
       checkpoint: this.level.checkpoints,
       objective: this.definition.objectives,
+      bonus: this.definition.bonuses ?? [],
+      alarm: this.level.encounters.flatMap((e) =>
+        e.stealth ? [{ id: e.stealth.alarmGroup ?? e.id }] : [],
+      ),
     };
     for (const { trigger } of [
       ...this.definition.radio,
@@ -486,7 +540,8 @@ export class MissionScene implements Scene {
 
   private persist(): void {
     if (!this.snapshot || this.disposed) return;
-    this.snapshot.objectives = { ...this.objectives() };
+    if (!this.definition.bonuses?.length)
+      this.snapshot.objectives = { ...this.objectives() };
     const save = structuredClone(this.snapshot);
     this.enqueue(() => this.store.saveMission!(save));
   }
@@ -508,7 +563,10 @@ export class MissionScene implements Scene {
   }
 
   private checkpoint(id: string): void {
+    this.snapshot.objectives = { ...this.objectives() };
     this.snapshot.checkpointId = id;
+    this.snapshot.raisedAlarms = [...this.runtime.raisedAlarms];
+    this.snapshot.bonusStates = { ...this.runtime.bonusStates };
     this.snapshot.completedEncounters = [...this.runtime.completed];
     this.persist();
     this.room?.restoreAllies();
@@ -529,6 +587,11 @@ export class MissionScene implements Scene {
     let marked = 0;
     let patrolIndex = 0;
     let turn = 0;
+    // Muzyka i efekty walki słuchają globalnego wave_started. Patrol ma lokalny cykl fali.
+    const waveBus = encounter.stealth ? new EventBus() : this.ctx.bus;
+    const off = encounter.stealth
+      ? this.ctx.bus.on('enemy_killed', (e) => waveBus.emit('enemy_killed', e))
+      : undefined;
     const director = new WaveDirector(
       definition,
       {
@@ -539,24 +602,34 @@ export class MissionScene implements Scene {
           }
           const assault =
             marked < (encounter.saboteurs ?? 0) && this.payloadRoom;
-          const spawn = assault
-            ? assaultPoints[marked % assaultPoints.length]!
-            : position;
+          const groupId = encounter.stealth?.alarmGroup ?? encounter.id;
+          const station = encounter.stealth?.patrols?.find(
+            (p) => p.enemy === enemy,
+          );
+          const spawn = station
+            ? station.points[0]!
+            : assault
+              ? assaultPoints[marked % assaultPoints.length]!
+              : position;
           const id = this.room!.spawnEncounterEnemy(
             enemy,
             {
               ...spawn,
-              y: encounter.spawnHeightM ?? position.y,
+              y: station?.points[0]?.y ?? encounter.spawnHeightM ?? position.y,
             },
             undefined,
             undefined,
             encounter.stealth
               ? {
-                  groupId: encounter.stealth.alarmGroup ?? encounter.id,
+                  groupId,
+                  reportedAt: this.runtime.raisedAlarms.has(groupId)
+                    ? { ...this.room!.playerSnapshot().position }
+                    : undefined,
                   visionAngleDeg: encounter.stealth.visionAngleDeg,
                   visionRangeM: encounter.stealth.visionRangeM,
                   sentry: enemy === 'drone',
                   patrol:
+                    station ??
                     encounter.stealth.patrols?.[
                       patrolIndex % (encounter.stealth.patrols.length || 1)
                     ],
@@ -578,14 +651,24 @@ export class MissionScene implements Scene {
           return id;
         },
         playerPosition: () => this.room!.playerSnapshot().position,
-        // Boss jest jeden niezależnie od mnożnika liczebności poziomu trudności.
-        ...(encounter.bossFor ? { difficulty: 'normal' as const } : {}),
+        // Boss oraz obsadzone stanowiska patrolu mają stałą liczebność.
+        ...(encounter.bossFor ||
+        encounter.stealth?.patrols?.some((p) => p.enemy)
+          ? { difficulty: 'normal' as const }
+          : {}),
       },
-      this.ctx.bus,
+      waveBus,
       new Rng(this.snapshot.seed).fork(`encounter:${id}`),
     );
     this.runtime.active.add(id);
-    this.active.set(id, { director, enemies });
+    this.active.set(id, {
+      director,
+      enemies,
+      dispose: () => {
+        off?.();
+        director.dispose();
+      },
+    });
     director.start();
     this.signal(`encounter:${id}:started`);
   }
@@ -597,14 +680,21 @@ export class MissionScene implements Scene {
   }
 
   private respawn(): void {
-    for (const entry of this.active.values()) entry.director.dispose();
+    for (const entry of this.active.values()) entry.dispose();
     this.active.clear();
     this.pendingReinforcements.clear();
     this.runtime = new LevelRuntime(
       this.level,
       this.snapshot.completedEncounters,
+      this.snapshot.raisedAlarms,
+      this.snapshot.bonusStates,
     );
     const point = this.currentCheckpoint();
+    if (this.definition.bonuses?.length)
+      Object.assign(
+        this.room!.objectiveModel()!.objectives,
+        this.snapshot.objectives,
+      );
     this.room!.resetLevelCombat(point.position, point.yawDeg);
     this.room!.objectiveModel()?.resetTimers();
     this.payloadRoom?.restorePayload(point.payloadDistanceM!);
@@ -615,7 +705,7 @@ export class MissionScene implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     if (!this.ready || this.disposed) return;
-    this.radio?.setCombat(this.active.size > 0);
+    this.radio?.setCombat(this.runtime.inCombat);
     this.radio?.step(dt);
     this.updateHints(dt);
     if (this.state === 'respawning') {
@@ -665,15 +755,26 @@ export class MissionScene implements Scene {
       if (capture?.kind === 'subdue') {
         if (this.objectives()[capture.neutralizeWith] !== 'done') continue;
         entry.director.stop();
-        entry.director.dispose();
+        entry.dispose();
         this.active.delete(id);
         this.runtime.clear(id);
         this.room!.allyDependencyDone('encounter', id);
         this.signal(`encounter:${id}:done`);
         continue;
       }
-      if (entry.director.currentPhase === 'done') {
-        entry.director.dispose();
+      const encounter = this.level.encounters.find((e) => e.id === id)!;
+      const section =
+        encounter.stealth &&
+        this.level.sections.find((s) =>
+          insideLevelZone(encounter.zone.position, s.zone),
+        );
+      if (
+        entry.director.currentPhase === 'done' ||
+        (section &&
+          this.runtime.quiet(id) &&
+          !insideLevelZone(position, section.zone))
+      ) {
+        entry.dispose();
         this.active.delete(id);
         this.runtime.clear(id);
         const bossFor = this.level.encounters.find(
@@ -788,6 +889,8 @@ export class MissionScene implements Scene {
     if (this.state === 'settling' || this.state === 'summary' || this.disposed)
       return;
     this.state = 'settling';
+    this.snapshot.bonusStates = { ...this.runtime.bonusStates };
+    this.snapshot.raisedAlarms = [...this.runtime.raisedAlarms];
     this.snapshot.completed = true;
     this.snapshot.objectives = { ...this.objectives() };
     // Osobny zapis ukończenia musi poprzedzać zapis nagród.
@@ -814,14 +917,29 @@ export class MissionScene implements Scene {
         implants: this.snapshot.implants,
         damage: { melee: 0, power: 0, gun: 0, other: 0 },
       };
-      meta.applyRun(summary, this.snapshot.attemptId);
-      await saveMetaManager(this.store, meta);
+      const result = meta.applyRun(summary, this.snapshot.attemptId);
+      const bonuses = (this.definition.bonuses ?? []).map((b) => ({
+        label: b.label,
+        done: this.runtime.bonusStates[b.id] === 'done',
+        data: this.runtime.bonusStates[b.id] === 'done' ? b.reward.data : 0,
+      }));
+      const extra = bonuses.reduce((sum, b) => sum + b.data, 0);
+      let settled = meta;
+      if (result.applied && extra > 0) {
+        const state = meta.serialize();
+        state.data += extra;
+        state.lastRuns[0]!.rewards.data += extra;
+        settled = MetaManager.restore(state);
+      }
+      await saveMetaManager(this.store, settled);
       await this.store.clearMission!();
       if (this.disposed) return;
       this.state = 'summary';
       if (typeof document !== 'undefined')
-        this.disposeSummary = showLinearSummary(this.definition, () =>
-          this.navigate('?scene=hub'),
+        this.disposeSummary = showLinearSummary(
+          this.definition,
+          () => this.navigate('?scene=hub'),
+          bonuses,
         );
     } catch (error) {
       this.saveError = error instanceof Error ? error.message : String(error);
@@ -838,6 +956,31 @@ export class MissionScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('alarm', 'alarm <grupa> | alarm state', ([group]) => {
+      const groups = [
+        ...new Set(
+          this.level.encounters.flatMap((e) =>
+            e.stealth ? [e.stealth.alarmGroup ?? e.id] : [],
+          ),
+        ),
+      ];
+      if (group === 'state')
+        return JSON.stringify({
+          groups,
+          raised: [...this.runtime.raisedAlarms],
+          bonuses: Object.fromEntries(
+            (this.definition.bonuses ?? []).map((b) => [
+              b.id,
+              this.runtime.bonusStates[b.id] ?? 'pending',
+            ]),
+          ),
+          guards: this.room?.encounterObservers(),
+        });
+      if (!group || !groups.includes(group) || this.state !== 'playing')
+        return 'Nieznana lub niedostępna grupa.';
+      this.forceAlarm(group);
+      return 'Alarm ogłoszony.';
+    });
     register('hints', 'hints reset|off|on|list', ([action]) => {
       const settings = loadSettings();
       const { id, hints = [] } = this.definition;
@@ -911,7 +1054,7 @@ export class MissionScene implements Scene {
           )
             continue;
           entry.director.stop();
-          entry.director.dispose();
+          entry.dispose();
           this.room!.removeEncounterEnemies([...entry.enemies]);
           this.runtime.clear(id);
           this.room!.allyDependencyDone('encounter', id);
@@ -994,6 +1137,9 @@ export class MissionScene implements Scene {
             checkpointId: this.snapshot.checkpointId,
             objectives: this.objectives(),
             completedEncounters: [...this.runtime.completed],
+            raisedAlarms: [...this.runtime.raisedAlarms],
+            bonusStates: { ...this.runtime.bonusStates },
+            inCombat: this.runtime.inCombat,
             activeEncounters: [...this.runtime.active],
             openGates: this.runtime.openGates(this.objectives()),
             elapsedS: this.snapshot.elapsedS,
@@ -1009,7 +1155,7 @@ export class MissionScene implements Scene {
     if (this.disposed) return;
     this.disposed = true;
     for (const off of this.off.splice(0)) off();
-    for (const entry of this.active.values()) entry.director.dispose();
+    for (const entry of this.active.values()) entry.dispose();
     this.active.clear();
     this.room?.dispose();
     this.radio?.dispose();

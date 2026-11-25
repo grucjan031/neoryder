@@ -19,9 +19,12 @@ export class MissionHud {
     string,
     { label: HTMLElement; bar: HTMLProgressElement }
   >();
+  private readonly bonusRows = new Map<string, HTMLElement>();
   constructor(
     private readonly model: MissionObjectives,
     private readonly currentOnly = false,
+    bonuses: MissionDefinition['bonuses'] = [],
+    private readonly bonusState?: (id: string) => string | undefined,
   ) {
     this.root.className = 'mission-hud';
     this.goals.className = 'mission-goals';
@@ -40,11 +43,24 @@ export class MissionHud {
       this.goals.append(row);
       this.rows.set(objective.id, { label, bar });
     }
+    for (const b of bonuses) {
+      const row = document.createElement('div');
+      row.dataset.label = b.label;
+      this.bonusRows.set(b.id, row);
+      this.goals.append(row);
+    }
     this.goals.hidden = this.rows.size === 0;
     this.root.append(this.goals);
     document.body.append(this.root);
   }
   step(): void {
+    for (const [id, row] of this.bonusRows) {
+      const state = this.bonusState?.(id) ?? 'pending';
+      if (state === row.dataset.state) continue;
+      row.dataset.state = state;
+      row.textContent = `${state === 'done' ? '✓ ' : state === 'failed' ? '✗ ' : ''}Dodatkowo: ${row.dataset.label}`;
+      row.style.textDecoration = state === 'failed' ? 'line-through' : '';
+    }
     const current =
       this.model.mission.objectives.find(
         (objective) =>
@@ -153,12 +169,16 @@ export class MissionRadio {
     this.root.append(this.card.root);
     document.body.append(this.root);
   }
-  signal(trigger: string): void {
+  signal(trigger: string, objectives?: Readonly<Record<string, string>>): void {
     // Faza i ostatnie słowa muszą odpowiadać bieżącej walce, nie zaległej kolejce.
     if (trigger === 'boss:defeated' || /^boss:phase:[23]$/.test(trigger))
       this.queue.clear();
     for (const event of this.mission.radio)
-      if (event.trigger === trigger)
+      if (
+        event.trigger === trigger &&
+        (!event.beforeObjective ||
+          objectives?.[event.beforeObjective] !== 'done')
+      )
         this.queue.push(
           event.lines.map(({ speaker, text, shortText }) => ({
             speaker,
@@ -272,6 +292,7 @@ export class MissionDirection {
 export function showLinearSummary(
   mission: MissionDefinition,
   back: () => void,
+  bonuses: readonly { label: string; done: boolean; data: number }[] = [],
 ): () => void {
   const dialog = document.createElement('dialog');
   dialog.className = 'mission-debrief';
@@ -287,7 +308,13 @@ export function showLinearSummary(
     event.preventDefault();
     back();
   });
-  dialog.append(heading, title, button);
+  dialog.append(heading, title);
+  for (const b of bonuses) {
+    const row = document.createElement('p');
+    row.textContent = `${b.done ? '✓' : '✗'} ${b.label} · +${b.data} Danych`;
+    dialog.append(row);
+  }
+  dialog.append(button);
   document.body.append(dialog);
   document.exitPointerLock?.();
   dialog.showModal();

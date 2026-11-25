@@ -301,8 +301,11 @@ interludium. Cele: `krata` (`interact`), `kapsula` (`pickup`, `spawnAfter: krata
 (`defend`, 8 s) i `exit`. Odprawa ma trzy kwestie, debrief sześć; pozostałe kwestie
 odprawy i radia padają na wyzwalaczach poziomu (`checkpoint:`, `enterSection:`,
 `objective:`, `encounter:`), dosłownie ze scenariusza (`missionBriefing.test.ts`).
-Scenariuszowy alarm po wykryciu realizuje układ mapy i spotkanie `alarm-hala`, a ucieczka
-po serwerze nie ma limitu czasu. Cele opcjonalne scenariusza są poza zakresem.
+Patrole hali i magazynu meldują wykrycie grupie `przychodnia`. Przy 60% transferu serwer wymusza alarm tej samej grupy. Meldunek odblokowuje pościg i wieżyczkę. Ucieczka po serwerze nie ma limitu czasu.
+
+Cel dodatkowy „Ciche przejście do magazynu” rozstrzyga się przy pierwszym alarmie albo podniesieniu kapsuły. Zdobyty bonus jest bezpieczny podczas transferu. Każda zwycięska próba z zaliczonym bonusem daje 20 Danych. To premia za wykonanie opcjonalnego zadania w danej próbie. Pierwsze zwycięstwo daje dodatkowo zwykłe 90 Danych i Rdzeń. Identyfikator próby chroni oba składniki przed podwójną wypłatą.
+
+W M07 checkpoint obejmuje jednocześnie cele, ukończone starcia, `raisedAlarms` i `bonusStates`. Śmierć odtwarza ten zestaw i pozycje początkowe patroli. Brak nowych pól w starym zapisie oznacza pustą listę zgłoszeń i brak przyznanej premii.
 Sprawdzenie: po `campaign complete` M01–M04 i M06 otwórz
 `?scene=mission&mission=m07-nocny-dyzur&debug=1`.
 

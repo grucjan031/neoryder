@@ -194,6 +194,7 @@ export interface RoomSceneOptions {
   linearMission?: {
     definition: MissionDefinition;
     order: readonly string[];
+    bonusState?: (id: string) => string | undefined;
     objectives: Record<string, 'pending' | 'active' | 'done'>;
   };
   reinforce?: (wave: string, key: string) => void;
@@ -633,7 +634,11 @@ export class RoomScene implements Scene {
         const list: { id: EntityId; position: Vec3; centerM: number }[] = [];
         if (this.passiveEncounter || this.victoryHold) return list;
         this.manager.forEach((enemy) => {
-          if (!enemy.removed && enemy.current.state !== 'dead')
+          if (
+            !enemy.removed &&
+            enemy.current.state !== 'dead' &&
+            (!enemy.perception || enemy.perception.state === 'alerted')
+          )
             list.push({
               id: enemy.id,
               position: enemy.current.position,
@@ -989,6 +994,8 @@ export class RoomScene implements Scene {
         this.missionHud = new MissionHud(
           this.mission,
           Boolean(this.options.linearMission),
+          this.options.linearMission?.definition.bonuses,
+          this.options.linearMission?.bonusState,
         );
       this.missionSignal?.(`enterNode:${this.node.layer}`);
       const guards = this.options.linearMission
@@ -2405,6 +2412,29 @@ export class RoomScene implements Scene {
         delete this.mission.fuses[id];
       }
     }
+  }
+
+  forceEncounterAlarm(group: string): void {
+    this.manager.forceAlarm(group);
+  }
+
+  encounterObservers() {
+    const guards: {
+      id: EntityId;
+      state: string;
+      group: string;
+      position: Vec3;
+    }[] = [];
+    this.manager.forEach((e) => {
+      if (e.perception && !e.removed && e.current.state !== 'dead')
+        guards.push({
+          id: e.id,
+          state: e.perception.state,
+          group: e.perception.spawn.groupId,
+          position: { ...e.current.position },
+        });
+    });
+    return guards;
   }
 
   removeEncounterEnemies(ids: readonly EntityId[]): void {

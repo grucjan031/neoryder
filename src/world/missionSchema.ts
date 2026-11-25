@@ -31,7 +31,7 @@ export type RadioPriority = (typeof RADIO_PRIORITIES)[number];
  * misji liniowej (id sekcji, spotkania i punktu kontrolnego poziomu).
  */
 export const RADIO_TRIGGER =
-  /^(runStart|objectivesDone|payload:attacked|boss:phase:[23]|boss:defeated|enterNode:[1-9]\d*|enterSection:[^:\s]+|encounter:[^:\s]+:(started|done)|checkpoint:[^:\s]+|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/;
+  /^(runStart|objectivesDone|payload:attacked|boss:phase:[23]|boss:defeated|alarm:[^:\s]+|bonus:[^:\s]+:done|enterNode:[1-9]\d*|enterSection:[^:\s]+|encounter:[^:\s]+:(started|done)|checkpoint:[^:\s]+|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/;
 const hintEvents = [
   'player_jumped',
   'dash_used',
@@ -125,6 +125,12 @@ export const missionObjectiveSchema = z.discriminatedUnion('kind', [
     position: vec3Schema,
     radiusM: positive,
     durationS: positive,
+    raiseAlarm: z
+      .object({
+        group: id,
+        atProgress: z.number().min(0).max(1).multipleOf(0.01),
+      })
+      .optional(),
     holdS: z.number().finite().nonnegative().default(0),
     checkpoints: z
       .array(z.number().finite().gt(0).lt(1))
@@ -206,9 +212,21 @@ export const missionSchema = z
         trigger: z.string().regex(RADIO_TRIGGER),
         /** `story` czeka na spokój (brak aktywnych spotkań); brak pola = `tactical`, od razu. */
         priority: z.enum(RADIO_PRIORITIES).optional(),
+        beforeObjective: id.optional(),
         lines: z.array(dialogueLineSchema).min(1),
       }),
     ),
+    bonuses: z
+      .array(
+        z.object({
+          ...base,
+          kind: z.literal('noAlarm'),
+          alarmGroup: id,
+          until: id,
+          reward: z.object({ data: count }),
+        }),
+      )
+      .optional(),
     rewards: z.object({
       firstClear: z.object({ data: count, cores: count.optional() }),
     }),
@@ -225,6 +243,18 @@ export const missionSchema = z
       fail(
         'Cel reach wymaga poziomu liniowego z obsługą powrotu do checkpointu.',
       );
+    for (const line of mission.radio)
+      if (
+        line.beforeObjective &&
+        (!mission.level || !objectives.has(line.beforeObjective))
+      )
+        fail('Nieznany warunek radia.');
+    const bonuses = mission.bonuses ?? [];
+    if (
+      new Set(bonuses.map((b) => b.id)).size !== bonuses.length ||
+      bonuses.some((b) => !mission.level || !objectives.has(b.until))
+    )
+      fail('Nieprawidłowe cele dodatkowe.');
     if (objectives.size !== mission.objectives.length)
       fail('Powtórzone id celu.');
     for (const objective of mission.objectives) {

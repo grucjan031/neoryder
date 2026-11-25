@@ -9416,18 +9416,166 @@
   ],
   "encounters": [
     {
-      "id": "alarm-hala",
+      "id": "cisza-hala",
       "zone": {
         "kind": "box",
         "position": {
-          "x": 146,
+          "x": 145.0,
           "y": 2,
           "z": 0
         },
         "size": {
-          "x": 36,
+          "x": 54,
           "y": 8,
-          "z": 6.4
+          "z": 28
+        }
+      },
+      "wave": "m07CiszaHala",
+      "spawnPoints": [
+        {
+          "x": 166,
+          "z": 4
+        },
+        {
+          "x": 160,
+          "z": 8.8
+        },
+        {
+          "x": 165.5,
+          "z": 4.8
+        }
+      ],
+      "stealth": {
+        "alarmGroup": "przychodnia",
+        "patrols": [
+          {
+            "enemy": "assaulter",
+            "points": [
+              {
+                "x": 166,
+                "y": 0,
+                "z": 4
+              },
+              {
+                "x": 166,
+                "y": 0,
+                "z": 1
+              },
+              {
+                "x": 136,
+                "y": 0,
+                "z": 1
+              }
+            ],
+            "mode": "pingpong",
+            "waitS": 0.8
+          },
+          {
+            "enemy": "gunner",
+            "points": [
+              {
+                "x": 160,
+                "y": 0,
+                "z": 8.8
+              },
+              {
+                "x": 136,
+                "y": 0,
+                "z": 8.8
+              }
+            ],
+            "mode": "pingpong",
+            "waitS": 0.8
+          },
+          {
+            "enemy": "drone",
+            "points": [
+              {
+                "x": 165.5,
+                "y": 0,
+                "z": 4.8
+              }
+            ],
+            "mode": "pingpong",
+            "waitS": 0.8
+          }
+        ]
+      }
+    },
+    {
+      "id": "cisza-magazyn",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 187.0,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 38,
+          "y": 8,
+          "z": 28
+        }
+      },
+      "wave": "m07CiszaMagazyn",
+      "spawnPoints": [
+        {
+          "x": 193,
+          "z": 7.2
+        },
+        {
+          "x": 201,
+          "z": -7.2
+        }
+      ],
+      "stealth": {
+        "alarmGroup": "przychodnia",
+        "patrols": [
+          {
+            "enemy": "gunner",
+            "points": [
+              {
+                "x": 193,
+                "y": 0,
+                "z": 7.2
+              },
+              {
+                "x": 178,
+                "y": 0,
+                "z": 7.2
+              }
+            ],
+            "mode": "pingpong",
+            "waitS": 0.8
+          },
+          {
+            "enemy": "assaulter",
+            "points": [
+              {
+                "x": 201,
+                "y": 0,
+                "z": -7.2
+              }
+            ],
+            "mode": "pingpong",
+            "waitS": 0.8
+          }
+        ]
+      }
+    },
+    {
+      "id": "alarm-hala",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 183.0,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 130,
+          "y": 8,
+          "z": 28
         }
       },
       "wave": "m07Hala",
@@ -9448,21 +9596,25 @@
           "x": 167,
           "z": 5
         }
-      ]
+      ],
+      "after": {
+        "kind": "alarm",
+        "id": "przychodnia"
+      }
     },
     {
       "id": "wieza-magazynu",
       "zone": {
         "kind": "box",
         "position": {
-          "x": 183,
+          "x": 210.0,
           "y": 2,
           "z": 0
         },
         "size": {
-          "x": 22,
+          "x": 76,
           "y": 8,
-          "z": 20
+          "z": 28
         }
       },
       "wave": "m07Magazyn",
@@ -9479,7 +9631,11 @@
           "x": 184,
           "z": -7.2
         }
-      ]
+      ],
+      "after": {
+        "kind": "alarm",
+        "id": "przychodnia"
+      }
     },
     {
       "id": "czujnik-serwera",
