@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-24. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-25. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -28,6 +28,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | 8.250 | 21.317 | 11.017 | 11.017 | 0.749 | 1.935 | 1.000 | TAK |
 | gunner | 2.083 | 1.683 | 2.683 | 2.083 | 1.000 | 0.808 | 1.288 | TAK |
 | hacker | 0.917 | 0.850 | 0.917 | 0.917 | 1.000 | 0.927 | 1.000 | TAK |
+| helixGuard | 2.083 | 2.100 | 2.683 | 2.100 | 0.992 | 1.000 | 1.278 | TAK |
+| helixMedic | 1.583 | 0.850 | 2.683 | 1.583 | 1.000 | 0.537 | 1.695 | TAK |
 | rozstrojony | 2.083 | 1.683 | 2.683 | 2.083 | 1.000 | 0.808 | 1.288 | TAK |
 | shielder | 3.083 | 2.100 | 5.017 | 3.083 | 1.000 | 0.681 | 1.627 | TAK |
 | sniper | 1.583 | 0.850 | 2.683 | 1.583 | 1.000 | 0.537 | 1.695 | TAK |
@@ -40,6 +42,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
 | hacker | plasmaBlade:combo | chain → push | rifle |
+| helixGuard | plasmaBlade:combo | chain → push | scatter |
+| helixMedic | plasmaBlade:combo | chain → push | scatter |
 | rozstrojony | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
@@ -54,6 +58,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | 1.583 | 0.617 | 1.267 | 1.267 | 1.250 | 0.487 | 1.000 | NIE |
 | gunner | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
 | hacker | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
+| helixGuard | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
+| helixMedic | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
 | rozstrojony | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
 | shielder | 0.417 | 0.017 | 0.017 | 0.017 | 25.000 | 1.000 | 1.000 | NIE |
 | sniper | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
@@ -66,6 +72,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | plasmaBlade:combo | chain → push | sniper |
 | gunner | plasmaBlade:combo | chain → push | scatter |
 | hacker | plasmaBlade:combo | chain → push | scatter |
+| helixGuard | plasmaBlade:combo | chain → push | scatter |
+| helixMedic | plasmaBlade:combo | chain → push | scatter |
 | rozstrojony | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
@@ -80,6 +88,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Laser ciągły (beam) | executor | 13.233 | 16.625 | 78.633 | 13.989 |
 | Laser ciągły (beam) | gunner | 1.200 | 37.500 | 15.283 | 14.722 |
 | Laser ciągły (beam) | hacker | 0.600 | 40.000 | 6.083 | 19.726 |
+| Laser ciągły (beam) | helixGuard | 3.533 | 20.377 | 27.033 | 13.317 |
+| Laser ciągły (beam) | helixMedic | 0.800 | 40.000 | 10.183 | 15.712 |
 | Laser ciągły (beam) | rozstrojony | 1.200 | 37.500 | 15.283 | 14.722 |
 | Laser ciągły (beam) | shielder | 3.833 | 23.478 | 31.633 | 14.226 |
 | Laser ciągły (beam) | sniper | 0.900 | 38.889 | 10.683 | 16.381 |
@@ -89,6 +99,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Blaster (blaster) | executor | 3.017 | 72.928 | 22.350 | 49.217 |
 | Blaster (blaster) | gunner | 0.350 | 128.571 | 5.017 | 44.850 |
 | Blaster (blaster) | hacker | 0.183 | 130.909 | 2.850 | 42.105 |
+| Blaster (blaster) | helixGuard | 0.517 | 139.355 | 7.183 | 50.116 |
+| Blaster (blaster) | helixMedic | 0.183 | 174.545 | 2.850 | 56.140 |
 | Blaster (blaster) | rozstrojony | 0.350 | 128.571 | 5.017 | 44.850 |
 | Blaster (blaster) | shielder | 0.683 | 131.707 | 9.350 | 48.128 |
 | Blaster (blaster) | sniper | 0.183 | 190.909 | 2.850 | 61.404 |
@@ -98,6 +110,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Kusza magnetyczna (crossbow) | executor | 0.017 | 13200.000 | 4.483 | 245.353 |
 | Kusza magnetyczna (crossbow) | gunner | 0.017 | 2700.000 | 4.483 | 50.186 |
 | Kusza magnetyczna (crossbow) | hacker | 0.017 | 1440.000 | 4.483 | 26.766 |
+| Kusza magnetyczna (crossbow) | helixGuard | 0.017 | 4320.000 | 4.483 | 80.297 |
+| Kusza magnetyczna (crossbow) | helixMedic | 0.017 | 1920.000 | 4.483 | 35.688 |
 | Kusza magnetyczna (crossbow) | rozstrojony | 0.017 | 2700.000 | 4.483 | 50.186 |
 | Kusza magnetyczna (crossbow) | shielder | 0.017 | 5400.000 | 4.483 | 100.372 |
 | Kusza magnetyczna (crossbow) | sniper | 0.017 | 2100.000 | 4.483 | 39.033 |
@@ -107,6 +121,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Granat EMP (emp) | executor | 24.767 | 8.883 | ∞ | 8.250 |
 | Granat EMP (emp) | gunner | 3.767 | 11.947 | 27.767 | 8.103 |
 | Granat EMP (emp) | hacker | 1.267 | 18.947 | 12.767 | 9.399 |
+| Granat EMP (emp) | helixGuard | 8.267 | 8.710 | 50.267 | 7.162 |
+| Granat EMP (emp) | helixMedic | 2.517 | 12.715 | 20.267 | 7.895 |
 | Granat EMP (emp) | rozstrojony | 3.767 | 11.947 | 27.767 | 8.103 |
 | Granat EMP (emp) | shielder | 9.767 | 9.215 | 57.767 | 7.790 |
 | Granat EMP (emp) | sniper | 2.517 | 13.907 | 20.267 | 8.635 |
@@ -116,6 +132,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pistolet (pistol) | executor | 1.517 | 145.055 | 13.517 | 81.381 |
 | Pistolet (pistol) | gunner | 0.267 | 168.750 | 2.267 | 99.265 |
 | Pistolet (pistol) | hacker | 0.017 | 1440.000 | 1.017 | 118.033 |
+| Pistolet (pistol) | helixGuard | 0.517 | 139.355 | 4.767 | 75.524 |
+| Pistolet (pistol) | helixMedic | 0.017 | 1920.000 | 1.017 | 157.377 |
 | Pistolet (pistol) | rozstrojony | 0.267 | 168.750 | 2.267 | 99.265 |
 | Pistolet (pistol) | shielder | 0.517 | 174.194 | 4.767 | 94.406 |
 | Pistolet (pistol) | sniper | 0.267 | 131.250 | 2.267 | 77.206 |
@@ -125,6 +143,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Rewolwer (revolver) | executor | 1.083 | 203.077 | 8.450 | 130.178 |
 | Rewolwer (revolver) | gunner | 0.017 | 2700.000 | 2.150 | 104.651 |
 | Rewolwer (revolver) | hacker | 0.017 | 1440.000 | 2.150 | 55.814 |
+| Rewolwer (revolver) | helixGuard | 0.017 | 4320.000 | 2.150 | 167.442 |
+| Rewolwer (revolver) | helixMedic | 0.017 | 1920.000 | 2.150 | 74.419 |
 | Rewolwer (revolver) | rozstrojony | 0.017 | 2700.000 | 2.150 | 104.651 |
 | Rewolwer (revolver) | shielder | 0.017 | 5400.000 | 2.150 | 209.302 |
 | Rewolwer (revolver) | sniper | 0.017 | 2100.000 | 2.150 | 81.395 |
@@ -134,6 +154,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Karabin (rifle) | executor | 4.617 | 47.653 | 30.417 | 36.164 |
 | Karabin (rifle) | gunner | 0.317 | 142.105 | 4.717 | 47.703 |
 | Karabin (rifle) | hacker | 0.117 | 205.714 | 0.917 | 130.909 |
+| Karabin (rifle) | helixGuard | 0.617 | 116.757 | 10.417 | 34.560 |
+| Karabin (rifle) | helixMedic | 0.217 | 147.692 | 2.817 | 56.805 |
 | Karabin (rifle) | rozstrojony | 0.317 | 142.105 | 4.717 | 47.703 |
 | Karabin (rifle) | shielder | 0.717 | 125.581 | 10.917 | 41.221 |
 | Karabin (rifle) | sniper | 0.217 | 161.538 | 2.817 | 62.130 |
@@ -143,6 +165,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Rozpraszacz (scatter) | executor | 1.350 | 162.963 | 11.017 | 99.849 |
 | Rozpraszacz (scatter) | gunner | 0.017 | 2700.000 | 2.683 | 83.851 |
 | Rozpraszacz (scatter) | hacker | 0.017 | 1440.000 | 2.683 | 44.720 |
+| Rozpraszacz (scatter) | helixGuard | 0.017 | 4320.000 | 2.683 | 134.161 |
+| Rozpraszacz (scatter) | helixMedic | 0.017 | 1920.000 | 2.683 | 59.627 |
 | Rozpraszacz (scatter) | rozstrojony | 0.017 | 2700.000 | 2.683 | 83.851 |
 | Rozpraszacz (scatter) | shielder | 0.683 | 131.707 | 6.850 | 65.693 |
 | Rozpraszacz (scatter) | sniper | 0.017 | 2100.000 | 2.683 | 65.217 |
@@ -152,6 +176,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pistolet maszynowy (smg) | executor | 3.250 | 67.692 | 25.050 | 43.912 |
 | Pistolet maszynowy (smg) | gunner | 0.350 | 128.571 | 3.383 | 66.502 |
 | Pistolet maszynowy (smg) | hacker | 0.150 | 160.000 | 0.950 | 126.316 |
+| Pistolet maszynowy (smg) | helixGuard | 0.617 | 116.757 | 7.583 | 47.473 |
+| Pistolet maszynowy (smg) | helixMedic | 0.217 | 147.692 | 2.717 | 58.896 |
 | Pistolet maszynowy (smg) | rozstrojony | 0.350 | 128.571 | 3.383 | 66.502 |
 | Pistolet maszynowy (smg) | shielder | 0.750 | 120.000 | 9.683 | 46.472 |
 | Pistolet maszynowy (smg) | sniper | 0.283 | 123.529 | 3.050 | 57.377 |
@@ -161,6 +187,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Snajperka (sniper) | executor | 1.267 | 173.684 | 11.267 | 97.633 |
 | Snajperka (sniper) | gunner | 0.017 | 2700.000 | 5.017 | 44.850 |
 | Snajperka (sniper) | hacker | 0.017 | 1440.000 | 5.017 | 23.920 |
+| Snajperka (sniper) | helixGuard | 0.017 | 4320.000 | 5.017 | 71.761 |
+| Snajperka (sniper) | helixMedic | 0.017 | 1920.000 | 5.017 | 31.894 |
 | Snajperka (sniper) | rozstrojony | 0.017 | 2700.000 | 5.017 | 44.850 |
 | Snajperka (sniper) | shielder | 0.017 | 5400.000 | 5.017 | 89.701 |
 | Snajperka (sniper) | sniper | 0.017 | 2100.000 | 5.017 | 34.884 |
@@ -170,6 +198,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Błyskawica (chain) | executor | 0.850 | 258.824 | 15.783 | 69.694 |
 | Błyskawica (chain) | gunner | 0.017 | 2700.000 | 1.683 | 133.663 |
 | Błyskawica (chain) | hacker | 0.017 | 1440.000 | 1.683 | 71.287 |
+| Błyskawica (chain) | helixGuard | 0.433 | 166.154 | 3.767 | 95.575 |
+| Błyskawica (chain) | helixMedic | 0.017 | 1920.000 | 1.683 | 95.050 |
 | Błyskawica (chain) | rozstrojony | 0.017 | 2700.000 | 1.683 | 133.663 |
 | Błyskawica (chain) | shielder | 0.433 | 207.692 | 3.767 | 119.469 |
 | Błyskawica (chain) | sniper | 0.017 | 2100.000 | 1.683 | 103.960 |
@@ -179,6 +209,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pchnięcie Rezonansu (push) | executor | 3.617 | 60.829 | 65.433 | 16.811 |
 | Pchnięcie Rezonansu (push) | gunner | 0.617 | 72.973 | 5.417 | 41.538 |
 | Pchnięcie Rezonansu (push) | hacker | 0.017 | 1440.000 | 2.417 | 49.655 |
+| Pchnięcie Rezonansu (push) | helixGuard | 1.217 | 59.178 | 17.433 | 20.650 |
+| Pchnięcie Rezonansu (push) | helixMedic | 0.017 | 1920.000 | 2.417 | 66.207 |
 | Pchnięcie Rezonansu (push) | rozstrojony | 0.617 | 72.973 | 5.417 | 41.538 |
 | Pchnięcie Rezonansu (push) | shielder | 1.217 | 73.973 | 17.433 | 25.813 |
 | Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
@@ -188,6 +220,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Fala uderzeniowa (shockwave) | executor | 72.750 | 3.024 | ∞ | 2.917 |
 | Fala uderzeniowa (shockwave) | gunner | 11.550 | 3.896 | 83.550 | 2.693 |
 | Fala uderzeniowa (shockwave) | hacker | 4.350 | 5.517 | 47.550 | 2.524 |
+| Fala uderzeniowa (shockwave) | helixGuard | 22.350 | 3.221 | ∞ | 2.650 |
+| Fala uderzeniowa (shockwave) | helixMedic | 7.950 | 4.025 | 65.550 | 2.441 |
 | Fala uderzeniowa (shockwave) | rozstrojony | 11.550 | 3.896 | 83.550 | 2.693 |
 | Fala uderzeniowa (shockwave) | shielder | 25.950 | 3.468 | ∞ | 2.917 |
 | Fala uderzeniowa (shockwave) | sniper | 7.950 | 4.403 | 65.550 | 2.670 |
@@ -197,6 +231,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Ostrze: combo lekkie (plasmaBlade:combo) | executor | 1.583 | 138.947 | 8.250 | 133.333 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | gunner | 0.250 | 180.000 | 2.083 | 108.000 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | hacker | 0.083 | 288.000 | 0.917 | 130.909 |
+| Ostrze: combo lekkie (plasmaBlade:combo) | helixGuard | 0.250 | 288.000 | 2.083 | 172.800 |
+| Ostrze: combo lekkie (plasmaBlade:combo) | helixMedic | 0.250 | 128.000 | 1.583 | 101.053 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | rozstrojony | 0.250 | 180.000 | 2.083 | 108.000 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | shielder | 0.417 | 216.000 | 3.083 | 145.946 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | sniper | 0.250 | 140.000 | 1.583 | 110.526 |
@@ -206,6 +242,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Ostrze: ciężki atak (plasmaBlade:heavy) | executor | 2.417 | 91.034 | 14.083 | 78.107 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | gunner | 0.667 | 67.500 | 5.333 | 42.188 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | hacker | 0.083 | 288.000 | 2.417 | 49.655 |
+| Ostrze: ciężki atak (plasmaBlade:heavy) | helixGuard | 0.667 | 108.000 | 5.333 | 67.500 |
+| Ostrze: ciężki atak (plasmaBlade:heavy) | helixMedic | 0.667 | 48.000 | 5.333 | 30.000 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | rozstrojony | 0.667 | 67.500 | 5.333 | 42.188 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | shielder | 0.667 | 135.000 | 5.333 | 84.375 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | sniper | 0.667 | 52.500 | 5.333 | 32.813 |
@@ -220,6 +258,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | 8.250 | 29.433 | 11.017 | 11.017 | 0.749 | 2.672 | 1.000 | NIE |
 | gunner | 2.083 | 2.433 | 2.683 | 2.433 | 0.856 | 1.000 | 1.103 | TAK |
 | hacker | 0.917 | 2.417 | 0.917 | 0.917 | 1.000 | 2.636 | 1.000 | NIE |
+| helixGuard | 2.083 | 5.417 | 2.683 | 2.683 | 0.776 | 2.019 | 1.000 | NIE |
+| helixMedic | 1.583 | 2.417 | 2.683 | 2.417 | 0.655 | 1.000 | 1.110 | TAK |
 | rozstrojony | 2.083 | 2.433 | 2.683 | 2.433 | 0.856 | 1.000 | 1.103 | TAK |
 | shielder | 3.083 | 5.417 | 5.017 | 5.017 | 0.615 | 1.080 | 1.000 | TAK |
 | sniper | 1.583 | 2.417 | 2.683 | 2.417 | 0.655 | 1.000 | 1.110 | TAK |
@@ -232,6 +272,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
 | hacker | plasmaBlade:combo | chain → push | rifle |
+| helixGuard | plasmaBlade:combo | chain → push | scatter |
+| helixMedic | plasmaBlade:combo | chain → push | scatter |
 | rozstrojony | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
@@ -246,6 +288,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | 1.583 | 1.817 | 1.267 | 1.583 | 1.000 | 1.147 | 0.800 | TAK |
 | gunner | 0.250 | 0.033 | 0.017 | 0.033 | 7.500 | 1.000 | 0.500 | NIE |
 | hacker | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
+| helixGuard | 0.250 | 0.617 | 0.017 | 0.250 | 1.000 | 2.467 | 0.067 | NIE |
+| helixMedic | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
 | rozstrojony | 0.250 | 0.033 | 0.017 | 0.033 | 7.500 | 1.000 | 0.500 | NIE |
 | shielder | 0.417 | 0.617 | 0.017 | 0.417 | 1.000 | 1.480 | 0.040 | NIE |
 | sniper | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
@@ -258,6 +302,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | executor | plasmaBlade:combo | chain → push | sniper |
 | gunner | plasmaBlade:combo | chain → push | scatter |
 | hacker | plasmaBlade:combo | chain → push | scatter |
+| helixGuard | plasmaBlade:combo | chain → push | scatter |
+| helixMedic | plasmaBlade:combo | chain → push | scatter |
 | rozstrojony | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
@@ -272,6 +318,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Błyskawica (chain) | executor | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | gunner | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | hacker | ∞ | 0.000 | ∞ | 0.000 |
+| Błyskawica (chain) | helixGuard | ∞ | 0.000 | ∞ | 0.000 |
+| Błyskawica (chain) | helixMedic | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | rozstrojony | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | shielder | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | sniper | ∞ | 0.000 | ∞ | 0.000 |
@@ -281,6 +329,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pchnięcie Rezonansu (push) | executor | 1.817 | 121.101 | 29.433 | 37.373 |
 | Pchnięcie Rezonansu (push) | gunner | 0.033 | 1350.000 | 2.433 | 92.466 |
 | Pchnięcie Rezonansu (push) | hacker | 0.017 | 1440.000 | 2.417 | 49.655 |
+| Pchnięcie Rezonansu (push) | helixGuard | 0.617 | 116.757 | 5.417 | 66.462 |
+| Pchnięcie Rezonansu (push) | helixMedic | 0.017 | 1920.000 | 2.417 | 66.207 |
 | Pchnięcie Rezonansu (push) | rozstrojony | 0.033 | 1350.000 | 2.433 | 92.466 |
 | Pchnięcie Rezonansu (push) | shielder | 0.617 | 145.946 | 5.417 | 83.077 |
 | Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
@@ -290,6 +340,8 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Fala uderzeniowa (shockwave) | executor | 22.350 | 9.843 | ∞ | 8.083 |
 | Fala uderzeniowa (shockwave) | gunner | 1.550 | 29.032 | 29.567 | 7.610 |
 | Fala uderzeniowa (shockwave) | hacker | 0.033 | 720.000 | 11.567 | 10.375 |
+| Fala uderzeniowa (shockwave) | helixGuard | 4.367 | 16.489 | 47.567 | 7.568 |
+| Fala uderzeniowa (shockwave) | helixMedic | 1.533 | 20.870 | 29.550 | 5.415 |
 | Fala uderzeniowa (shockwave) | rozstrojony | 1.550 | 29.032 | 29.567 | 7.610 |
 | Fala uderzeniowa (shockwave) | shielder | 4.367 | 20.611 | 47.567 | 9.460 |
 | Fala uderzeniowa (shockwave) | sniper | 1.533 | 22.826 | 29.550 | 5.922 |
@@ -391,7 +443,7 @@ Symulacja korzysta z progów HP i wzorców faz z danych bossa oraz długości ni
 
 ## Wnioski
 
-- Bramka (paczka ×5, otwarta przestrzeń): 0/9 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 9/9. Przy ścianie (informacyjnie, paczka): 3/9.
+- Bramka (paczka ×5, otwarta przestrzeń): 0/11 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 11/11. Przy ścianie (informacyjnie, paczka): 4/11.
 - Pojedyncze TTK jest bardzo wrażliwe na obrażenia jednego trafienia (zabójstwo w 1/60 s wobec 0,4 s ostrza); dlatego bramkę liczy paczka.
 - Wynik jest liczbową podstawą decyzji o danych. Nie zastępuje playtestu 12 fal ani oceny feel.
 

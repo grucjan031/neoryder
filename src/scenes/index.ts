@@ -64,6 +64,7 @@ export const scenes: Record<string, SceneLoader> = {
     import('./blasterTest').then((m) => () => new m.BlasterTest()),
   'weapons-test': () =>
     import('./weaponsTest').then((m) => () => new m.WeaponsTest()),
+  'helix-test': () => import('./aiTest').then((m) => () => m.createHelixTest()),
   'ai-test': () => import('./aiTest').then((m) => () => new m.AiTest()),
   'status-test': () =>
     import('./aiTest').then((m) => () => m.createStatusTest()),

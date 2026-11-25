@@ -4,6 +4,7 @@ import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import { CollisionGroup, interactionGroups } from '../physics';
+import { MedicFog } from './medic';
 import { EnemyDirector } from './director';
 import type { DirectorConfig } from './director';
 import type { StatModifier } from '../core/stats';
@@ -39,6 +40,8 @@ export interface EnemyManagerOptions {
 }
 
 export class EnemyManager {
+  readonly medicFog: MedicFog;
+  frozen = false;
   readonly difficulty: DifficultyId;
   private enemies: Enemy[] = [];
   private stealth?: StealthEncounter;
@@ -117,8 +120,10 @@ export class EnemyManager {
       : null;
     const baseModifiers = difficultyModifiers(profile);
     const readModifiers = () => [...baseModifiers, ...this.spawnModifiers];
+    this.medicFog = new MedicFog(deps, ctx.tuning.enemies.medic);
     this.deps = {
       ...deps,
+      medicFog: this.medicFog,
       difficulty: profile,
       targetForward: () => {
         if (deps.targetForward) return deps.targetForward();
@@ -207,6 +212,8 @@ export class EnemyManager {
     return enemy;
   }
   step(dt: number, navigation?: ArenaNavigation): void {
+    this.medicFog.step(dt);
+    if (this.frozen) return;
     this.stealth?.step(dt);
     const count = this.enemies.length;
     const settings = this.ctx.tuning.enemies;
@@ -265,6 +272,7 @@ export class EnemyManager {
     for (const enemy of this.enemies) enemy.syncControlled?.();
   }
   despawnAll(): void {
+    this.medicFog.clear();
     this.stealth?.dispose();
     this.stealth = undefined;
     for (const enemy of this.enemies) enemy.dispose();

@@ -36,6 +36,12 @@
         "Przerwij linię ostrzału. Atakuj z osłony zamiast stać przed lufą."
       ]
     },
+    "medic": {
+      "label": "Sanitariusz Helixy",
+      "tips": [
+        "Mgła spowalnia i parzy. Wyjdź z chmury bokiem i dopadnij sanitariusza: ucieka, ale nie walczy wręcz."
+      ]
+    },
     "hacker": {
       "label": "Haker",
       "tips": [

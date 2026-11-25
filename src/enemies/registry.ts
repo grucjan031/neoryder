@@ -2,6 +2,7 @@ import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import { Drone } from './drone';
 import { Turret } from './turret';
+import { Medic } from './medic';
 import { Hacker } from './hacker';
 import { Gunner } from './gunner';
 import { Assaulter } from './assaulter';
@@ -94,6 +95,7 @@ const factories = new Map<string, EnemyFactory>([
   ],
 ]);
 for (const [kind, EnemyClass] of [
+  ['medic', Medic],
   ['turret', Turret],
   ['hacker', Hacker],
 ] as const)
@@ -132,5 +134,11 @@ export function createEnemy(
 ): Enemy {
   const factory = enemyRegistry.get(id);
   if (!factory) throw new Error(`Nieznany wróg: ${id}`);
-  return factory(ctx, deps, id, position);
+  const enemy = factory(ctx, deps, id, position);
+  if (enemy.definition.damageTakenScale)
+    deps.damage.setDamageTakenScale(
+      enemy.id,
+      enemy.definition.damageTakenScale,
+    );
+  return enemy;
 }

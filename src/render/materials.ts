@@ -36,7 +36,7 @@ export type MaterialKind =
   | 'light_white';
 
 /** Rodzaje bez własnego koloru w tuning (kolor pochodny). */
-type StyleKind = MaterialKind | 'enemyDark';
+type StyleKind = MaterialKind | 'enemyDark' | 'helixShell';
 type PaletteKind = Exclude<StyleKind, UrbanKind>;
 
 function isUrbanKind(kind: StyleKind): kind is UrbanKind {
@@ -51,6 +51,7 @@ const names = new Map<string, StyleKind>([
   ['mat_enemy', 'enemy'],
   ['mat_enemy_glow', 'enemyGlow'],
   ['mat_enemy_dark', 'enemyDark'],
+  ['mat_helix_shell', 'helixShell'],
   ['mat_interactive', 'interactive'],
   ['mat_player_cyan', 'player'],
   ['mat_power_magenta', 'power'],
@@ -95,6 +96,7 @@ const gridUniforms = {
 const cache = new Map<StyleKind, StyleMaterial>();
 /** Siła poświaty krawędzi kombinezonu względem płyt (część klucza programu). */
 const ENEMY_DARK_RIM = 0.6;
+const HELIX_SHELL_RIM = 0.45;
 const warnedNames = new Set<string>();
 export const gradientMap = new DataTexture(
   new Uint8Array([150, 200, 255]),
@@ -175,10 +177,14 @@ export function getMaterial(kind: StyleKind): StyleMaterial {
     : kind === 'world' ||
         kind === 'enemy' ||
         kind === 'enemyDark' ||
+        kind === 'helixShell' ||
         kind === 'interactive'
       ? new MeshToonMaterial({ color: colorFor(kind), gradientMap })
       : new MeshBasicMaterial({ color: colorFor(kind), toneMapped: false });
   if (emissiveKinds.has(kind)) material.userData.bloom = true;
+  if (kind === 'helixShell')
+    // Płyty Helixy: jasna sterylna biel, ale krawędź wciąż w czerwieni wroga.
+    addEnemyRim(material, HELIX_SHELL_RIM);
   if (kind === 'enemy' || kind === 'enemyDark')
     // Poświata krawędzi zawsze w czerwieni wroga; na kombinezonie słabsza, żeby płyty odcinały się od niego.
     addEnemyRim(material, kind === 'enemyDark' ? ENEMY_DARK_RIM : 1);
