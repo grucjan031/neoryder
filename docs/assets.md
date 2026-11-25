@@ -228,6 +228,51 @@ node tools/levels/mapModelBounds.mjs
 
 **Punkty montażu.** Góra konsoli słupa leży na Y = 8,20 m. Postawiona na niej belka ma główkę szyny na Y = 8,84 m. Osie kół suwnicy leżą na X = ±7,68 m, a styk koła z szyną wypada 0,34 m nad spodem haka. Przy tym zestawieniu początek suwnicy umieść na Y = 8,50 m. Zaczep ładunku leży pod wózkiem na osi X = Z = 0. Początek lampy umieść 0,45 m poniżej spodu widocznego stropu lub dźwigara.
 
+## Galeria handlowa (run2)
+
+Atrium Nova obejmuje 27 własnych modeli Blendera. Katalog zawiera wymiary gotowych plików GLB w osiach glTF i liczbę trójkątów po eksporcie. Wymiary dodatkowego wyposażenia z §5 projektu mapy dobrano do skali człowieka. Oba wieszaki mają osobne pliki i materiały odzieży.
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python-exit-code 1 --python tools/blender/sets/mall_atrium.py
+node tools/levels/mapModelBounds.mjs
+```
+
+Generator obsługuje wybór pojedynczych modeli, np. `-- --only mall_shoe_wall,mall_cafe_set`, oraz `--no-preview`. GLB trafiają do `public/assets/models/city/`, a podglądy studyjne ze szkłem i nadrukami do `artifacts/models/mall/`.
+
+| Model | X × Y × Z [m] | Trójkąty | Charakterystyczne elementy | Podgląd |
+| --- | --- | ---: | --- | --- |
+| `mall_shutter_grille` | 4 × 3,6 × 0,18 | 606 | 18 prętów, boczne prowadnice i zamek dolny | [PNG](../artifacts/models/mall/mall_shutter_grille.png) |
+| `mall_storefront` | 6 × 4,6 × 0,5 | 344 | otwór 4 × 3,6 m i fryz na szyld | [PNG](../artifacts/models/mall/mall_storefront.png) |
+| `mall_escalator` | 2,4 × 6,25 × 11,6 | 1430 | 26 stopni, spocznik dolny od +Z | [PNG](../artifacts/models/mall/mall_escalator.png) |
+| `mall_glass_rail` | 4 × 1,1 × 0,14 | 180 | odcinek 4 m wzdłuż X | [PNG](../artifacts/models/mall/mall_glass_rail.png) |
+| `mall_elevator` | 3,6 × 15,8 × 3,6 | 1412 | szyb panoramiczny, dach kabiny na Y = 8,2 m | [PNG](../artifacts/models/mall/mall_elevator.png) |
+| `mall_skylight` | 24 × 1,6 × 6 | 732 | rozpiętość 24 m w X, powtarzanie co 6 m w Z | [PNG](../artifacts/models/mall/mall_skylight.png) |
+| `mall_kiosk` | 3,6 × 2,4 × 2,6 | 772 | wyspa kawowa z gablotami i żaluzjami | [PNG](../artifacts/models/mall/mall_kiosk.png) |
+| `mall_planter` | 3,2 × 1,35 × 1,4 | 404 | donica do wysokości 0,85 m, wyżej kępy liści | [PNG](../artifacts/models/mall/mall_planter.png) |
+| `mall_bench` | 2,6 × 0,85 × 0,9 | 328 | dwustronne siedzisko na Y = 0,46 m | [PNG](../artifacts/models/mall/mall_bench.png) |
+| `mall_fountain` | 6,4 × 3,8 × 6,4 | 1216 | ośmioboczna cembrowina na Y = 0,95 m | [PNG](../artifacts/models/mall/mall_fountain.png) |
+| `mall_directory` | 1,2 × 2,4 × 0,45 | 188 | ekran mapy po obu stronach | [PNG](../artifacts/models/mall/mall_directory.png) |
+| `mall_ceiling_panel` | 2,4 × 0,45 × 1,2 | 244 | kaseton podwieszony 0,45 m pod stropem | [PNG](../artifacts/models/mall/mall_ceiling_panel.png) |
+| `mall_security_fixture` | 0,9 × 1,3 × 0,35 | 414 | szafka, przycisk alarmowy i kamera | [PNG](../artifacts/models/mall/mall_security_fixture.png) |
+| `mall_mannequin` | 1,8 × 2,15 × 0,9 | 716 | dwie sylwetki na podeście, płaszcz i kurtka | [PNG](../artifacts/models/mall/mall_mannequin.png) |
+| `mall_shoe_wall` | 3,4 × 2,6 × 0,55 | 804 | pięć poziomów obuwia, lustro i pufa | [PNG](../artifacts/models/mall/mall_shoe_wall.png) |
+| `mall_electronics_shelf` | 3,4 × 2,5 × 0,85 | 830 | sześć ekranów, gogle, głośniki i kartony | [PNG](../artifacts/models/mall/mall_electronics_shelf.png) |
+| `mall_cafe_set` | 3,2 × 1,75 × 2,2 | 910 | dwa stoliki, cztery odwrócone krzesła i ekspres | [PNG](../artifacts/models/mall/mall_cafe_set.png) |
+| `mall_pharmacy_counter` | 3,4 × 2,5 × 1,1 | 578 | lada z osłoną, opakowania i zielony krzyż | [PNG](../artifacts/models/mall/mall_pharmacy_counter.png) |
+| `mall_kurogane_display` | 3,4 × 2,5 × 0,95 | 733 | dwie gabloty z pancerzem, makietami i zegarkami | [PNG](../artifacts/models/mall/mall_kurogane_display.png) |
+| `mall_clothes_rack` | 2,12 × 1,819 × 0,78 | 786 | odzież w fiolecie i granacie | [PNG](../artifacts/models/mall/mall_clothes_rack.png) |
+| `mall_clothes_rack_amber` | 2,12 × 1,819 × 0,78 | 786 | odzież w ochrze i przygaszonej zieleni | [PNG](../artifacts/models/mall/mall_clothes_rack_amber.png) |
+| `mall_checkout_counter` | 2,6 × 1,475 × 0,95 | 285 | blat na Y = 1 m, kasa, czytnik i skaner | [PNG](../artifacts/models/mall/mall_checkout_counter.png) |
+| `mall_security_gates` | 1,64 × 1,5267 × 0,61 | 644 | dwie bramki, przejście 1,16 m między podstawami | [PNG](../artifacts/models/mall/mall_security_gates.png) |
+| `mall_display_table` | 2,12 × 0,907 × 1,04 | 400 | niski stół ze złożoną odzieżą | [PNG](../artifacts/models/mall/mall_display_table.png) |
+| `mall_promo_stand` | 0,8 × 1,354 × 0,8 | 564 | dwustronny składany stojak promocyjny | [PNG](../artifacts/models/mall/mall_promo_stand.png) |
+| `mall_trash_bin` | 1,36 × 0,94 × 0,606 | 495 | trzy oznaczone frakcje odpadów | [PNG](../artifacts/models/mall/mall_trash_bin.png) |
+| `mall_entrance_doors` | 4,8 × 3 × 0,32 | 424 | zamknięte drzwi rozsuwane z naświetlami bocznymi | [PNG](../artifacts/models/mall/mall_entrance_doors.png) |
+
+**Montaż.** Każdy korzeń leży na poziomie spodu modelu, w połowie jego szerokości. Portal, szafka bezpieczeństwa i ściana obuwnicza opierają się tyłem o lokalne Z = 0. Pozostałe modele są wycentrowane w Z. Przód wystawy jest skierowany w +Z. Kratę można wsunąć w centralny otwór portalu. W polu między prowadnicami, kasetą i listwą dolną 84,4% promieni widoku na wprost przechodzi między prętami. Szyby architektoniczne mają materiał `mat_glass_clear` o kryciu 0,22 i powierzchnie widoczne z obu stron.
+
+**Schody i winda.** Dolny grzebień schodów leży przy Z = +5,2 m, a górny przy Z = −5,2 m na Y = 5,2 m. Oznaczenia „NIECZYNNE” znajdują się na bokach dolnego podestu. Rampę ruchu i kolidery boczne należy zgrać z tym biegiem na mapie. Kabina windy zajmuje przedział Y = 5,2–8,2 m. Informator korzysta z istniejącej tekstury `mat_screen_map`.
+
 ## Port kontenerowy (arena Przejęcie)
 
 Osiem modeli do dużej areny „Port kontenerowy”, w stylu zestawu miasta (proceduralne,

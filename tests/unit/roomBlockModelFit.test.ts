@@ -33,12 +33,17 @@ beforeAll(() => {
 });
 afterAll(() => vi.restoreAllMocks());
 
+function hasMeasuredFit(model: string | undefined): model is string {
+  return (
+    !!model &&
+    (STRETCH.has(model) ||
+      model.startsWith('city_') ||
+      model.startsWith('mall_'))
+  );
+}
+
 const rooms = [...roomDefinitions.values()].filter((room) =>
-  room.blocks.some(
-    (block) =>
-      block.model &&
-      (STRETCH.has(block.model) || block.model.startsWith('city_')),
-  ),
+  room.blocks.some((block) => hasMeasuredFit(block.model)),
 );
 
 it.each([...rooms.map((room) => room.id), 'indoorTest'])(
@@ -73,8 +78,7 @@ it.each([...rooms.map((room) => room.id), 'indoorTest'])(
       const failures: string[] = [];
       for (const block of room.blocks) {
         const { model, size, position } = block;
-        if (!model || !(STRETCH.has(model) || model.startsWith('city_')))
-          continue;
+        if (!hasMeasuredFit(model)) continue;
         const centre = new Vector3(position.x, position.y, position.z);
         // Model należy do bloku, jeśli jego środek w XZ i spód pokrywają się z blokiem.
         const box = boxes.find((candidate) => {
