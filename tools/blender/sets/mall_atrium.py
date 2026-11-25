@@ -8,13 +8,14 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from warehouse_kurogane import REPO, ba, bpy, Vector, cbox, beam, quad, rod, prism, panel, stencil, surface
+from warehouse_kurogane import REPO, ba, bpy, Vector, cbox, beam, quad, rod, prism, panel, surface
 from port_rail import loft
 
 STEEL, DARK, ALLOY = "mat_metal", "mat_trim", "mat_machine"
 BRASS, BLUE, CLOTH, WOOD = "mat_hivis", "mat_lacquer", "mat_fabric", "mat_wood"
 IVORY, LEAF, RUBBER = "mat_snow", "mat_paint", "mat_rubber"
 GLASS, STONE, DECK = "mat_glass_clear", "mat_mall_terrazzo_inlay", "mat_tread_plate"
+PANEL = "mat_light_panel"
 WHITE, AMBER, ROYAL, GREEN = "mat_light_white", "mat_neon_amber", "mat_neon_blue", "mat_neon_green"
 tube, label = ba._city_tube, ba._city_print
 TAU = math.tau
@@ -26,8 +27,9 @@ def color(hex_code):
 
 
 def materials():
+    ba.PALETTE[PANEL] = ba.PALETTE[WHITE]
     specs = json.loads((REPO / "src/data/render/arenaMaterials.json").read_text(encoding="utf8"))
-    for name in (GLASS, STONE, DECK):
+    for name in (GLASS, STONE, DECK, "mat_canal_water"):
         spec = specs[name[4:]]
         rgb = color(spec["tint"].lstrip("#"))
         ba.PALETTE[name] = ((*rgb, 1), None)
@@ -141,7 +143,7 @@ def storefront(r):
             cbox(r, "glazing_bar", (0.62, 0.065, 0.075), (x, y, 0.28), STEEL)
         for edge in (-0.41, 0.41):
             cbox(r, "light_reveal", (0.038, 3.34, 0.012), (x + edge, 1.8, 0.491), DARK)
-            quad(r, "jamb_led", (x + edge, 1.8, 0.499), 0.012, 3.29, "+z", WHITE)
+            quad(r, "jamb_led", (x + edge, 1.8, 0.499), 0.012, 3.29, "+z", PANEL)
     cbox(r, "fascia", (6, 1, 0.48), (0, 4.1, 0.24), ALLOY)
     panel(r, "sign_face", 0, 4.1, 0.484, 5.83, 0.83, 0.012, 0.095, DARK)
     for x in (-2.82, 2.82):
@@ -194,7 +196,7 @@ def escalator(r):
         # Horizontal end caps keep the nominal upper rail exactly at 6.25 m.
         for a, b in zip(edge[1:8], edge[2:9]):
             beam(r, "handrail", (x, a[1], a[0]), (x, b[1], b[0]), 0.115, 0.06, RUBBER)
-        beam(r, "skirt_light", (x, 0.17, 5.2), (x, 5.37, -5.2), 0.042, 0.023, WHITE)
+        beam(r, "skirt_light", (x, 0.17, 5.2), (x, 5.37, -5.2), 0.042, 0.023, PANEL)
         for i in range(8):
             z = 4.8 - i * 1.33
             y = (5.2 - z) * 0.5 + 0.16
@@ -218,7 +220,7 @@ def glass_rail(r):
         for y in (0.22, 0.92):
             rod(r, "patch_clamp", (x, y, -0.032), (x, y, 0.038), 0.032, ALLOY, 6)
     rod(r, "handrail", (-2, 1.07, 0), (2, 1.07, 0), 0.03, STEEL, 8)
-    cbox(r, "led", (3.95, 0.015, 0.016), (0, 1.039, 0.005), WHITE)
+    cbox(r, "led", (3.95, 0.015, 0.016), (0, 1.039, 0.005), PANEL)
 
 
 def elevator(r):
@@ -234,72 +236,108 @@ def elevator(r):
             cbox(r, "front_transom", (3.5, 0.12, 0.13), (0, y, s * 1.7), ALLOY)
     for s in (-1, 1):
         z = s * 1.70
+        face = "+z" if s > 0 else "-z"
+        quad(r, "shaft_glazing", (0, 7.9, z), 3.36, 15.76, face, GLASS)
         for i in range(3):
             y = i * 5.2
-            for x in (-1.32, 1.32):
-                quad(r, "side_lite", (x, y + 2.6, z), 0.65, 5.12, "+z", GLASS)
-            quad(r, "clerestory", (0, y + 3.91, z), 1.97, 2.52, "+z", GLASS)
             for x in (-1, 1):
                 cbox(r, "door_jamb", (0.10, 2.65, 0.18), (x, y + 1.325, z), DARK)
-            for x in (-0.47, 0.47):
-                quad(r, "sliding_leaf", (x, y + 1.29, z), 0.92, 2.5, "+z", GLASS)
-                cbox(r, "lower_kick", (0.92, 0.19, 0.08), (x, y + 0.13, z), STEEL)
-            quad(r, "meeting_stile", (0, y + 1.30, z + s * 0.045), 0.050, 2.52, "+z" if s > 0 else "-z", STEEL)
-            cbox(r, "door_header", (2.12, 0.25, 0.18), (0, y + 2.60, z), DARK)
-            if s == 1:
-                stencil(r, str(i), -0.04, y + 2.52, 1.792, 0.14, AMBER)
-            else:
-                quad(r, "floor_lamp", (0, y + 2.6, -1.792), 0.19, 0.044, "-z", AMBER)
-    for y, mat in ((5.2, DARK), (8.03, STEEL)):
-        slab(r, "car_shell", 0, y, 0, 2.92, 0.17, 2.88, 0.48, mat)
-    for side in (-1, 1):
-        quad(r, "car_glass", (side * 1.42, 6.70, 0), 1.96, 2.66, "+x", GLASS)
-        for z in (-0.94, 0.94):
-            cbox(r, "car_pillar", (0.08, 2.67, 0.08), (side * 1.41, 6.7, z), ALLOY)
-        quad(r, "car_apron", (0, 5.70, side * 1.33), 2.02, 0.67, "+z" if side > 0 else "-z", BLUE)
-        quad(r, "car_side_apron", (side * 1.425, 5.70, 0), 1.95, 0.67, "+x" if side > 0 else "-x", BLUE)
-        cbox(r, "car_lamp", (2.01, 0.05, 0.06), (0, 7.98, side * 1.17), WHITE)
-        cbox(r, "car_sill", (2.02, 0.042, 0.08), (0, 5.41, side * 1.22), ROYAL)
-        for x in (-0.34, 0.34):
-            rod(r, "suspension", (x, 8.2, side * 0.39), (x, 15.78, side * 0.39), 0.03, "mat_cable", 4)
+                quad(r, "door_kick", (x * 0.48, y + 0.17, s * 1.765), 0.92, 0.27, face, STEEL)
+            quad(r, "meeting_stile", (0, y + 1.30, s * 1.765), 0.045, 2.52, face, STEEL)
+            cbox(r, "lift_header", (2.12, 0.49, 0.18), (0, y + 2.73, z), DARK)
+            quad(r, "indicator_bezel", (0, y + 2.73, s * 1.791), 0.72, 0.40, face, RUBBER)
+            # The digit and direction arrow face the landing on both sides of the shaft.
+            for segment in ("abcdef", "bc", "abdeg")[i]:
+                dx, dy = dict(
+                    a=(0, 0.13),
+                    b=(0.073, 0.065),
+                    c=(0.073, -0.065),
+                    d=(0, -0.13),
+                    e=(-0.073, -0.065),
+                    f=(-0.073, 0.065),
+                    g=(0, 0),
+                )[segment]
+                horizontal = segment in "adg"
+                quad(
+                    r,
+                    "floor_digit",
+                    (s * (dx + 0.10), y + 2.73 + dy, s * 1.794),
+                    0.128 if horizontal else 0.029,
+                    0.029 if horizontal else 0.11,
+                    face,
+                    AMBER,
+                )
+            pane(
+                r,
+                "floor_arrow",
+                [(s * x, y + dy, s * 1.794) for x, dy in ((-0.24, 2.68), (-0.09, 2.68), (-0.165, 2.80))][::s],
+                AMBER,
+            )
+
+    # Octagonal car has a solid waist and roof fascia, glazed upper half and a lit interior.
+    for base, h, mat in ((6.5, 0.22, DARK), (6.72, 0.67, BLUE), (7.39, 0.075, AMBER), (8.94, 0.26, BLUE)):
+        slab(r, "car_shell", 0, base, 0, 2.92, h, 2.88, 0.38, mat)
+    for sign in (-1, 1):
+        quad(r, "car_window", (sign * 1.43, 8.20, 0), 2.04, 1.46, "+x" if sign > 0 else "-x", GLASS)
+        for z in (-1.04, 1.04):
+            cbox(r, "car_mullion", (0.11, 1.49, 0.13), (sign * 1.40, 8.20, z), STEEL)
+        quad(r, "car_face", (0, 8.20, sign * 1.41), 2.04, 1.48, "+z" if sign > 0 else "-z", GLASS)
+        cbox(r, "inner_light", (0.095, 1.44, 0.10), (sign * 0.92, 8.20, -0.95), PANEL)
+        cbox(r, "fascia_light", (2.1, 0.06, 0.08), (0, 9.07, sign * 1.405), PANEL)
+        for x in (-0.49, 0.49):
+            rod(r, "hoist_rope", (x, 9.2, sign * 0.58), (x, 15.78, sign * 0.58), 0.051, ALLOY, 5)
+    cbox(r, "interior_wall", (2.00, 1.49, 0.075), (0, 8.2, -1.02), WOOD)
+    cbox(r, "interior_rail", (1.78, 0.07, 0.11), (0, 7.72, -0.93), BRASS)
+    quad(r, "ceiling_diffuser", (0, 8.936, 0), 2.06, 1.78, "-y", PANEL)
+    cbox(r, "hoist_crosshead", (1.42, 0.24, 1.39), (0, 9.32, 0), ALLOY)
 
 
 def skylight(r):
-    def h(t):
-        return 1.56 - t * 0.115
-
-    for s in (-1, 1):
-        for i in range(4):
-            a, b = i * 3, (i + 1) * 3
-            pane(
-                r,
-                "roof_glass",
-                [
-                    (s * a, h(a), -2.97),
-                    (s * (b - 0.002), h(b), -2.97),
-                    (s * (b - 0.002), h(b), 2.97),
-                    (s * a, h(a), 2.97),
-                ],
-            )
-            for z in (-2.94, 2.94):
-                beam(
-                    r, "chord", (s * a, h(a) - 0.055, z), (s * (b - 0.010), h(b) - 0.055, z), 0.12, 0.11, STEEL
+    # Two continuous glass slopes. Structural members give them 1.5 m glazing bays.
+    for side in (-1, 1):
+        x = side * 11.85
+        pane(r, "glass_slope", [(0, 1.50, -2.97), (x, 0.34, -2.97), (x, 0.34, 2.97), (0, 1.50, 2.97)])
+        for z in (-2.84, 0, 2.84):
+            beam(r, "upper_chord", (0, 1.46, z), (x, 0.30, z), 0.22, 0.19, STEEL)
+            beam(r, "tie_chord", (0, 0.20, z), (x, 0.12, z), 0.16, 0.16, ALLOY)
+            for i in range(4):
+                u = (i + 0.06) * 2.95
+                v = (i + 0.94) * 2.95
+                a = (side * u, 1.39 - 0.098 * u, z)
+                b = (side * v, 0.22, z)
+                if i % 2:
+                    a, b = (side * u, 0.22, z), (side * v, 1.39 - 0.098 * v, z)
+                beam(r, "warren_web", a, b, 0.11, 0.13, STEEL)
+        for i in range(1, 8):
+            u = i * 1.5
+            cbox(r, "glazing_bar", (0.085, 0.095, 6), (side * u, 1.51 - 0.098 * u, 0), ALLOY)
+        # Three-sided gutter with an open trough, higher flashing towards the roof.
+        prism(
+            r,
+            "eaves_gutter",
+            [
+                (side * u, y)
+                for u, y in (
+                    (11.72, 0.40),
+                    (11.78, 0.40),
+                    (11.80, 0.13),
+                    (11.94, 0.13),
+                    (11.94, 0.32),
+                    (12, 0.32),
+                    (12, 0),
+                    (11.72, 0),
                 )
-                beam(
-                    r,
-                    "diagonal",
-                    (s * a, h(a) - 0.36, z),
-                    (s * (b - 0.012), h(b) - 0.06, z),
-                    0.058,
-                    0.056,
-                    ALLOY,
-                )
-            cbox(r, "mullion", (0.075, 0.075, 6), (s * (b - 0.04), h(b) - 0.01, 0), DARK)
-        for z in (-2.94, 2.94):
-            beam(r, "bottom_chord", (0, 1.18, z), (s * 11.88, 0.064, z), 0.10, 0.10, STEEL)
-            cbox(r, "bearing", (0.36, 0.14, 0.12), (s * 11.82, 0.07, z), ALLOY)
-            cbox(r, "node_lamp", (0.55, 0.045, 0.09), (s * 6, 0.66, z), ROYAL)
-    cbox(r, "ridge_cap", (0.17, 0.08, 6), (0, 1.56, 0), STEEL)
+            ],
+            "z",
+            -3,
+            3,
+            STEEL,
+        )
+        for z in (-1.45, 1.45):
+            beam(r, "purlin", (0, 1.47, z), (x, 0.31, z), 0.075, 0.08, DARK)
+        for z in (-2.84, 0, 2.84):
+            quad(r, "linear_diffuser", (side * 3.35, 0.112, z), 4.82, 0.135, "-y", PANEL)
+    cbox(r, "ridge_cap", (0.23, 0.10, 6), (0, 1.55, 0), STEEL)
 
 
 def coffee_machine(r, x, y, z):
@@ -358,7 +396,7 @@ def kiosk(r):
 
 def planter(r):
     slab(r, "shadow_plinth", 0, 0, 0, 2.96, 0.15, 1.17, 0.16, DARK)
-    slab(r, "underglow", 0, 0.125, 0, 2.98, 0.021, 1.19, 0.16, WHITE)
+    slab(r, "underglow", 0, 0.125, 0, 2.98, 0.021, 1.19, 0.16, PANEL)
     slab(r, "cast_trough", 0, 0.15, 0, 3.2, 0.67, 1.4, 0.19, "mat_concrete")
     slab(r, "rim", 0, 0.815, 0, 3.2, 0.035, 1.4, 0.19, STEEL)
     slab(r, "soil", 0, 0.847, 0, 3.06, 0.009, 1.26, 0.18, DARK)
@@ -461,15 +499,28 @@ def fountain(r):
         ],
         STONE,
     )
-    prism(r, "water", [(x, z) for x, _, z in octagon(2.77, 0)], "y", 0.73, 0.74, BLUE)
-    for radius, mat in ((2.42, ROYAL), (1.91, WHITE)):
+    prism(r, "water", [(x, z) for x, _, z in octagon(2.77, 0)], "y", 0.71, 0.72, "mat_canal_water")
+    pane(r, "water_skin", octagon(2.765, 0.795), GLASS)
+    for radius, mat in ((2.42, ROYAL), (1.91, PANEL)):
         tube(r, "submerged_light", octagon(radius, 0.75), 0.018, mat, 4, True)
+    for i in range(6):
+        angle = TAU * (i + 0.5) / 6
+        dx, dz = math.cos(angle), math.sin(angle)
+        stream = []
+        for j in range(6):
+            t = j / 5
+            radius = 0.88 + t * 1.06
+            stream.append((dx * radius, 1.05 + 4.1 * t * (1 - t) - 0.26 * t, dz * radius))
+        tube(r, "water_jet", stream, 0.045, GLASS, 4)
+        # A thin bright caustic and a broken ripple separate the water from the dark basin.
+        tube(r, "jet_glint", [(x + 0.016, y, z + 0.018) for x, y, z in stream], 0.009, IVORY, 3)
+        quad(r, "splash", (dx * 1.94, 0.799, dz * 1.94), 0.115, 0.092, "+y", IVORY)
     slab(r, "sculpture_foot", 0, 0.74, 0, 1.9, 0.34, 1.9, 0.46, STEEL)
     for i, angle in enumerate((0.13, 1.12, 2.20)):
         # Lenticular, interlocking ribbons share a concealed hub inside the stone foot.
         points = []
-        for j in range(24):
-            a = TAU * j / 24
+        for j in range(18):
+            a = TAU * j / 18
             u, v = math.cos(a), math.sin(a)
             radius = 1.15 * u
             lean = (i - 1) * 0.71 * v
@@ -480,7 +531,7 @@ def fountain(r):
                     radius * math.sin(angle) - lean * math.cos(angle),
                 )
             )
-        tube(r, "orbital_ribbon", points, 0.070 if i == 0 else 0.056, (STEEL, GLASS, ALLOY)[i], 5, True)
+        tube(r, "orbital_ribbon", points, 0.070 if i == 0 else 0.056, (STEEL, GLASS, ALLOY)[i], 4, True)
         if i == 2:
             tube(r, "edge_lamp", [(x * 1.045, y, z * 1.045) for x, y, z in points], 0.015, AMBER, 4, True)
     rod(r, "axial_pin", (-0.092, 3.68, 0.704), (-0.092, 3.8, 0.704), 0.065, BRASS, 8)
@@ -492,7 +543,7 @@ def directory(r):
     for s in (-1, 1):
         face = "+z" if s > 0 else "-z"
         panel(r, "display_surround", 0, 1.31, s * 0.119, 0.98, 1.99, 0.042, 0.052, DARK)
-        label(r, "floor_map", "mat_screen_map", (0.87, 1.37), (0, 1.39, s * 0.142), face)
+        label(r, "floor_map", "mat_screen_mall_directory", (0.87, 1.37), (0, 1.39, s * 0.142), face)
         text_obj = lettering(r, "INFO", 0, 2.12, s * 0.145, 0.166, ROYAL)
         if s < 0:
             text_obj.rotation_euler.z = math.pi
@@ -510,7 +561,7 @@ def ceiling_panel(r):
         for z in (-0.43, 0.43):
             rod(r, "suspension", (x, 0.12, z), (x, 0.45, z), 0.025, STEEL, 5)
     for z in (-0.40, 0.40):
-        cbox(r, "diffuser", (2.23, 0.028, 0.089), (0, 0.014, z), WHITE)
+        cbox(r, "diffuser", (2.23, 0.028, 0.089), (0, 0.014, z), PANEL)
     for i in range(12):
         cbox(r, "acoustic_baffle", (0.133, 0.018, 0.62), ((i - 5.5) * 0.188, 0.020, 0), "mat_plaster")
 
@@ -654,11 +705,11 @@ def export(build, make_preview):
 
 def mannequin(r):
     slab(r, "runway", 0, 0, 0, 1.8, 0.17, 0.90, 0.13, DARK)
-    slab(r, "light_reveal", 0, 0.17, 0, 1.76, 0.016, 0.86, 0.12, WHITE)
+    slab(r, "light_reveal", 0, 0.17, 0, 1.76, 0.016, 0.86, 0.12, PANEL)
     slab(r, "plinth_top", 0, 0.186, 0, 1.77, 0.014, 0.87, 0.12, STEEL)
     for side in (-1, 1):
         x, z = side * 0.418, side * 0.067
-        coat = CLOTH if side < 0 else BLUE
+        coat = PANEL if side < 0 else BLUE
         hem = 0.84 if side < 0 else 1.13
         for leg in (-1, 1):
             lx = x + leg * 0.113
@@ -735,7 +786,7 @@ def shoe_wall(r):
     for i in range(5):
         y = 0.38 + i * 0.446
         ba._port_box(r, "angled_shelf", (2.54, 0.044, 0.45), (-0.35, y, 0.318), WOOD, pitch=3)
-        cbox(r, "shelf_light", (2.43, 0.02, 0.018), (-0.35, y - 0.026, 0.533), WHITE)
+        cbox(r, "shelf_light", (2.43, 0.02, 0.018), (-0.35, y - 0.026, 0.533), PANEL)
         for j in range(3):
             x = -1.22 + j * 0.83
             bottom = y + 0.020
@@ -799,7 +850,7 @@ def electronics_shelf(r):
         cbox(r, "upright", (0.12, 2.5, 0.72), (x, 1.25, -0.02), STEEL)
     for y in (0.12, 0.70, 1.23):
         cbox(r, "deck", (3.4, 0.092, 0.845), (0, y, -0.0025), DARK)
-        quad(r, "shelf_led", (0, y, 0.423), 3.23, 0.011, "+z", WHITE)
+        quad(r, "shelf_led", (0, y, 0.423), 3.23, 0.011, "+z", PANEL)
     for i in range(6):
         x = (i % 3 - 1) * 1.06
         y = 1.58 + (i // 3) * 0.585
@@ -902,7 +953,7 @@ def pharmacy_counter(r):
     for s in (-1, 1):
         cbox(r, "glass_post", (0.034, 0.41, 0.041), (s * 1.52, 1.009, 0.46), ALLOY)
     quad(r, "guard", (0, 1.04, 0.46), 3.07, 0.36, "+z", GLASS)
-    quad(r, "task_light", (0, 0.72, 0.550), 3.09, 0.017, "+z", WHITE)
+    quad(r, "task_light", (0, 0.72, 0.550), 3.09, 0.017, "+z", PANEL)
     for x in (-0.76, 0.79):
         terminal(r, x, 0.81, 0.02, 0.72)
 
@@ -916,7 +967,7 @@ def kurogane_display(r):
             cbox(r, "steel_stile", (0.062, 1.95, 0.065), (x + dx, 1.35, 0.41), ALLOY)
         cbox(r, "cornice", (1.68, 0.20, 0.944), (x, 2.4, -0.002), BLUE)
         quad(r, "armoured_lite", (x, 1.35, 0.413), 1.50, 1.94, "+z", GLASS)
-        quad(r, "case_lamp", (x, 2.296, 0.06), 1.39, 0.065, "-y", WHITE)
+        quad(r, "case_lamp", (x, 2.296, 0.06), 1.39, 0.065, "-y", PANEL)
         quad(r, "mark", (x, 2.40, 0.471), 0.59, 0.03, "+z", BRASS)
         for j in range(4):
             quad(r, "mount_slot", (x, 0.73 + j * 0.39, -0.307), 1.40, 0.02, "+z", ALLOY)

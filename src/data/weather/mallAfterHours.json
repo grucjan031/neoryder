@@ -21,16 +21,16 @@
   },
   "fog": {
     "color": "#101624",
-    "density": 0.01,
+    "density": 0,
     "heightM": 14,
-    "strength": 0.42,
+    "strength": 0,
     "nearM": 18,
     "farM": 110
   },
   "surface": {
-    "gloss": 0.55,
-    "reflections": 0.75,
-    "puddles": 0.08
+    "gloss": 0.7,
+    "reflections": 0.85,
+    "puddles": 0.32
   },
   "lightning": {
     "enabled": false,
@@ -41,9 +41,9 @@
     "decayS": 0.18
   },
   "dust": {
-    "density": 0.2,
+    "density": 0,
     "sizeM": 0.07,
-    "opacity": 0.07,
+    "opacity": 0,
     "color": "#9aa8c0",
     "lifeS": 10
   },
@@ -60,8 +60,8 @@
     }
   ],
   "lighting": {
-    "hemiIntensity": 3,
-    "keyIntensity": 1.2,
+    "hemiIntensity": 4.6,
+    "keyIntensity": 1.6,
     "panoramaEnabled": false
   }
 }

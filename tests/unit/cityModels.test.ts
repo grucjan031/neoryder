@@ -978,10 +978,14 @@ describe('galeria handlowa Atrium Nova', () => {
             expect(mat.opacity).toBeCloseTo(0.22);
           }
           if (mat.emissive.getHex() !== 0) {
-            expect(mat.name).toMatch(/^mat_(neon_|light_white)/);
+            expect(mat.name).toMatch(/^mat_(neon_|light_white|light_panel)/);
             expect(reserved(mat.emissive)).toBe(false);
           }
-          if (!/^mat_(neon_|light_white|label_|screen_)/.test(mat.name))
+          if (
+            !/^mat_(neon_|light_white|light_panel|label_|screen_)/.test(
+              mat.name,
+            )
+          )
             expect(urbanKinds).toContain(mat.name.slice(4));
         }
       });

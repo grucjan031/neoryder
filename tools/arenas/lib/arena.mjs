@@ -149,6 +149,18 @@ export function createArena({
       room.spawnPoints.push({ x: position.x, z: position.z });
       return builder;
     },
+    /** Spawn pokoju na kondygnacji: zapisuje `y` (roomSpawnPointSchema), pomija je dla podłogi startu. */
+    floorSpawn(position) {
+      const y = position.y ?? room.playerSpawn.y;
+      if (![position.x, y, position.z].every(Number.isFinite))
+        throw new Error('Spawn kondygnacji wymaga skończonych x, y, z.');
+      room.spawnPoints.push(
+        y === room.playerSpawn.y
+          ? { x: position.x, z: position.z }
+          : { x: position.x, y, z: position.z },
+      );
+      return builder;
+    },
     arenaSpawn(position) {
       const y = position.y ?? room.playerSpawn.y;
       if (![position.x, y, position.z].every(Number.isFinite))

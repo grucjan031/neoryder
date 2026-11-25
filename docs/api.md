@@ -1725,6 +1725,9 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `glass_clear` (`mat_glass_clear`; przezroczyste szkło, `opacity` z `arenaMaterials.json`,
   `depthWrite: false`, poświata Fresnela jak `glass`) oraz wykończenia galerii
   `mall_stone_floor`, `mall_terrazzo_inlay`, `mall_acoustic_ceiling` (`mallKinds`);
+  `light_panel` (`mat_light_panel`, także w `BLOCK_MATERIALS`) to ciepła biel
+  emisyjna jak `light_white`, synchronizowana z zasilaniem, ale bez `userData.bloom`.
+  Jej płaski wpis w `arenaMaterials.json` rejestruje także powierzchnię dla `mapAudit`.
   `portLooks` ma opcjonalne `opacity` < 1 włączające `transparent`.
   Prefiks modeli `mall_` jest w `CITY_MODEL_PREFIXES` (`src/render/cityModels.ts`).
   `BLOCK_MATERIALS` (`src/world/dressingSchema.ts`, pole `block.material`)

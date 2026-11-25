@@ -69,6 +69,7 @@ export const BLOCK_MATERIALS = [
   'glass',
   'paving',
   'light_white',
+  'light_panel',
   'neon_green',
   'neon_amber',
   'power_quay_floor',

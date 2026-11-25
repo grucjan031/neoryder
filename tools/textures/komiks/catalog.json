@@ -151,5 +151,32 @@
     "description": "Kreskowanie tuszem do cieni",
     "subject": "one irregular patch of hand-drawn black diagonal crosshatching, two crossing sets of sparse confident tapered ink lines, dense towards center and feathering to widely spaced individual strokes at edges. Open green gaps between every line for transparent overlay. No gray paper or opaque background patch.",
     "prompt": "Use case: stylized-concept. Asset type: ONE isolated square game overlay decal, for conversion to 512x512 RGBA. Original hand-painted ink comic Neon Noir aesthetic, thick confident near-black ink #080d16 and graphite #2a3344, crisp brush-drawn irregular edges, bold readable shape, sparse steel blue #56627a where specified. Place every mark inside central 75 percent of square, with generous completely clean margin on ALL sides. Background perfectly uniform chroma green #00ff00, used ONLY as removable background, never in the subject. No shadows cast on background, no floor, no wall, no scene, no perspective, no frame, no text, letters, numbers, logos, brands, watermark, red, cyan, magenta, pink. No glow, no photographic details. Subject: one irregular patch of hand-drawn black diagonal crosshatching, two crossing sets of sparse confident tapered ink lines, dense towards center and feathering to widely spaced individual strokes at edges. Open green gaps between every line for transparent overlay. No gray paper or opaque background patch."
+  },
+  {
+    "id": "komiks_mall_stone_floor",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Kamienne płyty galerii w wersji komiksowej",
+    "subject": "Kamienne płyty galerii w wersji komiksowej",
+    "set": "mall"
+  },
+  {
+    "id": "komiks_mall_terrazzo_inlay",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Terrazzo galerii w wersji komiksowej",
+    "subject": "Terrazzo galerii w wersji komiksowej",
+    "set": "mall"
+  },
+  {
+    "id": "komiks_mall_acoustic_ceiling",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowy strop akustyczny galerii",
+    "subject": "Komiksowy strop akustyczny galerii",
+    "set": "mall"
   }
 ]

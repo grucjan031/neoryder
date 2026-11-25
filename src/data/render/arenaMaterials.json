@@ -180,6 +180,16 @@
     "wetness": 0.15,
     "tint": "#535e68"
   },
+  "light_panel": {
+    "texture": "grime",
+    "tint": "#fff1d6",
+    "scale": 1,
+    "roughness": 1,
+    "metalness": 0,
+    "bump": 0,
+    "wetness": 0,
+    "flat": true
+  },
   "glass_clear": {
     "texture": "grime",
     "tint": "#283852",
@@ -191,17 +201,17 @@
     "opacity": 0.22
   },
   "mall_stone_floor": {
-    "texture": "gas_station_tiles",
-    "tint": "#3b4559",
-    "scale": 0.4,
+    "texture": "mall_stone_floor",
+    "tint": "#69758a",
+    "scale": 0.41666667,
     "roughness": 0.25,
     "metalness": 0.08,
     "bump": 0.35,
     "wetness": 0.65
   },
   "mall_terrazzo_inlay": {
-    "texture": "paving",
-    "tint": "#262e3d",
+    "texture": "mall_terrazzo_inlay",
+    "tint": "#404957",
     "scale": 0.5,
     "roughness": 0.2,
     "metalness": 0.15,
@@ -209,8 +219,8 @@
     "wetness": 0.7
   },
   "mall_acoustic_ceiling": {
-    "texture": "tech_panel",
-    "tint": "#1e2533",
+    "texture": "mall_acoustic_ceiling",
+    "tint": "#566175",
     "scale": 0.5,
     "roughness": 0.75,
     "metalness": 0.2,

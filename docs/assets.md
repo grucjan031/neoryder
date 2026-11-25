@@ -163,6 +163,7 @@ z `urbanLooks`, patrz `docs/systems/render.md`):
 | `mat_neon_blue`   | `#3d7bff`    | tak                                             |
 | `mat_neon_white`  | `#fff1d6`    | tak                                             |
 | `mat_light_white` | `#fff1d6`    | tak                                             |
+| `mat_light_panel` | `#fff1d6`    | tak, bez bloomu                                 |
 
 Nadruki mapowane UV (poza tabelą, bo nazwa niesie identyfikator obrazu):
 `mat_label_<x>` to naklejka z `public/assets/textures/labels/label_<x>.webp`
@@ -239,18 +240,29 @@ node tools/levels/mapModelBounds.mjs
 
 Generator obsługuje wybór pojedynczych modeli, np. `-- --only mall_shoe_wall,mall_cafe_set`, oraz `--no-preview`. GLB trafiają do `public/assets/models/city/`, a podglądy studyjne ze szkłem i nadrukami do `artifacts/models/mall/`.
 
+**E3 (25 XI 2026).** Przebudowano 13 modeli: `mall_storefront`, `mall_escalator`,
+`mall_glass_rail`, `mall_elevator`, `mall_skylight`, `mall_planter`, `mall_fountain`,
+`mall_ceiling_panel`, `mall_mannequin`, `mall_shoe_wall`, `mall_electronics_shelf`,
+`mall_pharmacy_counter`, `mall_kurogane_display`. Duże dyfuzory, listwy i pierścienie
+używają `mat_light_panel`: ciepłej bieli bez selektywnego bloomu. `mat_light_white`
+pozostaje na drobnym skanerze informatora; kolorowe neony zachowują poświatę.
+Jeden manekin na każdym podeście ma jasny emisyjny płaszcz, drugi zachowuje granat.
+Geometria, wymiary i liczby trójkątów pozostały bez zmian; materiały ponownie
+zmierzono `mapModelBounds.mjs`. Budowa E3 używała `--no-preview`; podglądy tabeli
+pochodzą z wcześniejszego etapu, ocenę nowych materiałów wykona Opus na mapie.
+
 | Model | X × Y × Z [m] | Trójkąty | Charakterystyczne elementy | Podgląd |
 | --- | --- | ---: | --- | --- |
 | `mall_shutter_grille` | 4 × 3,6 × 0,18 | 606 | 18 prętów, boczne prowadnice i zamek dolny | [PNG](../artifacts/models/mall/mall_shutter_grille.png) |
 | `mall_storefront` | 6 × 4,6 × 0,5 | 344 | otwór 4 × 3,6 m i fryz na szyld | [PNG](../artifacts/models/mall/mall_storefront.png) |
 | `mall_escalator` | 2,4 × 6,25 × 11,6 | 1430 | 26 stopni, spocznik dolny od +Z | [PNG](../artifacts/models/mall/mall_escalator.png) |
 | `mall_glass_rail` | 4 × 1,1 × 0,14 | 180 | odcinek 4 m wzdłuż X | [PNG](../artifacts/models/mall/mall_glass_rail.png) |
-| `mall_elevator` | 3,6 × 15,8 × 3,6 | 1412 | szyb panoramiczny, dach kabiny na Y = 8,2 m | [PNG](../artifacts/models/mall/mall_elevator.png) |
-| `mall_skylight` | 24 × 1,6 × 6 | 732 | rozpiętość 24 m w X, powtarzanie co 6 m w Z | [PNG](../artifacts/models/mall/mall_skylight.png) |
+| `mall_elevator` | 3,6 × 15,8 × 3,6 | 1120 | oświetlona kabina między L1 i L2, dach na Y = 9,2 m | [PNG](../artifacts/models/mall/mall_elevator.png) |
+| `mall_skylight` | 24 × 1,6 × 6 | 752 | trzy wiązary, szprosy co 1,5 m, rynny po obu stronach | [PNG](../artifacts/models/mall/mall_skylight.png) |
 | `mall_kiosk` | 3,6 × 2,4 × 2,6 | 772 | wyspa kawowa z gablotami i żaluzjami | [PNG](../artifacts/models/mall/mall_kiosk.png) |
 | `mall_planter` | 3,2 × 1,35 × 1,4 | 404 | donica do wysokości 0,85 m, wyżej kępy liści | [PNG](../artifacts/models/mall/mall_planter.png) |
 | `mall_bench` | 2,6 × 0,85 × 0,9 | 328 | dwustronne siedzisko na Y = 0,46 m | [PNG](../artifacts/models/mall/mall_bench.png) |
-| `mall_fountain` | 6,4 × 3,8 × 6,4 | 1216 | ośmioboczna cembrowina na Y = 0,95 m | [PNG](../artifacts/models/mall/mall_fountain.png) |
+| `mall_fountain` | 6,4 × 3,8 × 6,4 | 1376 | ciemna tafla, dwa pierścienie pod wodą i sześć strumieni | [PNG](../artifacts/models/mall/mall_fountain.png) |
 | `mall_directory` | 1,2 × 2,4 × 0,45 | 188 | ekran mapy po obu stronach | [PNG](../artifacts/models/mall/mall_directory.png) |
 | `mall_ceiling_panel` | 2,4 × 0,45 × 1,2 | 244 | kaseton podwieszony 0,45 m pod stropem | [PNG](../artifacts/models/mall/mall_ceiling_panel.png) |
 | `mall_security_fixture` | 0,9 × 1,3 × 0,35 | 414 | szafka, przycisk alarmowy i kamera | [PNG](../artifacts/models/mall/mall_security_fixture.png) |
@@ -271,7 +283,24 @@ Generator obsługuje wybór pojedynczych modeli, np. `-- --only mall_shoe_wall,m
 
 **Montaż.** Każdy korzeń leży na poziomie spodu modelu, w połowie jego szerokości. Portal, szafka bezpieczeństwa i ściana obuwnicza opierają się tyłem o lokalne Z = 0. Pozostałe modele są wycentrowane w Z. Przód wystawy jest skierowany w +Z. Kratę można wsunąć w centralny otwór portalu. W polu między prowadnicami, kasetą i listwą dolną 84,4% promieni widoku na wprost przechodzi między prętami. Szyby architektoniczne mają materiał `mat_glass_clear` o kryciu 0,22 i powierzchnie widoczne z obu stron.
 
-**Schody i winda.** Dolny grzebień schodów leży przy Z = +5,2 m, a górny przy Z = −5,2 m na Y = 5,2 m. Oznaczenia „NIECZYNNE” znajdują się na bokach dolnego podestu. Rampę ruchu i kolidery boczne należy zgrać z tym biegiem na mapie. Kabina windy zajmuje przedział Y = 5,2–8,2 m. Informator korzysta z istniejącej tekstury `mat_screen_map`.
+**Schody i winda.** Dolny grzebień schodów leży przy Z = +5,2 m, a górny przy Z = −5,2 m na Y = 5,2 m. Oznaczenia „NIECZYNNE” znajdują się na bokach dolnego podestu. Rampę ruchu i kolidery boczne należy zgrać z tym biegiem na mapie. Podłoga zatrzymanej kabiny zaczyna się na Y = 6,5 m, a dach kończy się na Y = 9,2 m. Dla kolizji kabiny użyj niewidocznego bloku 2,92 × 2,70 × 2,88 m o środku lokalnym (0; 7,85; 0). Przy grywalnym dachu ustaw `walkable: true`. Liny i belka zawieszenia wychodzą nad dach. Wyświetlacze nad drzwiami wskazują numer przystanku po obu stronach szybu.
+
+### Tekstury galerii „Atrium Nova” — etap C
+
+Zasoby własne projektu. Nowe obrazy wygenerowano sekwencyjnie wbudowanym **imagegen**, każdy obejrzano przed konwersją. Rejestry: `tools/textures/catalog.json`, `tools/textures/komiks/catalog.json` i oba manifesty w `public/assets/textures/`. Źródła PNG pozostają w lokalnych katalogach `tools/textures/{raw,komiks/raw}`; prompty i skróty źródeł: `artifacts/maps/run2/imagegen-sources.json`.
+
+| Folder | Identyfikatory | Format i treść |
+|---|---|---|
+| `signs/` | `mall_fashion`, `mall_footwear`, `mall_electronics`, `mall_optics`, `mall_jewelry`, `mall_books`, `mall_kurogane` | RGB 512×256; zastane obrazy sprawdzone: VERVE // MODA, STRIDE // OBUWIE, VOLT-X // AUDIO-HOL, IRIS // OPTYKA, AUREA // ZEGARKI, KODEKS // MEDIA, KUROGANE // TAKTYKA |
+| `signs/` | `floor_l0`, `floor_l1`, `floor_l2` | RGB 512×256; POZIOM 0 / 1 / 2 |
+| `screens/` | `screen_mall_directory` | RGB 512×768; trzy poziomy i TU JESTEŚ przy wejściu L0; uproszczony plan orientacyjny, bez odtwarzania każdego sklepu i mostka |
+| `decals/` | `mall_tactile_strip`, `mall_escalator_comb` | RGBA 512×256; mosiężna listwa i grzebień schodów |
+| `decals/` | `mall_wet_footprints`, `mall_exit_stencil` | RGBA 512×768 / 512×512; mokre ślady obuwia i WYJŚCIE ze strzałką |
+| `surfaces/` | `mall_stone_floor`, `mall_terrazzo_inlay`, `mall_acoustic_ceiling` | RGB 1024×1024; płyty 1,2 m (2×2 na kafel), terrazzo z mosiężną listwą, płyty akustyczne na ruszcie |
+| `komiks/surfaces/` | `komiks_mall_stone_floor`, `komiks_mall_terrazzo_inlay`, `komiks_mall_acoustic_ceiling` | RGB 1024×1024; osobne wersje tuszowane, wybierane przez `COMIC_SURFACES` |
+| `signs/` | `mall_new_collection`, `mall_sale`, `mall_opening` | RGB 512×768; NOWA KOLEKCJA, -30%, OTWARCIE 9:00 |
+
+Szyldy i decale są ładowane po nazwie (`textureId`, bez zamkniętej listy). Model informatora ma już materiał `mat_screen_mall_directory`. Napisy zachowują proporcje i ciepłą paletę bez czerwieni, cyanu i magenty. Napisy i alfa są zapisane bezstratnie. Kamień i strop bazowy używają WebP quality 85, bazowe terrazzo pozostaje bezstratne (kodek YUV wprowadzał pojedyncze czerwone piksele). Powierzchnie komiksowe przechodzą istniejącą kontrolę palety po kompresji. Raport `artifacts/maps/run2/texture-validation.json` sprawdza rzeczywiście zdekodowane pliki, wymiary, paletę i przeciwległe krawędzie.
 
 ## Port kontenerowy (arena Przejęcie)
 

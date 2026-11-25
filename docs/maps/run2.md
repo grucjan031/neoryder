@@ -555,6 +555,152 @@ Cel od użytkownika: „zrób tak, jakby to była serio galeria”. Każda poni�
 - **F-01:** `y` opcjonalne w `roomSpawnPointSchema` i punkcie `wavesSchema`. `validateLayout` dla `y` różnego od `playerSpawn.y` wymaga bloku `walkable: true` (bez obrotu X/Z) z górną powierzchnią na `y` i braku bloków w `(y, y + 1,8 m]`; flood-fill 1 m dotyczy tylko punktów parterowych, osiągalność pięter sprawdza `ArenaNavigation`. `RoomScene` (spawny menedżera wrogów i `selectWavePoint`), `WaveDirector.pickSpawnPoint` i `arenaSpawnPoints` zachowują `y`. Pokoje bez `y` działają bit w bit jak dotąd (menedżer dalej dostaje `y = 0`, fale `y = 0`/`playerSpawn.y`). Testy: `tests/unit/spawnElevation.test.ts`.
 - **F-02:** rodzaj `glass_clear` w `urbanKinds` (`mallKinds`), `BLOCK_MATERIALS` i (przez `arenaMaterials.json`) `surfaces` w `mapAudit`. Dane (`tint #283852`, `roughness 0,12`, `metalness 0,15`) wraz z nowym opcjonalnym polem `opacity: 0,22` w `arenaMaterials.json`; `createUrbanMaterial` ustawia wtedy `transparent` i `depthWrite: false`; poświata Fresnela jak w `glass`. Nazwa glTF: `mat_glass_clear`.
 - **F-03:** prefiks `mall_` w `CITY_MODEL_PREFIXES`; `WALL_FIXTURES`: `mall_storefront`, `mall_shutter_grille`, `mall_shoe_wall`, `mall_security_fixture`, `mall_floor_sign`, `mall_entrance_doors`; `CEILING_FIXTURES`: `mall_ceiling_panel`, `mall_skylight`, `mall_hanging_banner`. Brak pliku .glb nie przewraca renderu (`cloneCityModel` ostrzega i używa oprawy zastępczej, jak przy `wh_`); `mapAudit` natomiast wymaga wpisu w `mapModelBounds.json`, więc po powstaniu modeli trzeba uruchomić `tools/levels/mapModelBounds.mjs`.
-- **F-04:** `mall_stone_floor`, `mall_terrazzo_inlay`, `mall_acoustic_ceiling` w `arenaMaterials.json` z parametrami z §2.1, na tymczasowych teksturach: `gas_station_tiles`, `paving`, `tech_panel`. Do wygenerowania później (1024×1024 .webp w `public/assets/textures/surfaces/` + odpowiedniki `komiks_*`): `mall_stone_floor.webp`, `mall_terrazzo_inlay.webp`, `mall_acoustic_ceiling.webp`; potem podmiana pola `texture` (i rozszerzenie `SurfaceTexture`/`mallTextures`). `glass_clear` używa maski `grime` jak `glass`.
-- **F-05:** `src/data/weather/mallAfterHours.json` (deszcz 0,55, mgła, `gloss 0,55`, `reflections 0,75`, `puddles 0,08`, ambience generator + deszcz). Zgodnie z §5 pkt 5 `hemiIntensity = 3,0` i `keyIntensity = 1,2` (zamiast 2,1 / 0,95), do strojenia na zrzutach. Deszcz we wnętrzu wycinają `rainShelters` i `weatherFloorY` w pliku pokoju (nie w profilu), czyli do ustawienia w generatorze run2.
+- **F-04 / etap C:** gotowe i podpięte docelowe tekstury `mall_stone_floor`, `mall_terrazzo_inlay`, `mall_acoustic_ceiling` (RGB 1024×1024 WebP) oraz trzy odpowiedniki `komiks_*`. Uzupełnione `SurfaceTexture`, `mallTextures`, `COMIC_SURFACES`, katalogi i manifesty. Kamień: 2×2 płyty po 1,2 m na kafel, skala 1/2,4 m. W E1 rozjaśniono tinty obu posadzek i stropu. `glass_clear` nadal używa maski `grime`.
+- **F-05:** `src/data/weather/mallAfterHours.json` (deszcz 0,55, gloss 0,55, reflections 0,75, puddles 0,08, ambience generator i deszcz). Po E1 `hemiIntensity = 4,6`, `keyIntensity = 1,6`, mgła density 0,004 i strength 0,18. Osłonę deszczu oraz `weatherFloorY = 17,3` ustawia generator run2. Ocena jasności na nowych zrzutach pozostaje otwarta z powodu `spawn EPERM`.
 - Dokumentacja: `docs/api.md`, `docs/systems/rooms.md`.
+
+### Etap D — generator mapy `run2`
+
+Generator `node tools/arenas/run/run2.mjs` (pliki pomocnicze `_run2Kit.mjs`, `_run2Shops.mjs`, `_run2Dress.mjs`) zapisuje deterministycznie `src/data/rooms/run2.json` (`id: "run2"`, `type: "combat"`, z blokiem `arena`). Mapa nie trafiła do `roomPools`. Podgląd: `?scene=map-walk&map=run2` albo `?scene=room-test&room=run2&debug=1`. Do `tools/arenas/lib/arena.mjs` doszła metoda `floorSpawn()` (spawn pokoju z `y`; dotychczasowe `spawn()` nadal odrzuca wysokość).
+
+**Wymiary.** Pasaże: `X ∈ [−18, 18]`, `Z ∈ [−25, 25]`, otwór atrium `24 × 36 m` (`X ∈ [−12, 12]`, `Z ∈ [−18, 18]`). Posadzki L0/L1/L2 na `y = 0 / 5,2 / 10,4`, strop dachu `y = 15,6…16`, świetlik z 6 modułów `mall_skylight` sięga `y = 17,2`. Sklepy: wnęka 6,5 m od linii pasażu (5,6 m w świetle za ścianą frontową), obrys budynku `X ∈ [−25,5; 25,5]`, `Z ∈ [−32,5; 26]` plus przedsionki wejścia (południe) i wyjścia (północ). Wysokość kondygnacji w świetle: 4,8 m na L0 i L1, 5,2 m na L2.
+
+**Układ.**
+
+- **Parter.** Fontanna `(0, 0)` z czterema ławkami, trzy kioski (`(−7,5; 9,5)`, `(8,5; −10,5)`, `(8,5; 2)`), `city_car` na podeście `6,4 × 3,8 m` z neonowym obrysem i słupkami z taśmą, trzy wyspy wypoczynkowe (donica i dwie ławki), informatory, ławki, donice i kosze w pasażach. Największy pusty kwadrat bez osłony ma 8 m (test w `run2Navigation.test.ts` liczy widoczne bryły o wysokości co najmniej 0,8 m, bez ruchomych schodów i windy). Zagrożenia: bramka laserowa na południu (`z = 16,5`), pole elektryczne przy fontannie, dwie beczki wybuchowe.
+- **Komunikacja pionowa.** Cztery ruchome schody (zatrzymane) na krzyż w otworze atrium: ESC-1 `L0 → L1` (`x = 4,8`, `z 16,4 → 6`), ESC-2 `L0 → L1` (`x = −4,8`, `z −7,6 → −18`), ESC-3 `L1 → L2` (`x = −4,8`, `z 6 → 16,4`), ESC-4 `L1 → L2` (`x = 4,8`, `z −18 → −7,6`). Każde ma model `mall_escalator` oraz niewidoczną rampę `walkable` o czystym obrocie `rotation.x`, nachyleniu 26,565° i szerokości 2 m, z niewidocznymi barierkami po bokach (`0,2 × 1,05 m`). ESC-1 kończy się na Moście Południowym L1 (`Z ∈ [3, 6]`), ESC-3 zaczyna się na jego południowej krawędzi i kończy podestem `2,4 × 1,6 m` przy południowym pasażu L2, ESC-4 kończy się podestem przy Moście Północnym L2 (`Z ∈ [−6, −3]`), ESC-2 przy północnym pasażu L1. Dwie klatki narożne (północny zachód i północny wschód) to dwubiegowe schody z biegami 5,2 m i spocznikami na `y = 2,6` i `7,8`. Winda panoramiczna `mall_elevator` stoi przy północnej krawędzi atrium (`(0, −16)`), z niewidocznym blokiem całego szybu. Szklane balustrady (`mall_glass_rail` i panele `glass_clear` na resztę odcinka) obiegają atrium, oba mostki i podesty; przerwy są tylko na schody. Dwanaście słupów `1 × 15,6 × 1 m`, na nich `mall_security_fixture`.
+- **Sklepy** (każdy zamknięty dwiema kratami `mall_shutter_grille` z kolizją, fryz `mall_storefront` ze szyldem neonowym, bramki `mall_security_gates`, lada `mall_checkout_counter`, kasetony `mall_ceiling_panel`, listwy LED i ekrany emisyjne, plakaty, logo na tylnej ścianie):
+
+| Id | Kondygnacja | Nazwa (szyld) | Towar |
+|---|---|---|---|
+| S-01 | L0 zachód | VERVE // ATELIER (`mall_fashion`) | manekiny, wieszaki, stół z odzieżą, regały ścienne, przymierzalnia |
+| S-02 | L0 zachód | STRIDE // FOOTWEAR (`mall_footwear`) | dwie ściany obuwnicze, stoły z kloszami, pufy, stojaki promocyjne |
+| S-03 | L0 zachód | VOLT-X // CYBER-AV (`mall_electronics`) | regały z ekranami, szafy serwerowe, projektor holo, ściana ekranów |
+| S-04 | L0 wschód | NOVA ROAST // CAFE (`cat_cafe`) | dwa zestawy kawiarni z odwróconymi krzesłami, kontuar, witryna ciast |
+| S-05 | L0 wschód | KUROGANE // URBAN GEAR (`mall_kurogane`) | gabloty pancerne, skrzynie broni, stół rusznikarza, torsy w pancerzach |
+| S-06 | L1 zachód | NEO-TAILOR // BESPOKE (`mall_fashion`, fiolet) | manekiny, wieszaki, stół krawiecki, lustro |
+| S-07 | L1 zachód | IRIS // OPTICS & AUG (`mall_optics`) | nisze ze szkłem i goglami, fotel badania, szafa serwerowa |
+| S-08 | L1 północ | HELIX-MED // APTEKA 24H (`pharmacy`) | dwie lady apteczne, automat, regały leków, zielony krzyż |
+| S-09 | L1 wschód | ECHO // SYNTH & AUDIO (`karaoke`) | regał z ekranami, kolumny, klawiatury, ekran reklamowy |
+| S-10 | L1 wschód | AUREA // HOROLOGY (`mall_jewelry`) | gabloty pancerne, drzwi skarbca, wyspy ze szkłem |
+| S-11 | L2 zachód | APEX // OUTDOOR & SPORT (`warsztat`) | ściana obuwnicza, namiot, ścianka wspinaczkowa, wieszak, stół |
+| S-12 | L2 zachód | KODEKS // BOOKS & HOLO (`mall_books`) | regały z książkami, piramida bestsellerów, fotel, ekran |
+| S-13 | L2 północ | AURA // SYNTH-PERFUME (`cocktail`) | dwie lady flakonów, wyspa testerów, regały ze szkła |
+| S-14 | L2 wschód | AERO-TOY // DRONY & RC (`repair`) | trzy podwieszone drony, stół montażowy, gondole, projektor holo |
+| S-15 | L2 wschód | MIDORI // MATCHA & RAMEN (`ramen`) | dwa zestawy kawiarni, kontuar, sznur lampionów, holo |
+
+  Fasady mają 12 m (dwa moduły po 6 m). Pola fasady bez sklepu (L0 wschód środek, L1 i L2 zachód i wschód środek, połowy północnych ścian L1 i L2) to zaplecza z drzwiami serwisowymi `city_door`, szafką `mall_security_fixture` i dwoma automatami. Żaden model towaru nie występuje w więcej niż dwóch sklepach (powtarzają się tylko elementy wspólne: portal, krata, bramki, lada i kasetony).
+- **Wejście i wyjście.** Wejście główne za startem `(0, 0, 22)`: zamknięte przeszklone drzwi rozsuwane `mall_entrance_doors` z kolizją, za nimi ciemny przedsionek z neonami ulicy i kałużami (zamknięte skrzydło `entry` gry stoi w głębi). Wyjście ewakuacyjne na północy: przedsionek `4,8 × 5,5 m` z drzwiami `exit` `(0, 1,5, −30)`, zielony neon i światło.
+- **Światła** (24 wpisy `lights[]`, 0 stożków lamp): 3 w fontannie, 2 w świetliku, 2 w windzie, 2 na mostkach, 4 w sklepach S-01, S-02, S-04, S-05 (ciepła biel, intensywność 85, zasięg 10 m), 8 w pasażach (intensywność 32), po 1 w przedsionkach wejścia i wyjścia oraz 1 przy polu elektrycznym. Każde ma oprawę. Resztę oświetlenia dają dyfuzory, LED, ekrany i szyldy. Deszcz osłonięty do 16,6 m, dolna granica opadu 17,3 m (ponad świetlikiem 17,2 m); usunięty wewnętrzny efekt `drip`.
+- **Spawny** (16, z `y`): 6 na parterze, 5 na L1 (w tym środek mostka), 5 na L2 (w tym środek mostka). Dyrektor: `maxAlive 10`, `minSpawnDistance 10`, `spawnRing 10…26 m`, siatka nawigacji 0,5 m, prześwit 2,2 m.
+
+**Liczby po E1.** 1592 bloki (196 z modelem, 54 `walkable`, 48 niewidocznych), 288 dekoracji, 24 światła, 126 szyldów, 57 decali, 4 zagrożenia i 16 spawnów. Bez zmian `roomPools`.
+
+**Zamienniki zasobów nadal obecne.** Dedykowanych marek nie mają S-04 (`cat_cafe`), S-06 (`mall_fashion` dla NEO-TAILOR), S-08 (`pharmacy`), S-09 (`karaoke`), S-11 (`warsztat`), S-13 (`cocktail`), S-14 (`repair`), S-15 (`ramen`). To pozostały zakres przyszłych szyldów poza wymaganym zestawem etapu C. Oznaczenia `floor_l0…l2`, ekran `screen_mall_directory`, cztery decale galerii, trzy powierzchnie i ich wersje komiksowe oraz plakaty „NOWA KOLEKCJA”, „-30%”, „OTWARCIE 9:00” są już docelowe. Kałuże `puddle1/2`, strzałki `floor_arrow` i pasy `floor_hazard` pozostają przy rzeczywistych kałużach, drogach i hazardach.
+
+**Odstępstwa od projektu.**
+
+- Fasady sklepów mają 12 m, więc L0 zachód ma trzy sklepy (S-01…S-03), a L0 wschód dwa i zaplecze; lokal S-08 stoi w zachodniej połowie północnej ściany L1, a S-13 we wschodniej połowie L2.
+- Ruchome schody ułożono na krzyż (ESC-1 i ESC-2 na L0 → L1, ESC-3 i ESC-4 na L1 → L2). Wyjścia kończą się na krawędzi pasaży, mostków albo podestów `2,4 × 1,6 m`. Mostki mają 3 m szerokości bez wybrzuszeń, a osłony na nich to ławki przy przeciwległych balustradach; kiosk K3 stoi na parterze.
+- Klatki schodowe to dwa dwubiegowe zwroty w otworze `4 × 7 m` płyt L1 i L2. Winda ma pełną kolizję szybu, dach kabiny nie jest grywalny.
+- `mall_promo_stand` na parterze to dekoracja z niewidocznym kolidrem `0,8 × 1,354 × 0,8 m`, bo GLB ma 0,888 m w osi Z, a `mapModelBounds.json` 0,8 m (test `roomBlockModelFit` pilnuje 5%). Różnicę usunie ponowny pomiar po zatwierdzeniu zmian Codexa w modelach.
+- Profil `tools/arenas/build.mjs --run` dla pokoi walki wymaga 70–100 m długości i 3500 m² chodzenia, a mapa ma 62,5 m i około 3365 m². Pozostałe progi profilu (strefy, poziomy, rampy, słupy, udział rekwizytu, trasa start → wyjście) są spełnione. Profil nie wchodzi w `npm run check`.
+
+**Sprawdzenie.** `node tools/levels/mapAudit.mjs run2` daje 0 error i 0 warn (`"run2": 0` w `tests/unit/mapAudit.baseline.json`). `tests/unit/run2Navigation.test.ts` sprawdza dojście ze startu do wyjścia, do 16 spawnów na trzech kondygnacjach i do spoczników wszystkich ruchomych schodów i klatek, przejście po obu mostkach bez zejścia na niższą kondygnację, miejsce na kapsułę gracza przy starcie i spawnach oraz gęstość osłon (parter najwyżej 8 m, piętra najwyżej 10 m bez osłony).
+
+
+### Etap C — domknięcie i runda E1 (25 XI 2026)
+
+1. **Towar za kratami:** pełne emisyjne dyfuzory w 15 sklepach, listwy nad ekspozycją i pod półkami, większe tylne logotypy, dwa stale świecące szyldy fryzu na sklep. Cztery prawdziwe lampy przeniesiono do witryn L0 widocznych w głównych kadrach: VERVE, STRIDE, kawiarnia, KUROGANE. Plakaty zachowują własną ciepłą paletę.
+2. **Pasaże i stropy:** kasetony co 6 m na wszystkich kondygnacjach, większe dyfuzory, LED pod balkonami, jaśniejsze tinty docelowych powierzchni. `mallAfterHours`: hemi 3,0 → 4,6, key 1,2 → 1,6, mgła density 0,01 → 0,004 i strength 0,42 → 0,18. Wartości wymagają kontroli wizualnej.
+3. **Smugi:** w danych nie było lamp `cone: true`, deszcz miał już osłonę wnętrza. Podniesiono osłonę i granicę opadu ponad świetlik, usunięto `drip`, ograniczono mgłę. Bez nowych zrzutów nie potwierdzono usunięcia wszystkich smug r1 ani ich ostatecznej przyczyny.
+4. **Pomarańczowy trójkąt:** każdy hologram tworzy otwarty stożek w `SignRenderer`. Usunięto trzy hologramy w atrium, w tym bursztynowe `holo_koi`; zastąpiły je dwa wiszące, dwustronne banery z linkami. Fontanna zachowana.
+5. **Środek parteru:** dwie nowe donice z drzewkami, ławka, dwa kosze i dwa stojaki z plakatami; banery nad atrium i na balustradach. Test pustki nadal pilnuje 8×8 m na L0 i 10×10 m na piętrach; zachowano dojścia i spawny.
+6. **Docelowe tekstury:** sprawdzono czytelność siedmiu zastanych szyldów i uzupełniono ich rejestr. Dodano `floor_l0…l2`, plan trzech poziomów „TU JESTEŚ”, cztery decale, trzy powierzchnie z wersjami komiksowymi oraz trzy plakaty. Obrazy generowano sekwencyjnie wbudowanym imagegen i oglądano przed konwersją. Ekran korzysta z istniejącego `mat_screen_mall_directory` w GLB. Katalogi i manifesty kompletne dla zestawu galerii.
+
+**Ograniczenie przeglądu E1:** `node tools/screens/mapAudit.mjs run2 --out artifacts/maps/run2/r2 --tag after` nie uruchomił Chromium (`browserType.launch: spawn EPERM`). Zgodnie z briefem zrzuty pominięto. Runda r2 i ocena ≥7/10 wymagają przeglądu menedżera w środowisku z działającą przeglądarką. Nie potwierdzono jasności towaru z 6–10 m ani budżetu draw calls.
+
+
+**Weryfikacja końcowa E1:** `mapAudit run2` 0 error / 0 warn; `mapAudit --all` 47 map bez regresji względem `tests/unit/mapAudit.baseline.json`; `run2Navigation.test.ts` 5/5; `npm run check` exit 0 (328 plików, 4111 testów). Ponowna generacja daje identyczny SHA-256 JSON. Kontrola 24 tekstur galerii: 0 błędów palety/wymiarów/alfy/szwów, cały pakiet 10 894 136 B / 12 000 000 B; walidator komiksowy 20 plików, 0 błędów. Globalny `tools/textures/process.py validate` nadal zgłasza trzy zastane pliki spoza katalogu: `floor_lane_line`, `floor_sector_k09`, `floor_pallet_bay` (poza zakresem tego zadania). Pełne e2e pominięte zgodnie z briefem; próba zrzutów opisana wyżej.
+
+### Runda E2 — kompozycja wejścia i ekspozycje (25 XI 2026)
+
+Obejrzano wszystkie 10 zastanych zrzutów `artifacts/maps/run2/r2/*.png` po E1 (ocena Opusa 6/10). Zmieniono wyłącznie generator run2, jego dane wynikowe i profil `mallAfterHours`; poniższe wyniki wizualne wymagają nowych zrzutów Opusa.
+
+1. **Smugi — diagnoza i granica poprawki danymi.** Jawnych `lights[].cone` nie było. Znaleziono dodatkowe, automatyczne źródło wolumenu: `lanternFixtures()` w `src/render/city/lamps.ts:51` rozpoznaje `city_lantern_string`, a `src/render/city/dressing.ts:147–153` tworzy pod nim `LampCones` bez sprawdzania `lights[].cone`. Sznur w S-15 zastąpiono pięcioma kloszami z brył, bez tego efektu. Mapa ma teraz 0 jawnych stożków oraz 0 dekoracji uruchamiających automatyczne stożki. Wyzerowano też `fog.density`, `fog.strength`, `dust.density` i `dust.opacity` profilu wnętrza. Deszcz nad świetlikiem, osłony i `weatherFloorY = 17,3` zachowano.
+
+   **Nie potwierdzono, że automatyczne stożki odpowiadały za wszystkie szerokie pasma r2.** Ich lokalny zasięg w S-15 nie tłumaczy smug przy każdej oprawie. Pozostały kandydat to rozmycie emisji opraw i długich LED: `src/render/bloom.ts:62–72, 295–333`, składane w `src/render/outline.ts:456–460`. Mgła nie tworzy osobnych snopów, a model fontanny nie ma kurtyny wody sięgającej stropu. `weatherSchema.lighting` nie udostępnia ustawień bloomu. Jeżeli nowe zrzuty nadal pokażą szerokie smugi, proponowana zmiana silnika to opcjonalne ustawienie bloomu w profilu pogody, zastosowane i przywracane przez `CityDressing.setWeather()`, z osobnym strojeniem dla wnętrza. W E2 nie zmieniano `src/render/` ani `src/core/`; całkowite usunięcie pasm pozostaje do potwierdzenia.
+
+2. **Spawn.** Start zachowano w `(0, 0, 22)`. Słup na osi `(0, 18)` przesunięto do `(-8, 18)`, a donicę `(0, 19,5)` do `(-3,5, 19,5)`. Oś na fontannę, mostki i kondygnacje jest wolna od tych dwóch przeszkód. Nowe miejsce donicy zachowuje osłony przy wejściu: próba odsunięcia jej na wschód tworzyła pustkę 9×9 m, więc została odrzucona.
+
+3. **Towar.** W każdym sklepie dodano pierwszy plan ekspozycji: dwa manekiny na podestach z jasnym tłem (S-01/S-06) albo dwie podświetlane gabloty z dużymi sylwetkami obuwia, flakonów, torsów lub urządzeń. Towar stoi na głębokości około 2 m od linii pasażu; manekiny przeniesiono z 2,6 do 2,15 m. Trzeci element to pionowy ekran z treścią marki przy kracie. Za logo każdego sklepu doszedł szeroki emisyjny panel tylnej ściany. Nie zwiększono puli ani liczby prawdziwych świateł; ekspozycje świecą również poza pulą PointLight.
+
+4. **Posadzka.** Pasy `mall_terrazzo_inlay` na L0 biegną wzdłuż krawędzi atrium i witryn, uzupełniając istniejącą obwódkę. Wokół fontanny doszła ośmioboczna rozeta. Pod świetlikiem są cztery grupy kałuż i mokrych śladów; przy ośmiu spocznikach ruchomych schodów i wejściach klatek — `mall_tactile_strip`. Profil powierzchni: gloss 0,55 → 0,70, reflections 0,75 → 0,85, puddles 0,08 → 0,32.
+
+5. **Stropy.** Pod balkonami L1/L2 oraz oboma mostkami dodano regularne kasetony `mall_acoustic_ceiling`, rozdzielone szczelinami i krótkimi emisyjnymi wkładami. Spody mostków mają dwie linie LED; zachowano istniejące listwy krawędzi balkonów. Nie zakryto otworów klatek schodowych.
+
+6. **Banery.** Oba największe plakaty w atrium zmniejszono z 1,8×2,7 do 1,2×1,8 m; podkłady i linki dopasowano. Tint `#867d6c` zastępuje `#fff1d6`, ograniczając emisję bez globalnego przyciemniania szyldów.
+
+**Dane po E2:** 2328 bloków (196 z modelem, 58 `walkable`, 48 niewidocznych), 287 dekoracji, 24 światła, 141 szyldów, 79 decali, 4 zagrożenia i 16 spawnów. Bez zmian puli pokoi. Podgląd do odbioru: `?scene=map-walk&map=run2`; sprawdzić oś startu, sylwetki z 6–10 m, czytelność dwóch banerów, spody balkonów i pozostałe pasma światła. Zrzutów ani Playwrighta nie uruchamiano zgodnie z briefem E2.
+
+**Weryfikacja końcowa E2:** `node tools/levels/mapAudit.mjs run2` — 0 error / 0 warn; `--all` — 47 map, bez regresji (potwierdzone także przez 59/59 testów `mapAudit.test.ts`); `run2Navigation.test.ts` — 5/5 po korekcie miejsca donicy; `npm run check` — exit 0, 328 plików / 4111 testów. Testy wypisują ostrzeżenia jsdom o niedostępnym `HTMLCanvasElement.getContext`, lecz przechodzą. Prettier dla trzech zmienionych generatorów i dwóch JSON — poprawnie; `git diff --check` — bez błędów. Ponowna generacja zachowuje SHA-256 `C47A4B7FDD82F6316B7913F30719EF3F8171C3883477E9BFCD21A9FCBE146F10`. Oceny ≥7/10, budżetu renderu i usunięcia wszystkich smug nie potwierdzono bez nowych zrzutów. Narzędzie `graphify query` nie było dostępne w PATH; zależności potwierdzano w kodzie po przeczytaniu raportu grafu.
+
+### Runda E3 — bloom kasetonów, stropy i sylwetki towaru (25 XI 2026)
+
+Podstawa: kadry r3, zwłaszcza `05-west` i `06-corner-nw`, oraz potwierdzony
+przez menedżera test A/B `diag-nolightwhite` względem r3. Ocena wejściowa 6,5/10,
+próg odbioru 7/10.
+
+1. **Smugi światła.** Dodano `light_panel` / `mat_light_panel`: emisyjną ciepłą
+   biel jak `light_white`, bez selektywnego bloomu. Rejestracja obejmuje
+   `mallKinds`/`urbanKinds`, `BLOCK_MATERIALS`, `arenaMaterials.json` i przez ten
+   wpis powierzchnie `mapAudit`. Emisja reaguje na zasilanie. Dotychczasowy
+   `light_white`, `BloomPass` i kolorowe neony nie zmieniają zachowania.
+   Przebudowano 13 modeli galerii i ponownie zmierzono ich materiały przez
+   `mapModelBounds.mjs`. Dyfuzory, LED, balustrady, schody, winda, gabloty,
+   pierścienie fontanny i podświetlenia podstaw używają nowego materiału.
+   `light_white` pozostał tylko na drobnym skanerze informatora. Wszystkie
+   418 emisyjnych białych bloków generatora run2 używają `light_panel`.
+
+2. **Spody balkonów.** Usunięto 192 krótkie wkłady LED z poszczególnych
+   kasetonów. Szesnaście segmentów wzdłuż balkonów W/E zastąpiono czterema ciągłymi
+   listwami (po jednej na krawędź i kondygnację); północne i południowe krawędzie
+   zachowują po jednej linii. Mostki mają po dwie linie krawędziowe oraz dwa
+   oddzielne szersze dyfuzory. Brak promienistej siatki emisyjnych kresek.
+
+3. **Narożniki i przedsionki.** Kasetony `mall_acoustic_ceiling` z oprawami
+   `mall_ceiling_panel` dodano w wąskich pasach przy obu narożnych klatkach,
+   pod spocznikami, nad klatkami pod dachem oraz w obu przedsionkach. Otwory
+   między kondygnacjami pozostają wolne. Nie dodawano prawdziwych świateł.
+
+4. **Sklepy.** W 13 sklepach gabloty z jasnymi sylwetkami przesunięto o 0,65 m
+   ku kracie i wycentrowano w otworach portali (`v = ±3` zamiast `±2,15`).
+   Towar leży około 1,2–1,6 m od linii pasażu, zamiast około 2 m, i świeci
+   bez rozmywania konturu przez bloom. W S-01 i S-06 po jednym manekinie na
+   każdym z dwóch podestów ma emisyjny płaszcz; pozostały manekin zachowuje
+   granat. Ekrany, tylne plany i wyposażenie sklepów zachowano.
+
+**Dane po E3:** 2156 bloków (196 z modelem, 58 `walkable`, 48 niewidocznych),
+301 dekoracji, 24 światła, 141 szyldów, 79 decali, 4 zagrożenia i 16 spawnów.
+Bez zmian `src/core/`, puli pokoi i danych innych map. Dokumentacja materiału:
+`docs/api.md`, `docs/systems/render.md`, `docs/assets.md`.
+
+**Odbiór wizualny:** zrzuty wykona Opus; w tej rundzie nie uruchamiano ich
+generowania ani podglądów Blendera. W `?scene=map-walk&map=run2` sprawdzić
+smugi pod kasetonami przy zachowanym bloomie szyldów, jedną linię LED na
+krawędź balkonu, strop nad `06-corner-nw` i sylwetki we wszystkich sklepach
+z odległości 6–10 m. Ocena ≥7/10 i ostateczny efekt wizualny pozostają do
+potwierdzenia przez Opusa.
+
+**Weryfikacja końcowa E3:** `node tools/levels/mapAudit.mjs run2` — 0 error /
+0 warn; `--all` — 47 map, bez regresji progów (`mapAudit.test.ts` 59/59).
+`run2Navigation.test.ts` — 5/5; testy celowane materiałów, modeli, fundamentów,
+nawigacji i audytu — 252/252. `npm run check` — exit 0: typecheck, lint,
+328 plików / 4112 testów (4073 + 39). Ostrzeżenia jsdom o
+`HTMLCanvasElement.getContext` nie powodują niepowodzeń. Ponowna generacja
+zachowuje SHA-256 `00C4AA4046B061B771AC2B7C77C4145F5CD086977ED31DE7EC3A57F055007F51`.
+Prettier dla zmienionych rejestrów, generatorów i testu materiałów oraz
+`git diff --check` — poprawnie. `graphify query/explain/affected` niedostępne
+w PATH; raport grafu przeczytano, zależności potwierdzono w wskazanych plikach.
+Pełnego e2e nie uruchamiano (poza kontrolami wymaganymi w briefie). Logi:
+`artifacts/maps/run2/e3-blender.log`, `e3-targeted.log`, `e3-check.log`.

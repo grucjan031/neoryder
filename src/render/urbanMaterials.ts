@@ -15,6 +15,7 @@ import overpassData from '../data/render/overpassMaterials.json';
 import { tuning } from '../core/tuning';
 import { assetTexture, surfaceTexture } from './surfaceTextures';
 import type { SurfaceTexture } from './surfaceTextures';
+import { getPowerLevel } from './powerLevel';
 
 export const portKinds = [
   'container_navy',
@@ -38,20 +39,17 @@ export const arenaKinds = [
   'market_tarp',
 ] as const;
 
-/**
- * Galeria handlowa (mapa run2): przezroczyste szkło i wykończenia wnętrz. Tekstury
- * `mall_*.webp` jeszcze nie istnieją, więc wpisy w arenaMaterials.json wskazują
- * najbliższe istniejące (patrz docs/maps/run2.md, sekcja 6).
- */
-export const mallKinds = [
-  'glass_clear',
+const mallSurfaces = [
   'mall_stone_floor',
   'mall_terrazzo_inlay',
   'mall_acoustic_ceiling',
 ] as const;
-
-/** Istniejące tekstury powierzchni używane przez materiały galerii (poza rodzajami z innych list). */
-const mallTextures = ['grime', 'paving', 'tech_panel'] as const;
+export const mallKinds = [
+  'glass_clear',
+  'light_panel',
+  ...mallSurfaces,
+] as const;
+const mallTextures = ['grime', ...mallSurfaces] as const;
 
 const constructionPowerKinds = [
   'formwork_plywood',
@@ -382,6 +380,7 @@ const glsl = (value: number) => value.toFixed(4);
 const themedMaterials = new Map<MeshStandardMaterial, UrbanKind>();
 
 export function urbanColor(kind: UrbanKind): string {
+  if (kind === 'light_panel') return tuning.render.light_white;
   if (kind in portLooks) {
     const config = portLooks[kind as keyof typeof portLooks];
     if (config.themeTint) return tuning.render[config.themeTint];
@@ -418,6 +417,11 @@ export function createUrbanMaterial(
     });
   }
   material.userData.wetness = config.wetness;
+  if (kind === 'light_panel') {
+    material.color.set(0x000000);
+    material.emissive.set(urbanColor(kind)).multiplyScalar(getPowerLevel());
+    material.toneMapped = false;
+  }
   if (config.opacity !== undefined && config.opacity < 1) {
     material.transparent = true;
     material.opacity = config.opacity;
@@ -543,7 +547,9 @@ export function createUrbanMaterial(
 
 export function syncUrbanMaterials(): void {
   for (const [material, kind] of themedMaterials) {
-    material.color.set(urbanColor(kind));
+    if (kind === 'light_panel')
+      material.emissive.set(urbanColor(kind)).multiplyScalar(getPowerLevel());
+    else material.color.set(urbanColor(kind));
   }
   const weather = tuning.weather;
   urbanUniforms.snowPattern.value.set(

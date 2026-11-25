@@ -2,6 +2,9 @@ import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 import { resolveTextureKey } from './comicSurfaces';
 
 export type SurfaceTexture =
+  | 'mall_stone_floor'
+  | 'mall_terrazzo_inlay'
+  | 'mall_acoustic_ceiling'
   | 'container_corrugated_navy'
   | 'container_corrugated_olive'
   | 'container_corrugated_ochre'

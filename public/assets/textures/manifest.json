@@ -1208,5 +1208,215 @@
     "dominantColor": "#292b2e",
     "description": "Wytarte ukośne pasy ostrzegawcze bursztyn i grafit",
     "bytes": 113306
+  },
+  {
+    "id": "screen_mall_directory",
+    "category": "screens",
+    "path": "screens/screen_mall_directory.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#fbedd6",
+    "description": "Plan trzech poziomów Atrium Nova; TU JESTEŚ",
+    "bytes": 156386
+  },
+  {
+    "id": "mall_tactile_strip",
+    "category": "decals",
+    "path": "decals/mall_tactile_strip.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#443d31",
+    "description": "Mosiężna listwa prowadząca",
+    "bytes": 28382
+  },
+  {
+    "id": "mall_escalator_comb",
+    "category": "decals",
+    "path": "decals/mall_escalator_comb.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#262626",
+    "description": "Grzebień schodów z bursztynową krawędzią",
+    "bytes": 48082
+  },
+  {
+    "id": "mall_wet_footprints",
+    "category": "decals",
+    "path": "decals/mall_wet_footprints.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#9ca2a9",
+    "description": "Mokre ślady butów przy wejściu",
+    "bytes": 64060
+  },
+  {
+    "id": "mall_exit_stencil",
+    "category": "decals",
+    "path": "decals/mall_exit_stencil.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fbf2d2",
+    "description": "WYJŚCIE ze strzałką i piktogramem",
+    "bytes": 130176
+  },
+  {
+    "id": "mall_stone_floor",
+    "category": "surfaces",
+    "path": "surfaces/mall_stone_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#74777d",
+    "description": "Płyty kamienne 1,2 m z ciemną fugą",
+    "bytes": 117442
+  },
+  {
+    "id": "mall_terrazzo_inlay",
+    "category": "surfaces",
+    "path": "surfaces/mall_terrazzo_inlay.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#575654",
+    "description": "Grafitowe terrazzo z mosiężną listwą",
+    "bytes": 874682
+  },
+  {
+    "id": "mall_acoustic_ceiling",
+    "category": "surfaces",
+    "path": "surfaces/mall_acoustic_ceiling.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#53575e",
+    "description": "Płyty akustyczne na ruszcie",
+    "bytes": 116114
+  },
+  {
+    "id": "mall_fashion",
+    "category": "signs",
+    "path": "signs/mall_fashion.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fea803",
+    "description": "VERVE // MODA",
+    "bytes": 10468
+  },
+  {
+    "id": "mall_footwear",
+    "category": "signs",
+    "path": "signs/mall_footwear.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fefdf3",
+    "description": "STRIDE // OBUWIE",
+    "bytes": 19896
+  },
+  {
+    "id": "mall_electronics",
+    "category": "signs",
+    "path": "signs/mall_electronics.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#3d7cfd",
+    "description": "VOLT-X // AUDIO-HOL",
+    "bytes": 12872
+  },
+  {
+    "id": "mall_optics",
+    "category": "signs",
+    "path": "signs/mall_optics.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffff8",
+    "description": "IRIS // OPTYKA",
+    "bytes": 15602
+  },
+  {
+    "id": "mall_jewelry",
+    "category": "signs",
+    "path": "signs/mall_jewelry.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#281702",
+    "description": "AUREA // ZEGARKI",
+    "bytes": 17826
+  },
+  {
+    "id": "mall_books",
+    "category": "signs",
+    "path": "signs/mall_books.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fefbeb",
+    "description": "KODEKS // MEDIA",
+    "bytes": 14506
+  },
+  {
+    "id": "mall_kurogane",
+    "category": "signs",
+    "path": "signs/mall_kurogane.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fdfae7",
+    "description": "KUROGANE // TAKTYKA",
+    "bytes": 13150
+  },
+  {
+    "id": "floor_l0",
+    "category": "signs",
+    "path": "signs/floor_l0.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0e121a",
+    "description": "POZIOM 0",
+    "bytes": 36284
+  },
+  {
+    "id": "floor_l1",
+    "category": "signs",
+    "path": "signs/floor_l1.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fefbed",
+    "description": "POZIOM 1",
+    "bytes": 19248
+  },
+  {
+    "id": "floor_l2",
+    "category": "signs",
+    "path": "signs/floor_l2.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fdf8e8",
+    "description": "POZIOM 2",
+    "bytes": 11136
+  },
+  {
+    "id": "mall_new_collection",
+    "category": "signs",
+    "path": "signs/mall_new_collection.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#1e1e1e",
+    "description": "NOWA KOLEKCJA",
+    "bytes": 139008
+  },
+  {
+    "id": "mall_sale",
+    "category": "signs",
+    "path": "signs/mall_sale.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#fea406",
+    "description": "-30%",
+    "bytes": 162032
+  },
+  {
+    "id": "mall_opening",
+    "category": "signs",
+    "path": "signs/mall_opening.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#1c1d1d",
+    "description": "OTWARCIE 9:00",
+    "bytes": 155584
   }
 ]

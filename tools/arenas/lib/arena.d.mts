@@ -33,6 +33,8 @@ export interface ArenaBuilder {
     },
   ): NonNullable<RoomDefinition['lights']>[number];
   spawn(position: { x: number; z: number; y?: number }): ArenaBuilder;
+  /** Spawn pokoju na kondygnacji (zapisuje `y`, jeśli różni się od startu). */
+  floorSpawn(position: { x: number; z: number; y?: number }): ArenaBuilder;
   /** Spawn osobnej puli trybu (`arena.spawnPoints`) z wysokością; domyślnie y startu. */
   arenaSpawn(position: { x: number; z: number; y?: number }): ArenaBuilder;
   point(
