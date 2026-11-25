@@ -1,5 +1,12 @@
 {
   "missions": {
+    "district": {
+      "label": "Dzielnica",
+      "kurogane": "Kurogane",
+      "bulwar": "Bulwar",
+      "locked": "Ukończ misję Nocny dyżur",
+      "description": "Helixa Dynamics patroluje estakady nad Niecką. Przejdź przez nocny targ i przychodnie. Wyższe zagrożenie podnosi wypłatę za walkę."
+    },
     "firstClear": {
       "reward": "Nagroda za pierwsze ukończenie: +{data} Danych",
       "claimed": "Nagroda za pierwsze ukończenie odebrana",

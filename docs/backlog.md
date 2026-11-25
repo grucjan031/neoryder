@@ -127,3 +127,4 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | Mapy misji i aren za duże na liczbę wrogów: wskaźnik położenia ostatnich wrogów (znacznik / kierunek na HUD) i audyt wszystkich map (które się nadają, które poprawić) | Bierze Gracjan |
 | Drzewko wyboru ścieżki w runie: punkty (węzły) za małe, trudno trafić i odczytać | Interfejs: uzgodnić z Gracjanem (audyt UI) |
 | Skok przy obiektach blokuje gracza „od góry” (dziwne zatrzymanie, jakby uderzenie w sufit) | Fizyka ruchu, sprawdzić z Gracjanem (jego obszar) |
+| Boss Helixy dla Bulwaru (R7) | Obecnego bossa określa pokój, a jego przywołania określają fazy bossa. |

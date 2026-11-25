@@ -15,7 +15,7 @@ import {
 import type { MetaSave, RunSave, SaveStore } from '../../src/core/save';
 import { RunManager } from '../../src/world/run';
 import { generateSectorMap } from '../../src/world/sectorMap';
-import { kuroganeSector } from '../../src/world/sectors';
+import { bulwarSector, kuroganeSector } from '../../src/world/sectors';
 
 function createSampleRunState(seed = 'test-seed'): RunState {
   const bus = new EventBus();
@@ -65,6 +65,26 @@ const run: RunSave = {
 };
 let databaseId = 0;
 const databaseName = () => `neoryder-test-${++databaseId}`;
+
+it('IndexedDB odtwarza sektor Bulwar i domyślny sektor starego zapisu', async () => {
+  const store = createIndexedDbSaveStore(databaseName());
+  const saved = structuredClone(run);
+  saved.run.map = generateSectorMap(bulwarSector, saved.seed);
+  saved.run.sectorId = 'bulwar';
+  await store.saveRun(saved);
+  expect((await store.loadRun())?.run).toMatchObject({
+    sectorId: 'bulwar',
+    map: saved.run.map,
+  });
+  const legacy = structuredClone(run);
+  Reflect.deleteProperty(legacy.run, 'sectorId');
+  Reflect.deleteProperty(legacy.run.map, 'sectorId');
+  await store.saveRun(legacy);
+  expect((await store.loadRun())?.run).toMatchObject({
+    sectorId: 'kurogane',
+    map: { sectorId: 'kurogane' },
+  });
+});
 
 async function rawSave(
   name: string,

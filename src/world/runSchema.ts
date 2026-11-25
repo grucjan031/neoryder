@@ -31,7 +31,7 @@ export const mapNodeSchema: z.ZodType<MapNode> = z.object({
 });
 
 export const sectorMapSchema: z.ZodType<SectorMap> = z.object({
-  sectorId: z.string().min(1),
+  sectorId: z.string().min(1).default('kurogane'),
   layers: z.array(z.array(mapNodeSchema).min(1)).min(1),
 });
 
@@ -61,7 +61,7 @@ export const runStateSchema: z.ZodType<CheckpointRunState> = z
       .record(z.string(), z.number().finite().min(0).max(1))
       .optional(),
     seed: z.string(),
-    sectorId: z.string().min(1),
+    sectorId: z.string().min(1).default('kurogane'),
     loadoutId: z.string().min(1),
     loadout: savedLoadoutSchema,
     talents: z

@@ -180,7 +180,11 @@ function handlerCount(bus: EventBus): number {
   );
 }
 
-async function setup(options: RunSceneOptions = {}, bus = new EventBus()) {
+async function setup(
+  options: RunSceneOptions = {},
+  bus = new EventBus(),
+  debug = true,
+) {
   const screens = new Screens();
   const save = new MemorySave();
   const commands = new CommandRegistry();
@@ -207,13 +211,30 @@ async function setup(options: RunSceneOptions = {}, bus = new EventBus()) {
       rng: new Rng('test1'),
       loop: new GameLoop({ step() {}, render() {} }),
       tuning: structuredClone(tuning),
-      debug: true,
+      debug,
       resume,
     },
     new ThreeScene(),
   );
   return { scene, screens, save, commands, rooms, bus, resume };
 }
+
+it.each([
+  ['sector=bulwar', false, 'kurogane'],
+  ['district=bulwar', false, 'kurogane'],
+  ['sector=bulwar', true, 'bulwar'],
+  ['sector=bulwar&mode=conquest', true, 'kurogane'],
+] as const)(
+  'nowy run %s (debug %s) wybiera sektor %s',
+  async (query, debug, sectorId) => {
+    const { scene } = await setup(
+      { params: new URLSearchParams(`scene=run&${query}`) },
+      new EventBus(),
+      debug,
+    );
+    expect(scene.query('runState')).toMatchObject({ sectorId });
+  },
+);
 
 it.each(['solved', 'skipped'] as const)(
   'węzeł zagadki pozostaje aktywny do decyzji gracza (%s)',

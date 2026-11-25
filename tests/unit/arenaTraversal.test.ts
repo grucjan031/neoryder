@@ -15,6 +15,9 @@ import { arenaSpawnPoints } from '../../src/world/arenaSpawns';
 import { roomDefinitions } from '../../src/world/rooms';
 
 it.each([
+  'combatClinic',
+  'combatMarketDeck',
+  'eliteTerrace',
   'arenaContainerPort',
   'arenaOverpass',
   'arenaRooftops',
@@ -141,6 +144,8 @@ it.each([
         if (start) teleport(start.x, start.z);
         walkPoints();
       }
+      if (['combatClinic', 'combatMarketDeck', 'eliteTerrace'].includes(id))
+        return;
       if (id === 'arenaPowerPlant') {
         const spawns = arenaSpawnPoints(room);
         for (const index of [17, 28]) {

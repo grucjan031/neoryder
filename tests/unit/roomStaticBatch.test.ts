@@ -57,6 +57,9 @@ const staticSources = ['static-world'];
 // ale statyka to jeden korzeń `static-world`, a budżet siatek sceny jest większy (RUN_SCENE_MESH_BUDGET).
 it.each([
   'alleyMarket',
+  'combatClinic',
+  'combatMarketDeck',
+  'eliteTerrace',
   'combatCorridor',
   'combatFloodedTunnel',
   'combatLaserYard',

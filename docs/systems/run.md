@@ -2,6 +2,12 @@
 
 Moduł `src/world/run.ts` odpowiada za czystą logikę stanu pętli runu (ADR 0005 pkt 4, 7, 9, 10) bez zależności od Three.js ani DOM.
 
+Na tablicy misji w kryjówce zwykły run ma wybór dzielnicy. Domyślnie gracz wyrusza do Kurogane. Ukończenie `m07-nocny-dyzur` w kampanii odblokowuje Bulwar Helixy Dynamics. Obie trasy mają osiem warstw. Ustawienie `lastDistrict` zapamiętuje wybór, a przy kontynuacji źródłem dzielnicy jest `sectorId` checkpointu. Starszy zapis bez identyfikatora wskazuje Kurogane. Misje, areny i wyzwanie dnia zachowują własne reguły startu.
+
+Na Bulwarze ochroniarze i sanitariusze Helixy wchodzą do fal przez jawne pule sektora. Wspólny planer dodaje do ostatniej fali każdej elity jednego Egzekutora. Boss `securityChief` i jego przywołania pochodzą z pokoju i faz bossa.
+
+Podgląd Bulwaru: `?scene=run&sector=bulwar&debug=1`. Pokoje otwiera `?scene=room-test&debug=1&room=` z identyfikatorem `combatClinic`, `combatMarketDeck` lub `eliteTerrace`. Podgląd tablicy: `?scene=hub&debug=1` i komenda `hub open missions`.
+
 ## Odpowiedzialności
 
 - **Stan międzypokojowy (`RunState`):** `seed`, `sectorId`, `loadoutId` i pełny `loadout` (kopia ekwipunku zamrożona na starcie), `talents` (id bez duplikatów), `threatLevel` (całkowity, >= 0), `startedAtMs`, `elapsedS` (czas symulacji), `map` (`SectorMap`), `currentNodeId` (`null` przed pierwszym wyborem), `visited`, `hp`, `energy`, `credits`, `implants` (bez duplikatów), `stats.kills`, `stats.damage` (`melee`, `power`, `gun`, `other`). Pola opcjonalne: `difficulty` (pomijane dla `normal`), `modeId`, `missionId`, `objectives` (`pending | active | done` na id celu), `objectiveProgress` (0..1), `roomCredits` (patrz „Waluta runu"), `achievementProgress`. Ciepło broni nie jest przenoszone między pokojami (każdy pokój zaczyna z zimną bronią).

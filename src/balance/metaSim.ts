@@ -7,7 +7,8 @@ import {
 import type { MetaRules } from '../progression/meta';
 import { createStarterMetaState } from '../progression/progressionSchema';
 import { talentTrees } from '../progression/talentSchema';
-import { kuroganeSector } from '../world/sectors';
+import { bulwarSector, kuroganeSector } from '../world/sectors';
+import { simulateSectorPath } from './simulator';
 import type { RunRewards } from '../core/metaTypes';
 
 /**
@@ -49,11 +50,12 @@ export const TYPICAL_RUNS: readonly TypicalRunSpec[] = [
 export function typicalSummary(
   spec: TypicalRunSpec,
   threatLevel = 0,
+  sector = kuroganeSector,
 ): RunSummary {
   const cleared =
     spec.outcome === 'victory' ? TYPICAL_PATH.length : spec.layer - 1;
   const path = TYPICAL_PATH.slice(0, cleared);
-  const durations = kuroganeSector.expectedDurationS;
+  const durations = sector.expectedDurationS;
   const killsFor = (type: string) =>
     type === 'combat'
       ? KILLS_PER_COMBAT
@@ -67,7 +69,11 @@ export function typicalSummary(
     seed: 'meta-balance',
     loadoutId: 'custom',
     elapsedS: path.reduce((sum, type) => sum + durations[type]!, 0),
-    kills: path.reduce((sum, type) => sum + killsFor(type), 0),
+    kills:
+      sector.id === kuroganeSector.id
+        ? path.reduce((sum, type) => sum + killsFor(type), 0)
+        : simulateSectorPath(sector, path, 'meta-balance', threatLevel).kills +
+          (path.includes('boss') ? KILLS_BOSS : 0),
     roomsCleared: path.length,
     elitesCleared: path.filter((type) => type === 'elite').length,
     threatLevel,
@@ -125,6 +131,7 @@ function buyGreedy(
 export function simulateTypicalRuns(
   rules: MetaRules = defaultMetaRules,
   runs: readonly TypicalRunSpec[] = TYPICAL_RUNS,
+  sector = kuroganeSector,
 ): MetaSimResult {
   const meta = new MetaManager(
     createStarterMetaState(rules.progression.starter),
@@ -146,7 +153,7 @@ export function simulateTypicalRuns(
   const rows: MetaSimRow[] = [];
   const levelsPerRun: number[] = [];
   runs.forEach((spec, index) => {
-    const summary = typicalSummary(spec);
+    const summary = typicalSummary(spec, 0, sector);
     const result = meta.applyRun(summary, `meta-balance:${index}`);
     levelsPerRun.push(result.levelAfter - result.levelBefore);
     const talentsBought = buyGreedy(talentIds, (id) => meta.buyTalent(id));
@@ -231,6 +238,31 @@ export function renderMetaSection(
       (row) =>
         `| ${row.level} | ${defaultMetaRules.threat[row.level]!.rewardMult} | ${rewardCells(row.victory)} | ${rewardCells(row.deathLayer5)} |`,
     ),
+    '',
+    ...renderDistrictComparison(),
+  ];
+}
+
+export function renderDistrictComparison(): string[] {
+  const pressures = [kuroganeSector, bulwarSector].map((sector) => {
+    let sum = 0;
+    for (let i = 0; i < 100; i++)
+      sum += simulateSectorPath(sector, TYPICAL_PATH, `r5d-${i}`).pressure;
+    return sum / 100;
+  });
+  return [
+    '## Dzielnice runów (R5d)',
+    '',
+    'Typowa trasa ma osiem warstw. Czas to suma projektowych czasów pokoi. Presja to średnia suma kosztów wrogów z faktycznego planera fal dla 100 seedów r5d-0…99, na bazowym poziomie zagrożenia. Wspólny boss jest pominięty w presji.',
+    '',
+    '| Dzielnica | Czas modelowy (s) | Presja | Kredyty / zagrożenie |',
+    '| --- | ---: | ---: | ---: |',
+    ...[kuroganeSector, bulwarSector].map(
+      (sector, i) =>
+        `| ${sector.name} | ${typicalSummary(TYPICAL_RUNS[2]!, 0, sector).elapsedS} | ${pressures[i]!.toFixed(2)} | ${sector.economy!.creditsPerThreat} |`,
+    ),
+    '',
+    `Wzrost presji na Bulwarze wynosi ${((pressures[1]! / pressures[0]! - 1) * 100).toFixed(1)}%.`,
     '',
   ];
 }
