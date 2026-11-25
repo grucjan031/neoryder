@@ -5,6 +5,7 @@ import type { MapNode, Rarity, RunState, RunSummary } from '../core/runTypes';
 import type { RunScreen } from '../world/run';
 import { z } from 'zod';
 import textData from '../data/ui/run.pl.json';
+import { districtName } from './districtName';
 import metaTextData from '../data/ui/meta.pl.json';
 import './runScreens.css';
 import { MapScreen } from './mapScreen';
@@ -273,7 +274,17 @@ export class HtmlRunScreens implements RunScreens {
     heading.textContent = view.dailyChallenge
       ? `${challengeText.title} · ${text.titles[view.screen]}`
       : text.titles[view.screen];
-    titles.append(el('p', 'ui-kicker', text.kickers[view.screen]), heading);
+    titles.append(
+      el(
+        'p',
+        'ui-kicker',
+        text.kickers[view.screen].replace(
+          '{sector}',
+          districtName(view.state.sectorId),
+        ),
+      ),
+      heading,
+    );
     head.append(titles);
     this.panel.append(head);
     this.vitals(head, view.state.hp, view.state.credits);

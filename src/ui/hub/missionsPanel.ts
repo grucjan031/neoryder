@@ -137,34 +137,39 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   );
   sector.append(sectorName, sectorDescription, firstClear);
   const districtText = textData.missions.district;
-  const districtLabel = el('label', 'missions-panel__seed', districtText.label);
-  const district = el('select', 'missions-panel__seed-input');
-  const bulwar = el('option', '', districtText.bulwar);
-  bulwar.value = 'bulwar';
-  const kurogane = el('option', '', districtText.kurogane);
-  kurogane.value = 'kurogane';
-  district.append(kurogane, bulwar);
-  const lock = el(
-    'span',
-    'missions-panel__sector-text',
-    `${districtText.bulwar} · ${districtText.locked}`,
+  const districtLabel = el('section', 'missions-panel__seed');
+  const districtGrid = el('div', 'missions-panel__districts');
+  districtGrid.setAttribute('role', 'group');
+  districtGrid.setAttribute('aria-label', districtText.label);
+  districtLabel.append(
+    el('h3', 'missions-panel__heading ui-heading', districtText.label),
+    districtGrid,
   );
-  districtLabel.append(district, lock);
-  district.setAttribute('aria-label', districtText.label);
-  district.addEventListener('change', () => {
-    saveSettings({
-      ...loadSettings(),
-      lastDistrict: district.value === 'bulwar' ? 'bulwar' : 'kurogane',
+  let selectedDistrict: 'kurogane' | 'bulwar' = 'kurogane';
+  const lock = el('small', 'missions-panel__lock-note', districtText.locked);
+  const districtButtons = (['kurogane', 'bulwar'] as const).map((id) => {
+    const button = el(
+      'button',
+      'missions-panel__level ui-interactive',
+      districtText[id],
+    );
+    button.type = 'button';
+    if (id === 'bulwar') button.append(lock);
+    button.addEventListener('click', () => {
+      saveSettings({ ...loadSettings(), lastDistrict: id });
+      refresh();
     });
-    describe();
+    bindUiFeedback(button, false);
+    districtGrid.append(button);
+    return { id, button };
   });
   const describe = (mission?: MissionDefinition) => {
     // Misje liniowe mają własnych towarzyszy z danych poziomu.
     squadPicker.root.hidden = !!mission?.level;
     districtLabel.hidden = !!mission;
-    const onBulwar = district.value === 'bulwar';
+    const onBulwar = selectedDistrict === 'bulwar';
     sectorName.textContent =
-      mission?.title ?? (onBulwar ? districtText.bulwar : text.sector.name);
+      mission?.title ?? (onBulwar ? districtText.title : text.sector.name);
     sectorDescription.textContent =
       mission?.summary ??
       (onBulwar ? districtText.description : text.sector.description);
@@ -493,7 +498,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       params.set('seed', seed || defaultRunSeed());
       if (selectedMission) params.set('mission', selectedMission.id);
       if (selectedMode) params.set('mode', selectedMode);
-      if (!selectedMission && !selectedMode && district.value === 'bulwar')
+      if (!selectedMission && !selectedMode && selectedDistrict === 'bulwar')
         params.set('district', 'bulwar');
       const squad = squadPicker.selected();
       if (!selectedMission?.level && squad.length > 0)
@@ -524,11 +529,21 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   root.append(mainCol, side);
 
   function refresh(): void {
-    bulwar.disabled = !bulwarUnlocked(manager.state.campaign.completed);
-    lock.hidden = !bulwar.disabled;
-    district.value = bulwar.disabled
-      ? 'kurogane'
-      : (loadSettings().lastDistrict ?? 'kurogane');
+    const unlocked = bulwarUnlocked(manager.state.campaign.completed);
+    selectedDistrict = unlocked
+      ? (loadSettings().lastDistrict ?? 'kurogane')
+      : 'kurogane';
+    lock.hidden = unlocked;
+    for (const { id, button } of districtButtons) {
+      button.disabled = id === 'bulwar' && !unlocked;
+      const selected = id === selectedDistrict;
+      button.setAttribute('aria-pressed', String(selected));
+      button.dataset.state = button.disabled
+        ? 'locked'
+        : selected
+          ? 'selected'
+          : 'available';
+    }
     if (!selectedMode) describe(selectedMission);
     squadPicker.refresh();
     const completed = manager.state.campaign.completed;

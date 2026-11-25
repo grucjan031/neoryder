@@ -110,14 +110,8 @@
     }
   },
   "roomPools": {
-    "combat": [
-      "alleyMarket",
-      "alleyBackstreet",
-      "alleyCrossing",
-      "combatClinic",
-      "combatMarketDeck"
-    ],
-    "elite": ["plazaHolo", "eliteTerrace"],
+    "combat": ["run1"],
+    "elite": ["run1"],
     "shop": ["noodleShop", "shopRoom"],
     "rest": ["restRoom", "rooftopRest"],
     "puzzle": ["puzzlePlate", "puzzleLaser"],

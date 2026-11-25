@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { NODE_TYPES } from '../core/runTypes';
 import type { RunState } from '../core/runTypes';
 import data from '../data/ui/run.pl.json';
+import { districtName } from './districtName';
 import './mapScreen.css';
 
 const text = z
@@ -86,7 +87,7 @@ export class MapScreen {
     }
     const info = document.createElement('p');
     info.className = 'sector-map__info';
-    info.textContent = `${state.sectorId} · ${text.map.seed}: ${state.seed}`;
+    info.textContent = `${districtName(state.sectorId)} · ${text.map.seed}: ${state.seed}`;
     const graph = document.createElement('div');
     graph.className = 'sector-map__graph';
     const positions = new Map<string, { x: number; y: number }>();

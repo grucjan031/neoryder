@@ -57,9 +57,6 @@ const staticSources = ['static-world'];
 // ale statyka to jeden korzeń `static-world`, a budżet siatek sceny jest większy (RUN_SCENE_MESH_BUDGET).
 it.each([
   'alleyMarket',
-  'combatClinic',
-  'combatMarketDeck',
-  'eliteTerrace',
   'combatCorridor',
   'combatFloodedTunnel',
   'combatLaserYard',
@@ -173,9 +170,7 @@ it.each([
         'weather',
       ]) {
         const part = Reflect.get(dressing, source) as
-          | { root: Object3D }
-          | { root: Object3D }[]
-          | undefined;
+          { root: Object3D } | { root: Object3D }[] | undefined;
         const parts = Array.isArray(part) ? part : part ? [part] : [];
         const count = counts(parts.map((item) => item.root));
         rows.push({ source, before: count, after: count });

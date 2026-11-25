@@ -736,6 +736,7 @@ export class RoomScene implements Scene {
 
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
+        sectorId: 'sectorId' in this.run ? this.run.sectorId : undefined,
         playerId,
         threats: () => {
           const sources: Enemy[] = [];

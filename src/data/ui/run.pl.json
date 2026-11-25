@@ -16,8 +16,8 @@
     "boss": "Boss"
   },
   "kickers": {
-    "map": "Sektor Kurogane · mapa",
-    "room": "Sektor Kurogane · węzeł",
+    "map": "Sektor {sector} · mapa",
+    "room": "Sektor {sector} · węzeł",
     "reward": "System · modyfikacja",
     "shop": "Czarny rynek · kontrakt",
     "rest": "Strefa buforowa · kalibracja",

@@ -46,7 +46,7 @@
   "microStamina": "MOB // WYTRZYMAŁOŚĆ",
   "microWeapon": "ARM // UZBROJENIE",
   "microPowers": "REZONANS // MOCE",
-  "microWave": "SEKTOR KUROGANE // FALA",
+  "microWave": "SEKTOR {sector} // FALA",
   "microBoss": "ZAGROŻENIE // SYGNAŁ",
   "microImplants": "IMPLANTY // AKTYWNE",
   "microOperator": "ISKRA // OPERATOR"
