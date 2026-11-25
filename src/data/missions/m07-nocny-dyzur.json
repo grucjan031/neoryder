@@ -9,7 +9,16 @@
   "requires": ["m06-odlewnia"],
   "layers": 7,
   "splashAct": 2,
-  "enemies": ["assaulter", "gunner", "shielder", "drone", "turret", "hacker"],
+  "enemies": [
+    "assaulter",
+    "gunner",
+    "shielder",
+    "drone",
+    "turret",
+    "hacker",
+    "helixGuard",
+    "helixMedic"
+  ],
   "fixedNodes": [
     {
       "layer": 7,

@@ -19,8 +19,12 @@
           "count": 1
         },
         {
-          "enemy": "gunner",
-          "count": 2
+          "enemy": "helixGuard",
+          "count": 1
+        },
+        {
+          "enemy": "helixMedic",
+          "count": 1
         },
         {
           "enemy": "hacker",

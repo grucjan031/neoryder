@@ -19,7 +19,7 @@
       "spawnIntervalS": 0.05,
       "groups": [
         {
-          "enemy": "gunner",
+          "enemy": "helixGuard",
           "count": 1
         },
         {
