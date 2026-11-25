@@ -122,7 +122,7 @@ import { EnemyManager } from '../enemies/manager';
 import { createEnemyView } from '../enemies/views';
 import type { EnemyViewLike } from '../enemies/views';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
-import type { Enemy } from '../enemies/types';
+import type { Enemy, EnemyDependencies } from '../enemies/types';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { FppLegs } from '../render/fppLegs';
@@ -577,9 +577,7 @@ export class RoomScene implements Scene {
           const player = this.health.dead
             ? null
             : { id: playerId, ...this.player.getState() };
-          return this.squad && this.squad.size > 0
-            ? this.squad.targetFor(enemy, player)
-            : player;
+          return this.enemyTarget(enemy, player);
         },
       },
       {
@@ -1549,6 +1547,13 @@ export class RoomScene implements Scene {
         this.emitHealth();
       },
     });
+  }
+
+  protected enemyTarget(
+    enemy: { id: EntityId | null; position: Vec3 },
+    player: ReturnType<EnemyDependencies['getTarget']>,
+  ): ReturnType<EnemyDependencies['getTarget']> {
+    return this.squad?.size ? this.squad.targetFor(enemy, player) : player;
   }
 
   protected spawnEnemy(kind: string, position: Vec3): EntityId | null {

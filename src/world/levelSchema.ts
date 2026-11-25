@@ -79,6 +79,7 @@ export const levelSchema = z
         id,
         zone: levelZoneSchema,
         wave: id,
+        saboteurs: z.number().int().nonnegative().optional(),
         spawnPoints: wavesSchema.shape.spawnPoints,
         spawnHeightM: z.number().finite().optional(),
         after: dependency.optional(),
@@ -287,6 +288,18 @@ export function loadLevel(
   for (const encounter of level.encounters) {
     if (!waves.has(encounter.wave))
       throw new Error(`Nieznana fala: ${encounter.wave}`);
+    if (
+      encounter.saboteurs &&
+      (!level.payload ||
+        waves
+          .get(encounter.wave)!
+          .waves.some(
+            ({ groups }) =>
+              groups.reduce((total, group) => total + group.count, 0) <
+              encounter.saboteurs!,
+          ))
+    )
+      throw new Error(`Nieprawidłowa liczba sabotażystów: ${encounter.id}`);
     if (encounter.reinforcementFor) {
       const [objectiveId, index] = encounter.reinforcementFor.split(':');
       const objective = mission.objectives.find(

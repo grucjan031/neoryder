@@ -165,12 +165,49 @@ export function analyzeAct(balance = runBalance(), settings = reportSettings) {
           const route = new RailPayload(data.route, [], params, {
             reinforce: () => {},
           });
-          // RoomScene przekazuje AI tylko gracza i drużynę. Wagon jest neutralnym hurtboxem.
-          const attackers = 0;
-          const targetedDps = 0;
+          let attackers = 0;
+          let targetedDps = 0;
+          let damage = 0;
+          for (const encounter of level.encounters) {
+            const count = encounter.saboteurs ?? 0;
+            if (!count) continue;
+            for (const turn of levelWaves.get(encounter.wave)!.waves) {
+              const pool = turn.groups.flatMap((g) =>
+                Array<string>(g.count).fill(g.enemy),
+              );
+              // Pierwsze N spawnów po tasowaniu. Każdy członek puli ma równe
+              // szanse na każdą pozycję w kolejce likwidacji sabotażystów.
+              const ttk = pool.map(
+                (enemy) =>
+                  settings.approachS +
+                  mean(
+                    [...balance.singlePaths, ...balance.bossPaths].find(
+                      (r) => r.enemy === enemy,
+                    )!.ttkS,
+                  ),
+              );
+              const rates = pool.map(
+                (enemy) =>
+                  attackDps(enemyDefinitions.get(enemy)!) *
+                  tuning.missions.payloadEnemyDamageScale,
+              );
+              targetedDps = Math.max(targetedDps, count * mean(rates));
+              attackers += count;
+              for (let i = 0; i < pool.length; i++) {
+                const preceding =
+                  pool.length > 1 ? mean(ttk.filter((_, j) => i !== j)) : 0;
+                for (let slot = 0; slot < count; slot++) {
+                  const exposure =
+                    settings.approachS +
+                    ttk[i]! +
+                    slot * Math.max(0, preceding - turn.spawnIntervalS);
+                  damage += (rates[i]! * exposure) / pool.length;
+                }
+              }
+            }
+          }
           const travelS = route.lengthM / params.speedMps;
-          const reserve =
-            100 * (1 - (targetedDps * travelS) / params.maxHealth);
+          const reserve = 100 * Math.max(0, 1 - damage / params.maxHealth);
           return {
             id: o.id,
             length: route.lengthM,
@@ -180,6 +217,7 @@ export function analyzeAct(balance = runBalance(), settings = reportSettings) {
             travelS,
             attackers,
             targetedDps,
+            damage,
             reserve,
           };
         });
@@ -288,16 +326,16 @@ export function renderMissionReport(
   for (const m of act)
     for (const e of m.escorts) {
       lines.push(
-        `| ${m.id} / ${e.id} | ${e.health} | ${format(e.speed)} | ${format(e.length)} | ${format(e.travelS)} | ${e.stops} | ${e.attackers} | ${e.targetedDps} | ${format(e.reserve)}% | ${lowReserve(e.reserve) ? 'niski zapas' : '—'} |`,
+        `| ${m.id} / ${e.id} | ${e.health} | ${format(e.speed)} | ${format(e.length)} | ${format(e.travelS)} | ${e.stops} | ${e.attackers} | ${format(e.targetedDps)} | ${format(e.reserve)}% | ${lowReserve(e.reserve) ? 'niski zapas' : '—'} |`,
       );
     }
   lines.push(
     '',
-    `RoomScene przekazuje AI gracza i sojuszników. Neutralny wagon przyjmuje przypadkowe trafienia przez hurtbox. Ich częstość zależy od ustawienia drużyny i linii ognia. Zapas opisuje wyłącznie ogień celowany. RailPayload mierzy długość łamanej w 3D; wymaga gracza w promieniu ${tuning.prototypes.payload.pushRadiusM} m, a wróg w promieniu ${tuning.prototypes.payload.contestRadiusM} m blokuje ruch. W playteście warto zmierzyć HP na mecie oraz czas unieruchomienia przy każdym postoju.`,
+    `Celowany DPS to najwyższa wśród tur oczekiwana suma DPS sabotażystów. Model uśrednia tasowaną kolejkę spawnów i trzy ścieżki gracza. Na zauważenie zasadzki zakłada ${format(settings.approachS)} s (jeden odcinek dojścia z modelu). Następnie na każdy cel przypada dojście i pojedynczy TTK. Ekspozycja kolejnego celu uwzględnia odstęp spawnów. Przy czystej linii ognia model zakłada trafienie dużego wagonu każdym atakiem. Osłony, prowokacja i przypadkowe trafienia zmieniają rzeczywisty wynik. HUD pokazuje bieżące i maksymalne HP wagonu.`,
     ...act.flatMap((m) =>
       m.escorts.map(
         (e) =>
-          `\nPróg dla ${m.id}: utrata ponad ${format(e.health * 0.75)} HP zostawi mniej niż 25% zapasu. Przy samym czasie jazdy odpowiada to średnio ponad ${format((e.health * 0.75) / e.travelS)} HP/s przypadkowych trafień. Postoje wydłużają ekspozycję.`,
+          `\n${m.id}: oczekiwana utrata ${format(e.damage)} HP z ${e.health}, zapas ${format(e.reserve)}%.`,
       ),
     ),
     '',

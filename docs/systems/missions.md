@@ -251,6 +251,21 @@ Pierwsze ukończenie daje 110 Danych i 1 Rdzeń. Szczegóły checkpointów i tra
 `levels.md`, sekcja M04. Opcjonalne premie scenariusza, zmiany wystroju kryjówki
 pozostają poza zakresem M04. Po dodaniu M05 przerywnik M06 opisuje kartę zdobytą przez Kuriera po rozbiciu eskorty Wirskiej.
 
+### Sabotażyści w eskorcie M04
+
+Pole `encounters[].saboteurs` oznacza liczbę pierwszych udanych spawnów
+w każdej tasowanej turze. Patrol wyznacza jednego sabotażystę, rogatka
+dwóch, a rozjazd wschodni trzech. Sabotażyści zajmują kolejno pozycje
+`spawnPoints` z pliku fali po stronie wagonu, a pozostała część oddziału
+losuje pozycje spotkania. Pierwsze rzeczywiste obrażenia od
+sabotażysty uruchamiają taktyczny komunikat Szrona `payload:attacked`.
+HUD pokazuje wytrzymałość wagonu. Po trafieniu jego obrys rozświetla się
+na czerwono-bursztynowo na 0,18 s przy włączonych błyskach.
+
+W odblokowanej M04 z `debug=1` komenda `payload ambush` ustawia wagon
+przy rogatce, uruchamia jej falę i ustawia gracza z boku toru.
+`payload saboteurs` wypisuje identyfikatory żywych sabotażystów i ich cele.
+
 ## M05 — Adiutant
 
 Kolejność kampanii: M04 → M05 → M06. M05 to pościg solo po dachach i estakadach

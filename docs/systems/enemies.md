@@ -821,3 +821,10 @@ i uderzenia w filar, a `kill all` dla kierunkowego upadku i rozpadu.
 Gdy scena poda `EnemyDependencies.getTargetFor`, `EnemyManager.spawn` daje każdemu wrogowi własne
 `getTarget` (wybór `selectHostileTarget`, `docs/systems/allies.md`). Kod archetypów pyta o cel tak
 samo jak wcześniej; dyrektor i `targetForward` nadal używają wspólnego `getTarget` (gracz).
+
+W M04 pokój przechowuje rolę sabotażysty przy identyfikatorze wroga. W promieniu
+28 m od środka sprawnego wagonu sabotażysta celuje w najbliższą powierzchnię
+hurtboxa na połowie wysokości pudła. Pocisk lub cios musi fizycznie trafić.
+Gracz w odległości poniżej 5 m od sabotażysty lub gracz zadający mu obrażenia
+przejmuje uwagę na 4 s czasu symulacji. Kolejny bodziec odnawia ten czas.
+Poza zasięgiem wagonu i po zakończeniu eskorty wraca zwykły wybór celu drużyny.

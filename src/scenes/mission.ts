@@ -1,10 +1,11 @@
 import type { Scene as ThreeScene } from 'three';
+import { BoxGeometry, Mesh, MeshBasicMaterial } from 'three';
 import type { Collider } from '@dimforge/rapier3d-compat';
 import type { Vec3 } from '../core/math';
 import { Health } from '../combat/damage';
-import type { Enemy } from '../enemies/types';
+import type { Enemy, EnemyDependencies } from '../enemies/types';
 import { CollisionGroup, interactionGroups } from '../physics';
-import { RailPayload } from '../world/railPayload';
+import { RailPayload, saboteurFocus } from '../world/railPayload';
 import { PayloadView, EscortNpcView } from './prototypeViews';
 import { lerpPose } from './prototypeScene';
 import { PrototypeHud } from '../ui/prototypeHud';
@@ -314,6 +315,7 @@ export class MissionScene implements Scene {
         this.level,
         checkpoint.payloadDistanceM!,
         this.options.loadModels ?? true,
+        () => this.signal('payload:attacked'),
       );
     }
     for (const id of this.snapshot.completedEncounters)
@@ -517,21 +519,37 @@ export class MissionScene implements Scene {
     if (this.active.has(id) || this.runtime.completed.has(id)) return;
     const encounter = this.level.encounters.find((item) => item.id === id)!;
     const definition = structuredClone(levelWaves.get(encounter.wave)!);
+    const assaultPoints = definition.spawnPoints;
     definition.spawnPoints = encounter.spawnPoints;
     definition.maxAlive = Math.min(
       definition.maxAlive,
       this.ctx.tuning.level.maxAlive,
     );
     const enemies = new Set<EntityId>();
+    let marked = 0;
+    let turn = 0;
     const director = new WaveDirector(
       definition,
       {
         spawn: (enemy, position) => {
+          if (turn !== director.wave) {
+            turn = director.wave;
+            marked = 0;
+          }
+          const assault =
+            marked < (encounter.saboteurs ?? 0) && this.payloadRoom;
+          const spawn = assault
+            ? assaultPoints[marked % assaultPoints.length]!
+            : position;
           const id = this.room!.spawnEncounterEnemy(enemy, {
-            ...position,
+            ...spawn,
             y: encounter.spawnHeightM ?? position.y,
           });
           if (id !== null) enemies.add(id);
+          if (id !== null && assault) {
+            assault.markSaboteur(id);
+            marked++;
+          }
           if (
             id !== null &&
             encounter.bossFor &&
@@ -886,6 +904,29 @@ export class MissionScene implements Scene {
       },
     );
     if (this.payloadRoom) {
+      register(
+        'payload saboteurs',
+        'payload saboteurs — żywi sabotażyści i ich cele',
+        () => JSON.stringify(this.payloadRoom!.saboteurTargets()),
+      );
+      register(
+        'payload ambush',
+        'payload ambush — ustaw podgląd zasadzki na rogatce',
+        () => {
+          const room = this.payloadRoom!;
+          const stop = this.level.payload!.stops.find((s) => s.id === 'laser');
+          const gate = this.level.encounters.find((e) => e.id === 'rogatka');
+          if (!stop || !gate || this.state !== 'playing')
+            return 'Zasadzka niedostępna.';
+          room.payload.restore(stop.atM);
+          room.objectiveModel()?.done('barricade');
+          this.updateGates();
+          const at = room.payload.position;
+          room.teleportPlayer({ x: at.x - 10, y: at.y, z: at.z + 9 }, -58);
+          this.startEncounter(gate.id);
+          return 'Rogatka — zasadzka.';
+        },
+      );
       register('payload status', 'payload status — stan wagonu', () =>
         JSON.stringify(this.payloadRoom!.payload.snapshot()),
       );
@@ -1105,6 +1146,78 @@ class SubdueMissionRoom extends RoomScene {
 
 /** Adapter prototypu do hosta misji; wspólny RoomScene pozostaje bez zmian. */
 class PayloadMissionRoom extends RoomScene {
+  private readonly saboteurs = new Map<
+    EntityId,
+    { until: number; target: string }
+  >();
+  private clockS = 0;
+  private hitFlashUntil = 0;
+  private flash?: Mesh<BoxGeometry, MeshBasicMaterial>;
+  private offDamage?: () => void;
+  private attacked = false;
+
+  markSaboteur(id: EntityId): void {
+    this.saboteurs.set(id, { until: 0, target: 'drużyna' });
+  }
+
+  saboteurTargets() {
+    const list: {
+      id: EntityId;
+      target: string;
+      kind: string;
+      state: string;
+      position: Vec3;
+    }[] = [];
+    this.manager.forEach((e) => {
+      const role = this.saboteurs.get(e.id);
+      if (role && !e.removed && e.current.state !== 'dead')
+        list.push({
+          id: e.id,
+          target: role.target,
+          kind: e.definition.kind,
+          state: e.current.state,
+          position: e.current.position,
+        });
+    });
+    return list;
+  }
+
+  protected override enemyTarget(
+    enemy: { id: EntityId | null; position: Vec3 },
+    player: ReturnType<EnemyDependencies['getTarget']>,
+  ) {
+    const role = enemy.id === null ? undefined : this.saboteurs.get(enemy.id);
+    if (!role) return super.enemyTarget(enemy, player);
+    const focus = saboteurFocus(
+      role,
+      this.clockS,
+      enemy.position,
+      player?.position,
+      this.payload,
+      this.ctx.tuning.missions,
+    );
+    if (focus === 'gracz' && player) {
+      role.target = 'gracz';
+      return player;
+    }
+    if (focus === 'wagon' && !this.payloadHealth.dead) {
+      role.target = 'wagon';
+      const center = this.payloadCollider.translation();
+      const position =
+        this.payloadCollider.projectPoint(
+          { ...enemy.position, y: center.y },
+          true,
+        )?.point ?? center;
+      return { id: this.payloadId, position };
+    }
+    const fallback = super.enemyTarget(enemy, player);
+    role.target = !fallback
+      ? 'brak'
+      : fallback.id === player?.id
+        ? 'gracz'
+        : 'sojusznik';
+    return fallback;
+  }
   payload!: RailPayload;
   private payloadDefinition!: NonNullable<LevelDefinition['payload']>;
   private payloadHealth!: Health;
@@ -1118,6 +1231,7 @@ class PayloadMissionRoom extends RoomScene {
     level: LevelDefinition,
     distance: number,
     loadModels: boolean,
+    onAttacked: () => void,
   ): void {
     this.payloadDefinition = level.payload!;
     const t = this.ctx.tuning.prototypes.payload;
@@ -1144,7 +1258,7 @@ class PayloadMissionRoom extends RoomScene {
     this.damage.register(this.payloadId, this.payloadHealth, {
       guard: (info) =>
         info.source === null || this.entities.team(info.source) === 'enemy'
-          ? 1
+          ? this.ctx.tuning.missions.payloadEnemyDamageScale
           : 0,
     });
     this.payloadCollider = this.world.createCollider(
@@ -1162,6 +1276,41 @@ class PayloadMissionRoom extends RoomScene {
     this.hurtboxes.add(this.payloadId, this.payloadCollider);
     this.entities.bindCollider(this.payloadId, this.payloadCollider.handle);
     this.payloadView = new PayloadView(t);
+    this.flash = new Mesh(
+      new BoxGeometry(
+        2 * t.bodyHalfLengthM,
+        2 * t.bodyHalfHeightM,
+        2 * t.bodyHalfWidthM,
+      ),
+      new MeshBasicMaterial({
+        color: 0xff601c,
+        transparent: true,
+        opacity: 0.38,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
+      }),
+    );
+    this.flash.visible = false;
+    this.flash.position.y = t.bodyHalfHeightM;
+    this.payloadView.root.add(this.flash);
+    this.offDamage = this.ctx.bus.on(
+      'damage_dealt',
+      ({ source, target, amount }) => {
+        if (amount <= 0) return;
+        const role = this.saboteurs.get(target);
+        if (role && source === this.playerId)
+          role.until = this.clockS + this.ctx.tuning.missions.saboteurAggroS;
+        if (target !== this.payloadId) return;
+        this.hitFlashUntil =
+          this.clockS + this.ctx.tuning.missions.payloadHitFlashS;
+        if (!this.attacked && source !== null && this.saboteurs.has(source)) {
+          this.attacked = true;
+          onAttacked();
+        }
+      },
+    );
     this.root.add(this.payloadView.root);
     if (loadModels) void this.payloadView.load();
     if (typeof document !== 'undefined')
@@ -1172,6 +1321,8 @@ class PayloadMissionRoom extends RoomScene {
   }
 
   restorePayload(distance: number): void {
+    this.saboteurs.clear();
+    this.hitFlashUntil = 0;
     if (
       this.objectiveModel()!.objectives[this.payloadDefinition.objective] ===
       'done'
@@ -1191,6 +1342,7 @@ class PayloadMissionRoom extends RoomScene {
   override step(dt: number, input: InputSnapshot): void {
     super.step(dt, input);
     if (!this.payload || !(dt > 0)) return;
+    this.clockS += dt;
     this.previousPayload = this.payload.snapshot();
     this.payload.setHp(this.payloadHealth.current);
     const hostiles: Vec3[] = [];
@@ -1239,10 +1391,16 @@ class PayloadMissionRoom extends RoomScene {
         lerpPose(this.previousPayload, this.payload.snapshot(), alpha),
         this.payload.status === 'waitingPlayer',
       );
+    if (this.flash)
+      this.flash.visible =
+        this.clockS < this.hitFlashUntil && loadSettings().flashes;
   }
 
   override dispose(): void {
     this.payloadView?.dispose();
+    this.offDamage?.();
+    this.flash?.geometry.dispose();
+    this.flash?.material.dispose();
     this.payloadHud?.dispose();
     if (this.payloadId !== undefined) {
       this.hurtboxes.removeEntity(this.payloadId);

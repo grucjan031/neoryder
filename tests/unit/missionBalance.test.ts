@@ -57,9 +57,10 @@ describe('raport balansu misji', () => {
     expect(act[3]!.escorts[0]).toMatchObject({
       length: 228,
       health: 400,
-      targetedDps: 0,
-      reserve: 100,
+      attackers: 6,
     });
+    expect(act[3]!.escorts[0]!.reserve).toBeGreaterThanOrEqual(40);
+    expect(act[3]!.escorts[0]!.reserve).toBeLessThanOrEqual(60);
     expect(
       act[0]!.rows
         .filter((r) => r.trigger.startsWith('wybuch '))
