@@ -228,6 +228,17 @@ node tools/levels/mapModelBounds.mjs
 
 **Punkty montażu.** Góra konsoli słupa leży na Y = 8,20 m. Postawiona na niej belka ma główkę szyny na Y = 8,84 m. Osie kół suwnicy leżą na X = ±7,68 m, a styk koła z szyną wypada 0,34 m nad spodem haka. Przy tym zestawieniu początek suwnicy umieść na Y = 8,50 m. Zaczep ładunku leży pod wózkiem na osi X = Z = 0. Początek lampy umieść 0,45 m poniżej spodu widocznego stropu lub dźwigara.
 
+## Przychodnia Helixy na Bulwarze (run2)
+
+Siedem modeli własnych `bw_*` ma początek na środku podstawy, przód w +Z i wymiary w metrach. Generator zapisuje GLB w `public/assets/models/city/` i trzy podglądy każdego modelu w `tools/blender/previews/bulwar/<id>-{front,side,top}.png`.
+
+```bash
+"C:/Program Files/Blender Foundation/Blender 5.1/blender.exe" -b --factory-startup --python-exit-code 1 -P tools/blender/sets/bulwar_clinic.py
+node tools/levels/mapModelBounds.mjs
+```
+
+Opcje po `--` to `--only bw_treatment_screen,bw_sample_fridge` (wybór modeli) i `--no-preview` (sam eksport). Ladę, ławę, panel boksu, leżankę i chłodnię montuj jako pełne bryły według pomiarów w `src/data/render/mapModelBounds.json`. Panel blokuje ruch i strzały na całe 1,55 m, choć powyżej cokołu na 0,85 m widać przez szybę. Skaner i portal windy montuj jako dekoracje z osobnymi koliderami obu słupów i nadproża. Zachowaj otwór 3 × 3 m w skanerze i 4 × 3 m w windzie. Drzwi wyjściowe są osobnym blokiem. Znak rejestracji korzysta z tekstury `holo_helixa` (1024 × 512, przezroczystość z luminancji w shaderze hologramu).
+
 ## Port kontenerowy (arena Przejęcie)
 
 Osiem modeli do dużej areny „Port kontenerowy”, w stylu zestawu miasta (proceduralne,
