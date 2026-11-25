@@ -1,0 +1,67 @@
+{
+  "id": "mallAfterHours",
+  "title": "Galeria po zamknięciu",
+  "precipitation": {
+    "kind": "rain",
+    "density": 0.55,
+    "speed": 19,
+    "color": "#889bb8",
+    "opacity": 0.32,
+    "exposureS": 0.025,
+    "widthM": 0.014
+  },
+  "wind": {
+    "direction": {
+      "x": 1,
+      "z": 0
+    },
+    "strength": 0,
+    "gustStrength": 0,
+    "gustPeriodS": 8
+  },
+  "fog": {
+    "color": "#101624",
+    "density": 0.01,
+    "heightM": 14,
+    "strength": 0.42,
+    "nearM": 18,
+    "farM": 110
+  },
+  "surface": {
+    "gloss": 0.55,
+    "reflections": 0.75,
+    "puddles": 0.08
+  },
+  "lightning": {
+    "enabled": false,
+    "minIntervalS": 25,
+    "maxIntervalS": 55,
+    "brightness": 1,
+    "color": "#fff1d6",
+    "decayS": 0.18
+  },
+  "dust": {
+    "density": 0.2,
+    "sizeM": 0.07,
+    "opacity": 0.07,
+    "color": "#9aa8c0",
+    "lifeS": 10
+  },
+  "ambience": [
+    {
+      "kind": "generator",
+      "gain": 0.09,
+      "radiusM": 90
+    },
+    {
+      "kind": "rain",
+      "gain": 0.08,
+      "radiusM": 90
+    }
+  ],
+  "lighting": {
+    "hemiIntensity": 3,
+    "keyIntensity": 1.2,
+    "panoramaEnabled": false
+  }
+}

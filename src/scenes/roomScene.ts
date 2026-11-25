@@ -609,7 +609,7 @@ export class RoomScene implements Scene {
         run: this.run,
         spawnPoints: this.layout.spawnPoints.map((p) => ({
           x: p.x,
-          y: 0,
+          y: p.y ?? 0,
           z: p.z,
         })),
       },
@@ -1609,7 +1609,7 @@ export class RoomScene implements Scene {
     const sinYaw = Math.sin(player.yaw),
       cosYaw = Math.cos(player.yaw);
     return selectWaveSpawn(
-      points.map((p) => ({ ...p, y: this.layout.playerSpawn.y })),
+      points.map((p) => ({ ...p, y: p.y ?? this.layout.playerSpawn.y })),
       feet,
       minM,
       this.ctx.tuning.arena.waveSpawnMaxDistanceM,

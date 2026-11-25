@@ -15,6 +15,7 @@ export const CITY_MODEL_PREFIXES = [
   'roof_',
   'dock_',
   'wh_',
+  'mall_',
 ] as const;
 export function isCityModelFile(model: string | undefined): boolean {
   return (

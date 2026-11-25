@@ -97,6 +97,7 @@ describe('pogoda z danych', () => {
       'drizzleWind',
       'indoorIndustrial',
       'kuroganeWarehouse',
+      'mallAfterHours',
       'rain',
       'smog',
       'snow',

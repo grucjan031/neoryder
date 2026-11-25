@@ -38,6 +38,21 @@ export const arenaKinds = [
   'market_tarp',
 ] as const;
 
+/**
+ * Galeria handlowa (mapa run2): przezroczyste szkło i wykończenia wnętrz. Tekstury
+ * `mall_*.webp` jeszcze nie istnieją, więc wpisy w arenaMaterials.json wskazują
+ * najbliższe istniejące (patrz docs/maps/run2.md, sekcja 6).
+ */
+export const mallKinds = [
+  'glass_clear',
+  'mall_stone_floor',
+  'mall_terrazzo_inlay',
+  'mall_acoustic_ceiling',
+] as const;
+
+/** Istniejące tekstury powierzchni używane przez materiały galerii (poza rodzajami z innych list). */
+const mallTextures = ['grime', 'paving', 'tech_panel'] as const;
+
 const constructionPowerKinds = [
   'formwork_plywood',
   'concrete_raw_cast',
@@ -99,6 +114,7 @@ const portLooks = z
     z.enum([
       ...portKinds,
       ...arenaKinds,
+      ...mallKinds,
       ...constructionPowerKinds,
       ...portRailKinds,
       ...overpassRoofsDocksKinds,
@@ -120,6 +136,7 @@ const portLooks = z
         'rubber_fender',
         'steel_grating',
         ...arenaKinds,
+        ...mallTextures,
         'asphalt',
         ...constructionPowerKinds,
         ...portRailKinds,
@@ -138,6 +155,8 @@ const portLooks = z
       wetness: z.number().min(0).max(1),
       /** Płaska barwa `tint` bez tekstury i shadera miasta (dla materiałów bez pliku tekstury). */
       flat: z.literal(true).optional(),
+      /** Poniżej 1: materiał przezroczysty (`transparent`, bez zapisu głębi), np. `glass_clear`. */
+      opacity: z.number().min(0).max(1).optional(),
     }),
   )
   .parse(
@@ -152,6 +171,7 @@ const portLooks = z
 export const urbanKinds = [
   ...portKinds,
   ...arenaKinds,
+  ...mallKinds,
   ...constructionPowerKinds,
   ...portRailKinds,
   ...overpassRoofsDocksKinds,
@@ -195,6 +215,7 @@ interface UrbanLook {
   metalness: number;
   wetness: number;
   bump: number;
+  opacity?: number | undefined;
 }
 const look = (
   texture: SurfaceTexture,
@@ -397,6 +418,11 @@ export function createUrbanMaterial(
     });
   }
   material.userData.wetness = config.wetness;
+  if (config.opacity !== undefined && config.opacity < 1) {
+    material.transparent = true;
+    material.opacity = config.opacity;
+    material.depthWrite = false;
+  }
   if (kind in portLooks && portLooks[kind as keyof typeof portLooks].flat)
     return material;
   const scale = glsl(config.scale);
@@ -488,7 +514,7 @@ export function createUrbanMaterial(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
         ${kind === 'facade' ? 'totalEmissiveRadiance += windowLight;' : ''}
-        ${kind === 'glass' ? 'totalEmissiveRadiance += glassGlow * cityDetail * (0.3 + 0.7*pow(max(0.0,1.0-abs(dot(normal,normalize(vViewPosition)))),3.0));' : ''}
+        ${kind === 'glass' || kind === 'glass_clear' ? 'totalEmissiveRadiance += glassGlow * cityDetail * (0.3 + 0.7*pow(max(0.0,1.0-abs(dot(normal,normalize(vViewPosition)))),3.0));' : ''}
       `,
       );
   };

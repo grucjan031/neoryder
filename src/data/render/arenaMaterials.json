@@ -179,5 +179,42 @@
     "bump": 0.8,
     "wetness": 0.15,
     "tint": "#535e68"
+  },
+  "glass_clear": {
+    "texture": "grime",
+    "tint": "#283852",
+    "scale": 0.25,
+    "roughness": 0.12,
+    "metalness": 0.15,
+    "bump": 0,
+    "wetness": 0.3,
+    "opacity": 0.22
+  },
+  "mall_stone_floor": {
+    "texture": "gas_station_tiles",
+    "tint": "#3b4559",
+    "scale": 0.4,
+    "roughness": 0.25,
+    "metalness": 0.08,
+    "bump": 0.35,
+    "wetness": 0.65
+  },
+  "mall_terrazzo_inlay": {
+    "texture": "paving",
+    "tint": "#262e3d",
+    "scale": 0.5,
+    "roughness": 0.2,
+    "metalness": 0.15,
+    "bump": 0.3,
+    "wetness": 0.7
+  },
+  "mall_acoustic_ceiling": {
+    "texture": "tech_panel",
+    "tint": "#1e2533",
+    "scale": 0.5,
+    "roughness": 0.75,
+    "metalness": 0.2,
+    "bump": 0.45,
+    "wetness": 0
   }
 }

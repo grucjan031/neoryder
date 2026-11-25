@@ -1416,7 +1416,7 @@ export function loadSector(data: unknown): SectorDefinition;
 export const roomSchema: z.ZodType<RoomDefinition>;
 export type RoomDefinition = z.infer<typeof roomSchema>;
 export function loadRoom(data: unknown): RoomDefinition;
-// Pola: id, name, type (NodeType), playerSpawn, blocks (jak arena.json), spawnPoints ({ x, z }[]),
+// Pola: id, name, type (NodeType), playerSpawn, blocks (jak arena.json), spawnPoints ({ x, y?, z }[]; `y` = wysokość stóp na wyższej kondygnacji, patrz niżej),
 // doors ({ id, role: 'entry' | 'exit', position, size }[]), director?, maxAlive?, minSpawnDistance?,
 // threatMultiplier?, bossEnemy? (F3-17, tylko type 'boss'), props? ({ kind, position }[]), puzzle? (GrabPuzzleDefinition).
 // Wymaga drzwi 'entry'; pokoje o type !== 'boss' wymagają też drzwi 'exit'.
@@ -1436,6 +1436,14 @@ F3-03: `src/world/rooms.ts` eksportuje `loadRoomDefinitions(data: readonly unkno
 oraz `roomDefinitions` (eager `import.meta.glob` z `src/data/rooms/*.json`). Loader odrzuca powtórzone id pokoi.
 `loadRoom` / `roomSchema` sprawdzają także układ: podłogę na wysokości `playerSpawn.y`, granice,
 kolizje punktów i osiągalność na siatce 1 m. Szczegóły: `docs/systems/rooms.md`.
+
+Spawn na wyższej kondygnacji (F-01): `roomSpawnPointSchema` i punkt `wavesSchema` przyjmują
+opcjonalne `y` (wysokość stóp). Bez `y` punkt leży na podłodze `playerSpawn.y` (zachowanie bez zmian).
+Z `y` różnym od `playerSpawn.y` `validateLayout` wymaga bloku `walkable: true` (bez obrotu wokół X/Z),
+którego górna powierzchnia leży na `y` i obejmuje `(x, z)`, oraz braku bloków w korpusie
+`(y, y + 1,8 m]`; osiągalność takich punktów nie jest sprawdzana flood-fillem (służy do tego
+`ArenaNavigation`, jak w `run1Navigation.test.ts`). `RoomScene`, `WaveDirector`,
+`selectWaveSpawn` i `arenaSpawnPoints` zachowują `y` punktu (`p.y ?? playerSpawn.y`).
 
 ```ts
 // src/core/tuning.ts
@@ -1714,6 +1722,11 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   zwraca `printMaterial(name)` (`src/render/propPrints.ts`; `isPrintMaterialName`
   sprawdza nazwę), tekstury ładuje `assetTexture(folder, id)`
   (`src/render/surfaceTextures.ts`; foldery `surfaces`, `labels`, `screens`).
+  `glass_clear` (`mat_glass_clear`; przezroczyste szkło, `opacity` z `arenaMaterials.json`,
+  `depthWrite: false`, poświata Fresnela jak `glass`) oraz wykończenia galerii
+  `mall_stone_floor`, `mall_terrazzo_inlay`, `mall_acoustic_ceiling` (`mallKinds`);
+  `portLooks` ma opcjonalne `opacity` < 1 włączające `transparent`.
+  Prefiks modeli `mall_` jest w `CITY_MODEL_PREFIXES` (`src/render/cityModels.ts`).
   `BLOCK_MATERIALS` (`src/world/dressingSchema.ts`, pole `block.material`)
   dopuszcza: `world`, `concrete`, `asphalt`, `metal`, `facade`, `trim`, `glass`,
   `paving`, `plaster`, `corrugated`, `rust`, `hazard`. Parametry motywu:
