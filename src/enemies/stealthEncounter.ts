@@ -84,6 +84,7 @@ export class StealthEncounter {
       group = new AlarmGroup(p.spawn.groupId, (groupId) =>
         this.ctx.bus.emit('alarm_raised', { groupId }),
       );
+      group.reportedAt = p.spawn.reportedAt;
       this.groups.set(group.id, group);
     }
     group.members.set(enemy.id, p);

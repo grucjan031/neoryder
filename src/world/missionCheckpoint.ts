@@ -9,6 +9,8 @@ export const missionCheckpointSchema = z.object({
   checkpointId: z.string().min(1),
   objectives: z.record(z.string(), z.enum(['pending', 'active', 'done'])),
   completedEncounters: z.array(z.string()),
+  raisedAlarms: z.array(z.string()).optional(),
+  bonusStates: z.record(z.string(), z.enum(['done', 'failed'])).optional(),
   elapsedS: z.number().finite().nonnegative(),
   kills: z.number().int().nonnegative().optional(),
   completed: z.boolean(),

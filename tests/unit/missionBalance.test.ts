@@ -23,6 +23,7 @@ describe('raport balansu misji', () => {
       'm04',
       'm05',
       'm06',
+      'm07',
     ]);
     for (const mission of act) {
       const definition = missionCatalog.get(mission.id)!;

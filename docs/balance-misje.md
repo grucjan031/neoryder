@@ -1,4 +1,4 @@
-# Balans misji aktu I — fale i eskorta
+# Balans misji — fale i eskorta
 
 Data wygenerowania (UTC): 2026-11-25. Generator: `npm run balance:missions`.
 
@@ -101,6 +101,20 @@ Flagi ścieżek według niezaokrąglonego wyniku: powyżej 60% HP ciężkie, pow
 | przedpokoj / straz | strefa po formowanie-tyl | m06Straz: executor ×1, shielder ×1, sniper ×1, gunner ×1 | 390 | 4 / 8 / 12 | 16,2 | 8,5 / 6,7 / 7,3 | 138,0 / 108,3 / 118,8 | zabójcze / zabójcze / zabójcze | czas spadek ×0,7, presja spadek ×0,5 |
 | centrum / brandt | strefa po straz | m06Brandt: securityChief ×1 | 900 | 1 / 1 / 12 | 5,6 | 9,9 / 25,2 / 7,8 | 55,1 / 140,1 / 43,1 | — / zabójcze / — | presja spadek ×0,7 |
 
+### m07-nocny-dyzur — Nocny dyżur
+
+| Sekcja / starcie | Wyzwalacz | Fala i skład tur | HP | Żywi | DPS | Czas (s) | Utrata HP (%) | Flagi ścieżek | Zmiana |
+| --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |
+| przychodnia / cisza-hala | strefa | m07CiszaHala: assaulter ×1, gunner ×1, drone ×1 | 123 | 3 / 3 / 12 | 12,1 | 5,3 / 4,5 / 4,5 | 63,3 / 54,9 / 54,9 | ciężkie / — / — | czas spadek ×0,3, presja spadek ×0,7 |
+| przychodnia / cisza-magazyn | strefa | m07CiszaMagazyn: gunner ×1, assaulter ×1 | 105 | 2 / 2 / 12 | 8,7 | 3,7 / 3,0 / 3,0 | 31,7 / 26,3 / 26,3 | — / — / — | czas spadek ×0,7, presja spadek ×0,5 |
+| przychodnia / alarm-hala | po alarmie (przychodnia) | m07Hala: shielder ×1, gunner ×2 | 180 | 3 / 6 / 12 | 12,9 | 5,6 / 5,0 / 5,2 | 72,4 / 63,8 / 67,0 | ciężkie / ciężkie / ciężkie | presja skok ×2,4 |
+| przychodnia / wieza-magazynu | po alarmie (przychodnia) | m07Magazyn: turret ×1, drone ×1 | 88 | 2 / 4 / 12 | 6,4 | 3,5 / 3,0 / 3,0 | 22,4 / 19,4 / 19,4 | — / — / — | czas spadek ×0,6, presja spadek ×0,3 |
+| serwerownia / czujnik-serwera | serwer:0 przy 60% | m07Serwer: assaulter ×2, gunner ×1 | 165 | 3 / 5 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | presja skok ×3,2 |
+| serwerownia / alarm-serwerownia | strefa po serwer | m07Alarm: shielder ×1, assaulter ×2, gunner ×1 | 255 | 4 / 6 / 12 | 15,3 | 7,8 / 6,5 / 6,7 | 118,7 / 99,0 / 102,9 | zabójcze / ciężkie / zabójcze | — |
+| targ / poscig-targ-1 | strefa po serwer | m07Poscig1: assaulter ×2, drone ×2 | 156 | 4 / 6 / 12 | 14,2 | 7,4 / 6,7 / 6,9 | 104,8 / 94,6 / 98,4 | zabójcze / ciężkie / ciężkie | presja spadek ×0,9 |
+| targ / poscig-targ-2 | strefa po poscig-targ-1 | m07Poscig2: shielder ×1, gunner ×2, hacker ×1 | 204 | 4 / 6 / 12 | 13,0 | 7,2 / 6,5 / 6,7 | 93,7 / 84,0 / 87,3 | ciężkie / ciężkie / ciężkie | czas spadek ×1,0, presja spadek ×0,9 |
+| targ / blokada-windy | strefa po poscig-targ-2 | m07Blokada: shielder ×2, gunner ×1, turret ×1 | 295 | 4 / 6 / 12 | 13,9 | 7,8 / 6,6 / 7,3 | 107,5 / 91,2 / 101,3 | zabójcze / ciężkie / zabójcze | — |
+
 ## Eskorty
 
 | Misja / cel | HP | m/s | Trasa (m) | Jazda bez postojów (s) | Postoje | Celujących | Celowany DPS | Zapas HP | Flaga <25% |
@@ -111,7 +125,7 @@ Celowany DPS to najwyższa wśród tur oczekiwana suma DPS sabotażystów. Model
 
 m04-ladunek-klasy-k: oczekiwana utrata 162,3 HP z 400, zapas 59,4%.
 
-## Krzywa aktu I
+## Krzywa misji
 
 Każde starcie i każda ścieżka mają równą wagę w średniej misji.
 
@@ -123,8 +137,9 @@ Każde starcie i każda ścieżka mają równą wagę w średniej misji.
 | m04-ladunek-klasy-k | 4 | 7,2 | 118,0 | czas spadek ×0,9 |
 | m05-adiutant | 4 | 9,1 | 144,0 | — |
 | m06-odlewnia | 6 | 10,0 | 155,9 | — |
+| m07-nocny-dyzur | 9 | 5,5 | 70,5 | czas spadek ×0,6, presja spadek ×0,5 |
 
-Misje — przebieg niemalejący: czas nie, presja tak.
+Misje — przebieg niemalejący: czas nie, presja nie.
 
 Starcia — przebieg niemalejący: czas nie, presja nie.
 
@@ -134,7 +149,7 @@ Model pomija oczekiwanie na spawny, osłony, tokeny ataku, utratę linii widzeni
 
 ## Wynik generatora
 
-`npm run balance:missions` — liczba misji: 6, starć: 40, eskort: 1. 38 starć przekracza 60% HP dla co najmniej jednej ścieżki.
+`npm run balance:missions` — liczba misji: 7, starć: 49, eskort: 1. 45 starć przekracza 60% HP dla co najmniej jednej ścieżki.
 
 ### Sprawdzenia wersji R4 z 24.11.2026
 

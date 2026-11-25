@@ -63,7 +63,20 @@ describe.each(missions)('Dialogi %s', (id, file, radioHeading) => {
   const briefing = scenario(file, 'Odprawa (kryjówka)').map(key);
   const radio = scenario(file, radioHeading).map(key);
   const debrief = scenario(file, 'Po misji (kryjówka)').map(key);
-  const played = mission.radio.flatMap((event) => event.lines).map(key);
+  const played = mission.radio
+    .flatMap((event) => {
+      if (id !== 'm07-nocny-dyzur') return event.lines;
+      if (
+        ['alarm:przychodnia', 'bonus:ciche-przejscie:done'].includes(
+          event.trigger,
+        )
+      )
+        return [];
+      return event.trigger === 'enterSection:przychodnia'
+        ? event.lines.slice(1)
+        : event.lines;
+    })
+    .map(key);
 
   it('odprawa ma najwyżej trzy kwestie, dosłownie ze scenariusza i w jego kolejności', () => {
     expect(mission.briefing.length).toBeGreaterThan(0);

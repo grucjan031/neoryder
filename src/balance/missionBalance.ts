@@ -114,14 +114,24 @@ export function measureWave(
 
 export function analyzeAct(balance = runBalance(), settings = reportSettings) {
   return [...missionCatalog.values()]
-    .filter((m) => m.act === 1)
+    .filter(
+      (m) =>
+        m.act === 1 ||
+        levelDefinitions
+          .get(m.level ?? '')
+          ?.encounters.some((e) => e.after?.kind === 'alarm'),
+    )
     .sort((a, b) => a.number - b.number)
     .map((m) => {
       const level = levelDefinitions.get(m.level!)!;
       const rows = level.encounters
         .map((e) => {
+          const origin =
+            e.after?.kind === 'alarm'
+              ? { ...e.spawnPoints[0]!, y: e.zone.position.y }
+              : e.zone.position;
           const section = level.sections.findIndex((s) =>
-            insideLevelZone(e.zone.position, s.zone),
+            insideLevelZone(origin, s.zone),
           );
           if (section < 0)
             throw new Error(`Starcie poza sekcjami: ${m.id}/${e.id}`);
@@ -138,7 +148,9 @@ export function analyzeAct(balance = runBalance(), settings = reportSettings) {
               : objective?.kind === 'sabotage'
                 ? `wybuch ${objective.id}`
                 : e.after
-                  ? `strefa po ${e.after.id}`
+                  ? e.after.kind === 'alarm'
+                    ? `po alarmie (${e.after.id})`
+                    : `strefa po ${e.after.id}`
                   : 'strefa';
           const wave = levelWaves.get(e.wave)!;
           return {
@@ -269,7 +281,7 @@ export function renderMissionReport(
     .filter(({ row }) => Math.max(...row.pressure) > 60)
     .sort((a, b) => Math.max(...b.row.pressure) - Math.max(...a.row.pressure));
   const lines = [
-    '# Balans misji aktu I — fale i eskorta',
+    '# Balans misji — fale i eskorta',
     '',
     `Data wygenerowania (UTC): ${date}. Generator: \`npm run balance:missions\`.`,
     '',
@@ -339,7 +351,7 @@ export function renderMissionReport(
       ),
     ),
     '',
-    '## Krzywa aktu I',
+    '## Krzywa misji',
     '',
     'Każde starcie i każda ścieżka mają równą wagę w średniej misji.',
     '',

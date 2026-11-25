@@ -1,0 +1,40 @@
+{
+  "id": "m07CiszaHala",
+  "firstBreakS": 0,
+  "breakS": 0,
+  "maxAlive": 3,
+  "minSpawnDistance": 18,
+  "spawnPoints": [
+    {
+      "x": 166,
+      "z": 4
+    },
+    {
+      "x": 160,
+      "z": 8.8
+    },
+    {
+      "x": 165.5,
+      "z": 4.8
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.05,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 1
+        },
+        {
+          "enemy": "gunner",
+          "count": 1
+        },
+        {
+          "enemy": "drone",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

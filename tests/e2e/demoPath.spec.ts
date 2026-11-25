@@ -394,11 +394,11 @@ async function playM07(page: Page) {
   // Przejście przy ścianie jest ciche; środek hali uruchamia alarm i zamyka rolety.
   await command(page, 'tp 146 -9.2 -90');
   await waitSimSteps(page, 30);
-  expect((await mission(page)).activeEncounters).toEqual([]);
+  expect((await mission(page)).activeEncounters).toEqual(['cisza-hala']);
   expect((await mission(page)).openGates).toContain('gate-rolety');
-  await command(page, 'tp 146 0 -90');
+  await command(page, 'tp 165 0 -90');
   await pollMission(page, 'M07 / alarm w hali').toMatchObject({
-    activeEncounters: ['alarm-hala'],
+    activeEncounters: expect.arrayContaining(['cisza-hala', 'alarm-hala']),
   });
   expect((await mission(page)).openGates).not.toContain('gate-rolety');
   await command(page, 'encounter clear');
@@ -533,9 +533,12 @@ async function tutorial(page: Page) {
         if ((await query(page, 'tutorialStep')) !== 2) return true;
         await command(page, 'tp 0 6 0 0 0');
         await waitSimSteps(page, 10);
-        await page.keyboard.press('Space');
-        await waitSimSteps(page, 3);
-        await page.keyboard.press('Space');
+        for (let jump = 0; jump < 2; jump++) {
+          await page.keyboard.down('Space');
+          await waitSimSteps(page, 2);
+          await page.keyboard.up('Space');
+          await waitSimSteps(page, 2);
+        }
         await command(page, 'tp 0 3 0 0 2.4');
         await waitSimSteps(page, 30);
         return false;

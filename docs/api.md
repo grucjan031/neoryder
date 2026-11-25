@@ -2593,6 +2593,8 @@ musi wskazywać istniejący cel albo spotkanie. Zależność `encounter` zgłasz
 
 ## Wykrywanie w spotkaniach
 
+Misja liniowa zapamiętuje zgłoszone grupy w `raisedAlarms` checkpointu. Zależność `after.kind = alarm` wskazuje grupę starcia stealth. `bonuses[].until` wskazuje cel kończący ocenę ciszy. Radio obsługuje `alarm:<grupa>` i `bonus:<id>:done`. Opcjonalne `radio[].beforeObjective` ogranicza kwestię do czasu ukończenia wskazanego celu. `patrols[].enemy` wiąże stanowisko i pierwszy punkt trasy z archetypem. `StealthSpawn.reportedAt` odtwarza ogłoszony alarm przy tworzeniu grupy bez ponownej emisji zdarzenia. Pole `defend.raiseAlarm.atProgress` jest ułamkiem od 0 do 1 z dokładnością do procentu.
+
 Opcjonalne `encounters[].stealth` przyjmuje `alarmGroup` (domyślnie id spotkania), `visionRangeM`, pełny kąt `visionAngleDeg` oraz listę `patrols`. Trasy przydzielane są kolejno przy udanym spawnie. Patrol ma `points: Vec3[]`, `mode: 'loop' | 'pingpong'` i opcjonalny postój `waitS`.
 
 `alarm_raised { groupId: string }` oznacza pierwsze zakończone zgłoszenie grupy. Subskrybenci widzą już zaalarmowanych strażników. Zabicie zgłaszającego przed końcem opóźnienia anuluje jego zgłoszenie. Cicha likwidacja emituje standardowe `execute_performed`.

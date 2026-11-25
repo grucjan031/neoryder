@@ -118,9 +118,9 @@ test('Nocny dyżur: tablica po M06, cicha trasa, alarm, kapsuła, serwer, uciecz
   // Hala: pas boczny jest cichy, korytarz środkowy to alarm i rolety za plecami.
   await command(page, 'tp 146 -9.2 -90');
   await waitSimSteps(page, 30);
-  expect((await mission(page)).activeEncounters).toEqual([]);
+  expect((await mission(page)).activeEncounters).toEqual(['cisza-hala']);
   expect((await mission(page)).openGates).toContain('gate-rolety');
-  await command(page, 'tp 146 0 -90');
+  await command(page, 'tp 165 0 -90');
   await expect
     .poll(async () => (await mission(page)).activeEncounters, {
       timeout: SIM_TIMEOUT,

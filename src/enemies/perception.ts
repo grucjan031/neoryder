@@ -12,6 +12,7 @@ export interface StealthSpawn extends Pick<
   groupId: string;
   patrol?: NonNullable<Encounter['patrols']>[number];
   sentry?: boolean;
+  reportedAt?: Vec3;
 }
 type State = 'unaware' | 'suspicious' | 'alerted' | 'searching';
 type Los = (from: Vec3, to: Vec3) => boolean;
