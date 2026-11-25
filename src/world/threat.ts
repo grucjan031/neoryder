@@ -3,24 +3,13 @@ import type { StatModifier } from '../core/stats';
 import { threatLevels } from '../progression/threatSchema';
 import type { ThreatLevel } from '../progression/threatSchema';
 import { tuning } from '../core/tuning';
-import { enemySchema } from '../enemies/enemySchema';
-import { sectorThreatSchema, threatPacingSchema } from './sectorSchema';
+import {
+  enemyThreatCost,
+  sectorThreatSchema,
+  threatPacingSchema,
+} from './sectorSchema';
 import { wavesSchema } from './waves';
 import type { WavesDefinition } from './waves';
-
-const enemies = Object.values(
-  import.meta.glob<unknown>('../data/enemies/*.json', {
-    eager: true,
-    import: 'default',
-  }),
-).map((raw) => enemySchema.parse(raw));
-const costs = new Map(enemies.map((enemy) => [enemy.id, enemy.threatCost]));
-
-function costOf(id: string): number {
-  const cost = costs.get(id);
-  if (cost === undefined) throw new Error(`Brak threatCost wroga: ${id}.`);
-  return cost;
-}
 
 /** Definicja Poziomu zagrożenia z danych (`threat.json`); nieznany poziom to błąd. */
 export function threatLevelDef(level: number): ThreatLevel {
@@ -95,15 +84,17 @@ export const planWaves: RoomPlanner['planWaves'] = (
     group.set(id, (group.get(id) ?? 0) + 1);
     sizes[wave] = sizes[wave]! + 1;
   };
-  const guaranteedCost = type === 'elite' ? costOf('executor') : 0;
-  if (type === 'elite') add(count - 1, 'executor');
+  const guaranteedEnemy = sector.eliteGuarantee ?? 'executor';
+  const guaranteedCost =
+    type === 'elite' ? enemyThreatCost(guaranteedEnemy) : 0;
+  if (type === 'elite') add(count - 1, guaranteedEnemy);
   let remaining = Math.max(0, budget - guaranteedCost);
   const distributable = remaining;
   const eligible = Object.entries(pool)
     .map(([id, weight]) => ({
       id,
       weight,
-      cost: costOf(id),
+      cost: enemyThreatCost(id),
     }))
     .filter(({ id }) => node.layer >= (threat.unlockLayer?.[id] ?? 1));
   let carry = 0;

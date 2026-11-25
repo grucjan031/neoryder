@@ -84,7 +84,7 @@ export const weatherSchema = z
     }),
     ambience: z.array(
       z.object({
-        kind: z.enum(['rain', 'wind', 'generator']),
+        kind: z.enum(['rain', 'wind', 'generator', 'crowd']),
         gain: unit,
         radiusM: positive,
       }),

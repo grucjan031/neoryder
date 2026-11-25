@@ -93,6 +93,7 @@ describe('pogoda z danych', () => {
   it('waliduje profile, limity i kolory wyładowań', () => {
     expect([...weatherDefinitions.keys()].sort()).toEqual([
       'ashfall',
+      'bulwarNightMarket',
       'clearNight',
       'drizzleWind',
       'indoorIndustrial',
@@ -113,6 +114,19 @@ describe('pogoda z danych', () => {
     ])
       expect(weatherSchema.safeParse(invalid).success).toBe(false);
     expect(() => loadWeatherDefinitions([rain, rain])).toThrow('Powtórzona');
+  });
+  it('Bulwar ma spokojny deszcz, włączoną panoramę i wyłączone błyskawice', () => {
+    const profile = weatherSchema.parse(
+      weatherDefinitions.get('bulwarNightMarket'),
+    );
+    expect(profile.precipitation.kind).toBe('rain');
+    expect(profile.lightning.enabled).toBe(false);
+    expect(profile.lighting?.panoramaEnabled).toBe(true);
+    expect(profile.fog.nearM).toBeGreaterThan(Math.hypot(36, 44));
+    expect(profile.ambience.map((source) => source.kind)).toEqual([
+      'rain',
+      'crowd',
+    ]);
   });
   it.each(['snow', 'ashfall'])(
     '%s: wymaga poprawnych parametrów płatków',
