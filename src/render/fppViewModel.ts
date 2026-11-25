@@ -22,6 +22,7 @@ import {
 export interface FppViewModelOptions {
   bladeDefinition?: BladeDefinition;
   modelOf?: FppBlasterOptions['modelOf'];
+  skinOf?: FppBlasterOptions['skinOf'];
   modulesOf?: (weaponId: string) => readonly string[];
   tuning?: Pick<Tuning, 'hands' | 'weapons' | 'player'>;
 }
@@ -63,6 +64,7 @@ export class FppViewModel {
     const t = options.tuning ?? tuning;
     this.blaster = new FppBlaster(bus, owner, {
       modelOf: options.modelOf,
+      skinOf: options.skinOf,
       modulesOf: options.modulesOf,
       tuning: t,
     });

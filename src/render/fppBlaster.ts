@@ -31,6 +31,8 @@ import {
 import type { WeaponGrip } from '../combat/weapons/weaponSchema';
 import { moddedWeapon } from '../progression/moddedWeapon';
 import { attachModuleVisuals } from './weaponModuleVisuals';
+import { skinDefinitions } from '../progression/skinSchema';
+import { applyWeaponSkin } from './weaponSkin';
 import { loadWeaponScene } from './weaponModelLoader';
 import { fppGlowMaterial, fppGlowTexture, markGlow } from './fppMaterials';
 import { createIronSightGeometry } from './ironSightGeometry';
@@ -126,13 +128,13 @@ const FLASH_INNER = 0.3;
 /** Ciepło: cyan -> biel rozgrzanego metalu (czerwień jest zarezerwowana dla wrogów). */
 const COLD = new Color(palette.cyan);
 const HOT = new Color('#ffffff').multiplyScalar(1.6);
-const OVERHEAT_DIM = new Color(palette.cyan).multiplyScalar(0.6);
 /** Poświata wylotu rośnie z ciepłem (rozmiar względem błysku). */
 const HEAT_GLOW_SIZE = 0.09;
 
 export interface FppBlasterOptions {
   /** Nazwa modelu (`<nazwa>.glb`) dla id broni; brak = model blastera. */
   modelOf?: (weaponId: string) => string | undefined;
+  skinOf?: (weaponId: string) => string | undefined;
   modulesOf?: (weaponId: string) => readonly string[];
   tuning?: Pick<Tuning, 'weapons' | 'player'>;
   /** Ustawienia dostępności (domyślnie zapisane ustawienia gracza). */
@@ -220,6 +222,9 @@ export class FppBlaster {
   private readonly grips = new Map<string, ResolvedGrip>();
   private wanted = FALLBACK_MODEL;
   private weaponId: string | undefined;
+  private readonly skinOf: FppBlasterOptions['skinOf'];
+  private appliedSkin?: string;
+  private readonly cold = COLD.clone();
   private readonly modulesOf: (weaponId: string) => readonly string[];
   private detachModules: (() => void) | undefined;
   private heat = 0;
@@ -243,6 +248,7 @@ export class FppBlaster {
     this.tuning = options.tuning ?? defaultTuning;
     this.ironMaterial.color.set(this.tuning.player.aim.ironGeometry.color);
     this.modelOf = options.modelOf ?? (() => undefined);
+    this.skinOf = options.skinOf;
     this.modulesOf = options.modulesOf ?? (() => []);
     this.settings = options.settings;
     this.root.matrixAutoUpdate = false;
@@ -305,6 +311,7 @@ export class FppBlaster {
     if (this.current) this.root.remove(this.current);
     this.root.remove(this.fallback);
     this.current = model;
+    this.refreshSkin(true);
     const iron = this.ironGeometry.get(model);
     iron?.removeFromParent();
     this.detachModules =
@@ -334,6 +341,15 @@ export class FppBlaster {
     this.flashLeft = 0;
   }
 
+  private refreshSkin(force = false): void {
+    const id = this.weaponId && this.skinOf?.(this.weaponId);
+    if (!force && id === this.appliedSkin) return;
+    this.appliedSkin = id;
+    const skin = skinDefinitions.get(id ?? '') ?? null;
+    applyWeaponSkin(this.current ?? this.fallback, skin);
+    this.cold.set(skin?.colors.accent ?? COLD);
+  }
+
   private fetchModel(name: string): Promise<Object3D | null> {
     let promise = this.models.get(name);
     if (!promise) {
@@ -355,7 +371,10 @@ export class FppBlaster {
           this.ironBox,
           this.ironMaterial,
         );
-        if (geometry) this.ironGeometry.set(scene, geometry);
+        if (geometry) {
+          geometry.userData.skinExcluded = true;
+          this.ironGeometry.set(scene, geometry);
+        }
       }
       // Własny materiał dla elementów ciepła — współdzielony materiał gracza zostaje cyan.
       let muzzle: Object3D | null = null;
@@ -364,8 +383,10 @@ export class FppBlaster {
         if (
           (node.name === 'heat_vents' || node.name === 'heat_cell') &&
           node instanceof Mesh
-        )
+        ) {
+          node.userData.skinExcluded = true;
           node.material = this.heatMaterial;
+        }
       });
       if (muzzle) this.attachFlash(scene, muzzle);
       return scene;
@@ -390,6 +411,7 @@ export class FppBlaster {
   private attachFlash(model: Object3D, muzzle: Object3D): void {
     const flash = new Group();
     flash.name = 'module_muzzle_flash';
+    flash.userData.skinExcluded = true;
     flash.visible = false;
     // Gwiazda (addytywna, bez konturu) w płaszczyźnie XY, miękki biały rdzeń
     // i dwa skrzyżowane „płatki” wzdłuż lufy, widoczne z boku broni.
@@ -420,6 +442,7 @@ export class FppBlaster {
     this.flashes.set(model, flash);
     const heat = new Mesh(this.quadGeometry, this.heatGlowMaterial);
     heat.name = 'heat_glow';
+    heat.userData.skinExcluded = true;
     heat.scale.setScalar(HEAT_GLOW_SIZE);
     heat.renderOrder = 3;
     markGlow(heat);
@@ -432,19 +455,23 @@ export class FppBlaster {
    * przesuwa broń do pozycji przy oku i zmniejsza odrzut (`tuning.player.aim.recoil`).
    */
   place(cameraMatrix: Matrix4, frameDt: number, aim = 0): void {
+    this.refreshSkin();
     const dt = Math.max(0, Math.min(frameDt, 0.1));
     this.time += dt;
     this.recoil *= Math.exp(-RECOIL_RECOVER * dt);
     const pulse = this.overheated ? 0.5 + 0.5 * Math.sin(this.time * 18) : 0;
     const heat = Math.min(1, this.heat);
     if (this.overheated)
-      this.heatMaterial.color.copy(OVERHEAT_DIM).lerp(HOT, pulse);
-    else this.heatMaterial.color.copy(COLD).lerp(HOT, heat * heat);
+      this.heatMaterial.color
+        .copy(this.cold)
+        .multiplyScalar(0.6)
+        .lerp(HOT, pulse);
+    else this.heatMaterial.color.copy(this.cold).lerp(HOT, heat * heat);
     // Rozgrzany wylot: biało-cyjanowa poświata, przy przegrzaniu pulsuje.
     this.heatGlowMaterial.opacity = this.overheated
       ? 0.35 + 0.45 * pulse
       : 0.7 * heat * heat;
-    this.heatGlowMaterial.color.copy(COLD).lerp(HOT, 0.4 + 0.6 * heat);
+    this.heatGlowMaterial.color.copy(this.cold).lerp(HOT, 0.4 + 0.6 * heat);
 
     const { m, q, e, v, s } = this.tmp;
     const pose = this.twoHanded ? TWO_HAND_POSE : POSE;

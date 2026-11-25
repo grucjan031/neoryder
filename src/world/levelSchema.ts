@@ -8,6 +8,7 @@ import {
 import type { MissionDefinition } from './missionSchema';
 import { wavesSchema, type WavesDefinition } from './waves';
 import { allyDefinitions } from '../allies/allySchema';
+import { insideLevelZone } from './levelRuntime';
 
 const id = z.string().min(1);
 export const levelZoneSchema = z.discriminatedUnion('kind', [
@@ -22,7 +23,10 @@ export const levelZoneSchema = z.discriminatedUnion('kind', [
     radiusM: z.number().finite().positive(),
   }),
 ]);
-const dependency = z.object({ kind: z.enum(['objective', 'encounter']), id });
+const dependency = z.object({
+  kind: z.enum(['objective', 'encounter', 'alarm']),
+  id,
+});
 /**
  * Sojusznik na poziomie: `id` z `src/data/allies`, `spawn` to stopy. Bez `joinAfter` dołącza
  * na starcie; z nim dopiero po ukończeniu celu albo spotkania.
@@ -30,7 +34,9 @@ const dependency = z.object({ kind: z.enum(['objective', 'encounter']), id });
 export const levelAllySchema = z.object({
   id,
   spawn: vec3Schema,
-  joinAfter: dependency.optional(),
+  joinAfter: dependency
+    .extend({ kind: z.enum(['objective', 'encounter']) })
+    .optional(),
 });
 export type LevelAlly = z.infer<typeof levelAllySchema>;
 
@@ -79,6 +85,24 @@ export const levelSchema = z
         id,
         zone: levelZoneSchema,
         wave: id,
+        stealth: z
+          .object({
+            alarmGroup: id.optional(),
+            visionRangeM: z.number().finite().positive().optional(),
+            visionAngleDeg: z.number().positive().max(360).optional(),
+            patrols: z
+              .array(
+                z.object({
+                  enemy: id.optional(),
+                  points: z.array(vec3Schema).nonempty(),
+                  mode: z.enum(['loop', 'pingpong']),
+                  waitS: z.number().finite().nonnegative().optional(),
+                }),
+              )
+              .optional(),
+          })
+          .optional(),
+        saboteurs: z.number().int().nonnegative().optional(),
         spawnPoints: wavesSchema.shape.spawnPoints,
         spawnHeightM: z.number().finite().optional(),
         after: dependency.optional(),
@@ -133,7 +157,11 @@ export const levelSchema = z
     const known = (entry: z.infer<typeof dependency>) =>
       entry.kind === 'objective'
         ? level.objectiveOrder.includes(entry.id)
-        : level.encounters.some((encounter) => encounter.id === entry.id);
+        : entry.kind === 'alarm'
+          ? level.encounters.some(
+              (e) => e.stealth && (e.stealth.alarmGroup ?? e.id) === entry.id,
+            )
+          : level.encounters.some((encounter) => encounter.id === entry.id);
     for (const entry of [
       ...level.encounters,
       ...level.checkpoints,
@@ -184,6 +212,15 @@ export const levelSchema = z
           message: `Brak pozycji celu: ${objective}`,
         });
     for (const encounter of level.encounters) {
+      for (const patrol of encounter.stealth?.patrols ?? [])
+        if (
+          patrol.points.some((point) => !insideLevelZone(point, encounter.zone))
+        )
+          ctx.addIssue({
+            code: 'custom',
+            path: ['encounters', encounter.id, 'stealth', 'patrols'],
+            message: 'Punkt patrolu poza strefą spotkania.',
+          });
       if (
         encounter.reinforcementFor &&
         // Klucz posiłków: id celu sabotage albo `<id celu defend>:<indeks fali>`.
@@ -265,6 +302,19 @@ export function loadLevel(
   } else if (mission.objectives.some((o) => o.kind === 'escortPayload')) {
     throw new Error('Cel escortPayload wymaga wagonu poziomu.');
   }
+  const groups = new Set(
+    level.encounters.flatMap((e) =>
+      e.stealth ? [e.stealth.alarmGroup ?? e.id] : [],
+    ),
+  );
+  for (const group of [
+    ...(mission.bonuses ?? []).map((b) => b.alarmGroup),
+    ...mission.objectives.flatMap((o) =>
+      o.kind === 'defend' && o.raiseAlarm ? [o.raiseAlarm.group] : [],
+    ),
+  ])
+    if (!groups.has(group))
+      throw new Error(`Nieznana grupa alarmowa: ${group}`);
   if (mission.level !== level.id)
     throw new Error('Poziom nie odpowiada misji.');
   if (
@@ -287,6 +337,18 @@ export function loadLevel(
   for (const encounter of level.encounters) {
     if (!waves.has(encounter.wave))
       throw new Error(`Nieznana fala: ${encounter.wave}`);
+    if (
+      encounter.saboteurs &&
+      (!level.payload ||
+        waves
+          .get(encounter.wave)!
+          .waves.some(
+            ({ groups }) =>
+              groups.reduce((total, group) => total + group.count, 0) <
+              encounter.saboteurs!,
+          ))
+    )
+      throw new Error(`Nieprawidłowa liczba sabotażystów: ${encounter.id}`);
     if (encounter.reinforcementFor) {
       const [objectiveId, index] = encounter.reinforcementFor.split(':');
       const objective = mission.objectives.find(
@@ -345,6 +407,10 @@ export function loadLevel(
       ...Object.values(level.objectivePositions),
       ...level.checkpoints.map((point) => point.position),
       ...level.encounters.flatMap((encounter) => encounter.spawnPoints),
+      ...level.encounters.flatMap(
+        (encounter) =>
+          encounter.stealth?.patrols?.flatMap((patrol) => patrol.points) ?? [],
+      ),
       ...(level.allies ?? []).map((ally) => ally.spawn),
       ...(level.objectiveNpcs ?? []).map((npc) => npc.spawn),
       ...(level.payload?.route ?? []),

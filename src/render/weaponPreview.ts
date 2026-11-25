@@ -14,7 +14,12 @@ import {
   WebGLRenderer,
 } from 'three';
 import type { BufferGeometry, Object3D } from 'three';
-import { weaponModelOf } from '../combat/weapons/weaponSchema';
+import {
+  weaponDefinitions,
+  weaponModelOf,
+} from '../combat/weapons/weaponSchema';
+import { skinDefinitions } from '../progression/skinSchema';
+import { applyWeaponSkin } from './weaponSkin';
 import { attachModuleVisuals } from './weaponModuleVisuals';
 import { FALLBACK_WEAPON_MODEL, loadWeaponScene } from './weaponModelLoader';
 
@@ -27,7 +32,7 @@ const FOV = 28;
 const FILL = 0.7;
 /** Widok z boku 3/4: lufa lekko do kamery, bok z ogniwem (-x) zwrócony ku niej. */
 const BASE_YAW = Math.PI / 2 + 0.45;
-const BASE_PITCH = 0.12;
+const BASE_PITCH = 0.3;
 const MAX_PITCH = MathUtils.degToRad(25);
 const DRAG_YAW = 0.011;
 const DRAG_PITCH = 0.006;
@@ -88,6 +93,7 @@ export class WeaponPreview {
   private height = PREVIEW_HEIGHT;
   private yaw = BASE_YAW;
   private pitch = BASE_PITCH;
+  private basePitch = BASE_PITCH;
   private idle = IDLE_BEFORE_SPIN_S;
   private dragging: { id: number; x: number; y: number } | null = null;
   private dirty = true;
@@ -143,7 +149,11 @@ export class WeaponPreview {
   }
 
   /** Wczytuje broń i nakłada moduły; poprzedni model znika dopiero po załadowaniu nowego. */
-  async show(weaponId: string, moduleIds: readonly string[]): Promise<void> {
+  async show(
+    weaponId: string,
+    moduleIds: readonly string[],
+    skinId?: string,
+  ): Promise<void> {
     if (this.disposed) return;
     const token = ++this.token;
     const name = weaponModelOf(weaponId) ?? FALLBACK_WEAPON_MODEL;
@@ -154,6 +164,7 @@ export class WeaponPreview {
     this.clearCurrent();
     // Klon współdzieli geometrie i materiały z oryginałem; moduły dodajemy tylko na klonie.
     const model = source.clone(true);
+    applyWeaponSkin(model, skinDefinitions.get(skinId ?? '') ?? null);
     this.detachModules = attachModuleVisuals(model, moduleIds);
     model.traverse((node) => {
       if (node.name === 'laser_beam') node.visible = false;
@@ -169,7 +180,9 @@ export class WeaponPreview {
     this.current = model;
     // Po zmianie broni/modułu wracamy do kadru 3/4, żeby zmiana była od razu widoczna.
     this.yaw = BASE_YAW;
-    this.pitch = BASE_PITCH;
+    this.basePitch =
+      weaponDefinitions.get(weaponId)?.previewPitch ?? BASE_PITCH;
+    this.pitch = this.basePitch;
     this.idle = 0;
     this.pivot.add(model);
     this.applyHighlight();
@@ -365,9 +378,9 @@ export class WeaponPreview {
           this.yaw += SPIN_RAD_PER_S * dt;
           this.dirty = true;
         }
-        if (Math.abs(this.pitch - BASE_PITCH) > 0.001) {
+        if (Math.abs(this.pitch - this.basePitch) > 0.001) {
           this.pitch +=
-            (BASE_PITCH - this.pitch) * Math.min(1, PITCH_RETURN * dt);
+            (this.basePitch - this.pitch) * Math.min(1, PITCH_RETURN * dt);
           this.dirty = true;
         }
       }

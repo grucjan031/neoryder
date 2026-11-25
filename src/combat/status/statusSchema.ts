@@ -20,6 +20,7 @@ export const statusSchema = z.object({
     .object({ intervalS: positive, damage: z.number().finite().nonnegative() })
     .optional(),
   /** Modyfikator `percent` na `damageTaken` celu za każdy stos (0.25 = +25%). */
+  moveSpeedScale: positive.max(1).optional(),
   damageTakenPerStack: z.number().finite().optional(),
   /** Po osiągnięciu `maxStacks`: zużycie stosów, statusy na tym samym celu, wyładowanie obok. */
   onMaxStacks: z

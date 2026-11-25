@@ -2613,3 +2613,17 @@ Tryby z celami nadal wybierają punkty własnym selektorem.
 
 W danych pokoju blok może mieć `ceiling: true`, światło `cone: true`, a decal `tint` w formacie `#RRGGBB`.
 Profil pogody może podać `lighting` z natężeniami `hemiIntensity`, `keyIntensity` i przełącznikiem `panoramaEnabled`.
+
+## Wykrywanie w spotkaniach
+
+Misja liniowa zapamiętuje zgłoszone grupy w `raisedAlarms` checkpointu. Zależność `after.kind = alarm` wskazuje grupę starcia stealth. `bonuses[].until` wskazuje cel kończący ocenę ciszy. Radio obsługuje `alarm:<grupa>` i `bonus:<id>:done`. Opcjonalne `radio[].beforeObjective` ogranicza kwestię do czasu ukończenia wskazanego celu. `patrols[].enemy` wiąże stanowisko i pierwszy punkt trasy z archetypem. `StealthSpawn.reportedAt` odtwarza ogłoszony alarm przy tworzeniu grupy bez ponownej emisji zdarzenia. Pole `defend.raiseAlarm.atProgress` jest ułamkiem od 0 do 1 z dokładnością do procentu.
+
+Opcjonalne `encounters[].stealth` przyjmuje `alarmGroup` (domyślnie id spotkania), `visionRangeM`, pełny kąt `visionAngleDeg` oraz listę `patrols`. Trasy przydzielane są kolejno przy udanym spawnie. Patrol ma `points: Vec3[]`, `mode: 'loop' | 'pingpong'` i opcjonalny postój `waitS`.
+
+`alarm_raised { groupId: string }` oznacza pierwsze zakończone zgłoszenie grupy. Subskrybenci widzą już zaalarmowanych strażników. Zabicie zgłaszającego przed końcem opóźnienia anuluje jego zgłoszenie. Cicha likwidacja emituje standardowe `execute_performed`.
+
+## Skiny broni
+
+`skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.
+
+`ownedSkins(meta, weaponId)` zwraca pasujące, posiadane definicje. `skinSource(skinId)` wskazuje ofertę sklepu, naszywkę albo brak źródła. `equipSkin(meta, weaponId, skinId | null)` zwraca nowy `LoadoutChoice` do przekazania do `MetaManager.setLoadout`. Przymiarka w warsztacie korzysta bezpośrednio z renderera i nie zapisuje zmiany wyposażenia.

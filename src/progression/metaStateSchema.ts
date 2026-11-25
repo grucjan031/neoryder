@@ -13,6 +13,7 @@ export const loadoutChoiceSchema = z.object({
   blade: z.string().min(1),
   weapons: ids.min(1).max(3),
   powers: ids.min(1).max(2),
+  skins: z.record(z.string(), z.string()).default({}),
   modules: z.record(z.string().min(1), ids).default({}),
 });
 

@@ -17,6 +17,7 @@ import runText from '../../src/data/ui/run.pl.json';
 import meta from '../../src/data/ui/meta.pl.json';
 import workshop from '../../src/data/ui/workshop.pl.json';
 import descriptionText from '../../src/data/ui/descriptions.pl.json';
+import overload from '../../src/data/statuses/overload.json';
 import { Scene as ThreeScene } from 'three';
 import { RunScene } from '../../src/scenes/run';
 import { Hud } from '../../src/ui/hud';
@@ -216,6 +217,8 @@ describe('czytelność opisów danych', () => {
     ({ file, entry }) => {
       const data = descriptionSchema.parse(entry);
       const allowed = numericValues(data);
+      if (data.id === 'overloadCell')
+        allowed.push(overload.maxStacks, overload.damageTakenPerStack * 100);
       if (file.includes('/powers/') && typeof data.cost === 'number')
         allowed.push(data.cost);
       if (data.id === 'hybridDoubleJump')

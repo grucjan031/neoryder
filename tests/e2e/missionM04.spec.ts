@@ -68,6 +68,39 @@ const openMissions = (page: Page) =>
     )
     .toBe(true);
 
+test('Rogatka: sabotażysta trafia wagon, Szron ostrzega gracza stojącego z boku', async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  await page.goto('/?scene=run&debug=1&fx=lite');
+  await expect
+    .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
+  await command(page, 'campaign complete m01-maszty');
+  await command(page, 'campaign complete m03-list-przewozowy');
+  await expect.poll(() => query(page, 'savePending')).toBe(false);
+  await page.goto(
+    `/?scene=mission&mission=${ID}&debug=1&fx=lite&seed=m04-test`,
+  );
+  await expect
+    .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('playing');
+  await command(page, 'god');
+  expect(await command(page, 'payload ambush')).toContain('Rogatka');
+  await expect
+    .poll(() => command(page, 'payload saboteurs'), { timeout: SIM_TIMEOUT })
+    .toContain('"wagon"');
+  await expect
+    .poll(async () => ((await query(page, 'payload')) as { hp: number }).hp, {
+      timeout: SIM_TIMEOUT,
+    })
+    .toBeLessThan(400);
+  await expect(page.locator('.mission-radio--run')).toContainText(
+    'Biją w wagon!',
+    { timeout: SIM_TIMEOUT },
+  );
+});
+
 test('Ładunek klasy K: tablica, Szron, blokady, Egzekutor, wagon, debrief i odblokowanie M06', async ({
   page,
 }) => {

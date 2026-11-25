@@ -1,3 +1,4 @@
+import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import type { EventBus, EntityId } from '../core/events';
 import type { AchievementsState } from '../core/metaTypes';
 import type { RunAchievementProgress } from '../core/runTypes';
@@ -35,7 +36,11 @@ export class AchievementTracker {
   private readonly flags = new Set<string>();
   private readonly announced = new Set<string>();
   private readonly kinds = new Map<EntityId, string>();
-  private readonly lastCategory = new Map<EntityId, DamageCategory>();
+  private weapon: string | undefined;
+  private readonly lastCategory = new Map<
+    EntityId,
+    { category: DamageCategory; weapon?: string }
+  >();
   private readonly killTimes: number[] = [];
   private readonly definitions: ReadonlyMap<string, AchievementDefinition>;
   private playerId: EntityId | null = null;
@@ -50,8 +55,14 @@ export class AchievementTracker {
     this.definitions = options.definitions ?? achievementDefinitions;
     this.off.push(
       bus.on('entity_spawned', ({ id, kind }) => {
-        if (kind === 'player') this.playerId = id;
-        else this.kinds.set(id, kind);
+        if (kind === 'player') {
+          this.playerId = id;
+          this.weapon = undefined;
+        } else this.kinds.set(id, kind);
+      }),
+      bus.on('weapon_switched', ({ owner, weapon }) => {
+        if (owner === this.playerId)
+          this.weapon = weaponDefinitions.has(weapon) ? weapon : undefined;
       }),
       bus.on('entity_despawned', ({ id }) => {
         if (id === this.playerId) this.playerId = null;
@@ -66,13 +77,19 @@ export class AchievementTracker {
         }
         if (source === null || source !== this.playerId) return;
         const category = damageCategory(tags);
-        if (category) this.lastCategory.set(target, category);
+        if (category)
+          this.lastCategory.set(target, {
+            category,
+            weapon: category === 'gun' ? this.weapon : undefined,
+          });
       }),
       bus.on('enemy_killed', ({ id, killer }) => {
         if (!this.live() || killer === null || killer !== this.playerId) return;
         this.setFlag(ACHIEVEMENT_IDS.firstKill);
-        const category = this.lastCategory.get(id);
-        if (category) this.count(`kills_${category}`);
+        const hit = this.lastCategory.get(id);
+        if (hit) this.count(`kills_${hit.category}`);
+        if (hit?.weapon) this.count(`kills_${hit.weapon}`);
+        this.lastCategory.delete(id);
         this.registerStreak();
         if (this.kinds.get(id) === ACHIEVEMENT_RULES.bossKind)
           this.setFlag(ACHIEVEMENT_IDS.boss);

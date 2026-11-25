@@ -1,6 +1,6 @@
 import type { Vec3 } from './math';
 import type { HeldKind } from '../combat/heldItem';
-import type { HubStationId, LoadoutChoice, RunRewards } from './metaTypes';
+import type { HubStationId, LoadoutChoiceInput, RunRewards } from './metaTypes';
 import type { NodeType, Rarity, RunSummary } from './runTypes';
 import type { StatusApplication } from '../combat/damage/types';
 
@@ -29,6 +29,7 @@ export interface GameEvents {
   hub_power_dip: { durationS: number };
   enemy_executable: { id: EntityId; ready: boolean };
   execute_performed: { attacker: EntityId; target: EntityId; point: Vec3 };
+  alarm_raised: { groupId: string };
   // F0
   run_started: { seed: string };
   scene_loaded: { sceneId: string };
@@ -200,7 +201,7 @@ export interface GameEvents {
   level_up: { level: number };
   talents_changed: { talents: readonly string[] };
   unlock_purchased: { id: string };
-  loadout_changed: { loadout: LoadoutChoice };
+  loadout_changed: { loadout: LoadoutChoiceInput };
   threat_selected: { level: number };
   /** Tracker w trakcie runu: próg osiągnięcia przekroczony (nagroda dopiero przy rozliczeniu). */
   achievement_earned: { id: string };

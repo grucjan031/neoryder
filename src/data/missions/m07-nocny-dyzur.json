@@ -9,7 +9,16 @@
   "requires": ["m06-odlewnia"],
   "layers": 7,
   "splashAct": 2,
-  "enemies": ["assaulter", "gunner", "shielder", "drone", "turret", "hacker"],
+  "enemies": [
+    "assaulter",
+    "gunner",
+    "shielder",
+    "drone",
+    "turret",
+    "hacker",
+    "helixGuard",
+    "helixMedic"
+  ],
   "fixedNodes": [
     {
       "layer": 7,
@@ -54,6 +63,7 @@
       },
       "holdS": 1,
       "durationS": 8,
+      "raiseAlarm": { "group": "przychodnia", "atProgress": 0.6 },
       "radiusM": 6,
       "waves": [
         {
@@ -190,6 +200,10 @@
       "lines": [
         {
           "speaker": "szron",
+          "text": "Jeszcze cię nie widzieli. Trzymaj się boksów."
+        },
+        {
+          "speaker": "szron",
           "text": "Dwa patrole na piętrze i czujniki w głównym przejściu. Omiń wiązki przez boksy zabiegowe, nie idź środkiem korytarza."
         },
         {
@@ -199,7 +213,23 @@
       ]
     },
     {
+      "trigger": "alarm:przychodnia",
+      "lines": [
+        { "speaker": "bajt", "text": "Patrol nadaje na otwartym. Mają cię." }
+      ]
+    },
+    {
+      "trigger": "bonus:ciche-przejscie:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Próbka w torbie, a na radiu cisza. Dwadzieścia Danych dla ciebie."
+        }
+      ]
+    },
+    {
       "trigger": "encounter:alarm-hala:started",
+      "beforeObjective": "kapsula",
       "lines": [
         {
           "speaker": "bajt",
@@ -286,6 +316,16 @@
           "text": "Dobra robota, Kurier. Zjeżdżaj na dół, widzimy się na Kamiennej."
         }
       ]
+    }
+  ],
+  "bonuses": [
+    {
+      "id": "ciche-przejscie",
+      "label": "Ciche przejście do magazynu",
+      "kind": "noAlarm",
+      "alarmGroup": "przychodnia",
+      "until": "kapsula",
+      "reward": { "data": 20 }
     }
   ],
   "rewards": {

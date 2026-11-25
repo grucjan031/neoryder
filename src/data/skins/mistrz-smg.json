@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-smg",
+  "name": "Wzorzec: Pistolet maszynowy",
+  "description": "Cyfrowy kamuflaż nocnego patrolu.",
+  "rarity": "mistrzowski",
+  "weapons": ["smg"],
+  "colors": {
+    "armor": "#1a2230",
+    "trim": "#5c6f8a",
+    "grip": "#10151d",
+    "accent": "#3d7bff"
+  },
+  "pattern": "digital",
+  "patternColor": "#2c3b55",
+  "patternScale": 3.5,
+  "metalness": 0.45,
+  "roughness": 0.45
+}

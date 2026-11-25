@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-beam",
+  "name": "Wzorzec: Laser ciągły",
+  "description": "Heksagonalna siatka otacza emiter wiązki.",
+  "rarity": "mistrzowski",
+  "weapons": ["beam"],
+  "colors": {
+    "armor": "#14303a",
+    "trim": "#5f99a8",
+    "grip": "#0f2027",
+    "accent": "#00e5ff"
+  },
+  "pattern": "hex",
+  "patternColor": "#1f7f94",
+  "patternScale": 2.5,
+  "metalness": 0.6,
+  "roughness": 0.3
+}

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import type { EventType } from '../core/events';
+import { actionSchema } from '../core/input';
 import { NODE_TYPES } from '../core/runTypes';
 import { vec3Schema, type RoomDefinition } from './roomSchema';
 import { layerTypeWeightsSchema } from './sectorSchema';
@@ -29,7 +31,48 @@ export type RadioPriority = (typeof RADIO_PRIORITIES)[number];
  * misji liniowej (id sekcji, spotkania i punktu kontrolnego poziomu).
  */
 export const RADIO_TRIGGER =
-  /^(runStart|objectivesDone|boss:phase:[23]|boss:defeated|enterNode:[1-9]\d*|enterSection:[^:\s]+|encounter:[^:\s]+:(started|done)|checkpoint:[^:\s]+|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/;
+  /^(runStart|objectivesDone|payload:attacked|boss:phase:[23]|boss:defeated|alarm:[^:\s]+|bonus:[^:\s]+:done|enterNode:[1-9]\d*|enterSection:[^:\s]+|encounter:[^:\s]+:(started|done)|checkpoint:[^:\s]+|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/;
+const hintEvents = [
+  'player_jumped',
+  'dash_used',
+  'melee_swing',
+  'parry_success',
+  'weapon_fired',
+  'power_used',
+  'enemy_executable',
+  'execute_performed',
+] as const satisfies readonly EventType[];
+const hintEvent = z.enum([...hintEvents, 'overheated']);
+export type HintEvent = z.infer<typeof hintEvent>;
+export const missionHintSchema = z.object({
+  id,
+  trigger: id.refine(
+    (value) =>
+      RADIO_TRIGGER.test(value) ||
+      (value.startsWith('event:') &&
+        hintEvent.safeParse(value.slice(6)).success),
+  ),
+  text: id.refine(
+    (value) =>
+      !/[{}]/.test(
+        value.replace(/\{(\w+)\}/g, (token, name: string) =>
+          actionSchema.safeParse(name).success ? '' : token,
+        ),
+      ),
+  ),
+  doneOn: z
+    .array(
+      z.object({
+        event: hintEvent,
+        count: z.number().int().positive().default(1),
+      }),
+    )
+    .min(1)
+    .optional(),
+  timeoutS: positive.default(9),
+  delayS: z.number().finite().nonnegative().default(0),
+});
+export type MissionHint = z.infer<typeof missionHintSchema>;
 export const missionObjectiveSchema = z.discriminatedUnion('kind', [
   z.object({
     ...base,
@@ -82,6 +125,12 @@ export const missionObjectiveSchema = z.discriminatedUnion('kind', [
     position: vec3Schema,
     radiusM: positive,
     durationS: positive,
+    raiseAlarm: z
+      .object({
+        group: id,
+        atProgress: z.number().min(0).max(1).multipleOf(0.01),
+      })
+      .optional(),
     holdS: z.number().finite().nonnegative().default(0),
     checkpoints: z
       .array(z.number().finite().gt(0).lt(1))
@@ -153,15 +202,31 @@ export const missionSchema = z
       .object({ title: id, lines: z.array(dialogueLineSchema).min(1) })
       .optional(),
     briefing: z.array(dialogueLineSchema),
+    hints: z
+      .array(missionHintSchema)
+      .refine((hints) => new Set(hints.map((h) => h.id)).size === hints.length)
+      .optional(),
     debrief: z.array(dialogueLineSchema),
     radio: z.array(
       z.object({
         trigger: z.string().regex(RADIO_TRIGGER),
         /** `story` czeka na spokój (brak aktywnych spotkań); brak pola = `tactical`, od razu. */
         priority: z.enum(RADIO_PRIORITIES).optional(),
+        beforeObjective: id.optional(),
         lines: z.array(dialogueLineSchema).min(1),
       }),
     ),
+    bonuses: z
+      .array(
+        z.object({
+          ...base,
+          kind: z.literal('noAlarm'),
+          alarmGroup: id,
+          until: id,
+          reward: z.object({ data: count }),
+        }),
+      )
+      .optional(),
     rewards: z.object({
       firstClear: z.object({ data: count, cores: count.optional() }),
     }),
@@ -178,6 +243,18 @@ export const missionSchema = z
       fail(
         'Cel reach wymaga poziomu liniowego z obsługą powrotu do checkpointu.',
       );
+    for (const line of mission.radio)
+      if (
+        line.beforeObjective &&
+        (!mission.level || !objectives.has(line.beforeObjective))
+      )
+        fail('Nieznany warunek radia.');
+    const bonuses = mission.bonuses ?? [];
+    if (
+      new Set(bonuses.map((b) => b.id)).size !== bonuses.length ||
+      bonuses.some((b) => !mission.level || !objectives.has(b.until))
+    )
+      fail('Nieprawidłowe cele dodatkowe.');
     if (objectives.size !== mission.objectives.length)
       fail('Powtórzone id celu.');
     for (const objective of mission.objectives) {

@@ -120,10 +120,11 @@ import { cloneRoomModel } from './roomModels';
 import { statusDefinitions, StatusSystem } from '../combat/status';
 import { Boss } from '../enemies/boss';
 import { EnemyManager } from '../enemies/manager';
+import type { StealthSpawn } from '../enemies/perception';
 import { createEnemyView } from '../enemies/views';
 import type { EnemyViewLike } from '../enemies/views';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
-import type { Enemy } from '../enemies/types';
+import type { Enemy, EnemyDependencies } from '../enemies/types';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { FppLegs } from '../render/fppLegs';
@@ -194,6 +195,7 @@ export interface RoomSceneOptions {
   linearMission?: {
     definition: MissionDefinition;
     order: readonly string[];
+    bonusState?: (id: string) => string | undefined;
     objectives: Record<string, 'pending' | 'active' | 'done'>;
   };
   reinforce?: (wave: string, key: string) => void;
@@ -573,6 +575,20 @@ export class RoomScene implements Scene {
             this.layout.arena.spawnRing ||
             this.layout.blocks.some((b) => b.walkable))
         ),
+        los: (from, to) => {
+          const x = to.x - from.x,
+            y = to.y - from.y,
+            z = to.z - from.z;
+          const length = Math.hypot(x, y, z);
+          return (
+            !length ||
+            this.castWall(
+              from,
+              { x: x / length, y: y / length, z: z / length },
+              length,
+            ) === null
+          );
+        },
         getTarget: () =>
           this.passiveEncounter
             ? null
@@ -585,9 +601,7 @@ export class RoomScene implements Scene {
           const player = this.health.dead
             ? null
             : { id: playerId, ...this.player.getState() };
-          return this.squad && this.squad.size > 0
-            ? this.squad.targetFor(enemy, player)
-            : player;
+          return this.enemyTarget(enemy, player);
         },
       },
       {
@@ -628,7 +642,11 @@ export class RoomScene implements Scene {
         const list: { id: EntityId; position: Vec3; centerM: number }[] = [];
         if (this.passiveEncounter || this.victoryHold) return list;
         this.manager.forEach((enemy) => {
-          if (!enemy.removed && enemy.current.state !== 'dead')
+          if (
+            !enemy.removed &&
+            enemy.current.state !== 'dead' &&
+            (!enemy.perception || enemy.perception.state === 'alerted')
+          )
             list.push({
               id: enemy.id,
               position: enemy.current.position,
@@ -840,6 +858,7 @@ export class RoomScene implements Scene {
     this.root.add(this.hitSparksView.root);
 
     this.fppView = new FppViewModel(ctx.bus, playerId, {
+      skinOf: (id) => this.run.loadout.skins?.[id],
       modulesOf: (id) => this.run.loadout.modules?.[id] ?? [],
       bladeDefinition: this.blade.definition,
       modelOf: (id) =>
@@ -979,6 +998,8 @@ export class RoomScene implements Scene {
         this.missionHud = new MissionHud(
           this.mission,
           Boolean(this.options.linearMission),
+          this.options.linearMission?.definition.bonuses,
+          this.options.linearMission?.bonusState,
         );
       this.missionSignal?.(`enterNode:${this.node.layer}`);
       const guards = this.options.linearMission
@@ -1613,7 +1634,18 @@ export class RoomScene implements Scene {
     );
   };
 
-  protected spawnEnemy(kind: string, position: Vec3): EntityId | null {
+  protected enemyTarget(
+    enemy: { id: EntityId | null; position: Vec3 },
+    player: ReturnType<EnemyDependencies['getTarget']>,
+  ): ReturnType<EnemyDependencies['getTarget']> {
+    return this.squad?.size ? this.squad.targetFor(enemy, player) : player;
+  }
+
+  protected spawnEnemy(
+    kind: string,
+    position: Vec3,
+    stealth?: StealthSpawn,
+  ): EntityId | null {
     if (
       this.aliveEnemies() >=
       Math.min(this.waves.maxAlive, this.layout.maxAlive ?? this.waves.maxAlive)
@@ -1621,7 +1653,7 @@ export class RoomScene implements Scene {
       return null;
     if (this.world.bodies.len() >= this.ctx.tuning.physics.maxDynamicBodies)
       return null;
-    return this.manager.spawn(kind, position).id;
+    return this.manager.spawn(kind, position, stealth).id;
   }
 
   private spawnBoss(enemyId: string): void {
@@ -2476,6 +2508,29 @@ export class RoomScene implements Scene {
     }
   }
 
+  forceEncounterAlarm(group: string): void {
+    this.manager.forceAlarm(group);
+  }
+
+  encounterObservers() {
+    const guards: {
+      id: EntityId;
+      state: string;
+      group: string;
+      position: Vec3;
+    }[] = [];
+    this.manager.forEach((e) => {
+      if (e.perception && !e.removed && e.current.state !== 'dead')
+        guards.push({
+          id: e.id,
+          state: e.perception.state,
+          group: e.perception.spawn.groupId,
+          position: { ...e.current.position },
+        });
+    });
+    return guards;
+  }
+
   removeEncounterEnemies(ids: readonly EntityId[]): void {
     // Usunięcie debug przechodzi przez wspólne obrażenia bez kredytu gracza.
     for (const id of ids) {
@@ -2622,13 +2677,14 @@ export class RoomScene implements Scene {
     position: Vec3,
     modifiers: readonly import('../core/stats').StatModifier[] = [],
     healthFraction = 1,
+    stealth?: StealthSpawn,
   ): EntityId | null {
     this.manager.setSpawnModifiers([
       ...this.baseSpawnModifiers(),
       ...modifiers,
     ]);
     try {
-      const id = this.spawnEnemy(kind, position);
+      const id = this.spawnEnemy(kind, position, stealth);
       if (id !== null) {
         const health = this.damage.health(id)!;
         health.set(health.max * healthFraction);

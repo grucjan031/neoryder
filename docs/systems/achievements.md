@@ -1,19 +1,19 @@
 # Naszywki Iskry — osiągnięcia (S4b-01)
 
-Powód do kolejnego runu (filar 3) i do grania każdą ścieżką (filar 2). Osiągnięcia to **naszywki** cząstki Iskra: pamiątki z runów, z jednorazową nagrodą w Danych lub Rdzeniach. Naszywka **pozwala kupić** rzadkie odblokowanie w warsztacie, ale go nie daje, więc balans waluty F4 zostaje.
+Powód do kolejnego runu (filar 3) i do grania każdą ścieżką (filar 2). Osiągnięcia to **naszywki** cząstki Iskra: pamiątki z runów, z jednorazową nagrodą w walucie lub przedmiotach. Niektóre naszywki dodatkowo otwierają zakupy w warsztacie.
 
 Kod: `src/progression/achievementsSchema.ts` (schemat, dane), `achievements.ts` (reguły, postęp z podsumowania), `achievementTracker.ts` (liczenie w runie), `meta.ts` (`applyRun`, `buyUnlock`). UI: `src/ui/hub/achievementsPanel.ts`, `src/ui/achievementToast.ts`, `src/ui/achievementIcons.ts`, teksty `src/data/ui/achievements.pl.json`.
 
 ## Dane
 
-`src/data/meta/achievements.json` (26 pozycji), walidacja zod przy ładowaniu (obiekt ścisły; id unikalne, format kebab-case):
+`src/data/meta/achievements.json` (36 pozycje), walidacja zod przy ładowaniu (obiekt ścisły; id unikalne, format kebab-case):
 
 ```ts
 { id, title, description, hint,
   category: 'walka' | 'sciezki' | 'misje' | 'progres',
   kind: 'counter' | 'flag',
   counter?: string; target?: number,   // tylko dla kind: 'counter' (target całkowity >= 1)
-  reward: { data?: number; cores?: number },   // liczby całkowite >= 0; {} = sama naszywka
+  reward: { data?: number; cores?: number; unlocks?: string[] },   // liczby całkowite >= 0; {} = sama naszywka
   icon: string }                        // klucz z zestawu w achievementIcons.ts
 ```
 
@@ -21,7 +21,20 @@ Kod: `src/progression/achievementsSchema.ts` (schemat, dane), `achievements.ts` 
 
 Liczniki (`counter`) to zamknięty zbiór `ACHIEVEMENT_COUNTERS`: `parry_success`, `execute_performed`, `synergy_triggered`, `dash_used`, `kills_melee`, `kills_power`, `kills_gun`, `runs_ended`, `victories`. Progi zdarzeń, których dane nie wyrażają, to `ACHIEVEMENT_RULES` w `achievements.ts`: seria 5 zabójstw w oknie 2 s, udział ścieżki 0,8, Poziom zagrożenia 3, poziom postaci 10, mapowanie misji (`m01-maszty` → `cisza-w-niecce`, `m03-list-przewozowy` → `list-w-reku`, `m06-odlewnia` → `ja-tylko-dowoze`), rodzaj bossa `securityChief`, punkty Podboju `A`, `B`, `C`.
 
-### Pełna lista (kolejność z pliku)
+### Nagrody przedmiotowe
+
+`reward.unlocks` przyjmuje identyfikatory z `unlockIdSchema`. Przy rozliczeniu trafiają jednokrotnie do `meta.unlocks`. Wczytanie starszego profilu uzupełnia przedmioty za zdobyte naszywki bez ponownej wypłaty waluty.
+
+| Naszywka       | Skin            |
+| -------------- | --------------- |
+| Bez zadrapania | Złoty chrom     |
+| Zwierciadło    | Zwierciadło     |
+| Upadek Brandta | Kurtyna Brandta |
+| Weteran hut    | Żar hut         |
+
+Dziesięć naszywek mistrzowskich ma kategorię „Walka”. Każda wymaga 150 zabójstw jedną bronią i daje 1 Rdzeń oraz jej własny skin „Wzorzec”. Liczniki `kills_blaster`, `kills_pistol`, `kills_rifle`, `kills_scatter`, `kills_sniper`, `kills_beam`, `kills_emp`, `kills_revolver` („Sześć komór”), `kills_smg` („Ulewa ołowiu”) i `kills_crossbow` („Cewka i bełt”) korzystają z broni gracza w chwili trafienia oznaczonego `#gun`. Zmiana broni między tym trafieniem a śmiercią celu zachowuje przypisanie.
+
+### Pozostałe naszywki i ich nagrody walutowe
 
 Nagrody: D = Dane, R = Rdzenie, „—” = sama naszywka.
 
@@ -58,7 +71,7 @@ Ikony (23 klucze): `spark`, `mirror`, `execute`, `chain`, `rings`, `dash`, `aegi
 
 ## Stan w metazapisie
 
-`MetaState.achievements: { unlocked: string[]; counters: Record<string, number> }`. Dodane w `SAVE_VERSION` 5 (obecnie 6). Migracja meta 4→5: jeśli pole `achievements` nie istnieje, jest zasilane z istniejącego zapisu (nie jest puste): `runs_ended` = `stats.runs`, `victories` = `stats.victories` (tylko gdy > 0); flagi `pierwsze-zwyciestwo` (`stats.victories` > 0), `pierwszy-zakup` (liczba odblokowań większa niż startowych) i `poziom-10` (poziom z `xp` >= 10); odblokowane zostają wszystkie osiągnięcia, których warunek jest już spełniony, **bez** nagród walutowych. Migracja runu 4→5 to tożsamość, 5→6 także. `metaStateSchema` czyta uszkodzone `achievements` jako puste, bez unieważniania reszty meta. `RunSummary.achievements?` (`{ counters, flags }`, także w `runEndedSchema`) niesie przyrosty runu, więc przeżywa odświeżenie strony w stanie „zakończony, nierozliczony”; schemat przyjmuje wyłącznie znane liczniki z wartością całkowitą 0..10 000 (`MAX_RUN_COUNTER`) i flagi zdarzeniowe (`pierwsza-krew`, `seria`, `bez-zadrasniecia`, `trzy-punkty`, `upadek-brandta`). `MetaRunRecord.achievements` (id) pozwala pokazać naszywki w podsumowaniu po odświeżeniu.
+`MetaState.achievements: { unlocked: string[]; counters: Record<string, number> }`. Dodane w `SAVE_VERSION` 5 (obecnie 7). Migracja meta 4→5: jeśli pole `achievements` nie istnieje, jest zasilane z istniejącego zapisu (nie jest puste): `runs_ended` = `stats.runs`, `victories` = `stats.victories` (tylko gdy > 0); flagi `pierwsze-zwyciestwo` (`stats.victories` > 0), `pierwszy-zakup` (liczba odblokowań większa niż startowych) i `poziom-10` (poziom z `xp` >= 10); odblokowane zostają wszystkie osiągnięcia, których warunek jest już spełniony, **bez** nagród walutowych. Migracja runu 4→5 to tożsamość, 5→6 także. `metaStateSchema` czyta uszkodzone `achievements` jako puste, bez unieważniania reszty meta. `RunSummary.achievements?` (`{ counters, flags }`, także w `runEndedSchema`) niesie przyrosty runu, więc przeżywa odświeżenie strony w stanie „zakończony, nierozliczony”; schemat przyjmuje wyłącznie znane liczniki z wartością całkowitą 0..10 000 (`MAX_RUN_COUNTER`) i flagi zdarzeniowe (`pierwsza-krew`, `seria`, `bez-zadrasniecia`, `trzy-punkty`, `upadek-brandta`). `MetaRunRecord.achievements` (id) pozwala pokazać naszywki w podsumowaniu po odświeżeniu.
 
 ## Liczenie
 
@@ -81,6 +94,7 @@ Ikony (23 klucze): `spark`, `mirror`, `execute`, `chain`, `rings`, `dash`, `aegi
 | `power:focus`           | `glos-rezonansu` (120 zabójstw mocą)   |
 | `module:superconductor` | `reka-strzelca` (200 zabójstw bronią)  |
 | `slot:weapon3`          | `weteran-hut` (5 zwycięstw)            |
+| `weapon:crossbow`       | `droga-strzelca` (zwycięstwo z co najmniej 80% obrażeń z broni palnej) |
 
 Każdą z tych naszywek da się zdobyć z wyposażeniem startowym (ostrze plazmowe, Pchnięcie, Blaster), czyli bez przedmiotu, który odblokowuje; pilnuje tego test na danych.
 
@@ -90,7 +104,7 @@ Symulacja `metaSim` (`src/balance/metaSim.ts`) nie symuluje zdarzeń w runie: za
 
 ## Panel w kryjówce
 
-Zakładka **„Naszywki Iskry”** w terminalu drzewek (`talents`): to miejsce trwałej progresji postaci, a tablica misji ma już sektor, zagrożenie i briefingi. Zakładki mają role `tablist`/`tab`/`tabpanel`, strzałki Lewo/Prawo przełączają. Panel jest tylko do odczytu: nagłówek, licznik „Zdobyte: X z 26”, wprowadzenie i siatka kart pogrupowana w cztery kategorie (Walka, Ścieżki, Misje i tryby, Progres); zdobyte mają bursztynową ramkę i jasną ikonę, brakujące są szare z `hint`, a licznikowe mają pasek postępu (`role="progressbar"`) i napis „x / cel” (postęp licznika obcięty do celu; zdobyta pokazuje cel/cel). Każda karta pokazuje nagrodę („Nagroda: 20 Danych”, „2 Rdzenie”, „Nagroda: sama naszywka”); karta bramkująca dodatkowo „Pozwala kupić: <przedmiot>”. Karty są fokusowalne (roving tabindex: strzałki, Home, End).
+Zakładka **„Naszywki Iskry”** w terminalu drzewek (`talents`): to miejsce trwałej progresji postaci, a tablica misji ma już sektor, zagrożenie i briefingi. Zakładki mają role `tablist`/`tab`/`tabpanel`, strzałki Lewo/Prawo przełączają. Panel jest tylko do odczytu: nagłówek, licznik „Zdobyte: X z 36”, wprowadzenie i siatka kart pogrupowana w cztery kategorie (Walka, Ścieżki, Misje i tryby, Progres); zdobyte mają bursztynową ramkę i jasną ikonę, brakujące są szare z `hint`, a licznikowe mają pasek postępu (`role="progressbar"`) i napis „x / cel” (postęp licznika obcięty do celu; zdobyta pokazuje cel/cel). Każda karta pokazuje nagrodę („Nagroda: 20 Danych”, „2 Rdzenie”, „Nagroda: sama naszywka”); karta bramkująca dodatkowo „Pozwala kupić: <przedmiot>”. Karty są fokusowalne (roving tabindex: strzałki, Home, End).
 
 Podsumowanie runu pokazuje sekcję „Nowe naszywki Iskry” z nagrodami (linia „<tytuł> — <nagroda>” albo sam tytuł).
 

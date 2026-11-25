@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EventBus } from '../../src/core/events';
+import { moduleDefinitions } from '../../src/progression/moduleSchema';
 import type { MetaState } from '../../src/core/metaTypes';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { loadoutDefinitions } from '../../src/progression/loadout';
@@ -112,20 +113,19 @@ describe('dane meta F4 przechodzą schematy', () => {
       'slot:weapon2',
       'slot:weapon3',
       'slot:power2',
-      'module:ricochet',
-      'module:pierce',
-      'module:incendiary',
-      'module:superconductor',
-      'module:collimator',
-      'module:scope',
-      'module:holo',
-      'module:laser',
-      'module:compensator',
-      'module:foregrip',
-      'module:extendedCell',
-      'module:pulseCell',
+      ...[...moduleDefinitions.keys()].map((id) => `module:${id}`),
     ].filter((id) => !starter.has(id));
-    expect([...loaded.keys()].sort()).toEqual(expected.sort());
+    const nonSkins = [...loaded.keys()].filter((id) => !id.startsWith('skin:'));
+    expect(nonSkins.sort()).toEqual(expected.sort());
+    expect(
+      [...loaded.keys()].filter((id) => id.startsWith('skin:')).sort(),
+    ).toEqual([
+      'skin:biala-ceramika',
+      'skin:bursztynowa-linia',
+      'skin:miejski-kamuflaz',
+      'skin:nocny-karbon',
+      'skin:zielony-sygnal',
+    ]);
     for (const id of starter) expect(loaded.has(id)).toBe(false);
     expect(loaded.get('slot:weapon2')?.cost.data).toBeGreaterThan(0);
     expect(loaded.get('slot:weapon3')?.cost.cores).toBeGreaterThan(0);

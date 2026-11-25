@@ -1,0 +1,37 @@
+{
+  "id": "crossbow",
+  "name": "Kusza magnetyczna",
+  "fireMode": "pierce",
+  "automatic": false,
+  "damage": 95,
+  "fireRateHz": 0.9,
+  "heatPerShot": 38,
+  "projectileSpeed": 60,
+  "projectileLifetimeS": 2.5,
+  "spreadDeg": 0,
+  "recoilScale": 0.8,
+  "tags": ["#gun"],
+  "model": "mag_crossbow",
+  "previewPitch": 0.65,
+  "ironSight": {
+    "rear": [0, 0.096, 0.04],
+    "front": [0, 0.0935, -0.35]
+  },
+  "grip": {
+    "offset": [0.0003, -0.014, 0.032],
+    "pose": "gripRifle",
+    "firePose": "gripRifleFire",
+    "support": {
+      "offset": [0.0165, 0.0024, 0.0001],
+      "pose": "supportRifle"
+    }
+  },
+  "pierceCount": 4,
+  "pierceFalloff": 0.15,
+  "statuses": [
+    {
+      "id": "stunned",
+      "durationS": 0.5
+    }
+  ]
+}

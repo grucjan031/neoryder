@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { unlockIdSchema } from './unlocksSchema';
 import achievementsData from '../data/meta/achievements.json';
 
 export const ACHIEVEMENT_CATEGORIES = [
@@ -18,6 +19,16 @@ export const ACHIEVEMENT_COUNTERS = [
   'kills_melee',
   'kills_power',
   'kills_gun',
+  'kills_blaster',
+  'kills_pistol',
+  'kills_rifle',
+  'kills_scatter',
+  'kills_sniper',
+  'kills_beam',
+  'kills_emp',
+  'kills_revolver',
+  'kills_smg',
+  'kills_crossbow',
   'runs_ended',
   'victories',
 ] as const;
@@ -80,7 +91,11 @@ const amount = z.number().int().min(0);
 
 /** Pusta nagroda `{}` oznacza samą naszywkę (bez waluty). */
 export const achievementRewardSchema = z
-  .object({ data: amount.optional(), cores: amount.optional() })
+  .object({
+    data: amount.optional(),
+    cores: amount.optional(),
+    unlocks: z.array(unlockIdSchema).optional(),
+  })
   .strict();
 
 export const achievementSchema = z

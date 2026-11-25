@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { loadoutSchema } from '../progression/loadout';
+import { savedLoadoutSchema } from '../progression/loadout';
 
 export const missionCheckpointSchema = z.object({
   attemptId: z.string().min(1),
@@ -9,10 +9,12 @@ export const missionCheckpointSchema = z.object({
   checkpointId: z.string().min(1),
   objectives: z.record(z.string(), z.enum(['pending', 'active', 'done'])),
   completedEncounters: z.array(z.string()),
+  raisedAlarms: z.array(z.string()).optional(),
+  bonusStates: z.record(z.string(), z.enum(['done', 'failed'])).optional(),
   elapsedS: z.number().finite().nonnegative(),
   kills: z.number().int().nonnegative().optional(),
   completed: z.boolean(),
-  loadout: loadoutSchema,
+  loadout: savedLoadoutSchema,
   talents: z.array(z.string()),
   implants: z.array(z.string()),
   threatLevel: z.number().int().nonnegative(),

@@ -68,6 +68,7 @@ export const scenes: Record<string, SceneLoader> = {
     import('./blasterTest').then((m) => () => new m.BlasterTest()),
   'weapons-test': () =>
     import('./weaponsTest').then((m) => () => new m.WeaponsTest()),
+  'helix-test': () => import('./aiTest').then((m) => () => m.createHelixTest()),
   'ai-test': () => import('./aiTest').then((m) => () => new m.AiTest()),
   'status-test': () =>
     import('./aiTest').then((m) => () => m.createStatusTest()),
@@ -77,6 +78,8 @@ export const scenes: Record<string, SceneLoader> = {
     import('./debrisTest').then((m) => () => new m.DebrisTest()),
   'grab-test': () => import('./grabTest').then((m) => () => new m.GrabTest()),
   'room-test': () => import('./roomTest').then((m) => () => m.createRoomTest()),
+  'stealth-test': () =>
+    import('./stealthTest').then((m) => () => new m.StealthTest()),
   'puzzle-test': () =>
     import('./roomTest').then((m) => () => m.createPuzzleTest()),
   'escort-test': () =>

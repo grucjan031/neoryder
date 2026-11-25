@@ -6,11 +6,11 @@
   "minSpawnDistance": 0,
   "spawnPoints": [
     {
-      "x": 73,
+      "x": 63,
       "z": -5
     },
     {
-      "x": 77,
+      "x": 69,
       "z": 5
     },
     {

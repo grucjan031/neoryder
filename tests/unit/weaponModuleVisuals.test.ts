@@ -111,7 +111,7 @@ const pairs = [...weaponDefinitions.values()].flatMap((weapon) =>
 );
 const compatiblePairs = pairs.filter((pair) => pair.compatible);
 
-describe('elementy modułów na siedmiu modelach GLB', () => {
+describe('elementy modułów na modelach GLB', () => {
   it('współdzieli geometrie, izoluje materiały i zwalnia cache po ostatnim widoku', () => {
     const gun = () => {
       const root = new Group();
@@ -207,6 +207,9 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
     'scatter',
     'sniper_rifle',
     'emp_launcher',
+    'revolver',
+    'smg',
+    'mag_crossbow',
     'beam',
   ])(
     '%s: kształty wszystkich modułów, położenie, usunięcie i zwolnienie zasobów',
@@ -271,6 +274,14 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
           if (node instanceof Mesh) meshes.push(node);
         });
         const budget = {
+          suppressor: 3,
+          choke: 3,
+          drum: 4,
+          overload: 4,
+          stun: 4,
+          radiator: 4,
+          prism: 6,
+          angled: 4,
           brake: 3,
           rail: 3,
           compensator: 3,
@@ -355,7 +366,10 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
         );
         frameModuleSide(camera, root);
         const projected = projectedBounds(meshesOf(root), camera);
-        expect(projected.getSize(new Vector2()).x / 2).toBeCloseTo(0.6, 2);
+        expect(projected.getSize(new Vector2()).x / 2, module.id).toBeCloseTo(
+          0.6,
+          2,
+        );
         expect(projected.getCenter(new Vector2()).x).toBeCloseTo(0, 2);
         expect(projected.min.y).toBeGreaterThan(-1);
         expect(projected.max.y).toBeLessThan(1);
@@ -564,7 +578,7 @@ describe('styk z GLB i drożność lufy zgodnych par', () => {
           for (const mount of mounts) {
             const box = new Box3().setFromObject(mount, true);
             const origin = box.getCenter(new Vector3());
-            const axis = slot === 'cell' ? 'x' : 'y';
+            const axis = slot === 'cell' && shape !== 'drum' ? 'x' : 'y';
             const direction = new Vector3();
             direction[axis] = -side;
             origin[axis] += side;

@@ -432,8 +432,10 @@ describe('stan sklepu', () => {
     expect(card.fits).toEqual([
       'Blaster',
       'Pistolet',
+      'Rewolwer',
       'Karabin',
       'Rozpraszacz',
+      'Pistolet maszynowy',
     ]);
   });
 

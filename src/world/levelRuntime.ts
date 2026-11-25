@@ -19,15 +19,28 @@ export function insideLevelZone(position: Vec3, zone: LevelZone): boolean {
 export class LevelRuntime {
   readonly active = new Set<string>();
   readonly completed: Set<string>;
+  readonly raisedAlarms: Set<string>;
+  readonly bonusStates: Record<string, 'done' | 'failed'>;
   constructor(
     readonly level: LevelDefinition,
     completed: readonly string[] = [],
+    raisedAlarms: readonly string[] = [],
+    bonusStates: Record<string, 'done' | 'failed'> = {},
   ) {
+    this.raisedAlarms = new Set(raisedAlarms);
+    this.bonusStates = { ...bonusStates };
     if (
       completed.some((id) => !level.encounters.some((entry) => entry.id === id))
     )
       throw new Error('Nieznane zapisane spotkanie.');
     this.completed = new Set(completed);
+  }
+  quiet(id: string): boolean {
+    const e = this.level.encounters.find((item) => item.id === id);
+    return !!e?.stealth && !this.raisedAlarms.has(e.stealth.alarmGroup ?? id);
+  }
+  get inCombat(): boolean {
+    return [...this.active].some((id) => !this.quiet(id));
   }
   satisfied(
     after: LevelDependency | undefined,
@@ -37,7 +50,10 @@ export class LevelRuntime {
       !after ||
       (after.kind === 'objective'
         ? objectives[after.id] === 'done'
-        : this.completed.has(after.id))
+        : after.kind === 'alarm'
+          ? this.raisedAlarms.has(after.id)
+          : this.completed.has(after.id) ||
+            (this.active.has(after.id) && this.quiet(after.id)))
     );
   }
   step(position: Vec3, objectives: Readonly<Record<string, string>>): string[] {
@@ -69,7 +85,11 @@ export class LevelRuntime {
       .filter(
         (gate) =>
           this.satisfied(gate.after, objectives) &&
-          !(gate.closedDuring && this.active.has(gate.closedDuring)),
+          !(
+            gate.closedDuring &&
+            this.active.has(gate.closedDuring) &&
+            !this.quiet(gate.closedDuring)
+          ),
       )
       .map((gate) => gate.id);
   }

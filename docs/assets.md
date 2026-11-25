@@ -829,7 +829,7 @@ wierzchy kontenerów na platformie oraz punkt odniesienia modułu ściany (wnęt
 
 Bronie celują w -Z, początek w punkcie chwytu. Bryła `frame` to `mat_interactive`; `heat_vents` i
 `heat_cell` (`mat_player_cyan`) kod koloruje ciepłem; `muzzle` to pusty węzeł wylotu (tu rysowany
-jest błysk). Budowa: `--only plasma_blade,blaster,pistol,rifle,scatter,sniper_rifle,beam,emp_launcher,blade_twin,blade_staff`.
+jest błysk). Budowa: `--only plasma_blade,blaster,pistol,rifle,scatter,sniper_rifle,beam,emp_launcher,revolver,smg,mag_crossbow,blade_twin,blade_staff`.
 
 Szlif FPP: każda broń i rękojeść ma też siatki `trim` (szyny, pierścienie, płytki, spust — jasna
 stal) i `grip` (chwyt, kolba, pompa — guma). W GLB to nadal `mat_interactive`; gra nadaje
@@ -867,6 +867,9 @@ są bez zmian, obrys `frame` zmienił się o najwyżej 10 mm. Kontrola przenikan
 | `sniper_rifle.glb` | świecący okular lunety, wieżyczki, kanały łoża, hamulec z portami, zamek z gałką      | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 940      |
 | `beam.glb`         | emiter z czaszą, cewki, moduł z kanałem rdzenia, przeziernikiem i tylną szczeliną     | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 848      |
 | `emp_launcher.glb` | gruba tuba, bęben ze świecącym pierścieniem komór i krzyżem X, żebrowana szyna        | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 936      |
+| `revolver.glb` | Sześciokątna lufa, bęben z sześcioma gniazdami i pierścieniem, kurek i szczelina na żebrze | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`, `support` | 712 |
+| `smg.glb` | Druciana kolba, osłona lufy z oknami, magazynek z okienkiem i przedni chwyt | jak `revolver` | 548 |
+| `mag_crossbow.glb` | Bełt na podwójnej szynie, ramiona z cewkami i kolba szkieletowa | jak `revolver` | 620 |
 | `blade_twin.glb`   | krótsza rękojeść, osłona-rogi wygięte ku klindze, cyjanowa listwa, kolec              | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 756      |
 | `blade_staff.glb`  | długa rękojeść (0,8 m), dwie szczeliny mocy przy chwycie, widełki emiterów            | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 980      |
 
@@ -888,7 +891,7 @@ Model broni wskazuje pole `model` w `src/data/weapons/<id>.json`.
 
 ### Punkt podparcia broni
 
-Wszystkie siedem modeli broni palnej ma dodatkowy pusty węzeł `support`, bezpośrednie dziecko
+Wszystkie dziesięć modeli broni palnej ma dodatkowy pusty węzeł `support`, bezpośrednie dziecko
 roota, z orientacją identyczną jak root i skalą jednostkową. Geometria oraz dotychczasowe
 węzły (`frame`, `muzzle`, `heat_vents`, `heat_cell`, opcjonalne soczewki) pozostają bez zmian.
 Położenia w metrach, w osiach glTF:
@@ -902,6 +905,9 @@ Położenia w metrach, w osiach glTF:
 | `sniper_rifle` | [0, 0.017, -0.30]   |
 | `beam`         | [0, 0.018, -0.22]   |
 | `emp_launcher` | [0, 0.014, -0.20]   |
+| `revolver` | [0, -0.100, 0.032] |
+| `smg` | [0, 0.012, -0.18] |
+| `mag_crossbow` | [0, 0.012, -0.24] |
 
 ## Przegubowe ręce FPP
 
@@ -1043,7 +1049,7 @@ oświetlenia studyjnego i cavity, aby pokazać przekroje i zgięcia:
 - `hand_fist_inner.png`: zbliżenie obu pięści od strony opuszek;
 - `hand_grip_blade.png`, `hand_grip_blade_inner.png`: chwyt ostrza;
 - `hand_grip_<model>.png`, `hand_grip_<model>_detail.png` dla wszystkich 7 modeli broni
-  (`pistol`, `blaster`, `rifle`, `scatter`, `sniper_rifle`, `beam`, `emp_launcher`):
+  (`pistol`, `blaster`, `rifle`, `scatter`, `sniper_rifle`, `beam`, `emp_launcher`, `revolver`, `smg`, `mag_crossbow`):
   chwyt z pola `grip`, obie dłonie jak w grze;
 - `hand_support_<model>.png`, `hand_support_<model>_below.png`: dłoń podpierająca
   broni dwuręcznych;

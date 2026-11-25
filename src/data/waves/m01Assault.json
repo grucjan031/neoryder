@@ -1,8 +1,8 @@
 {
   "id": "m01Assault",
   "firstBreakS": 0,
-  "breakS": 0,
-  "maxAlive": 8,
+  "breakS": 2,
+  "maxAlive": 4,
   "minSpawnDistance": 6,
   "spawnPoints": [
     {
@@ -16,11 +16,33 @@
       "groups": [
         {
           "enemy": "assaulter",
-          "count": 4
+          "count": 2
         },
         {
           "enemy": "gunner",
-          "count": 3
+          "count": 1
+        }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 1
+        },
+        {
+          "enemy": "gunner",
+          "count": 1
         }
       ]
     }

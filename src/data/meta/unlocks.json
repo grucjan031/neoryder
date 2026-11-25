@@ -86,6 +86,64 @@
     "minLevel": 5
   },
   {
+    "id": "module:suppressor",
+    "cost": {
+      "data": 150
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "module:choke",
+    "cost": {
+      "data": 140
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "module:radiator",
+    "cost": {
+      "data": 170
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "module:stabilizer",
+    "cost": {
+      "data": 180
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "module:drumCell",
+    "cost": {
+      "data": 210
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "module:prism",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "module:overloadCell",
+    "cost": {
+      "cores": 3
+    },
+    "minLevel": 4,
+    "requiresAchievement": "rezonator"
+  },
+  {
+    "id": "module:stunCell",
+    "cost": {
+      "cores": 4
+    },
+    "minLevel": 5,
+    "requiresAchievement": "egzekutor"
+  },
+  {
     "id": "weapon:rifle",
     "cost": {
       "data": 80
@@ -121,6 +179,28 @@
       "cores": 4
     },
     "minLevel": 4
+  },
+  {
+    "id": "weapon:smg",
+    "cost": {
+      "data": 130
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "weapon:revolver",
+    "cost": {
+      "data": 160
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "weapon:crossbow",
+    "cost": {
+      "cores": 5
+    },
+    "minLevel": 5,
+    "requiresAchievement": "droga-strzelca"
   },
   {
     "id": "power:grab",
@@ -194,5 +274,40 @@
     },
     "minLevel": 4,
     "requiresAchievement": "weteran-hut"
+  },
+  {
+    "id": "skin:nocny-karbon",
+    "minLevel": 1,
+    "cost": {
+      "data": 120
+    }
+  },
+  {
+    "id": "skin:miejski-kamuflaz",
+    "minLevel": 1,
+    "cost": {
+      "data": 150
+    }
+  },
+  {
+    "id": "skin:bursztynowa-linia",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "skin:zielony-sygnal",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "skin:biala-ceramika",
+    "cost": {
+      "cores": 3
+    },
+    "minLevel": 5
   }
 ]

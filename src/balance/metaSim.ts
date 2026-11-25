@@ -135,7 +135,9 @@ export function simulateTypicalRuns(
     .flatMap((tree) => tree.nodes)
     .sort((a, b) => a.cost - b.cost || a.id.localeCompare(b.id))
     .map((node) => node.id);
+  // Skiny są kosmetyczne: nie wpływają na balans, więc symulator ich nie kupuje.
   const unlockIds = [...rules.unlocks.values()]
+    .filter((unlock) => !unlock.id.startsWith('skin:'))
     .sort(
       (a, b) =>
         totalCost(a.cost) - totalCost(b.cost) || a.id.localeCompare(b.id),

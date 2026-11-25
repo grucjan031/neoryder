@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { ThirdPersonBody } from '../../src/render/thirdPersonBody';
 import {
   AnimationMixer,
   BoxGeometry,
@@ -103,7 +104,43 @@ it('interpoluje model i yaw, zapętla klipy, robi crossfade oraz sumuje dt odleg
   }
 });
 
-it('Hela wykonuje gest podania z klipu GLB raz i wraca do spoczynku', async () => {
+it('model gracza unosi prawą dłoń do brody, a w klęku sięga do kota', async () => {
+  const [template, library] = await Promise.all([
+    parse('npc_civilian.glb'),
+    parse('npc_anims.glb'),
+  ]);
+  const load = vi
+    .spyOn(GLTFLoader.prototype, 'loadAsync')
+    .mockImplementation(async (url) =>
+      url.includes('npc_anims') ? library : template,
+    );
+  const body = new ThirdPersonBody(new Mesh(), tuning.hub);
+  const shot = {
+    playerPos: { x: 0, y: 0, z: 0 },
+    playerYaw: 0,
+    targetPos: { x: 0, y: 1.08, z: 0.44 },
+  };
+  try {
+    await body.load();
+    const hand = body.bone('DEF-handR')!;
+    body.pose('noodles', shot, 0.5, 1);
+    const grip = hand.getWorldPosition(new Vector3());
+    expect(grip.y).toBeGreaterThan(1.32);
+    expect(
+      grip.distanceTo(body.bone('DEF-head')!.getWorldPosition(new Vector3())),
+    ).toBeLessThan(0.31);
+    const cat = new Vector3(0, 0.3, 0.48);
+    body.pose('cat', { ...shot, targetPos: { x: 0, y: 0, z: 0.48 } }, 0.5, 1);
+    expect(hand.getWorldPosition(new Vector3()).distanceTo(cat)).toBeLessThan(
+      0.14,
+    );
+  } finally {
+    body.dispose();
+    load.mockRestore();
+  }
+});
+
+it('Hela dwukrotnie wykonuje gest z klipu GLB i wraca do spoczynku', async () => {
   const [body, clips] = await Promise.all([
     parse('npc_civilian.glb'),
     parse('npc_anims.glb'),
@@ -123,23 +160,14 @@ it('Hela wykonuje gest podania z klipu GLB raz i wraca do spoczynku', async () =
     view.render(1, 0, npc.position, null);
     const hand = view.root.getObjectByName('DEF-handL')!;
     const before = hand.getWorldPosition(new Vector3());
-    view.serveSoup();
-    const duration = clips.animations.find(
-      ({ name }) => name === 'Interact',
-    )!.duration;
-    view.step(duration / 2);
-    // Crossfade z bezczynności idzie czasem renderu, więc dt kończy go w jednej klatce.
-    view.render(1, 1, npc.position, 'hela');
-    expect(view.soupProgress).toBeCloseTo(0.5);
-    expect(hand.getWorldPosition(new Vector3()).z).toBeGreaterThan(
-      before.z + 0.3,
-    );
-    view.step(duration);
-    view.render(1, 0.01, npc.position, 'hela');
-    expect(view.soupProgress).toBe(0);
-    view.render(1, 1, npc.position, null);
-    expect(view.soupProgress).toBe(0);
-    expect(hand.getWorldPosition(new Vector3()).z).toBeCloseTo(before.z, 1);
+    for (const speaker of ['hela', null]) {
+      view.render(1, 1, npc.position, speaker, null, 0.5);
+      expect(hand.getWorldPosition(new Vector3()).z).toBeGreaterThan(
+        before.z + 0.3,
+      );
+      view.render(1, 1, npc.position, null);
+      expect(hand.getWorldPosition(new Vector3()).z).toBeCloseTo(before.z, 1);
+    }
   } finally {
     view.dispose();
     load.mockRestore();
@@ -163,34 +191,27 @@ it('podawanie zupy idzie czasem symulacji: bez step pauza zatrzymuje postęp, a 
   const view = new HubNpcs([npc], tuning);
   try {
     await view.load();
-    const duration = clips.animations.find(
-      ({ name }) => name === 'Interact',
-    )!.duration;
     const near = { x: npc.position.x + 1, y: 0, z: npc.position.z + 1 };
     for (let i = 0; i < 90; i++) npc.step(1 / 60, near, false);
     expect(Math.abs(npc.look.bodyYaw - npc.baseYaw)).toBeGreaterThan(0.1);
     view.render(1, 0, npc.position, null);
-    view.serveSoup();
-    view.step(duration / 4);
-    view.render(1, 1, npc.position, 'hela');
-    const progress = view.soupProgress;
+    view.faceCounter(true);
+    view.render(1, 1, npc.position, 'hela', null, 0.25);
     const hand = view.root.getObjectByName('DEF-handL')!;
     const pose = hand.getWorldPosition(new Vector3());
-    for (let i = 0; i < 120; i++) view.render(1, 0.1, npc.position, 'hela');
-    expect(view.soupProgress).toBe(progress);
+    for (let i = 0; i < 120; i++)
+      view.render(1, 0.1, npc.position, 'hela', null, 0.25);
     expect(hand.getWorldPosition(new Vector3()).distanceTo(pose)).toBeLessThan(
       1e-6,
     );
     // Obrót ciała idzie w symulacji: po kilku krokach tułów jest w kierunku bazowym.
     for (let i = 0; i < 240; i++) {
-      view.step(1 / 60);
       npc.step(1 / 60, near, false);
     }
     expect(npc.look.bodyYaw).toBeCloseTo(npc.baseYaw, 5);
     view.render(1, 0.016, npc.position, null);
-    expect(view.soupProgress).toBe(0);
     expect(npc.faceBase).toBe(true);
-    view.step(1 / 60);
+    view.faceCounter(false);
     expect(npc.faceBase).toBe(false);
   } finally {
     view.dispose();

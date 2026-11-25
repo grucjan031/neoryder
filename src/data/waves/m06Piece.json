@@ -2,7 +2,7 @@
   "id": "m06Piece",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 8,
+  "maxAlive": 4,
   "minSpawnDistance": 6,
   "spawnPoints": [
     {

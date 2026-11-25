@@ -2,7 +2,7 @@
   "id": "m02Pursuit",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 6,
+  "maxAlive": 4,
   "minSpawnDistance": 2,
   "spawnPoints": [
     {
@@ -16,7 +16,7 @@
       "groups": [
         {
           "enemy": "assaulter",
-          "count": 2
+          "count": 4
         }
       ]
     }

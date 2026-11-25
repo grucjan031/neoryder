@@ -1,5 +1,6 @@
 import type { AchievementsState } from '../../core/metaTypes';
 import type { MetaManager } from '../../progression/meta';
+import labels from '../../data/ui/achievements.pl.json';
 import { achievementProgress } from '../../progression/achievements';
 import {
   ACHIEVEMENT_CATEGORIES,
@@ -92,13 +93,19 @@ export function createAchievementsPanel(
       );
       body.append(bar, label);
     }
+    const items = (def.reward.unlocks ?? []).map((id) => {
+      const { kind, key } = splitId(id);
+      const item = itemName(kind, key);
+      return kind === 'skin' ? fill(labels.panel.skinReward, { item }) : item;
+    });
+    const reward = [rewardLabel(def.reward), ...items]
+      .filter(Boolean)
+      .join(text.reward.join);
     body.append(
       el(
         'p',
         'achv-card__reward',
-        rewardLabel(def.reward)
-          ? fill(text.panel.reward, { reward: rewardLabel(def.reward) })
-          : text.panel.noReward,
+        reward ? fill(text.panel.reward, { reward }) : text.panel.noReward,
       ),
     );
     const gated = gatedItem(def.id);

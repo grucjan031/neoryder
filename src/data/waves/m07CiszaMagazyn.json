@@ -1,0 +1,32 @@
+{
+  "id": "m07CiszaMagazyn",
+  "firstBreakS": 0,
+  "breakS": 0,
+  "maxAlive": 2,
+  "minSpawnDistance": 18,
+  "spawnPoints": [
+    {
+      "x": 193,
+      "z": 7.2
+    },
+    {
+      "x": 201,
+      "z": -7.2
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.05,
+      "groups": [
+        {
+          "enemy": "helixGuard",
+          "count": 1
+        },
+        {
+          "enemy": "assaulter",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

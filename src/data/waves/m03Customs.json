@@ -2,7 +2,7 @@
   "id": "m03Customs",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 8,
+  "maxAlive": 5,
   "minSpawnDistance": 6,
   "spawnPoints": [
     {
@@ -16,7 +16,7 @@
       "groups": [
         {
           "enemy": "shielder",
-          "count": 1
+          "count": 2
         },
         {
           "enemy": "drone",

@@ -41,10 +41,10 @@ const summary = (over: Partial<RunSummary> = {}): RunSummary => ({
 });
 
 describe('dane osiągnięć (S4b-01)', () => {
-  it('ma 26 osiągnięć w czterech kategoriach z unikalnymi id', () => {
+  it('ma 36 osiągnięć w czterech kategoriach z unikalnymi id', () => {
     const list = loadAchievements(achievementsData);
-    expect(list).toHaveLength(26);
-    expect(new Set(list.map((def) => def.id)).size).toBe(26);
+    expect(list).toHaveLength(36);
+    expect(new Set(list.map((def) => def.id)).size).toBe(36);
     for (const category of ACHIEVEMENT_CATEGORIES)
       expect(list.some((def) => def.category === category)).toBe(true);
   });
@@ -78,7 +78,7 @@ describe('dane osiągnięć (S4b-01)', () => {
     expect(achievementsSchema.safeParse([valid]).success).toBe(true);
   });
 
-  it('requiresAchievement wskazuje istniejące osiągnięcie, a bramkowane są dokładnie cztery odblokowania', () => {
+  it('requiresAchievement przypisuje przedmiotom właściwe naszywki z katalogu', () => {
     const gates = loadUnlocks(unlocksData)
       .filter((unlock) => unlock.requiresAchievement !== undefined)
       .map((unlock) => [unlock.id, unlock.requiresAchievement]);
@@ -86,8 +86,11 @@ describe('dane osiągnięć (S4b-01)', () => {
       expect(achievementDefinitions.has(required!)).toBe(true);
     expect(Object.fromEntries(gates)).toEqual({
       'blade:staffBlade': 'taniec-ostrza',
+      'weapon:crossbow': 'droga-strzelca',
       'power:focus': 'glos-rezonansu',
       'module:superconductor': 'reka-strzelca',
+      'module:overloadCell': 'rezonator',
+      'module:stunCell': 'egzekutor',
       'slot:weapon3': 'weteran-hut',
     });
   });
@@ -99,14 +102,20 @@ describe('dane osiągnięć (S4b-01)', () => {
       kills_melee: ['blade:'],
       kills_power: ['power:'],
       kills_gun: ['weapon:'],
+      execute_performed: ['blade:'],
+      synergy_triggered: [],
       victories: [],
     };
     for (const unlock of loadUnlocks(unlocksData)) {
       if (!unlock.requiresAchievement) continue;
       const def = achievementDefinitions.get(unlock.requiresAchievement)!;
-      // Nie wymaga własnej nagrody ani zakupu: tylko licznik zwycięstw lub zabójstw.
-      expect(def.kind).toBe('counter');
-      const prefixes = needs[def.counter!];
+      if (def.kind === 'flag') {
+        const victory = summary({
+          damage: { melee: 0, power: 0, gun: 100, other: 0 },
+        });
+        expect(summaryProgress(victory).flags).toContain(def.id);
+      }
+      const prefixes = def.kind === 'flag' ? ['weapon:'] : needs[def.counter!];
       expect(prefixes).toBeDefined();
       for (const prefix of prefixes!) {
         const owned = [...starter].filter((id) => id.startsWith(prefix));

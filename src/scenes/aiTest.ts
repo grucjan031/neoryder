@@ -21,6 +21,9 @@ import { EntityRegistry } from '../core/entities';
 import type { InputSnapshot } from '../core/input';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
+import { MedicFogView } from '../vfx/medicFogView';
+import helixData from '../data/scenes/helixTest.json';
+import { enemyDefinitions } from '../enemies/registry';
 import sceneData from '../data/scenes/aiTest.json';
 import statusSceneData from '../data/scenes/statusTest.json';
 import barrierSceneData from '../data/scenes/barrierTest.json';
@@ -108,7 +111,9 @@ export class AiTest implements Scene {
   private label?: HTMLParagraphElement;
   private respawnS: number | null = null;
   private god = false;
-  private readonly stats: Stats;
+  private fogView?: MedicFogView;
+  private freezeThrow = false;
+  private stats: Stats;
   private energy?: PlayerEnergy;
   private disposed = false;
   private powers?: PowerSlots;
@@ -159,6 +164,12 @@ export class AiTest implements Scene {
       this.spawnPosition(),
       loadSettings(),
     );
+    if (this.id === 'helix-test') {
+      this.stats = this.player.stats;
+      this.stats.setBase('maxHealth', this.data.playerHealth);
+      this.fogView = new MedicFogView(ctx.tuning.enemies.medic.maxZones);
+      this.root.add(this.fogView.root);
+    }
     this.health = new Health(() => this.stats.get('maxHealth'));
     this.registerPlayer();
     this.hurtboxes.add(id, this.player.colliderHandle);
@@ -318,8 +329,8 @@ export class AiTest implements Scene {
         statuses: this.statuses,
         getTarget: () => {
           if (this.health.dead) return null;
-          const { position, height } = this.player.getState();
-          return { id, position, height };
+          const { position, height, velocity } = this.player.getState();
+          return { id, position, height, velocity };
         },
       },
       { director: this.data.director, spawnPoints: this.data.spawnPoints },
@@ -425,6 +436,73 @@ export class AiTest implements Scene {
       const off = ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    if (this.id === 'helix-test') {
+      register(
+        'helix',
+        'helix spawn guard|medic, fog, freeze, stats',
+        ([action, role]) => {
+          const { position, height, yaw } = this.player.getState();
+          if (action === 'freeze') {
+            this.freezeThrow = role === 'throw';
+            if (this.freezeThrow) {
+              this.manager.frozen = false;
+              return 'AI zatrzyma się w trakcie zamachu.';
+            }
+            this.manager.frozen = !this.manager.frozen;
+            return this.manager.frozen ? 'AI zatrzymane' : 'AI aktywne';
+          }
+          if (action === 'spawn' && (role === 'guard' || role === 'medic')) {
+            const distance = role === 'guard' ? 4 : 13;
+            const spawned = this.manager.spawn(
+              role === 'guard' ? 'helixGuard' : 'helixMedic',
+              {
+                x: position.x - Math.sin(yaw) * distance,
+                y: position.y - height / 2,
+                z: position.z - Math.cos(yaw) * distance,
+              },
+            );
+            spawned.current.yaw = yaw;
+            return 'Utworzono wroga.';
+          }
+          if (action === 'fog') {
+            const start = {
+              ...position,
+              x: position.x - Math.sin(yaw),
+              z: position.z - Math.cos(yaw),
+            };
+            return this.manager.medicFog.launch(
+              null,
+              start,
+              position,
+              undefined,
+              enemyDefinitions.get('helixMedic')!,
+            )
+              ? 'Rzut'
+              : 'Brak miejsca na rzut';
+          }
+          if (action === 'stats') {
+            const enemies: string[] = [];
+            this.manager.forEach((e) =>
+              enemies.push(
+                e.definition.id +
+                  ' ' +
+                  (this.damage.health(e.id)?.current ?? 0) +
+                  ' HP ' +
+                  e.current.state,
+              ),
+            );
+            return JSON.stringify({
+              enemies,
+              zones: this.manager.medicFog.zones.length,
+              slowed: this.statuses.has(id, 'slowed'),
+              speed: this.stats.get('moveSpeed'),
+              base: this.stats.getBase('moveSpeed'),
+            });
+          }
+          return 'helix spawn guard|medic, fog, freeze, stats';
+        },
+      );
+    }
     register(
       'spawn',
       `spawn <id> [n] — ${availableEnemyIds().join(', ')}`,
@@ -705,6 +783,17 @@ export class AiTest implements Scene {
     }
     this.projectileRenderer.capturePrevious();
     this.manager.step(dt);
+    if (this.freezeThrow)
+      this.manager.forEach((enemy) => {
+        if (
+          enemy.definition.kind === 'medic' &&
+          enemy.current.state === 'telegraph' &&
+          enemy.current.stateTimeS >= enemy.definition.telegraphS * 0.75
+        ) {
+          this.manager.frozen = true;
+          this.freezeThrow = false;
+        }
+      });
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
@@ -723,13 +812,21 @@ export class AiTest implements Scene {
         this.views.set(enemy.id, view);
         this.root.add(view.root);
       }
-      view.render(alpha, frameDt);
+      view.render(
+        this.manager.frozen ? 1 : alpha,
+        this.manager.frozen ? 0 : frameDt,
+      );
     });
     for (const [id, view] of this.views)
       if (!ids.has(id)) {
         view.dispose();
         this.views.delete(id);
       }
+    this.fogView?.render(
+      this.manager.medicFog,
+      alpha,
+      this.player.getState().yaw,
+    );
     this.projectileRenderer.render(alpha);
     this.statusView.render(alpha, frameDt);
     this.hitSparksView.render(frameDt);
@@ -801,6 +898,7 @@ export class AiTest implements Scene {
     this.manager?.dispose();
     this.statuses?.dispose();
     this.statusVfx?.dispose();
+    this.fogView?.dispose();
     this.statusView?.dispose();
     this.hitSparks?.dispose();
     this.hitSparksView?.dispose();
@@ -835,5 +933,12 @@ export function createBarrierTest(loadModels = true): AiTest {
   return new AiTest(loadModels, {
     id: 'barrier-test',
     data: aiTestSchema.parse(barrierSceneData),
+  });
+}
+
+export function createHelixTest(loadModels = true): AiTest {
+  return new AiTest(loadModels, {
+    id: 'helix-test',
+    data: aiTestSchema.parse(helixData),
   });
 }

@@ -60,6 +60,7 @@ export interface EnemyCarry {
   defendRangeM: number;
 }
 export interface Enemy {
+  perception?: import('./perception').Perception;
   /** Bieżący cel taktyczny (debug i testy symulacji). */
   tacticalGoal?: Vec3;
   moveGoal?: Vec3;
@@ -78,6 +79,8 @@ export interface Enemy {
   dispose(): void;
 }
 export interface EnemyDependencies {
+  los?(from: Vec3, to: Vec3): boolean;
+  vulnerableToBlade?(source: EntityId | null): boolean;
   difficulty?: DifficultyProfile;
   /** ADR 0011: autostep po schodach tylko na dużych arenach z nawigacją powierzchni; w pokojach i testach wyłączony. */
   stepClimbing?: boolean;
@@ -88,6 +91,8 @@ export interface EnemyDependencies {
   damage: DamageSystem;
   hurtboxes: Hurtboxes;
   getTarget(): {
+    crouched?: boolean;
+    velocity?: Vec3;
     id: EntityId;
     position: Vec3;
     yaw?: number;
@@ -112,7 +117,11 @@ export interface EnemyDependencies {
   /** F3-17: punkty spawnu pokoju (y = 0) dla wezwań bossa. */
   spawnPoints?: readonly Vec3[];
   /** F2-02: status 'stunned' ogłusza wroga na czas trwania statusu. */
-  statuses?: StatusQuery;
+  statuses?: StatusQuery &
+    Partial<
+      Pick<import('../combat/status/statusSystem').StatusSystem, 'apply'>
+    >;
+  medicFog?: import('./medic').MedicFog;
   /** F4-05: modyfikatory Poziomu zagrożenia nakładane na Stats przy konstrukcji wroga (przed utworzeniem Health). */
   spawnModifiers?: readonly StatModifier[];
 }

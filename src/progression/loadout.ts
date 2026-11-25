@@ -29,6 +29,7 @@ export const loadoutSchema = z
       .max(2)
       .refine(uniqueIds, 'Powtórzone id mocy'),
     tags: z.array(z.string().startsWith('#')),
+    skins: z.record(z.string(), z.string()).optional(),
     modules: z.record(z.string().min(1), z.array(z.string())).optional(),
   })
   .transform((loadout) =>
@@ -40,7 +41,10 @@ export const loadoutSchema = z
         },
   );
 
-export type Loadout = z.infer<typeof loadoutSchema>;
+type NormalizedLoadout = z.infer<typeof loadoutSchema>;
+/** Wyposażenie podane przez scenę może pochodzić ze starszej definicji. */
+export type Loadout = NormalizedLoadout;
+export const savedLoadoutSchema: z.ZodType<Loadout> = loadoutSchema;
 
 export function loadLoadout(data: unknown): Loadout {
   return loadoutSchema.parse(data);

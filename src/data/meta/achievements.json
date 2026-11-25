@@ -19,7 +19,8 @@
     "counter": "parry_success",
     "target": 25,
     "reward": {
-      "data": 20
+      "data": 20,
+      "unlocks": ["skin:zwierciadlo"]
     },
     "icon": "mirror"
   },
@@ -99,7 +100,8 @@
     "category": "walka",
     "kind": "flag",
     "reward": {
-      "cores": 2
+      "cores": 2,
+      "unlocks": ["skin:zloty-chrom"]
     },
     "icon": "aegis"
   },
@@ -273,7 +275,8 @@
     "category": "progres",
     "kind": "flag",
     "reward": {
-      "cores": 1
+      "cores": 1,
+      "unlocks": ["skin:kurtyna-brandta"]
     },
     "icon": "target"
   },
@@ -299,7 +302,8 @@
     "counter": "victories",
     "target": 5,
     "reward": {
-      "cores": 1
+      "cores": 1,
+      "unlocks": ["skin:zar-hut"]
     },
     "icon": "chevrons"
   },
@@ -324,5 +328,155 @@
       "cores": 2
     },
     "icon": "level"
+  },
+  {
+    "id": "mistrz-blaster",
+    "title": "Puls ulicy",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_blaster",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Blaster”.",
+    "hint": "Wybierz broń „Blaster” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-blaster"]
+    }
+  },
+  {
+    "id": "mistrz-pistol",
+    "title": "Pewna ręka",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_pistol",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Pistolet”.",
+    "hint": "Wybierz broń „Pistolet” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-pistol"]
+    }
+  },
+  {
+    "id": "mistrz-rifle",
+    "title": "Równy rytm",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_rifle",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Karabin”.",
+    "hint": "Wybierz broń „Karabin” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-rifle"]
+    }
+  },
+  {
+    "id": "mistrz-scatter",
+    "title": "Szeroki krąg",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_scatter",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Rozpraszacz”.",
+    "hint": "Wybierz broń „Rozpraszacz” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-scatter"]
+    }
+  },
+  {
+    "id": "mistrz-sniper",
+    "title": "Długie oko",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_sniper",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Snajperka”.",
+    "hint": "Wybierz broń „Snajperka” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-sniper"]
+    }
+  },
+  {
+    "id": "mistrz-beam",
+    "title": "Linia światła",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_beam",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Laser ciągły”.",
+    "hint": "Wybierz broń „Laser ciągły” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-beam"]
+    }
+  },
+  {
+    "id": "mistrz-emp",
+    "title": "Cisza w eterze",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_emp",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Granat EMP”.",
+    "hint": "Wybierz broń „Granat EMP” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-emp"]
+    }
+  },
+  {
+    "id": "mistrz-revolver",
+    "title": "Sześć komór",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_revolver",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Rewolwer”.",
+    "hint": "Wybierz broń „Rewolwer” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-revolver"]
+    }
+  },
+  {
+    "id": "mistrz-smg",
+    "title": "Ulewa ołowiu",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_smg",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Pistolet maszynowy”.",
+    "hint": "Wybierz broń „Pistolet maszynowy” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-smg"]
+    }
+  },
+  {
+    "id": "mistrz-crossbow",
+    "title": "Cewka i bełt",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "kills_crossbow",
+    "target": 150,
+    "description": "Pokonaj 150 wrogów bronią „Kusza magnetyczna”.",
+    "hint": "Wybierz broń „Kusza magnetyczna” i zadawaj nią kończące trafienia.",
+    "icon": "gun",
+    "reward": {
+      "cores": 1,
+      "unlocks": ["skin:mistrz-crossbow"]
+    }
   }
 ]

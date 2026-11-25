@@ -1,0 +1,29 @@
+{
+  "id": "stunCell",
+  "name": "Ogniwo paraliżujące",
+  "description": "Ogłuszenie na 0,4 s, szybkostrzelność −15%.",
+  "slot": "cell",
+  "visual": {
+    "shape": "stun",
+    "color": "green"
+  },
+  "tags": ["#stun-cell"],
+  "weaponKinds": ["pierce", "lob"],
+  "patches": [
+    {
+      "op": "append",
+      "path": "statuses",
+      "value": [
+        {
+          "id": "stunned",
+          "durationS": 0.4
+        }
+      ]
+    },
+    {
+      "op": "mul",
+      "path": "fireRateHz",
+      "value": 0.85
+    }
+  ]
+}

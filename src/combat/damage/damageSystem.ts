@@ -14,6 +14,7 @@ import type { DamageInfo } from './types';
 export interface DamageTargetOptions {
   /** Mnożnik obrażeń zadawanych; pomijany dla #hazard, #status i #derived. */
   outgoing?: () => number;
+  damageTakenScale?: { ranged?: number; melee?: number; power?: number };
   /** Statystyki celu: modyfikatory 'damageTaken' (np. blok −70% = mult 0.3) zmieniają obrażenia. */
   stats?: Stats;
   /** Okno nietykalności po trafieniu w ms (np. () => tuning.damage.playerInvulnMs). */
@@ -53,6 +54,14 @@ export class DamageSystem {
       opts,
       invulnUntilS: Number.NEGATIVE_INFINITY,
     });
+  }
+
+  setDamageTakenScale(
+    id: EntityId,
+    scale: DamageTargetOptions['damageTakenScale'],
+  ): void {
+    const target = this.targets.get(id);
+    if (target) target.opts.damageTakenScale = scale;
   }
 
   unregister(id: EntityId): void {
@@ -144,7 +153,14 @@ export class DamageSystem {
     const unblocked = modifiers.filter((mod) => mod.source !== BLOCK_SOURCE);
     const takenNoBlock = computeStat(1, unblocked);
     const taken = bypassBlock ? takenNoBlock : computeStat(1, modifiers);
-    const base = info.amount * outgoing * guard;
+    const scales = entry.opts.damageTakenScale;
+    let scale = 1;
+    if (scales) {
+      if (info.tags.includes('#melee')) scale = scales.melee ?? 1;
+      else if (info.tags.includes('#power')) scale = scales.power ?? 1;
+      else if (info.tags.includes('#gun')) scale = scales.ranged ?? 1;
+    }
+    const base = info.amount * outgoing * guard * scale;
     const dealt = entry.health.apply({ amount: base * taken });
     if (dealt <= 0) return 0;
     const blocked = Math.max(0, base * (takenNoBlock - taken));

@@ -1,4 +1,20 @@
 {
+  "skins": {
+    "title": "Skiny",
+    "factory": "Fabryczny",
+    "equip": "Załóż",
+    "equipped": "Założony",
+    "buyData": "Kup — {n} Danych",
+    "buyCores": "Kup — {n} Rdzenie",
+    "achievement": "Za naszywkę: {title}",
+    "preview": "Przymierz: {name}",
+    "rarity": {
+      "standard": "Standard",
+      "rzadki": "Rzadki",
+      "elitarny": "Elitarny",
+      "mistrzowski": "Mistrzowski"
+    }
+  },
   "extraction": {
     "title": "Wydobycie modułu",
     "choose": "Wybierz jeden moduł z runu {seed}.",
@@ -20,6 +36,7 @@
       "power": "Moce",
       "blade": "Ostrza",
       "slot": "Sloty",
+      "skin": "Skiny",
       "module": "Moduły"
     }
   },
@@ -67,7 +84,8 @@
     "power2": "Drugi slot mocy"
   },
   "errors": {
-    "generic": "Operacja nie powiodła się."
+    "generic": "Operacja nie powiodła się.",
+    "skinUnavailable": "Skin nieodblokowany lub nie pasuje do broni."
   },
   "shop": {
     "title": "Sklep warsztatu",
@@ -162,6 +180,9 @@
     "pistol": "Półautomat: celny, mocny pojedynczy strzał i mało ciepła.",
     "rifle": "Szybki automat o dużym rozrzucie. Zalewa cel ogniem z bliska.",
     "scatter": "Wiązka pocisków naraz. Niszczy z bliska, słabnie z dystansem.",
+    "revolver": "Celny półautomat. Pocisk może trafić dwóch wrogów.",
+    "smg": "Piętnaście strzałów na sekundę i szeroki rozrzut na bliski dystans.",
+    "crossbow": "Bełt przebija do czterech celów i na krótko je ogłusza.",
     "emp": "Granat po łuku: wybuch obszarowy i przeciążenie elektroniki.",
     "sniper": "Jeden bardzo mocny strzał, który przebija kilka celów.",
     "beam": "Ciągła wiązka o krótkim zasięgu. Zadaje obrażenia bez przerwy."

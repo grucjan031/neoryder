@@ -1,0 +1,18 @@
+{
+  "id": "zloty-chrom",
+  "name": "Złoty chrom",
+  "description": "Szczotkowane złoto połyskuje na krawędziach osłony.",
+  "rarity": "elitarny",
+  "weapons": "*",
+  "colors": {
+    "armor": "#d4a64a",
+    "trim": "#ffe2a0",
+    "grip": "#3a2f1c",
+    "accent": "#fff1d6"
+  },
+  "pattern": "brushed",
+  "patternColor": "#b88a3c",
+  "patternScale": 2,
+  "metalness": 0.9,
+  "roughness": 0.25
+}

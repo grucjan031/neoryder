@@ -2,7 +2,7 @@
   "id": "m05Snipers",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 8,
+  "maxAlive": 4,
   "minSpawnDistance": 3,
   "spawnPoints": [
     {
@@ -17,6 +17,14 @@
         {
           "enemy": "sniper",
           "count": 2
+        },
+        {
+          "enemy": "gunner",
+          "count": 1
+        },
+        {
+          "enemy": "assaulter",
+          "count": 1
         }
       ]
     }

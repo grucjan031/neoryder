@@ -1,0 +1,11 @@
+{
+  "id": "slowed",
+  "name": "Spowolnienie",
+  "maxStacks": 1,
+  "tags": ["#hazard"],
+  "moveSpeedScale": 0.65,
+  "tick": {
+    "intervalS": 0.25,
+    "damage": 1
+  }
+}

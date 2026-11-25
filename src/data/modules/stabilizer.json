@@ -1,0 +1,29 @@
+{
+  "id": "stabilizer",
+  "name": "Chwyt stabilizujący",
+  "description": "Odrzut −45%, rozrzut −10%, szybkostrzelność −5%.",
+  "slot": "grip",
+  "visual": {
+    "shape": "angled",
+    "color": "amber"
+  },
+  "tags": ["#stabilizer"],
+  "weaponKinds": ["projectile", "spread", "pierce"],
+  "patches": [
+    {
+      "op": "mul",
+      "path": "recoilScale",
+      "value": 0.55
+    },
+    {
+      "op": "mul",
+      "path": "spreadDeg",
+      "value": 0.9
+    },
+    {
+      "op": "mul",
+      "path": "fireRateHz",
+      "value": 0.95
+    }
+  ]
+}

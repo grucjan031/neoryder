@@ -16,6 +16,7 @@
     "missing": "Niezdobyta",
     "progress": "{current} / {target}",
     "reward": "Nagroda: {reward}",
+    "skinReward": "Skin: {item}",
     "noReward": "Nagroda: sama naszywka",
     "unlocksPurchase": "Pozwala kupić: {item}"
   },

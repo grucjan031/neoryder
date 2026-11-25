@@ -1,3 +1,4 @@
+import { noodlesState } from '../../src/scenes/hubCutaway';
 import { describe, expect, it } from 'vitest';
 import { EventBus } from '../../src/core/events';
 import { Rng } from '../../src/core/rng';
@@ -142,12 +143,13 @@ it('odnowienie jest per id, miska ma dłuższe; jukebox obiega 0→1→2→0', (
   expect(used).toEqual(['jukebox', 'noodles', 'jukebox', 'jukebox', 'noodles']);
 });
 
-it('miska z zupą stoi na ladzie i przesuwa się podczas podawania', () => {
+it('ramen stoi na ladzie, pusta miska znika i wraca pełna', () => {
   const { props } = setup();
   const view = new HubPropView(props, tuning.hub);
   try {
     const bowl = view.root.getObjectByName('hub:soup:noodles')!;
-    expect(bowl.children).toHaveLength(2);
+    const contents = bowl.children[0]!;
+    expect(contents.children.length).toBeGreaterThan(10);
     const counter = layout.blocks.find(
       ({ position, size }) => position.z === -17.6 && size.x === 3.6,
     )!;
@@ -155,12 +157,13 @@ it('miska z zupą stoi na ladzie i przesuwa się podczas podawania', () => {
       counter.position.y + counter.size.y / 2,
     );
     const restZ = bowl.position.z;
-    view.render(1, 0.55);
-    expect(bowl.position.z).toBeGreaterThan(counter.position.z);
-    expect(bowl.position.z).toBeLessThan(
-      counter.position.z + counter.size.z / 2,
-    );
-    view.render(1, 1);
+    view.render(1, noodlesState(0.82), undefined, { x: 0, y: 0, z: -0.2 });
+    expect(bowl.position.z).toBeLessThan(restZ);
+    expect(contents.visible).toBe(false);
+    view.render(1, noodlesState(0.92));
+    expect(bowl.visible).toBe(false);
+    view.render(1, noodlesState(0.95));
+    expect(bowl.visible && contents.visible).toBe(true);
     expect(bowl.position.z).toBeCloseTo(restZ);
   } finally {
     view.dispose();

@@ -2,7 +2,7 @@
   "id": "m05Shields",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 8,
+  "maxAlive": 5,
   "minSpawnDistance": 3,
   "spawnPoints": [
     {
@@ -16,7 +16,7 @@
       "groups": [
         {
           "enemy": "shielder",
-          "count": 2
+          "count": 3
         },
         {
           "enemy": "drone",

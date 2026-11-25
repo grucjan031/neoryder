@@ -100,7 +100,9 @@ Laser nie używa `aim` ani `attackSpeed`. Pozostałe opcjonalne pola definicji,
 wszystkie dodatnie: `aimFovScale` (0,2–1; domyślnie `tuning.player.aim.fovScale`),
 `aimInScale` (mnożnik `aim.inS`), `aimSensitivityScale` (mnożnik `aim.sensitivity`);
 ustawiają je moduły optyki ([weaponModules.md](weaponModules.md)). Pole `model`
-(nazwa GLB) i `grip` (chwyt dłoni, [hands.md](hands.md)) są tylko widokiem FPP.
+(nazwa GLB) i `grip` (chwyt dłoni, [hands.md](hands.md)) są tylko widokiem FPP;
+`previewPitch` (rad, 0–1,2) pochyla kamerę podglądu w warsztacie dla broni z
+elementami rozłożonymi na boki (kusza: 0,65; domyślnie 0,3).
 Pola pocisków mają też `ricochets` (opcjonalne, liczba odbić od świata) oraz
 `pierceCount` (domyślnie 1) i `pierceFalloff` (domyślnie 0) — dla każdego trybu
 pociskowego `pierceCount > 1` włącza przebicie (tak działa moduł Przebicie).
@@ -109,7 +111,7 @@ Kolejność losowań `Rng` na pocisk: kąt `float(0, 2π)`, potem promień
 
 ### Widok przez przyrządy w ADS
 
-Pola `ironSight.rear` i `ironSight.front` w danych siedmiu broni wyznaczają
+Pola `ironSight.rear` i `ironSight.front` w danych broni wyznaczają
 linię od szczerbinki do czubka muszki w metrach, w osiach modelu GLB
 (przód to −Z). Położenie oka leży na przedłużeniu tej linii za szczerbinką,
 w odległości `ironSight.eyeReliefM` albo `tuning.player.aim.ironEyeReliefM`.
@@ -149,6 +151,9 @@ Wszystkie dane mają tag `#gun`. Wstępny balans względem blastera (F2-18 dopra
 | `rifle` / Karabin       | projectile / auto | 12         | 10        | 10     | 75           | 2       | 1,1      | Szybka seria, mniejsze obrażenia pocisku.                               |
 | `scatter` / Rozpraszacz | spread / semi     | 10 na śrut | 1,5       | 28     | 45           | 0,3     | 6        | 8 śrutów, maksymalny zasięg 13,5 m.                                     |
 | `sniper` / Snajperka    | pierce / semi     | 80         | 0,8       | 45     | 180          | 2       | 0        | 3 cele; spadek 0,25: obrażenia 80 → 60 → 45; odnowienie 1,25 s (F2-18). |
+| `revolver` / Rewolwer | projectile / semi | 58 | 1,9 | 20 | 95 | 2 | 0,2 | Do dwóch celów, drugi otrzymuje 70% obrażeń. |
+| `smg` / Pistolet maszynowy | projectile / auto | 8 | 15 | 5,5 | 65 | 1,2 | 2,4 | Szybka seria na bliski dystans. |
+| `crossbow` / Kusza magnetyczna | pierce / semi | 95 | 0,9 | 38 | 60 | 2,5 | 0 | Do czterech celów, spadek obrażeń o 15% na cel i ogłuszenie na 0,5 s. |
 
 ## Ciepło
 
@@ -404,7 +409,7 @@ wybuchy od kolizji i czasu, promień, deduplikacja, właściciel, statusy i rend
 
 Opcjonalne pole `model` w danych broni (`weaponSchema.ts`) wskazuje plik
 `public/assets/models/<model>.glb` (blaster, pistol, rifle, scatter, sniper_rifle, beam,
-emp_launcher). `FppBlaster` (`src/render/fppBlaster.ts`) ładuje model bieżącej broni przy
+emp_launcher, revolver, smg, mag_crossbow). `FppBlaster` (`src/render/fppBlaster.ts`) ładuje model bieżącej broni przy
 `weapon_switched` (cache per model); fallback to `blaster.glb`, potem bryła zastępcza.
 Kolor ciepła (`heat_vents`, `heat_cell`) i odrzut działają dla każdego modelu. Arena i
 `weapons-test` podają rozwiązywanie modelu (`weaponModelOf`); `weapons-test` emituje
@@ -460,6 +465,12 @@ Ręcznie w 30 sekund: otwórz scenę, wyceluj w środkowy manekin, przytrzymaj L
 oceń tempo, czytelność cyan i paska ciepła, blokadę po przegrzaniu oraz powrót
 do strzelania. Porównaj `fire 3` i `overheat` w konsoli; oceń pozycję broni
 i zmianę koloru otworów chłodzenia podczas ruchu kamery.
+
+## Skiny
+
+Warsztat pozwala przymierzyć każdy skin pasujący do wybranej broni, także przed zakupem lub zdobyciem naszywki. Przycisk pod próbką kupuje lub zakłada skin. „Fabryczny” przywraca oryginalne materiały. Zmiana dotyczy korpusu, chwytu, wykończenia i akcentu świetlnego. Dodatki zachowują własne materiały.
+
+W poligonie `?scene=weapons-test&debug=1` wybierz np. `weapon rifle`, następnie `skin mistrz-rifle` i `skin none`. Porównaj wzór korpusu, zimny emiter oraz wzrost temperatury podczas strzelania. Nieznany identyfikator wypisuje skiny pasujące do aktualnej broni.
 
 ## Pola modyfikowane przez dodatki
 

@@ -2,7 +2,7 @@
   "id": "m03Quay",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 8,
+  "maxAlive": 3,
   "minSpawnDistance": 6,
   "spawnPoints": [
     {
@@ -16,7 +16,7 @@
       "groups": [
         {
           "enemy": "assaulter",
-          "count": 2
+          "count": 3
         },
         {
           "enemy": "gunner",

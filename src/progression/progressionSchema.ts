@@ -112,6 +112,7 @@ export function createStarterMetaState(
       blade: starter.loadout.blade,
       weapons: [...starter.loadout.weapons],
       powers: [...starter.loadout.powers],
+      skins: { ...starter.loadout.skins },
       modules: structuredClone(starter.loadout.modules),
     },
     threat: { ...starter.threat },

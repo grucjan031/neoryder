@@ -88,4 +88,7 @@ Kod: `src/progression/metaSave.ts`, `src/ui/metaCommands.ts`, `src/scenes/run.ts
 
 Bronie i dodatki kupuje się jak inne odblokowania (`buyUnlock`, wpisy `weapon:*` i `module:*`
 w `unlocks.json`; koszt w Danych, droższe także w Rdzeniach, opcjonalnie `minLevel`).
-Format zapisu bez zmian (v7), brak migracji.
+
+## Skiny
+
+Pięć skinów ma cenę w `unlocks.json` i korzysta z `buyUnlock`. Jedenaście jest nagrodami naszywek. Profil przechowuje posiadanie jako `skin:<id>`, a wybór osobno dla każdej broni w `loadout.skins`. Usunięcie wpisu przywraca fabryczne materiały. Migawka runu i punkt kontrolny misji zachowują wybór z początku próby. Schematy przyjmują brak mapy jako `{}` w zapisach v7.

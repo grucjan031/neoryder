@@ -54,10 +54,10 @@ describe('panel Naszywki Iskry', () => {
       'r1',
     );
     const panel = mount(createAchievementsPanel(meta));
-    expect(panel.root.querySelectorAll('.achv-card')).toHaveLength(26);
+    expect(panel.root.querySelectorAll('.achv-card')).toHaveLength(36);
     expect(panel.root.querySelectorAll('.achv-group')).toHaveLength(4);
     expect(panel.root.querySelector('.achv-panel__count')!.textContent).toBe(
-      'Zdobyte: 1 z 26',
+      'Zdobyte: 1 z 36',
     );
     const earned = card(panel.root, 'pierwsza-krew');
     expect(earned.dataset.state).toBe('earned');
@@ -114,7 +114,7 @@ describe('panel Naszywki Iskry', () => {
     panel.refresh();
     expect(card(panel.root, 'seria').dataset.state).toBe('earned');
     expect(panel.root.querySelector('.achv-panel__count')!.textContent).toBe(
-      'Zdobyte: 1 z 26',
+      'Zdobyte: 1 z 36',
     );
   });
 
@@ -141,7 +141,7 @@ describe('panel Naszywki Iskry', () => {
     last.click();
     expect(last.getAttribute('aria-selected')).toBe('true');
     expect(achievements.hidden).toBe(false);
-    expect(panel.root.querySelectorAll('.achv-card')).toHaveLength(26);
+    expect(panel.root.querySelectorAll('.achv-card')).toHaveLength(36);
     // Strzałki przechodzą po zakładkach, w tym wstecz do drzewka.
     last.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
@@ -180,9 +180,9 @@ describe('warsztat: bramka naszywki', () => {
     expect(node.querySelector('.achv-lock')).not.toBeNull();
     expect(node.textContent).toContain('Wymaga naszywki: Taniec ostrza');
     expect(
-      node.querySelector<HTMLButtonElement>('button')!.getAttribute(
-        'aria-disabled',
-      ),
+      node
+        .querySelector<HTMLButtonElement>('button')!
+        .getAttribute('aria-disabled'),
     ).toBe('true');
     meta.debugGrantAchievement('taniec-ostrza');
     panel.refresh();

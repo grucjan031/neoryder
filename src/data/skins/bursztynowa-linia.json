@@ -1,0 +1,18 @@
+{
+  "id": "bursztynowa-linia",
+  "name": "Bursztynowa linia",
+  "description": "Bursztynowe pasy biegną po grafitowej osłonie.",
+  "rarity": "rzadki",
+  "weapons": "*",
+  "colors": {
+    "armor": "#2a2f38",
+    "trim": "#59606d",
+    "grip": "#1d2128",
+    "accent": "#ffae1a"
+  },
+  "pattern": "stripes",
+  "patternColor": "#e8a33a",
+  "patternScale": 2,
+  "metalness": 0.6,
+  "roughness": 0.35
+}

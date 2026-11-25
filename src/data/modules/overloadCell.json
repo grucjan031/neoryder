@@ -1,0 +1,29 @@
+{
+  "id": "overloadCell",
+  "name": "Ogniwo przeciążeniowe",
+  "description": "Przeciążenie na 4 s, do 3 ładunków: cel otrzymuje +25% obrażeń za ładunek, przy 3 — ogłuszenie i wyładowanie. Ciepło na strzał +15%.",
+  "slot": "cell",
+  "visual": {
+    "shape": "overload",
+    "color": "amber"
+  },
+  "tags": ["#overload-cell"],
+  "weaponKinds": ["projectile", "spread", "pierce"],
+  "patches": [
+    {
+      "op": "append",
+      "path": "statuses",
+      "value": [
+        {
+          "id": "overload",
+          "durationS": 4
+        }
+      ]
+    },
+    {
+      "op": "mul",
+      "path": "heatPerShot",
+      "value": 1.15
+    }
+  ]
+}

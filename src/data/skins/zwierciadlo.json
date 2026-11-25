@@ -1,0 +1,16 @@
+{
+  "id": "zwierciadlo",
+  "name": "Zwierciadło",
+  "description": "Polerowany chrom odbija światło ciepłego emitera.",
+  "rarity": "elitarny",
+  "weapons": "*",
+  "colors": {
+    "armor": "#d0d8e2",
+    "trim": "#f4f6f8",
+    "grip": "#5d6774",
+    "accent": "#fff1d6"
+  },
+  "pattern": "none",
+  "metalness": 0.96,
+  "roughness": 0.08
+}

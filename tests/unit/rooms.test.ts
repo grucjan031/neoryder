@@ -36,7 +36,8 @@ describe('pokoje F3: format, loader i układ', () => {
       for (const id of ids ?? []) {
         const room = roomDefinitions.get(id);
         expect(room, id).toBeDefined();
-        expect(room!.type).toBe(type);
+        // Na razie zwykły run ma jedną mapę walki (run1), także w węzłach elitarnych.
+        expect(room!.type).toBe(type === 'elite' ? 'combat' : type);
       }
     const used = new Set<string>();
     for (const seed of ['a', 'b', 'c', 'd', 'e', 'f'])

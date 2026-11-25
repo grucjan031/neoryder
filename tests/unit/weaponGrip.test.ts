@@ -57,7 +57,7 @@ describe('chwyt broni (pole grip)', () => {
   });
 
   it('każda broń ma chwyt z istniejącymi pozami dłoni', () => {
-    expect(weaponDefinitions.size).toBe(7);
+    expect(weaponDefinitions.size).toBe(10);
     for (const definition of weaponDefinitions.values()) {
       const g = definition.grip;
       expect(g, definition.id).toBeDefined();

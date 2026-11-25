@@ -111,6 +111,7 @@ export async function difficultyArena(
       damage,
       hurtboxes,
       projectiles,
+      los: () => true,
       getTarget: () => ({ id: player, position, yaw }),
     },
     {

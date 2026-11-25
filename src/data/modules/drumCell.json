@@ -1,0 +1,24 @@
+{
+  "id": "drumCell",
+  "name": "Ogniwo bębnowe",
+  "description": "Pojemność cieplna ×1,6, szybkostrzelność −8%.",
+  "slot": "cell",
+  "visual": {
+    "shape": "drum",
+    "color": "green"
+  },
+  "tags": ["#drum-cell"],
+  "weaponKinds": ["projectile", "spread", "pierce", "lob"],
+  "patches": [
+    {
+      "op": "set",
+      "path": "heatCapacityScale",
+      "value": 1.6
+    },
+    {
+      "op": "mul",
+      "path": "fireRateHz",
+      "value": 0.92
+    }
+  ]
+}

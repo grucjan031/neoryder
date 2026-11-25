@@ -251,6 +251,21 @@ Pierwsze ukończenie daje 110 Danych i 1 Rdzeń. Szczegóły checkpointów i tra
 `levels.md`, sekcja M04. Opcjonalne premie scenariusza, zmiany wystroju kryjówki
 pozostają poza zakresem M04. Po dodaniu M05 przerywnik M06 opisuje kartę zdobytą przez Kuriera po rozbiciu eskorty Wirskiej.
 
+### Sabotażyści w eskorcie M04
+
+Pole `encounters[].saboteurs` oznacza liczbę pierwszych udanych spawnów
+w każdej tasowanej turze. Patrol wyznacza jednego sabotażystę, rogatka
+dwóch, a rozjazd wschodni trzech. Sabotażyści zajmują kolejno pozycje
+`spawnPoints` z pliku fali po stronie wagonu, a pozostała część oddziału
+losuje pozycje spotkania. Pierwsze rzeczywiste obrażenia od
+sabotażysty uruchamiają taktyczny komunikat Szrona `payload:attacked`.
+HUD pokazuje wytrzymałość wagonu. Po trafieniu jego obrys rozświetla się
+na czerwono-bursztynowo na 0,18 s przy włączonych błyskach.
+
+W odblokowanej M04 z `debug=1` komenda `payload ambush` ustawia wagon
+przy rogatce, uruchamia jej falę i ustawia gracza z boku toru.
+`payload saboteurs` wypisuje identyfikatory żywych sabotażystów i ich cele.
+
 ## M05 — Adiutant
 
 Kolejność kampanii: M04 → M05 → M06. M05 to pościg solo po dachach i estakadach
@@ -286,8 +301,11 @@ interludium. Cele: `krata` (`interact`), `kapsula` (`pickup`, `spawnAfter: krata
 (`defend`, 8 s) i `exit`. Odprawa ma trzy kwestie, debrief sześć; pozostałe kwestie
 odprawy i radia padają na wyzwalaczach poziomu (`checkpoint:`, `enterSection:`,
 `objective:`, `encounter:`), dosłownie ze scenariusza (`missionBriefing.test.ts`).
-Scenariuszowy alarm po wykryciu realizuje układ mapy i spotkanie `alarm-hala`, a ucieczka
-po serwerze nie ma limitu czasu. Cele opcjonalne scenariusza są poza zakresem.
+Patrole hali i magazynu meldują wykrycie grupie `przychodnia`. Przy 60% transferu serwer wymusza alarm tej samej grupy. Meldunek odblokowuje pościg i wieżyczkę. Ucieczka po serwerze nie ma limitu czasu.
+
+Cel dodatkowy „Ciche przejście do magazynu” rozstrzyga się przy pierwszym alarmie albo podniesieniu kapsuły. Zdobyty bonus jest bezpieczny podczas transferu. Każda zwycięska próba z zaliczonym bonusem daje 20 Danych. To premia za wykonanie opcjonalnego zadania w danej próbie. Pierwsze zwycięstwo daje dodatkowo zwykłe 90 Danych i Rdzeń. Identyfikator próby chroni oba składniki przed podwójną wypłatą.
+
+W M07 checkpoint obejmuje jednocześnie cele, ukończone starcia, `raisedAlarms` i `bonusStates`. Śmierć odtwarza ten zestaw i pozycje początkowe patroli. Brak nowych pól w starym zapisie oznacza pustą listę zgłoszeń i brak przyznanej premii.
 Sprawdzenie: po `campaign complete` M01–M04 i M06 otwórz
 `?scene=mission&mission=m07-nocny-dyzur&debug=1`.
 
@@ -311,3 +329,46 @@ Wariant uproszczony do istniejących systemów: dojście gracza zalicza grupę,
 cywile są neutralnymi NPC bez obrażeń; brak porażki za ich śmierć, walk między
 frakcjami, aerozolu, opcjonalnego czytnika i premii za brak strat oraz zmian
 w wystroju kryjówki. Opis mapy i szybkie sprawdzenie: `levels.md`, sekcja M08.
+
+## Podpowiedzi podczas misji
+
+Opcjonalna tablica `hints` w definicji misji używa wyzwalaczy radia lub
+`event:<nazwa>` z listy w `missionSchema.ts`. M01 korzysta ze startu próby,
+wejścia do śluzy, dwóch pierwszych spotkań, podejścia do skrzynki masztu 1,
+przegrzania broni gracza i gotowości wroga do wykończenia. Przy maszcie
+instrukcja ładunku ma pierwszeństwo przed Pchnięciem. Uzbrajanie wymaga
+pozostania w zasięgu przez 2,5 s, a promień wybuchu wynosi 4 m.
+
+`MissionHints` pokazuje po jednej instrukcji w kolejności zgłoszeń. Czas
+`delayS`, czas wyświetlania `timeoutS` (domyślnie 9 s) i odstęp 0,6 s między
+instrukcjami biegną w symulacji. Każdy wpis `doneOn` jest alternatywnym
+warunkiem zamknięcia. Licznik obejmuje działania od początku próby, także
+sprzed wyzwalacza. Wykonanie czynności może więc pominąć całą instrukcję.
+
+Panel używa etykiet sterowania samouczka i siedzi na środku, 20% wysokości
+ekranu od dołu. Cele zajmują górę, a radio prawą część HUD. W ustawieniach
+dostępności przełącznik „Podpowiedzi w misjach” jest domyślnie włączony.
+`neoryder.settings` przechowuje przełącznik i identyfikatory pokazanych
+instrukcji według misji. Konsola misji obsługuje `hints list`, `hints off`,
+`hints on` i `hints reset`. Reset czyści historię bieżącej misji, a przy
+włączonych instrukcjach ponownie zgłasza start.
+
+## Krzywa aktu I
+
+Średnia utrata HP w raporcie `npm run balance:missions` służy do porównywania
+presji między misjami. Każde starcie i każda z trzech ścieżek mają równą wagę.
+Liczba wrogów obejmuje wszystkie tury i posiłki na normalnym poziomie trudności.
+
+| Misja |                 Cel presji (%) | Presja przed → po (%) | Wrogowie przed → po |
+| ----- | -----------------------------: | --------------------: | ------------------: |
+| M01   |                           ≤ 95 |          229,6 → 76,1 |             51 → 50 |
+| M02   |                        100–115 |          63,7 → 112,7 |             22 → 30 |
+| M03   |                        115–130 |         110,6 → 115,6 |             31 → 34 |
+| M04   | ok. 125–140 (osobne strojenie) |         118,0 → 118,0 |             16 → 16 |
+| M05   |                        135–150 |         103,8 → 144,0 |             15 → 20 |
+| M06   |                        150–175 |         158,7 → 155,9 |             25 → 26 |
+
+W M01 osłona trzeciego masztu osiąga średnio 114,0% HP, czyli 1,50× średniej
+misji. Największy wzrost między kolejnymi starciami poza finałami wynosi 1,98×
+(M02, od kordonu do rampy). Wyjątkiem powyżej 2,2× jest końcowy pościg M03
+po ostatniej turze obrony terminala (3,0×).
