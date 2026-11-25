@@ -119,6 +119,7 @@ import { cloneRoomModel } from './roomModels';
 import { statusDefinitions, StatusSystem } from '../combat/status';
 import { Boss } from '../enemies/boss';
 import { EnemyManager } from '../enemies/manager';
+import type { StealthSpawn } from '../enemies/perception';
 import { createEnemyView } from '../enemies/views';
 import type { EnemyViewLike } from '../enemies/views';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
@@ -565,6 +566,20 @@ export class RoomScene implements Scene {
         stepClimbing: !!(
           this.layout.arena?.exclusive || this.layout.arena?.spawnRing
         ),
+        los: (from, to) => {
+          const x = to.x - from.x,
+            y = to.y - from.y,
+            z = to.z - from.z;
+          const length = Math.hypot(x, y, z);
+          return (
+            !length ||
+            this.castWall(
+              from,
+              { x: x / length, y: y / length, z: z / length },
+              length,
+            ) === null
+          );
+        },
         getTarget: () =>
           this.passiveEncounter
             ? null
@@ -1556,7 +1571,11 @@ export class RoomScene implements Scene {
     return this.squad?.size ? this.squad.targetFor(enemy, player) : player;
   }
 
-  protected spawnEnemy(kind: string, position: Vec3): EntityId | null {
+  protected spawnEnemy(
+    kind: string,
+    position: Vec3,
+    stealth?: StealthSpawn,
+  ): EntityId | null {
     if (
       this.aliveEnemies() >=
       Math.min(this.waves.maxAlive, this.layout.maxAlive ?? this.waves.maxAlive)
@@ -1564,7 +1583,7 @@ export class RoomScene implements Scene {
       return null;
     if (this.world.bodies.len() >= this.ctx.tuning.physics.maxDynamicBodies)
       return null;
-    return this.manager.spawn(kind, position).id;
+    return this.manager.spawn(kind, position, stealth).id;
   }
 
   private spawnBoss(enemyId: string): void {
@@ -2534,13 +2553,14 @@ export class RoomScene implements Scene {
     position: Vec3,
     modifiers: readonly import('../core/stats').StatModifier[] = [],
     healthFraction = 1,
+    stealth?: StealthSpawn,
   ): EntityId | null {
     this.manager.setSpawnModifiers([
       ...this.baseSpawnModifiers(),
       ...modifiers,
     ]);
     try {
-      const id = this.spawnEnemy(kind, position);
+      const id = this.spawnEnemy(kind, position, stealth);
       if (id !== null) {
         const health = this.damage.health(id)!;
         health.set(health.max * healthFraction);

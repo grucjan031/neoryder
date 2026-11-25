@@ -12,6 +12,7 @@ import { EnemyView } from './enemyView';
 import { TurretView } from './turretView';
 import type { Enemy } from './types';
 import type { EventBus } from '../core/events';
+import { perceptionView } from './perceptionView';
 
 export interface EnemyViewLike {
   readonly root: Object3D;
@@ -57,8 +58,21 @@ export function createEnemyView(
   view.root.add(marker);
   let ageS = 0;
   const disposeView = view.dispose.bind(view);
+  const perception =
+    enemy.perception && typeof document !== 'undefined'
+      ? perceptionView(enemy, view.root, marker.position.y + 0.35)
+      : undefined;
+  const render = view.render.bind(view);
   // Znacznik dopinamy do tej samej instancji: wywołujący (i testy) widzą DroneView/EnemyView.
   return Object.assign(view, {
+    ...(perception
+      ? {
+          render(alpha: number, frameDt?: number) {
+            render(alpha, frameDt);
+            perception.render();
+          },
+        }
+      : {}),
     setExecutable: (ready: boolean, frameDt: number, pulseHz: number) => {
       marker.visible = ready && enemy.current.state !== 'dead';
       if (!marker.visible) {
@@ -71,6 +85,7 @@ export function createEnemyView(
       marker.scale.setScalar(1 + pulse * 0.15);
     },
     dispose: () => {
+      perception?.dispose();
       marker.removeFromParent();
       geometry.dispose();
       material.dispose();

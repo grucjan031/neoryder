@@ -60,6 +60,7 @@ export interface EnemyCarry {
   defendRangeM: number;
 }
 export interface Enemy {
+  perception?: import('./perception').Perception;
   /** Bieżący cel taktyczny (debug i testy symulacji). */
   tacticalGoal?: Vec3;
   moveGoal?: Vec3;
@@ -77,6 +78,8 @@ export interface Enemy {
   dispose(): void;
 }
 export interface EnemyDependencies {
+  los?(from: Vec3, to: Vec3): boolean;
+  vulnerableToBlade?(source: EntityId | null): boolean;
   difficulty?: DifficultyProfile;
   /** ADR 0011: autostep po schodach tylko na dużych arenach z nawigacją powierzchni; w pokojach i testach wyłączony. */
   stepClimbing?: boolean;
@@ -87,6 +90,8 @@ export interface EnemyDependencies {
   damage: DamageSystem;
   hurtboxes: Hurtboxes;
   getTarget(): {
+    crouched?: boolean;
+    velocity?: Vec3;
     id: EntityId;
     position: Vec3;
     yaw?: number;

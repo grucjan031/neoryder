@@ -527,6 +527,7 @@ export class MissionScene implements Scene {
     );
     const enemies = new Set<EntityId>();
     let marked = 0;
+    let patrolIndex = 0;
     let turn = 0;
     const director = new WaveDirector(
       definition,
@@ -541,10 +542,28 @@ export class MissionScene implements Scene {
           const spawn = assault
             ? assaultPoints[marked % assaultPoints.length]!
             : position;
-          const id = this.room!.spawnEncounterEnemy(enemy, {
-            ...spawn,
-            y: encounter.spawnHeightM ?? position.y,
-          });
+          const id = this.room!.spawnEncounterEnemy(
+            enemy,
+            {
+              ...spawn,
+              y: encounter.spawnHeightM ?? position.y,
+            },
+            undefined,
+            undefined,
+            encounter.stealth
+              ? {
+                  groupId: encounter.stealth.alarmGroup ?? encounter.id,
+                  visionAngleDeg: encounter.stealth.visionAngleDeg,
+                  visionRangeM: encounter.stealth.visionRangeM,
+                  sentry: enemy === 'drone',
+                  patrol:
+                    encounter.stealth.patrols?.[
+                      patrolIndex % (encounter.stealth.patrols.length || 1)
+                    ],
+                }
+              : undefined,
+          );
+          if (id !== null && encounter.stealth) patrolIndex++;
           if (id !== null) enemies.add(id);
           if (id !== null && assault) {
             assault.markSaboteur(id);

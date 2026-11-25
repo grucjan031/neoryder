@@ -10,6 +10,8 @@ import type { StatModifier } from '../core/stats';
 import { createEnemy } from './registry';
 import type { Enemy, EnemyDependencies } from './types';
 import { EnemyBatch } from '../world/enemyBatch';
+import { Perception, observerPose, type StealthSpawn } from './perception';
+import { StealthEncounter } from './stealthEncounter';
 import type { ArenaNavigation } from '../world/arenaNavigation';
 import {
   difficulties,
@@ -39,6 +41,7 @@ export interface EnemyManagerOptions {
 export class EnemyManager {
   readonly difficulty: DifficultyId;
   private enemies: Enemy[] = [];
+  private stealth?: StealthEncounter;
   private readonly batch = new EnemyBatch();
   private nearby?: Enemy[];
   /** Numer spawnu w runie — źródło losowości AI niezależne od rosnących ID encji. */
@@ -143,7 +146,10 @@ export class EnemyManager {
   setSpawnModifiers(mods: readonly StatModifier[]): void {
     this.spawnModifiers = [...mods];
   }
-  spawn(id: string, position: Vec3): Enemy {
+  forceAlarm(groupId: string): void {
+    this.stealth?.force(groupId);
+  }
+  spawn(id: string, position: Vec3, stealth?: StealthSpawn): Enemy {
     const rng = this.ctx.rng.fork(`spawn:${this.sequence++}`);
     // Z `getTargetFor` każdy wróg pyta o własny cel; dyrektor nadal ustawia szyk wokół `getTarget`.
     const pick = this.deps.getTargetFor;
@@ -159,13 +165,49 @@ export class EnemyManager {
             ),
         }
       : this.deps;
-    const enemy = createEnemy({ ...this.ctx, rng }, deps, id, position);
+    let localDeps = deps;
+    let perception: Perception | undefined;
+    if (stealth) {
+      if (!deps.los) throw new Error('Skradanie wymaga funkcji los.');
+      const guard = new Perception(
+        this.ctx.tuning.enemies.perception,
+        stealth,
+        deps.los,
+      );
+      perception = guard;
+      localDeps = {
+        ...deps,
+        vulnerableToBlade: (source) => {
+          const player = this.deps.getTarget();
+          return (
+            !!self &&
+            !!player &&
+            player.id === source &&
+            guard.vulnerable(observerPose(self), player.position)
+          );
+        },
+        getTarget: () =>
+          guard.state === 'alerted' &&
+          (!stealth.sentry || this.stealth?.reported(stealth.groupId))
+            ? deps.getTarget()
+            : null,
+      };
+    }
+    const enemy = createEnemy({ ...this.ctx, rng }, localDeps, id, position);
+    if (perception) {
+      enemy.perception = perception;
+      this.stealth ??= new StealthEncounter(this.ctx, this.deps, (id) =>
+        this.position(id),
+      );
+      this.stealth.add(enemy, perception);
+    }
     self = enemy;
     this.nearby = undefined;
     this.enemies.push(enemy);
     return enemy;
   }
   step(dt: number, navigation?: ArenaNavigation): void {
+    this.stealth?.step(dt);
     const count = this.enemies.length;
     const settings = this.ctx.tuning.enemies;
     let radius = settings.separationRadius;
@@ -223,6 +265,8 @@ export class EnemyManager {
     for (const enemy of this.enemies) enemy.syncControlled?.();
   }
   despawnAll(): void {
+    this.stealth?.dispose();
+    this.stealth = undefined;
     for (const enemy of this.enemies) enemy.dispose();
     this.enemies = [];
     this.sequence = 0;

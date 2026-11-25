@@ -8,6 +8,7 @@ import {
 import type { MissionDefinition } from './missionSchema';
 import { wavesSchema, type WavesDefinition } from './waves';
 import { allyDefinitions } from '../allies/allySchema';
+import { insideLevelZone } from './levelRuntime';
 
 const id = z.string().min(1);
 export const levelZoneSchema = z.discriminatedUnion('kind', [
@@ -79,6 +80,22 @@ export const levelSchema = z
         id,
         zone: levelZoneSchema,
         wave: id,
+        stealth: z
+          .object({
+            alarmGroup: id.optional(),
+            visionRangeM: z.number().finite().positive().optional(),
+            visionAngleDeg: z.number().positive().max(360).optional(),
+            patrols: z
+              .array(
+                z.object({
+                  points: z.array(vec3Schema).nonempty(),
+                  mode: z.enum(['loop', 'pingpong']),
+                  waitS: z.number().finite().nonnegative().optional(),
+                }),
+              )
+              .optional(),
+          })
+          .optional(),
         saboteurs: z.number().int().nonnegative().optional(),
         spawnPoints: wavesSchema.shape.spawnPoints,
         spawnHeightM: z.number().finite().optional(),
@@ -185,6 +202,15 @@ export const levelSchema = z
           message: `Brak pozycji celu: ${objective}`,
         });
     for (const encounter of level.encounters) {
+      for (const patrol of encounter.stealth?.patrols ?? [])
+        if (
+          patrol.points.some((point) => !insideLevelZone(point, encounter.zone))
+        )
+          ctx.addIssue({
+            code: 'custom',
+            path: ['encounters', encounter.id, 'stealth', 'patrols'],
+            message: 'Punkt patrolu poza strefą spotkania.',
+          });
       if (
         encounter.reinforcementFor &&
         // Klucz posiłków: id celu sabotage albo `<id celu defend>:<indeks fali>`.
@@ -358,6 +384,10 @@ export function loadLevel(
       ...Object.values(level.objectivePositions),
       ...level.checkpoints.map((point) => point.position),
       ...level.encounters.flatMap((encounter) => encounter.spawnPoints),
+      ...level.encounters.flatMap(
+        (encounter) =>
+          encounter.stealth?.patrols?.flatMap((patrol) => patrol.points) ?? [],
+      ),
       ...(level.allies ?? []).map((ally) => ally.spawn),
       ...(level.objectiveNpcs ?? []).map((npc) => npc.spawn),
       ...(level.payload?.route ?? []),

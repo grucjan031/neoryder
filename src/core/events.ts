@@ -29,6 +29,7 @@ export interface GameEvents {
   hub_power_dip: { durationS: number };
   enemy_executable: { id: EntityId; ready: boolean };
   execute_performed: { attacker: EntityId; target: EntityId; point: Vec3 };
+  alarm_raised: { groupId: string };
   // F0
   run_started: { seed: string };
   scene_loaded: { sceneId: string };

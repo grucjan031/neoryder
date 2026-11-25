@@ -73,6 +73,8 @@ export const scenes: Record<string, SceneLoader> = {
     import('./debrisTest').then((m) => () => new m.DebrisTest()),
   'grab-test': () => import('./grabTest').then((m) => () => new m.GrabTest()),
   'room-test': () => import('./roomTest').then((m) => () => m.createRoomTest()),
+  'stealth-test': () =>
+    import('./stealthTest').then((m) => () => new m.StealthTest()),
   'puzzle-test': () =>
     import('./roomTest').then((m) => () => m.createPuzzleTest()),
   'escort-test': () =>

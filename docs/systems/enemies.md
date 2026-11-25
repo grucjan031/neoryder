@@ -828,3 +828,7 @@ hurtboxa na połowie wysokości pudła. Pocisk lub cios musi fizycznie trafić.
 Gracz w odległości poniżej 5 m od sabotażysty lub gracz zadający mu obrażenia
 przejmuje uwagę na 4 s czasu symulacji. Kolejny bodziec odnawia ten czas.
 Poza zasięgiem wagonu i po zakończeniu eskorty wraca zwykły wybór celu drużyny.
+
+## Wykrywanie
+
+Spotkanie z polem `stealth` tworzy strażników z osobną warstwą czujności. `EnemyManager` aktualizuje ją przed krokiem archetypu. Patrol używa istniejącego celu marszu, a cel walki staje się dostępny przy namierzeniu. W zwykłych starciach manager przekazuje archetypom dotychczasowe zależności. Model, strojenie i instrukcja sceny znajdują się w [opisie skradania](stealth.md).

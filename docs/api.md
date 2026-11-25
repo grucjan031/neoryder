@@ -2591,6 +2591,12 @@ snapshots(): AllySnapshot[];                forEachPose(cb): void;    registerCo
 musi wskazywać istniejący cel albo spotkanie. Zależność `encounter` zgłasza host misji przez
 `RoomScene.allyDependencyDone('encounter', id)`.
 
+## Wykrywanie w spotkaniach
+
+Opcjonalne `encounters[].stealth` przyjmuje `alarmGroup` (domyślnie id spotkania), `visionRangeM`, pełny kąt `visionAngleDeg` oraz listę `patrols`. Trasy przydzielane są kolejno przy udanym spawnie. Patrol ma `points: Vec3[]`, `mode: 'loop' | 'pingpong'` i opcjonalny postój `waitS`.
+
+`alarm_raised { groupId: string }` oznacza pierwsze zakończone zgłoszenie grupy. Subskrybenci widzą już zaalarmowanych strażników. Zabicie zgłaszającego przed końcem opóźnienia anuluje jego zgłoszenie. Cicha likwidacja emituje standardowe `execute_performed`.
+
 ## Skiny broni
 
 `skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.

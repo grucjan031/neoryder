@@ -228,6 +228,13 @@ export class Assaulter implements Enemy {
 
   private guard(info: DamageInfo): number {
     if (info.tags.includes('#execute')) return 1;
+    // Zaskoczony strażnik nie paruje ciosu, którego nie widzi.
+    if (
+      this.deps.vulnerableToBlade &&
+      info.tags.includes('#melee') &&
+      this.deps.vulnerableToBlade(info.source)
+    )
+      return 1;
     const { shield, parry } = this.definition;
     const heavy = info.tags.includes(PIERCE_BLOCK_TAG);
     this.updateShield();
