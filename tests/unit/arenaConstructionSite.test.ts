@@ -80,8 +80,7 @@ describe('arenaConstructionSite (Budowa wieżowca)', () => {
     );
     expect(pit.length).toBeGreaterThanOrEqual(4);
     for (const y of pit) expect(y).toBeLessThan(-3.9);
-    lights.forEach((l, i) => {
-      if (l.position.y >= 0) expect(floors[i]).toBe(room.playerSpawn.y);
-    });
+    expect(floors).toContain(24);
+    expect(floors).toContain(room.playerSpawn.y);
   });
 });

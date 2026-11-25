@@ -95,6 +95,33 @@ it('spód modelu, elewacja, szyld i oprawa lampy potrzebują podparcia', () => {
   ).toEqual([]);
 });
 
+it('oprawa Kurogane wymaga podwieszenia, a terminal mocowania bocznego', () => {
+  const lamp = { model: 'wh_ceiling_lamp', position: pos(0, 3.55, 0) };
+  const terminal = { model: 'wh_wall_terminal', position: pos(0, 2, 0) };
+  const roof = block(0, 4.2, 0, 5, 0.4, 5);
+  const wall = block(0, 2, -0.55, 5, 4, 1);
+  expect(
+    matches('floatingObject', { blocks: [floor, roof], decor: [lamp] }),
+  ).toEqual([]);
+  expect(
+    matches('floatingObject', { blocks: [floor, wall], decor: [terminal] }),
+  ).toEqual([]);
+  expect(
+    matches('floatingObject', { blocks: [floor, wall], decor: [lamp] }),
+  ).toHaveLength(1);
+  expect(
+    matches('floatingObject', { blocks: [floor, roof], decor: [terminal] }),
+  ).toHaveLength(1);
+  expect(
+    matches('floatingObject', {
+      decor: [
+        { ...lamp, position: pos() },
+        { ...terminal, position: pos(3, 0, 0) },
+      ],
+    }).map((finding) => finding.path),
+  ).toEqual(['decor[0]', 'decor[1]']);
+});
+
 it.each(['city_lantern_string', 'city_cable_span'])(
   '%s sprawdza oba końce po obrocie i skali',
   (model) => {

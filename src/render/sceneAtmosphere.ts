@@ -24,6 +24,7 @@ export class SceneAtmosphere {
     private readonly envelope?: WorldEnvelope,
     private readonly camera?: PerspectiveCamera,
     private readonly water?: { shoreZ: number; y: number; color: string },
+    deferSync = false,
   ) {
     this.previousClip = camera && { near: camera.near, far: camera.far };
     this.theme = resolveTheme(themeId);
@@ -32,7 +33,7 @@ export class SceneAtmosphere {
     this.restore = applyTheme(this.theme);
     scene.background = new Color(tuning.render.world);
     scene.userData.reflectionFloorY = floorY;
-    this.sync(0);
+    if (!deferSync) this.sync(0);
   }
   horizon() {
     return (

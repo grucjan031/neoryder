@@ -223,3 +223,20 @@ Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
 `node tools/levels/mapAudit.mjs` podaje liczbę znalezisk dla każdej mapy. Po podaniu id wypisuje ścieżki JSON i współrzędne. Opcja `--json` zwraca pełne wyniki, a `--report` odświeża tabele i listy w raporcie. Test jednostkowy sprawdza osobny limit błędów dla każdej mapy w `tests/unit/mapAudit.baseline.json`. Po usunięciu błędów należy obniżyć odpowiedni limit.
 
 `node tools/screens/mapAudit.mjs bossRoom --tag before` uruchamia serwer i zapisuje dziesięć ujęć PNG. Użycie `--tag after` zapisuje drugą serię w sąsiednim katalogu. Scena audytu korzysta z renderu gry, zatrzymanej symulacji i osobnego zapisu w pamięci. Metodę pomiaru modeli, progi i ręcznie sprawdzone przykłady opisuje [raport audytu](../audits/mapAudit-report.md).
+
+## Wnętrza przemysłowe
+
+Każdy pokój z `arena` buduje `ArenaNavigation`. Gdy choć jeden blok ma `walkable: true`, siatka powstaje wyłącznie z oznaczonych powierzchni. Oznacz także posadzkę i stopnie albo rampy łączące piętra. W takim układzie `arena.navigationMaxRiseM` określa dopuszczalną różnicę wysokości między sąsiednimi komórkami, a `arena.navigationHeadroomM` wymagany prześwit. Zwykli przeciwnicy naziemni korzystają z trasy do celu podczas pościgu. Przejęcie, Szturm i Kradzież rdzenia używają własnych celów i punktów odrodzenia.
+
+Zwykła fala w pokoju z `arena` wybiera punkt z pierwszej niepustej grupy w tym samym kroku symulacji:
+
+1. Punkty osłonięte z trasą od `minSpawnDistance` do `tuning.arena.waveSpawnMaxDistanceM` (domyślnie 22 m).
+2. Punkty osłonięte z dłuższą trasą.
+3. Pozostałe osiągalne punkty z trasą co najmniej `minSpawnDistance`, także w kadrze.
+4. Punkty odległe w poziomie o co najmniej `minSpawnDistance`. Jeśli wszystkie są bliżej, reżyser losuje z całej listy.
+
+W pierwszych trzech grupach reżyser losuje dwa punkty i wybiera ten z krótszą trasą po siatce, uwzględniając zmianę wysokości. Za osłonięty uznaje punkt poza kadrem lub za przesłoną między okiem gracza a wysokością `waveSpawnSightHeightM`. Posiłki skryptowe misji zachowują reguły scenariusza.
+
+Walidator porównuje wierzch posadzki z poziomem startu z tolerancją 0,000001 m. Komórkę 1 × 1 m może podpierać kilka przylegających płyt. Dla prostokątnego bloku obróconego o ćwierć obrotu wokół Y walidator zamienia szerokość i głębokość obrysu.
+
+Pokój testowy `?scene=room-test&room=indoorTest&debug=1` ma pomost ze stopniami, światło ze stożkiem, profil wnętrza, trzy oznaczenia BHP i profilowaną ścianę. Obejdź przegrodę i wejdź na podest podczas fali, żeby sprawdzić trasę pościgu.

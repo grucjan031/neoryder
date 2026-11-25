@@ -63,6 +63,7 @@ export const roomBlockSchema = z.object({
   /** false = skrzynia `crate` / `crate_small` zostaje statyczną bryłą (domyślnie zniszczalna). */
   destructible: z.boolean().optional(),
   visible: z.boolean().optional(),
+  ceiling: z.boolean().optional(),
 });
 
 export const pointIdSchema = z.enum(['A', 'B', 'C', 'D', 'E']);
@@ -255,12 +256,20 @@ export type RoomDefinition = z.infer<typeof roomSchema>;
 
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 
+export const FLOOR_EPSILON_M = 1e-6;
+
 function footprint(block: z.infer<typeof roomBlockSchema>): Rect {
+  // Układ walidacji używa prostokątów. Ćwierćobrót zachowuje ten kształt dokładnie.
+  const yaw = block.rotation?.y ?? 0;
+  const quarterTurn =
+    !block.rotation?.x && !block.rotation?.z && Math.abs(Math.cos(yaw)) < 1e-5;
+  const width = quarterTurn ? block.size.z : block.size.x;
+  const depth = quarterTurn ? block.size.x : block.size.z;
   return {
-    minX: block.position.x - block.size.x / 2,
-    maxX: block.position.x + block.size.x / 2,
-    minZ: block.position.z - block.size.z / 2,
-    maxZ: block.position.z + block.size.z / 2,
+    minX: block.position.x - width / 2,
+    maxX: block.position.x + width / 2,
+    minZ: block.position.z - depth / 2,
+    maxZ: block.position.z + depth / 2,
   };
 }
 
@@ -282,12 +291,13 @@ function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
   const onFloor = (point: { x: number; z: number }) =>
     room.blocks.some(
       (block) =>
-        block.position.y + block.size.y / 2 === groundY &&
-        contains(footprint(block), point.x, point.z),
+        Math.abs(block.position.y + block.size.y / 2 - groundY) <=
+          FLOOR_EPSILON_M && contains(footprint(block), point.x, point.z),
     );
   if (
     !onFloor(puzzle.object.position) ||
-    puzzle.object.position.y - puzzle.object.size.y / 2 < groundY
+    puzzle.object.position.y - puzzle.object.size.y / 2 <
+      groundY - FLOOR_EPSILON_M
   )
     issue('Obiekt zagadki musi zaczynać nad podłogą.');
   const { position: at, size } = puzzle.object;
@@ -300,7 +310,7 @@ function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
   const overlapsObstacle = room.blocks.some((block) => {
     const rect = footprint(block);
     return (
-      block.position.y + block.size.y / 2 > groundY &&
+      block.position.y + block.size.y / 2 > groundY + FLOOR_EPSILON_M &&
       block.position.y - block.size.y / 2 < at.y + size.y / 2 &&
       rect.minX < objectRect.maxX &&
       rect.maxX > objectRect.minX &&
@@ -326,7 +336,10 @@ function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
   if (workArea && !insideLevelZone(at, workArea))
     issue('Strefa robocza musi obejmować środek obiektu na starcie.');
   if (puzzle.kind === 'plate') {
-    if (!onFloor(puzzle.position) || puzzle.position.y !== groundY)
+    if (
+      !onFloor(puzzle.position) ||
+      Math.abs(puzzle.position.y - groundY) > FLOOR_EPSILON_M
+    )
       issue('Płyta naciskowa musi leżeć na podłodze.');
     const goal = { ...puzzle.position, y: groundY + size.y / 2 };
     if (workArea && !insideLevelZone(goal, workArea))
@@ -354,6 +367,35 @@ function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
   }
 }
 
+/** Pełne pokrycie komórki, także gdy szew dwóch płyt przecina jej wnętrze. */
+function supportedCell(floors: Rect[], x: number, z: number): boolean {
+  if (floors.some((r) => contains(r, x, z) && contains(r, x + 1, z + 1)))
+    return true;
+  const tiles = floors.filter(
+    (r) => r.minX < x + 1 && r.maxX > x && r.minZ < z + 1 && r.maxZ > z,
+  );
+  if (!tiles.length) return false;
+  const cuts = [
+    x,
+    x + 1,
+    ...tiles.flatMap((r) => [Math.max(x, r.minX), Math.min(x + 1, r.maxX)]),
+  ].sort((a, b) => a - b);
+  tiles.sort((a, b) => a.minZ - b.minZ);
+  for (let i = 1; i < cuts.length; i++) {
+    const left = cuts[i - 1]!,
+      right = cuts[i]!;
+    if (right - left <= FLOOR_EPSILON_M) continue;
+    let end = z;
+    for (const r of tiles) {
+      if (r.minX > left || r.maxX < right) continue;
+      if (r.minZ > end + FLOOR_EPSILON_M) break;
+      end = Math.max(end, r.maxZ);
+    }
+    if (end < z + 1 - FLOOR_EPSILON_M) return false;
+  }
+  return true;
+}
+
 export function validateLayout(
   room: {
     playerSpawn: z.infer<typeof vec3Schema>;
@@ -365,13 +407,17 @@ export function validateLayout(
 ): void {
   const groundY = room.playerSpawn.y;
   const floors = room.blocks
-    .filter((block) => block.position.y + block.size.y / 2 === groundY)
+    .filter(
+      (block) =>
+        Math.abs(block.position.y + block.size.y / 2 - groundY) <=
+        FLOOR_EPSILON_M,
+    )
     .map(footprint);
   const obstacles = room.blocks
     .filter(
       (block) =>
-        block.position.y - block.size.y / 2 <= groundY &&
-        block.position.y + block.size.y / 2 > groundY,
+        block.position.y - block.size.y / 2 <= groundY + FLOOR_EPSILON_M &&
+        block.position.y + block.size.y / 2 > groundY + FLOOR_EPSILON_M,
     )
     .map(footprint);
   if (floors.length === 0) {
@@ -466,9 +512,7 @@ export function validateLayout(
 
   // Komórki 1 m; przecięcie wnętrza komórki z blokiem zamyka ją także dla cienkich ścian.
   const walkable = (x: number, z: number): boolean =>
-    floors.some(
-      (floor) => contains(floor, x, z) && contains(floor, x + 1, z + 1),
-    ) &&
+    supportedCell(floors, x, z) &&
     !obstacles.some(
       (block) =>
         block.minX < x + 1 &&

@@ -698,3 +698,28 @@ bez niego CityDressing zachowuje dotychczasowe zachowanie. Ten sam moduł
 obsługuje zmianę profilu, mgłę, mokrość i tło audio, przywracając ustawienia przy
 wyjściu. `city-fx-test` pozostaje bez zmian; `weatherTest` pokazuje profile na
 pełnej arenie portu. Szczegóły: [weather.md](weather.md), [arenas.md](arenas.md).
+
+## Oprawa wnętrza przemysłowego
+
+Wybierz `"weather": "indoorIndustrial"`. Profil wyłącza opad, wyładowania i panoramę, ustawia chłodną mgłę, pył i szum generatora. Wartości `lighting.hemiIntensity` (0,55) i `lighting.keyIntensity` (0,45) zostawiają miejsce na lokalne źródła. Zmiana na profil zewnętrzny przywraca światło i panoramę motywu.
+
+Bloki przyjmują materiały `tiles_wall` i `tread_plate` z wariantami komiksowymi, a także `machine`, `paint`, `lacquer`, `plastic`, `rubber`, `wood`, `fabric`, `hivis`, `neon_blue`, `neon_violet` i `neon_white`. Model `wall_segment` rozciąga się do wymiarów bloku. Dla płyt stropu ustaw `ceiling: true`. Scena `?scene=map-audit&map=indoorTest&debug=1` ukrywa je w ujęciach `top`, `high-west` i `high-east`. Komenda `audit view spawn` pokazuje sufit ponownie.
+
+Przykładowe fragmenty danych pokoju:
+
+```json
+{
+  "weather": "indoorIndustrial",
+  "blocks": [
+    {"position":{"x":0,"y":5.2,"z":0},"size":{"x":20,"y":0.4,"z":20},"material":"metal","ceiling":true}
+  ],
+  "lights": [
+    {"position":{"x":-7,"y":4.9,"z":-5},"color":"#ffcf91","intensity":20,"range":10,"cone":true}
+  ],
+  "decals": [
+    {"texture":"floor_sector_k09","position":{"x":0,"y":0,"z":-3},"size":{"w":3,"h":1},"surface":"floor","yaw":0,"tint":"#ffdbab"}
+  ]
+}
+```
+
+Światło z `cone: true` tworzy stożek w kolorze źródła. Stożek i plama światła sięgają najwyższego płaskiego bloku pod źródłem. Jawne `lights[].floorY` umożliwia ustawienie wysokości ręcznie. Decale `floor_lane_line`, `floor_pallet_bay` i `floor_sector_k09` mają neutralną farbę i kanał alfa. `tint` mnoży kolor tekstury, domyślnie przez biel. Renderer scala rozłączne naklejki na tej samej płaszczyźnie o zgodnej teksturze, kolorze i kryciu.

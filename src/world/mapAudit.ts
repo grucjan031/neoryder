@@ -31,7 +31,9 @@ const WALL_FIXTURES = new Set([
   'city_ad_screen',
   'city_sign_box',
   'city_neon_sign_frame',
+  'wh_wall_terminal',
 ]);
+const CEILING_FIXTURES = new Set(['wh_ceiling_lamp']);
 const EDGE = 0.35;
 const LARGE_HEIGHT = 0.6;
 const LARGE_BASE = 0.5;
@@ -165,6 +167,13 @@ function decorBox(def: Decor, model: Model): Box {
     center,
     vec3(size[0]!, size[1]!, size[2]!),
     vec3(0, yaw, 0),
+  );
+}
+
+function ceilingContact(fixture: Box, support: Box): boolean {
+  return (
+    Math.abs(fixture.max.y - support.min.y) <= CONTACT &&
+    intersects(fixture, support, CONTACT)
   );
 }
 
@@ -333,7 +342,11 @@ export function auditMap(
       const margin = WALL_FIXTURES.has(item.def.model) ? WALL_MOUNT : CONTACT;
       if (
         supports.some(
-          (s) => anchored.has(s.box) && intersects(item.box, s.box, margin),
+          (s) =>
+            anchored.has(s.box) &&
+            (CEILING_FIXTURES.has(item.def.model)
+              ? ceilingContact(item.box, s.box)
+              : intersects(item.box, s.box, margin)),
         )
       )
         anchored.add(item.box);
@@ -451,6 +464,15 @@ export function auditMap(
           path,
           `${def.model}: bez zaczepienia ${missing.length}/2 końców.`,
           missing[0]!,
+        );
+    } else if (CEILING_FIXTURES.has(def.model)) {
+      if (!neighbors.some((n) => ceilingContact(box, n.box)))
+        add(
+          'floatingObject',
+          'warn',
+          path,
+          `${def.model}: brak styku uchwytów z konstrukcją nad oprawą.`,
+          p,
         );
     } else if (
       wallFixture

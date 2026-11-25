@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Rng } from '../core/rng';
+import { pickWaveSpawnByDistance } from './arenaSpawns';
 import {
   combatDifficulty,
   difficulties,
@@ -57,6 +58,11 @@ export interface WaveDirectorDeps {
   /** Tworzy wroga danego archetypu w punkcie; zwraca id encji albo null (np. limit ciał). */
   spawn(enemy: string, position: Vec3): EntityId | null;
   playerPosition(): Vec3;
+  selectSpawn?(
+    points: WavesDefinition['spawnPoints'],
+    minDistance: number,
+    rng: Rng,
+  ): Vec3 | null;
 }
 
 /**
@@ -163,6 +169,10 @@ export class WaveDirector {
     ) {
       const enemy = this.queue[0] as string;
       const point = this.pickSpawnPoint();
+      if (!point) {
+        this.timerS = this.spawnIntervalS;
+        break;
+      }
       const id = this.deps.spawn(enemy, point);
       if (id === null) break; // limit świata — spróbuj w następnym kroku
       this.spawnLog.push({ wave: this.wave, enemy, x: point.x, z: point.z });
@@ -233,14 +243,20 @@ export class WaveDirector {
   }
 
   /** Losowy punkt spawnu, z preferencją punktów dalej niż minSpawnDistance od gracza. */
-  private pickSpawnPoint(): Vec3 {
-    const player = this.deps.playerPosition();
-    const far = this.def.spawnPoints.filter(
-      (p) =>
-        Math.hypot(p.x - player.x, p.z - player.z) >= this.def.minSpawnDistance,
+  private pickSpawnPoint(): Vec3 | null {
+    const { spawnPoints, minSpawnDistance } = this.def;
+    const selected = this.deps.selectSpawn?.(
+      spawnPoints,
+      minSpawnDistance,
+      this.rng,
     );
-    const pool = far.length > 0 ? far : this.def.spawnPoints;
-    const p = this.rng.pick(pool);
-    return { x: p.x, y: 0, z: p.z };
+    if (selected) return selected;
+    const point = pickWaveSpawnByDistance(
+      spawnPoints,
+      this.deps.playerPosition(),
+      minSpawnDistance,
+      this.rng,
+    );
+    return point ? { x: point.x, y: 0, z: point.z } : null;
   }
 }

@@ -200,6 +200,34 @@ Zbiorczy podgląd roboczy: `%TEMP%/neoryder-city-contact-sheet.png` (nie jest
 częścią zasobów gry). Galeria w grze: `?scene=city-props-test` (opis w
 `docs/systems/city.md`).
 
+## Magazyn Kurogane Arms (run1)
+
+Zestaw własny projektu. Generator zapisuje GLB w `public/assets/models/city/` i trzy rzuty każdego modelu w `artifacts/models/wh/`. Wymiary pochodzą z pomiaru gotowych GLB w osiach glTF. Wszystkie modele mają spód na Y = 0. Terminal przylega tyłem do ściany, a pozostałe modele są wycentrowane w osiach X i Z.
+
+```bash
+"D:/Blender/blender.exe" -b --factory-startup --python-exit-code 1 --python tools/blender/sets/warehouse_kurogane.py
+node tools/levels/mapModelBounds.mjs
+```
+
+| Model | AABB X × Y × Z [m] | Trójkąty | Montaż | Podglądy |
+| --- | --- | ---: | --- | --- |
+| `wh_pallet_rack` | 4 × 6 × 1,2 | 2464 | blok, dwa przęsła | [przód](../artifacts/models/wh/wh_pallet_rack-front.png) · [bok](../artifacts/models/wh/wh_pallet_rack-side.png) · [góra](../artifacts/models/wh/wh_pallet_rack-top.png) |
+| `wh_forklift` | 2,8 × 2,1 × 1,2 | 1475 | blok, wózek czołowy z widłami w +X i przeciwwagą w −X | [przód](../artifacts/models/wh/wh_forklift-front.png) · [bok](../artifacts/models/wh/wh_forklift-side.png) · [góra](../artifacts/models/wh/wh_forklift-top.png) |
+| `wh_overhead_crane` | 16 × 2,4 × 3,2 | 2022 | dekoracja oparta na szynach | [przód](../artifacts/models/wh/wh_overhead_crane-front.png) · [bok](../artifacts/models/wh/wh_overhead_crane-side.png) · [góra](../artifacts/models/wh/wh_overhead_crane-top.png) |
+| `wh_server_rack` | 1,2 × 2,4 × 1 | 1134 | blok, serwis od +Z | [przód](../artifacts/models/wh/wh_server_rack-front.png) · [bok](../artifacts/models/wh/wh_server_rack-side.png) · [góra](../artifacts/models/wh/wh_server_rack-top.png) |
+| `wh_workbench_weapons` | 2,4 × 1,5 × 0,9 | 1124 | blok, blat na 0,945 m | [przód](../artifacts/models/wh/wh_workbench_weapons-front.png) · [bok](../artifacts/models/wh/wh_workbench_weapons-side.png) · [góra](../artifacts/models/wh/wh_workbench_weapons-top.png) |
+| `wh_weapon_case_stack` | 1,6 × 1,1 × 1,2 | 1184 | blok osłony na palecie | [przód](../artifacts/models/wh/wh_weapon_case_stack-front.png) · [bok](../artifacts/models/wh/wh_weapon_case_stack-side.png) · [góra](../artifacts/models/wh/wh_weapon_case_stack-top.png) |
+| `wh_conveyor_scanner` | 3,6 × 2,2 × 1,4 | 1194 | blok, oś transportu X | [przód](../artifacts/models/wh/wh_conveyor_scanner-front.png) · [bok](../artifacts/models/wh/wh_conveyor_scanner-side.png) · [góra](../artifacts/models/wh/wh_conveyor_scanner-top.png) |
+| `wh_ceiling_lamp` | 1,8 × 0,45 × 0,6 | 724 | dekoracja, uchwyty pod stropem | [przód](../artifacts/models/wh/wh_ceiling_lamp-front.png) · [bok](../artifacts/models/wh/wh_ceiling_lamp-side.png) · [góra](../artifacts/models/wh/wh_ceiling_lamp-top.png) |
+| `wh_hall_column` | 1,4 × 10 × 0,83 | 628 | słup, konsola wysunięta w +X | [przód](../artifacts/models/wh/wh_hall_column-front.png) · [bok](../artifacts/models/wh/wh_hall_column-side.png) · [góra](../artifacts/models/wh/wh_hall_column-top.png) |
+| `wh_crane_rail` | 0,44 × 0,64 × 6 | 960 | belka, kierunek jazdy Z | [przód](../artifacts/models/wh/wh_crane_rail-front.png) · [bok](../artifacts/models/wh/wh_crane_rail-side.png) · [góra](../artifacts/models/wh/wh_crane_rail-top.png) |
+| `wh_wall_terminal` | 1,42 × 0,93 × 0,2105 | 497 | dekoracja, tył na Z = 0 | [przód](../artifacts/models/wh/wh_wall_terminal-front.png) · [bok](../artifacts/models/wh/wh_wall_terminal-side.png) · [góra](../artifacts/models/wh/wh_wall_terminal-top.png) |
+| `wh_catwalk` | 4 × 1,2 × 1,5 | 976 | pomost dla gracza, długość w osi X | [przód](../artifacts/models/wh/wh_catwalk-front.png) · [bok](../artifacts/models/wh/wh_catwalk-side.png) · [góra](../artifacts/models/wh/wh_catwalk-top.png) |
+
+**Powierzchnia grywalna.** Pokład `wh_catwalk` (siatka `deck`) kończy się na lokalnym Y = 0,20 m, poręcz na Y = 1,20 m. Dla posadzki pomostu na 3,60 m ustaw dekorację na Y = 3,40 m oraz niewidoczny blok `walkable: true` o rozmiarze 4 × 0,20 × 1,50 m i środku na Y = 3,50 m. Barierki wymagają własnych bocznych koliderów na mapie. Pozostałe modele pełnią funkcję wyposażenia, osłon lub konstrukcji. Regały ustawia się parami plecami do siebie, co daje głębokość 2,40 m. Trawersy mają górne krawędzie na 1,80, 3,80 i 5,80 m.
+
+**Punkty montażu.** Góra konsoli słupa leży na Y = 8,20 m. Postawiona na niej belka ma główkę szyny na Y = 8,84 m. Osie kół suwnicy leżą na X = ±7,68 m, a styk koła z szyną wypada 0,34 m nad spodem haka. Przy tym zestawieniu początek suwnicy umieść na Y = 8,50 m. Zaczep ładunku leży pod wózkiem na osi X = Z = 0. Początek lampy umieść 0,45 m poniżej spodu widocznego stropu lub dźwigara.
+
 ## Port kontenerowy (arena Przejęcie)
 
 Osiem modeli do dużej areny „Port kontenerowy”, w stylu zestawu miasta (proceduralne,

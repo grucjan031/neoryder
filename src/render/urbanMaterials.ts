@@ -29,6 +29,8 @@ export const portKinds = [
 ] as const;
 
 export const arenaKinds = [
+  'tiles_wall',
+  'tread_plate',
   'overpass_concrete',
   'smog_soot_wall',
   'roof_tar',

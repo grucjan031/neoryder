@@ -738,6 +738,8 @@ export const tuning = {
     instanceMergeTriangles: 30000,
     /** Promień (komórki siatki), w którym nawigacja szuka najbliższej przejezdnej komórki dla startu/celu poza siatką. */
     navFallbackCells: 2,
+    waveSpawnMaxDistanceM: 22,
+    waveSpawnSightHeightM: 1.5,
   },
   /** Dźwięki (#14). Przepisy i reguły w src/data/audio/sfx.json. */
   audio: {

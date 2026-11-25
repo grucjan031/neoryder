@@ -993,7 +993,12 @@ it('splashart ekranu ładowania nie zmienia przebiegu runu (pełne fx vs lite)',
     screens.actions.selectNode(screens.view.nodes[0]!.id);
     const splash = screens.view.splash;
     await scene.whenReady();
-    for (let i = 0; i < 200; i++) scene.step(SIM_DT, idle);
+    for (let i = 0; i < 200; i++) {
+      scene.step(
+        SIM_DT,
+        i < 45 ? { ...idle, held: new Set(['moveBack']) } : idle,
+      );
+    }
     const result = {
       splash,
       room: scene.query('room'),

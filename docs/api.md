@@ -2602,3 +2602,14 @@ musi wskazywać istniejący cel albo spotkanie. Zależność `encounter` zgłasz
 `auditMap(map, { mapId? })` w `src/world/mapAudit.ts` odczytuje geometrię układu i zwraca znaleziska z polami `mapId, rule, severity, path, message, position`. Pozycja jest podana w metrach świata. Dla klasycznej areny bez pola `id` identyfikator to `arena`.
 
 Scena debug `?scene=map-audit&map=<id>&debug=1` udostępnia przez `__neoryder.query('auditViews')` nazwy ujęć, a przez `__neoryder.command('audit view <nazwa>')` przełącza kamerę. Symulacja stoi podczas inspekcji.
+
+## Fundamenty wnętrz runu
+
+`ArenaNavigation.path(start, goal)` dostarcza trasę po gruncie lub powierzchniach `walkable`.
+Pokój z `arena` przekazuje reżyserowi fal opcjonalne `WaveDirectorDeps.selectSpawn(points, minDistance, rng)`.
+Przy niepustej liście reżyser zawsze wybiera punkt w tym samym wywołaniu. Selektor pokoju preferuje osłonę i długość trasy, a w ostateczności losuje według odległości poziomej. Pusta lista daje `null`.
+Pokój ustawia opcjonalne `Enemy.routeToPlayer` w zwykłym starciu z nawigacją, aby wróg kontynuował marsz do pośredniego węzła (`moveGoalFinal === false`) także po wykryciu celu. W pokojach bez nawigacji pole pozostaje nieustawione.
+Tryby z celami nadal wybierają punkty własnym selektorem.
+
+W danych pokoju blok może mieć `ceiling: true`, światło `cone: true`, a decal `tint` w formacie `#RRGGBB`.
+Profil pogody może podać `lighting` z natężeniami `hemiIntensity`, `keyIntensity` i przełącznikiem `panoramaEnabled`.

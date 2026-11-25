@@ -35,8 +35,9 @@ import type {
   MissionDefinition,
   MissionObjective,
 } from '../world/missionSchema';
-import { spawnOcclusion } from '../world/arenaSpawns';
+import { selectWaveSpawn, spawnOcclusion } from '../world/arenaSpawns';
 import { worldEnvelope } from '../render/horizon';
+import { weatherDefinitions } from '../render/weatherSchema';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { HazardSystem } from '../world/hazards';
 import { PropPhysicsSystem } from '../world/propPhysics';
@@ -109,7 +110,7 @@ import { ProjectileSystem } from '../combat/weapons/projectiles';
 import playerData from '../data/scenes/roomPlayer.json';
 import type { RunState, MapNode } from '../core/runTypes';
 import type { GrabPuzzleDefinition, RoomDefinition } from '../world/roomSchema';
-import type { WavesDefinition } from '../world/waves';
+import type { WavesDefinition, WaveDirectorDeps } from '../world/waves';
 import {
   implantDefinitions,
   ImplantSystem,
@@ -214,6 +215,7 @@ export interface RoomSceneOptions {
 
 /** Modele dla bloków układu; 'wall' to rozciągnięta bryła świata (bez modelu). */
 const MODEL_FILES: Record<string, string> = {
+  wall_segment: 'wall_segment',
   pillar: 'pillar',
   cover_low: 'cover_low',
   crate: 'crate',
@@ -449,10 +451,12 @@ export class RoomScene implements Scene {
       this.layout.theme,
       this.layout.id,
       this.layout.playerSpawn.y,
-      this.options.linearMission ? envelope.bounds : undefined,
+      envelope.bounds,
       envelope,
       ctx.camera,
       this.layout.arena?.water,
+      weatherDefinitions.get(this.layout.weather ?? '')?.lighting
+        ?.panoramaEnabled === false,
     );
     three.add(this.root);
     this.root.add(this.lights);
@@ -504,6 +508,7 @@ export class RoomScene implements Scene {
       ctx.audio,
     );
 
+    this.atmosphere.sync(0);
     const playerId = this.entities.create('player', 'player');
     this.player = new PlayerController(
       playerId,
@@ -563,7 +568,10 @@ export class RoomScene implements Scene {
         hurtboxes: this.hurtboxes,
         statuses: this.statuses,
         stepClimbing: !!(
-          this.layout.arena?.exclusive || this.layout.arena?.spawnRing
+          this.layout.arena &&
+          (this.layout.arena.exclusive ||
+            this.layout.arena.spawnRing ||
+            this.layout.blocks.some((b) => b.walkable))
         ),
         getTarget: () =>
           this.passiveEncounter
@@ -865,11 +873,13 @@ export class RoomScene implements Scene {
     });
     this.refreshSynergyInputs();
 
+    if (this.layout.arena) this.navigation = new ArenaNavigation(this.layout);
     this.director = new WaveDirector(
       this.waves,
       {
         spawn: (enemy, position) => this.spawnEnemy(enemy, position),
         playerPosition: () => this.player.getState().position,
+        selectSpawn: this.navigation ? this.selectWavePoint : undefined,
       },
       ctx.bus,
       ctx.rng.fork('waves'),
@@ -912,8 +922,6 @@ export class RoomScene implements Scene {
         modeForArena(conquestMode, this.layout),
         ctx.bus,
       );
-      if (this.layout.arena?.exclusive || this.layout.arena?.spawnRing)
-        this.navigation = new ArenaNavigation(this.layout);
       if (typeof document !== 'undefined') {
         this.conquestView = new ConquestView(this.conquest, ctx.bus);
         this.root.add(this.conquestView.root);
@@ -924,8 +932,6 @@ export class RoomScene implements Scene {
         signal: () => {},
         explode: (objective) => this.explodeMission(objective, playerId),
       });
-      if (this.layout.arena?.assault)
-        this.navigation = new ArenaNavigation(this.layout);
       if (typeof document !== 'undefined') {
         this.assaultView = new AssaultView(this.assault);
         this.root.add(this.assaultView.root);
@@ -933,8 +939,6 @@ export class RoomScene implements Scene {
     }
     if (this.run.modeId === 'heist') {
       this.heist = new Heist(heistForArena(heistMode, this.layout));
-      if (this.layout.arena?.heist)
-        this.navigation = new ArenaNavigation(this.layout);
       if (typeof document !== 'undefined') {
         this.heistView = new HeistView(this.heist);
         this.root.add(this.heistView.root);
@@ -1101,6 +1105,9 @@ export class RoomScene implements Scene {
     const models = new Group();
     models.name = 'static-models';
     (this.staticWorld ?? this.root).add(blocks, models);
+    const ceilings = new Group();
+    ceilings.name = 'room-ceilings';
+    if (this.layout.blocks.some((b) => b.ceiling)) this.root.add(ceilings);
     const propCapacity: Partial<Record<PropKind, number>> = {};
     const instances = new Map<
       string,
@@ -1123,6 +1130,7 @@ export class RoomScene implements Scene {
           visible,
           destructible,
           walkable,
+          ceiling,
         }) => {
           if (
             this.props?.claim({
@@ -1152,7 +1160,12 @@ export class RoomScene implements Scene {
               ),
           );
           if (visible === false) return;
-          if (instance && this.staticWorld) {
+          if (
+            instance &&
+            this.staticWorld &&
+            !ceiling &&
+            model !== 'wall_segment'
+          ) {
             const cell = this.layout.arena!.batchCellM;
             const material = blockMaterial ?? 'world';
             const budget = this.ctx.tuning.arena.batchTriangleBudget;
@@ -1184,7 +1197,7 @@ export class RoomScene implements Scene {
           const fallback = new Mesh(geometry, getMaterial(material));
           fallback.position.set(position.x, position.y, position.z);
           fallback.quaternion.copy(quaternion);
-          blocks.add(fallback);
+          (ceiling ? ceilings : blocks).add(fallback);
           const file = isCityModelFile(model)
             ? model
             : model
@@ -1208,8 +1221,8 @@ export class RoomScene implements Scene {
               .applyQuaternion(quaternion)
               .add(new Vector3(position.x, position.y, position.z));
             scene.quaternion.premultiply(quaternion);
-            blocks.remove(fallback);
-            models.add(scene);
+            fallback.removeFromParent();
+            (ceiling ? ceilings : models).add(scene);
           } catch {
             // Bryła zastępcza zostaje (ten sam collider).
           }
@@ -1358,6 +1371,10 @@ export class RoomScene implements Scene {
         models.add(mesh);
       }
     }
+    if (ceilings.children.length)
+      batchStaticGeometry(ceilings, this.geometries, {
+        cellSize: this.layout.arena?.batchCellM ?? this.options.staticCellSize,
+      });
     if (!this.staticWorld) {
       batchStaticGeometry(blocks, this.geometries, {
         cellSize: this.options.staticCellSize,
@@ -1549,6 +1566,52 @@ export class RoomScene implements Scene {
       },
     });
   }
+
+  private readonly selectWavePoint: NonNullable<
+    WaveDirectorDeps['selectSpawn']
+  > = (points, minM, rng) => {
+    const player = this.player.getState();
+    const feet = {
+      ...player.position,
+      y: player.position.y - player.height / 2,
+    };
+    const { origin, dir } = this.aim();
+    const camera = this.ctx.camera;
+    const vertical = Math.tan(
+      ((camera?.fov ?? this.ctx.tuning.camera.fov) * Math.PI) / 360,
+    );
+    const horizontal = vertical * (camera?.aspect ?? 1);
+    const sightHeight = this.ctx.tuning.arena.waveSpawnSightHeightM;
+    const occluded = spawnOcclusion(origin, sightHeight, (o, d, length) =>
+      this.castWall(o, d, length),
+    );
+    const sinYaw = Math.sin(player.yaw),
+      cosYaw = Math.cos(player.yaw);
+    return selectWaveSpawn(
+      points.map((p) => ({ ...p, y: this.layout.playerSpawn.y })),
+      feet,
+      minM,
+      this.ctx.tuning.arena.waveSpawnMaxDistanceM,
+      this.navigation!,
+      (p) => {
+        const dx = p.x - origin.x,
+          dy = p.y + sightHeight - origin.y,
+          dz = p.z - origin.z;
+        const depth = dx * dir.x + dy * dir.y + dz * dir.z;
+        const right = dx * cosYaw - dz * sinYaw;
+        const up =
+          dy * Math.cos(player.pitch) +
+          (dx * sinYaw + dz * cosYaw) * Math.sin(player.pitch);
+        return (
+          depth <= 0 ||
+          Math.abs(right) > depth * horizontal ||
+          Math.abs(up) > depth * vertical ||
+          occluded(p)
+        );
+      },
+      rng,
+    );
+  };
 
   protected spawnEnemy(kind: string, position: Vec3): EntityId | null {
     if (
@@ -1944,6 +2007,28 @@ export class RoomScene implements Scene {
         )
           arena.spawned();
         if (arena.outcome === 'victory') this.completeRoom();
+      } else if (
+        this.navigation &&
+        !this.manualEncounter &&
+        !this.passiveEncounter
+      ) {
+        const player = this.player.getState();
+        const feet = {
+          ...player.position,
+          y: player.position.y - player.height / 2,
+        };
+        this.manager.forEach((enemy) => {
+          const target =
+            this.squad.size &&
+            this.squad.targetFor(
+              { id: enemy.id, position: enemy.current.position },
+              { id: this.playerId, position: player.position, yaw: player.yaw },
+            );
+          enemy.routeToPlayer = true;
+          enemy.moveGoal =
+            target && target.id !== this.playerId ? target.position : feet;
+          enemy.moveGoalFinal = true;
+        });
       }
       this.mission?.step(dt, this.player.getState().position);
       this.openMissionDock();
@@ -1974,9 +2059,18 @@ export class RoomScene implements Scene {
     }
     this.director.step(dt);
     this.squad.step(dt, reviving && input.held.has('power2'));
+    const modeHasRoutes = this.conquest
+      ? this.layout.arena?.exclusive || this.layout.arena?.spawnRing
+      : this.assault
+        ? this.layout.arena?.assault
+        : this.heist
+          ? this.layout.arena?.heist
+          : true;
     this.manager.step(
       dt,
-      !this.health.dead && !this.cleared ? this.navigation : undefined,
+      !this.health.dead && !this.cleared && modeHasRoutes
+        ? this.navigation
+        : undefined,
     );
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;

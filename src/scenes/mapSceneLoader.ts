@@ -39,11 +39,10 @@ export async function loadMapScene(
       scene: new HubScene({ layout: hub, metaStore: store }),
     };
   }
-  const { roomDefinitions } = await import('../world/rooms');
-  const found = roomDefinitions.get(id);
+  const { testRoomById, roomTestRun } = await import('./roomTest');
+  const found = testRoomById(id);
   if (found) {
     const { RoomScene } = await import('./roomScene');
-    const { roomTestRun } = await import('./roomTest');
     const { default: waves } = await import('../data/waves/roomTest.json');
     const room = { ...found };
     if (peaceful) delete room.bossEnemy;

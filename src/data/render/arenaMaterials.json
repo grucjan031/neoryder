@@ -161,5 +161,23 @@
     "metalness": 0,
     "bump": 0.8,
     "wetness": 0.35
+  },
+  "tiles_wall": {
+    "texture": "tiles_wall",
+    "scale": 0.5,
+    "roughness": 0.55,
+    "metalness": 0.05,
+    "bump": 0.4,
+    "wetness": 0.2,
+    "tint": "#58616c"
+  },
+  "tread_plate": {
+    "texture": "tread_plate",
+    "scale": 0.7,
+    "roughness": 0.6,
+    "metalness": 0.65,
+    "bump": 0.8,
+    "wetness": 0.15,
+    "tint": "#535e68"
   }
 }

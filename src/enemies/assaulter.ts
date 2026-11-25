@@ -43,6 +43,7 @@ export class Assaulter implements Enemy {
   removed = false;
   moveGoal?: Vec3;
   moveGoalFinal?: boolean;
+  routeToPlayer?: boolean;
   tacticalGoal?: Vec3;
   private tacticS = 0;
   private flanking = false;
@@ -454,6 +455,7 @@ export class Assaulter implements Enemy {
     const march =
       this.moveGoal &&
       (!target ||
+        (this.routeToPlayer && this.moveGoalFinal === false) ||
         Math.hypot(
           target.position.x - s.position.x,
           target.position.z - s.position.z,

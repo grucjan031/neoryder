@@ -9,6 +9,7 @@ import type { Camera } from 'three';
 import { tuning } from '../../core/tuning';
 import type { DecalDef } from '../../world/dressingSchema';
 import { CityTextures, disposeCityGroup } from './resources';
+import { batchStaticDecals } from '../staticBatch';
 import type { TextureLoad } from './resources';
 
 export class DecalRenderer {
@@ -18,21 +19,44 @@ export class DecalRenderer {
 
   constructor(defs: readonly DecalDef[], load?: TextureLoad) {
     this.textures = new CityTextures(load);
+    const materials = new Map<string, MeshBasicMaterial>();
+    const decals: Mesh[] = [];
     for (const def of defs) {
-      const material = new MeshBasicMaterial({
-        transparent: true,
-        opacity: def.opacity ?? 1,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -1,
-        side: DoubleSide,
-      });
-      material.userData.bloom = false;
-      this.textures.request('decals', def.texture, (texture) => {
-        material.map = texture;
-        material.needsUpdate = true;
-      });
+      // Wspólna płaszczyzna zachowuje kolejność głębi rozłącznych naklejek.
+      const plane =
+        def.surface === 'floor'
+          ? [def.position.y]
+          : [
+              def.yaw,
+              def.position.x * Math.sin(def.yaw) +
+                def.position.z * Math.cos(def.yaw),
+            ];
+      const key = JSON.stringify([
+        def.texture,
+        def.tint ?? '#ffffff',
+        def.opacity ?? 1,
+        plane,
+      ]);
+      let material = materials.get(key);
+      if (!material) {
+        const shared = new MeshBasicMaterial({
+          color: def.tint ?? '#ffffff',
+          transparent: true,
+          opacity: def.opacity ?? 1,
+          depthWrite: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -1,
+          polygonOffsetUnits: -1,
+          side: DoubleSide,
+        });
+        shared.userData.bloom = false;
+        this.textures.request('decals', def.texture, (texture) => {
+          shared.map = texture;
+          shared.needsUpdate = true;
+        });
+        materials.set(key, shared);
+        material = shared;
+      }
       const mesh = new Mesh(
         new PlaneGeometry(def.size.w, def.size.h),
         material,
@@ -48,7 +72,9 @@ export class DecalRenderer {
       }
       mesh.userData.noOutline = true;
       this.root.add(mesh);
+      decals.push(mesh);
     }
+    batchStaticDecals(this.root, decals);
   }
   update(dtWorldS: number, dtRealS: number, camera: Camera): void {
     void dtWorldS;

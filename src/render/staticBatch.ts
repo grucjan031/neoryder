@@ -9,6 +9,8 @@ import {
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export interface StaticBatchOptions {
+  /** Rozłączne naklejki na wspólnej płaszczyźnie nie wymagają sortowania względem siebie. */
+  batchTransparent?: (mesh: Mesh) => boolean;
   /**
    * Bok komórki siatki XZ (m, w układzie korzenia). Siatki scala się tylko w obrębie
    * komórki zawierającej środek ich prostopadłościanu, żeby frustum culling dalej
@@ -89,6 +91,23 @@ export function batchInstancedTemplate(
   batchStaticGeometry(root, ownedGeometries);
 }
 
+/** Właścicielem płaszczyzn decali jest scena. Po scaleniu zwalniamy źródła. */
+export function batchStaticDecals(root: Object3D, decals: Mesh[]): void {
+  if (decals.length < 2) return;
+  const bounds = decals.map((mesh) => new Box3().setFromObject(mesh));
+  // Nakładające się warstwy alfa nadal sortuje renderer dla bieżącej kamery.
+  const disjoint = new Set(
+    decals.filter(
+      (_, i) =>
+        !bounds.some((box, j) => i !== j && box.intersectsBox(bounds[i]!)),
+    ),
+  );
+  batchStaticGeometry(root, new Set(), {
+    batchTransparent: (mesh) => disjoint.has(mesh),
+  });
+  for (const mesh of decals) if (!mesh.parent) mesh.geometry.dispose();
+}
+
 /** Wyłącznie korzenie statyczne. Oryginały należą do cache/modelu, wynik do sceny. */
 export function batchStaticGeometry(
   root: Object3D,
@@ -113,7 +132,7 @@ export function batchStaticGeometry(
       ('isSkinnedMesh' in object && object.isSkinnedMesh) ||
       ('isBatchedMesh' in object && object.isBatchedMesh) ||
       Array.isArray(object.material) ||
-      object.material.transparent ||
+      (object.material.transparent && !options.batchTransparent?.(object)) ||
       object.morphTargetInfluences ||
       object.children.length ||
       object.onBeforeRender !== Object3D.prototype.onBeforeRender ||

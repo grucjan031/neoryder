@@ -3,6 +3,7 @@ import {
   PerspectiveCamera,
   Vector3,
   type Scene as ThreeScene,
+  type Object3D,
 } from 'three';
 import type { GameContext } from '../core/context';
 import { createMemorySaveStore } from '../core/save';
@@ -117,6 +118,7 @@ function viewpoints(
 export class MapAuditScene implements Scene {
   readonly id = 'map-audit';
   private scene?: Scene;
+  private ceilings?: Object3D;
   private views = new Map<string, CameraPose>();
   private view = 'spawn';
   private rendered = '';
@@ -135,6 +137,7 @@ export class MapAuditScene implements Scene {
     const layout = loaded.layout;
     this.scene = loaded.scene;
     await this.scene.init(ctx, three);
+    this.ceilings = three.getObjectByName('room-ceilings');
     this.scene.render(1, 0);
     this.views = viewpoints(layout, ctx.camera, ctx.tuning.player.eyeHeight);
     this.style = document.createElement('style');
@@ -157,6 +160,10 @@ export class MapAuditScene implements Scene {
   }
   step() {} // Stały stan AI, fizyki i zdarzeń misji dla całej serii.
   render() {
+    if (this.ceilings)
+      this.ceilings.visible = !['top', 'high-west', 'high-east'].includes(
+        this.view,
+      );
     this.scene?.render(1, 0, this.views.get(this.view));
     this.rendered = this.view;
   }

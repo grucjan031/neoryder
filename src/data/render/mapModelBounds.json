@@ -114,5 +114,17 @@
   "roof_clock_tower": {"min":[-4,0,-4],"max":[4,35,4],"materials":["mat_concrete","mat_glass","mat_hivis","mat_lacquer","mat_metal","mat_neon_amber","mat_neon_white","mat_paint","mat_plaster","mat_trim","mat_wood"]},
   "roof_giant_sign": {"min":[-10,0,-2.7557],"max":[10,12.6673,2.7557],"materials":["mat_cable","mat_concrete","mat_light_white","mat_machine","mat_metal","mat_neon_amber","mat_neon_violet","mat_steel_grating","mat_trim"]},
   "roof_skylight": {"min":[-1.5,0,-1],"max":[1.5,0.8,1],"materials":["mat_glass","mat_metal","mat_roof_hvac_metal"]},
-  "roof_stairwell_hut": {"min":[-1.6,0,-2.25],"max":[1.6,3,2.25],"materials":["mat_concrete","mat_lacquer","mat_light_white","mat_machine","mat_metal","mat_neon_amber","mat_plaster","mat_roof_tar","mat_trim"]}
+  "roof_stairwell_hut": {"min":[-1.6,0,-2.25],"max":[1.6,3,2.25],"materials":["mat_concrete","mat_lacquer","mat_light_white","mat_machine","mat_metal","mat_neon_amber","mat_plaster","mat_roof_tar","mat_trim"]},
+  "wh_catwalk": {"min":[-2,0,-0.75],"max":[2,1.2,0.75],"materials":["mat_crane_paint","mat_hivis","mat_machine","mat_metal","mat_steel_grating"]},
+  "wh_ceiling_lamp": {"min":[-0.9,0,-0.3],"max":[0.9,0.45,0.3],"materials":["mat_light_white","mat_machine","mat_metal","mat_trim"]},
+  "wh_conveyor_scanner": {"min":[-1.8,0,-0.7],"max":[1.8,2.2,0.7],"materials":["mat_crane_paint","mat_hazard","mat_hivis","mat_label_warning","mat_machine","mat_metal","mat_neon_green","mat_rubber","mat_screen_status","mat_trim"]},
+  "wh_crane_rail": {"min":[-0.22,0,-3],"max":[0.22,0.64,3],"materials":["mat_crane_paint","mat_machine","mat_metal","mat_trim"]},
+  "wh_forklift": {"min":[-1.4,0,-0.6],"max":[1.4,2.1,0.6],"materials":["mat_container_navy","mat_crane_paint","mat_light_white","mat_machine","mat_metal","mat_neon_amber","mat_rubber","mat_trim"]},
+  "wh_hall_column": {"min":[-0.7,0,-0.415],"max":[0.7,10,0.415],"materials":["mat_crane_paint","mat_machine","mat_metal","mat_trim"]},
+  "wh_overhead_crane": {"min":[-8,0,-1.6],"max":[8,2.4,1.6],"materials":["mat_container_navy","mat_crane_paint","mat_hazard","mat_hivis","mat_light_white","mat_machine","mat_metal","mat_neon_amber","mat_rubber","mat_steel_grating","mat_trim"]},
+  "wh_pallet_rack": {"min":[-2,0,-0.6],"max":[2,6,0.6],"materials":["mat_container_graphite","mat_container_navy","mat_crane_paint","mat_hivis","mat_label_barcode","mat_machine","mat_metal","mat_trim","mat_wood"]},
+  "wh_server_rack": {"min":[-0.6,0,-0.5],"max":[0.6,2.4,0.5],"materials":["mat_container_navy","mat_glass","mat_hivis","mat_machine","mat_metal","mat_neon_blue","mat_neon_violet","mat_screen_status","mat_trim"]},
+  "wh_wall_terminal": {"min":[-0.71,0,0],"max":[0.71,0.93,0.2105],"materials":["mat_container_navy","mat_glass","mat_label_barcode","mat_machine","mat_metal","mat_neon_amber","mat_neon_blue","mat_neon_green","mat_neon_white","mat_screen_status","mat_trim"]},
+  "wh_weapon_case_stack": {"min":[-0.8,0,-0.6],"max":[0.8,1.1,0.6],"materials":["mat_container_graphite","mat_container_navy","mat_hivis","mat_label_barcode","mat_label_warning","mat_machine","mat_metal","mat_trim","mat_wood"]},
+  "wh_workbench_weapons": {"min":[-1.2,0,-0.45],"max":[1.2,1.5,0.45],"materials":["mat_container_navy","mat_crane_paint","mat_glass","mat_hivis","mat_label_barcode","mat_light_white","mat_machine","mat_metal","mat_rubber","mat_steel_grating","mat_trim"]}
 }

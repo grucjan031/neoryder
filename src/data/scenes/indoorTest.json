@@ -1,0 +1,320 @@
+{
+  "id": "indoorTest",
+  "name": "Próba wnętrza przemysłowego",
+  "type": "combat",
+  "theme": "neonStreet",
+  "weather": "indoorIndustrial",
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 4
+  },
+  "minSpawnDistance": 6,
+  "blocks": [
+    {
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 20,
+        "y": 1,
+        "z": 20
+      },
+      "material": "tiles_wall",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 5.2,
+        "z": 0
+      },
+      "size": {
+        "x": 20,
+        "y": 0.4,
+        "z": 20
+      },
+      "material": "metal",
+      "ceiling": true
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 2.5,
+        "z": -10
+      },
+      "size": {
+        "x": 20,
+        "y": 5,
+        "z": 0.4
+      },
+      "material": "machine",
+      "model": "wall_segment"
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 2.5,
+        "z": 10
+      },
+      "size": {
+        "x": 20,
+        "y": 5,
+        "z": 0.4
+      },
+      "material": "tiles_wall"
+    },
+    {
+      "position": {
+        "x": -10,
+        "y": 2.5,
+        "z": 0
+      },
+      "size": {
+        "x": 0.4,
+        "y": 5,
+        "z": 20
+      },
+      "material": "tiles_wall"
+    },
+    {
+      "position": {
+        "x": 10,
+        "y": 2.5,
+        "z": 0
+      },
+      "size": {
+        "x": 0.4,
+        "y": 5,
+        "z": 20
+      },
+      "material": "tiles_wall"
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 1.5,
+        "z": 0
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3,
+        "z": 9
+      },
+      "material": "metal",
+      "model": "wall_segment"
+    },
+    {
+      "position": {
+        "x": -7,
+        "y": 0.6,
+        "z": -5
+      },
+      "size": {
+        "x": 4,
+        "y": 1.2,
+        "z": 5
+      },
+      "material": "tread_plate",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": -7,
+        "y": 0.15,
+        "z": -0.375
+      },
+      "size": {
+        "x": 4,
+        "y": 0.3,
+        "z": 0.75
+      },
+      "material": "tread_plate",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": -7,
+        "y": 0.3,
+        "z": -1.125
+      },
+      "size": {
+        "x": 4,
+        "y": 0.6,
+        "z": 0.75
+      },
+      "material": "tread_plate",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": -7,
+        "y": 0.44999999999999996,
+        "z": -2
+      },
+      "size": {
+        "x": 4,
+        "y": 0.8999999999999999,
+        "z": 1
+      },
+      "material": "tread_plate",
+      "walkable": true
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -6,
+      "z": 8
+    },
+    {
+      "x": 6,
+      "z": 8
+    },
+    {
+      "x": 7,
+      "z": -4
+    },
+    {
+      "x": 0,
+      "z": -8
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": 10
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 0.4
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": -10
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 0.4
+      }
+    }
+  ],
+  "arena": {
+    "points": [
+      {
+        "id": "A",
+        "position": {
+          "x": -5,
+          "y": 0,
+          "z": 4
+        },
+        "radiusM": 2
+      },
+      {
+        "id": "B",
+        "position": {
+          "x": 6,
+          "y": 0,
+          "z": 5
+        },
+        "radiusM": 2
+      },
+      {
+        "id": "C",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": -6
+        },
+        "radiusM": 2
+      }
+    ],
+    "batchCellM": 10,
+    "navigationCellM": 0.5,
+    "navigationClearanceM": 0.3,
+    "navigationMaxRiseM": 0.35,
+    "navigationHeadroomM": 2
+  },
+  "lights": [
+    {
+      "position": {
+        "x": -7,
+        "y": 4.9,
+        "z": -5
+      },
+      "color": "#ffcf91",
+      "intensity": 20,
+      "range": 10,
+      "cone": true
+    },
+    {
+      "position": {
+        "x": 4.5,
+        "y": 4.9,
+        "z": 0
+      },
+      "color": "#8fafff",
+      "intensity": 18,
+      "range": 10
+    }
+  ],
+  "decals": [
+    {
+      "texture": "floor_lane_line",
+      "position": {
+        "x": -2,
+        "y": 0,
+        "z": 1
+      },
+      "size": {
+        "w": 6,
+        "h": 1
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "tint": "#f6b24e"
+    },
+    {
+      "texture": "floor_pallet_bay",
+      "position": {
+        "x": -6,
+        "y": 0,
+        "z": 4
+      },
+      "size": {
+        "w": 3,
+        "h": 3
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "tint": "#acd486"
+    },
+    {
+      "texture": "floor_sector_k09",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -3
+      },
+      "size": {
+        "w": 3,
+        "h": 1
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "tint": "#ffdbab"
+    }
+  ]
+}

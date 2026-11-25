@@ -75,6 +75,18 @@ export const BLOCK_MATERIALS = [
   'plaster',
   'corrugated',
   'rust',
+  'tiles_wall',
+  'tread_plate',
+  'machine',
+  'paint',
+  'lacquer',
+  'plastic',
+  'wood',
+  'fabric',
+  'hivis',
+  'neon_blue',
+  'neon_violet',
+  'neon_white',
   'rubber',
   'hazard',
 ] as const;
@@ -112,6 +124,7 @@ export const cityLightSchema = z.object({
   color: hexColor,
   intensity: positive,
   range: positive,
+  cone: z.boolean().optional(),
   groundGlow: z.boolean().optional(),
   flicker: flickerSchema.optional(),
   /** Wysokość podłogi pod światłem (plama światła); brak = podłoga sceny. Areny wielopoziomowe. */
@@ -126,6 +139,7 @@ export const decalSchema = z.object({
   size: size2,
   yaw: finite,
   surface: z.enum(['wall', 'floor']),
+  tint: hexColor.optional(),
   opacity: unit.optional(),
 });
 export type DecalDef = z.infer<typeof decalSchema>;

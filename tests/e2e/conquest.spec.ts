@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { LOAD_TIMEOUT } from './helpers';
-import conquest from '../../src/data/modes/conquest.json';
+import conquest from '../../src/data/modes/conquest.json' with { type: 'json' };
 
 // Panel debug lil-gui (dev) zasłania prawy górny róg; karty tablicy misji bywają pod nim.
 test.beforeEach(async ({ page }) => {

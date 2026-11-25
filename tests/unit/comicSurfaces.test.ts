@@ -8,6 +8,7 @@ import {
 
 describe('comicSurfaces', () => {
   it('w stylu komiksowym podmienia powierzchnie i aliasy dużych aren', () => {
+    expect(COMIC_SURFACES.has('tiles_wall')).toBe(true);
     expect(resolveTextureKey('surfaces', 'brick', true)).toBe(
       'komiks/surfaces/komiks_brick',
     );
@@ -27,7 +28,6 @@ describe('comicSurfaces', () => {
     expect(resolveTextureKey('surfaces', 'concrete_raw_cast', true)).toBe(
       'surfaces/concrete_raw_cast',
     );
-    expect(COMIC_SURFACES.has('tiles_wall')).toBe(false);
     expect(resolveTextureKey('labels', 'brick', true)).toBe('labels/brick');
     expect(resolveTextureKey('surfaces', 'brick', false)).toBe(
       'surfaces/brick',

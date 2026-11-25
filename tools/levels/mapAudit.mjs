@@ -4,8 +4,14 @@ import { parseArgs } from 'node:util';
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
-  options: { json: { type: 'boolean' }, report: { type: 'boolean' } },
+  options: {
+    all: { type: 'boolean' },
+    json: { type: 'boolean' },
+    report: { type: 'boolean' },
+  },
 });
+if (values.all && positionals.length)
+  throw new Error('--all obejmuje wszystkie mapy. Pomiń identyfikatory.');
 if (values.report && (positionals.length || values.json))
   throw new Error('--report wymaga pełnego audytu bez --json.');
 const server = await createServer({
@@ -36,7 +42,9 @@ try {
     return `${f.severity} · ${f.rule} · \`${f.path}\` · (${[p.x, p.y, p.z].map((n) => Number(n.toFixed(2))).join(', ')}) · ${f.message}`;
   };
   if (values.json) console.log(JSON.stringify(results, null, 2));
-  else if (values.report) {
+  else if (values.all && positionals.length)
+    throw new Error('--all obejmuje wszystkie mapy. Pomiń identyfikatory.');
+  if (values.report) {
     const path = 'docs/audits/mapAudit-report.md';
     const marker = '<!-- mapAudit:generated -->';
     const preface = (await readFile(path, 'utf8')).split(marker)[0].trimEnd();

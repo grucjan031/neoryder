@@ -1,3 +1,4 @@
+import { Vector3 } from 'three';
 import type { Camera, Object3D } from 'three';
 import { tuning } from '../../core/tuning';
 import { getQuality } from '../quality';
@@ -40,8 +41,7 @@ export interface DressingLayout {
   /** Latarnie z dekoracji dostają stożek światła i światło punktowe. */
   decor?: readonly DecorDef[];
   /**
-   * Bryły układu (pokój/arena). Światło poniżej podłogi startu (np. w wykopie)
-   * kładzie plamę na najwyższej płaskiej bryle pod sobą zamiast na floorY.
+   * Bryły układu (pokój/arena). Plama światła i stożek sięgają najwyższej płaskiej bryły pod źródłem.
    */
   blocks?: readonly {
     position: { x: number; y: number; z: number };
@@ -50,23 +50,29 @@ export interface DressingLayout {
   }[];
 }
 
-/** Wysokości plam świateł: floorY, a dla świateł pod nią wierzch bryły pod światłem. */
+/** Najwyższy płaski blok pod światłem. Jawne floorY ma pierwszeństwo. */
 export function lightSpotFloors(
   defs: readonly CityLightDef[],
   floorY: number,
   blocks: DressingLayout['blocks'],
 ): number[] {
-  return defs.map(({ position: p }) => {
-    if (p.y >= floorY || !blocks) return floorY;
+  return defs.map(({ position: p, floorY: override }) => {
+    if (override !== undefined) return override;
+    if (!blocks) return floorY;
     let best: number | undefined;
     for (const b of blocks) {
-      if (b.rotation?.x || b.rotation?.y || b.rotation?.z) continue;
+      if (b.rotation?.x || b.rotation?.z) continue;
+      const yaw = b.rotation?.y ?? 0;
+      const dx = p.x - b.position.x,
+        dz = p.z - b.position.z;
+      const x = dx * Math.cos(yaw) - dz * Math.sin(yaw);
+      const z = dx * Math.sin(yaw) + dz * Math.cos(yaw);
       const top = b.position.y + b.size.y / 2;
       if (
         top <= p.y &&
         (best === undefined || top > best) &&
-        Math.abs(p.x - b.position.x) <= b.size.x / 2 &&
-        Math.abs(p.z - b.position.z) <= b.size.z / 2
+        Math.abs(x) <= b.size.x / 2 &&
+        Math.abs(z) <= b.size.z / 2
       )
         best = top;
     }
@@ -81,12 +87,16 @@ export function lightSpotFloors(
 export class CityDressing {
   private readonly signs?: SignRenderer;
   private readonly lights?: CityLights;
-  private readonly lamps?: LampCones;
+  private readonly lamps: LampCones[] = [];
   private readonly lanterns?: LampCones;
   private readonly decals?: DecalRenderer;
   private readonly ambient?: AmbientFx;
   weather?: Weather;
   weatherId?: string;
+  private baseLighting?: Pick<
+    typeof tuning.render,
+    'hemiIntensity' | 'keyIntensity' | 'panoramaEnabled'
+  >;
   private baseSkyHorizon = tuning.render.skyHorizon;
   private restoreWeather?: () => void;
   private worldDt = 0;
@@ -115,18 +125,25 @@ export class CityDressing {
     }
     const fixtures = lampFixtures(layout.decor);
     const lightDefs = [...(layout.lights ?? []), ...lampLightDefs(fixtures)];
+    const floors = lightSpotFloors(lightDefs, floorY, layout.blocks);
     if (lightDefs.length) {
-      this.lights = new CityLights(
-        lightDefs,
-        lightSpotFloors(lightDefs, floorY, layout.blocks),
-        `${seed}:lights`,
-      );
+      this.lights = new CityLights(lightDefs, floors, `${seed}:lights`);
       roots.push(this.lights.root);
     }
-    if (fixtures.length) {
-      this.lamps = new LampCones(fixtures);
-      roots.push(this.lamps.root);
-    }
+    if (fixtures.length) this.lamps.push(new LampCones(fixtures));
+    const cones = new Map<string, typeof fixtures>();
+    lightDefs.forEach((light, index) => {
+      if (!light.cone || floors[index]! >= light.position.y) return;
+      const group = cones.get(light.color) ?? [];
+      group.push({
+        head: new Vector3().copy(light.position),
+        baseY: floors[index]!,
+      });
+      cones.set(light.color, group);
+    });
+    for (const [color, group] of cones)
+      this.lamps.push(new LampCones(group, color));
+    for (const lamps of this.lamps) roots.push(lamps.root);
     const pendants = lanternFixtures(layout.decor);
     if (pendants.length) {
       this.lanterns = new LampCones(
@@ -168,7 +185,13 @@ export class CityDressing {
     if (!profile || this.disposed) return false;
     if (!this.restoreWeather) {
       const r = tuning.render;
+      this.baseLighting = {
+        hemiIntensity: r.hemiIntensity,
+        keyIntensity: r.keyIntensity,
+        panoramaEnabled: r.panoramaEnabled,
+      };
       const previous = {
+        ...this.baseLighting,
         skyHorizon: r.skyHorizon,
         fogColor: r.fogColor,
         heightFogDensity: r.heightFogDensity,
@@ -207,6 +230,12 @@ export class CityDressing {
       this.weather.setProfile(profile);
     }
     Object.assign(tuning.render, {
+      ...(profile.lighting
+        ? {
+            ...profile.lighting,
+            panoramaEnabled: Number(profile.lighting.panoramaEnabled),
+          }
+        : this.baseLighting),
       skyHorizon: profile.sky?.horizonColor ?? this.baseSkyHorizon,
       fogColor: profile.fog.color,
       heightFogDensity: profile.fog.density,
@@ -232,7 +261,7 @@ export class CityDressing {
     return !!(
       this.signs ||
       this.lights ||
-      this.lamps ||
+      this.lamps.length ||
       this.lanterns ||
       this.decals ||
       this.ambient ||
@@ -260,7 +289,7 @@ export class CityDressing {
     this.worldDt = 0;
     this.signs?.update(dt, frameDt, camera);
     this.lights?.update(dt, frameDt, camera);
-    this.lamps?.update(dt, frameDt, camera);
+    for (const lamps of this.lamps) lamps.update(dt, frameDt, camera);
     this.lanterns?.update(dt, frameDt, camera);
     this.decals?.update(dt, frameDt, camera);
     this.ambient?.update(dt, frameDt, camera);
@@ -288,7 +317,7 @@ export class CityDressing {
     this.disposed = true;
     this.signs?.dispose();
     this.lights?.dispose();
-    this.lamps?.dispose();
+    for (const lamps of this.lamps) lamps.dispose();
     this.lanterns?.dispose();
     this.decals?.dispose();
     this.ambient?.dispose();
