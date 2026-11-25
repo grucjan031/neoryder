@@ -189,26 +189,29 @@ it('Rozpocznij run nawiguje na run z ekwipunkiem meta i seedem z pola lub losowy
   expect(second.get('seed')).toMatch(/^[0-9a-f]+(-[0-9a-f]+){3}$/);
 });
 
-it('Przejęcie bez wpisanego seeda zachowuje domyślną arenę, wpisany seed wybiera deterministycznie', () => {
-  const { panel, navigate } = setup();
-  panel.root.querySelector<HTMLButtonElement>('[data-mode=conquest]')!.click();
-  const start = panel.root.querySelector<HTMLButtonElement>(
-    '[data-action=start-run]',
-  )!;
-  start.click();
-  const first = new URLSearchParams(
-    (navigate.mock.calls[0]![0] as string).slice(1),
-  );
-  expect(first.get('mode')).toBe('conquest');
-  expect(first.has('seed')).toBe(false);
-  panel.root.querySelector<HTMLInputElement>('input')!.value = 'port-review';
-  start.click();
-  expect(
-    new URLSearchParams((navigate.mock.calls[1]![0] as string).slice(1)).get(
-      'seed',
-    ),
-  ).toBe('port-review');
-});
+it.each(['conquest', 'assault', 'heist'])(
+  'tryb %s przekazuje seed losowy lub wpisany',
+  (mode) => {
+    const { panel, navigate } = setup();
+    panel.root.querySelector<HTMLButtonElement>(`[data-mode=${mode}]`)!.click();
+    const start = panel.root.querySelector<HTMLButtonElement>(
+      '[data-action=start-run]',
+    )!;
+    start.click();
+    const first = new URLSearchParams(
+      (navigate.mock.calls[0]![0] as string).slice(1),
+    );
+    expect(first.get('mode')).toBe(mode);
+    expect(first.get('seed')).toMatch(/^[0-9a-f]+(-[0-9a-f]+){3}$/);
+    panel.root.querySelector<HTMLInputElement>('input')!.value = 'port-review';
+    start.click();
+    expect(
+      new URLSearchParams((navigate.mock.calls[1]![0] as string).slice(1)).get(
+        'seed',
+      ),
+    ).toBe('port-review');
+  },
+);
 
 it('refresh czyta stan meta, a błąd zapisu trafia do statusu', async () => {
   const { manager, panel, level, save } = setup(3);
@@ -241,7 +244,9 @@ it('odprawa misji ukrywa nagłówek Poziomu zagrożenia i listę, a Wstecz je pr
   )!;
   const mission = [
     ...panel.root.querySelectorAll<HTMLButtonElement>('[data-mission]'),
-  ].find((button) => button.dataset.mission !== 'regular' &&
+  ].find(
+    (button) =>
+      button.dataset.mission !== 'regular' &&
       button.getAttribute('aria-disabled') !== 'true',
   )!;
   mission.click();

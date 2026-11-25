@@ -66,6 +66,7 @@ it('combatWarehouse: ładuje beczki, detonuje obok wroga, nie liczy beczki jako 
       three,
     );
     commands.execute('god');
+    commands.execute('tp 0 -12');
     const hazards = scene.query('hazards') as HazardState[];
     expect(hazards).toHaveLength(4);
     expect(hazards.every((h) => h.kind === 'explosive_barrel' && h.alive)).toBe(

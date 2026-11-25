@@ -125,7 +125,7 @@ import {
   rollArenaMutator,
   type ArenaMutator,
 } from '../world/arenaMutators';
-import type { Scene } from './index';
+import type { CameraPose, Scene } from './index';
 
 const vec3 = z.object({
   x: z.number().finite(),
@@ -295,6 +295,8 @@ export class Arena implements Scene {
     private readonly selectBuild = false,
     readonly id: 'arena' | typeof ARENA_MUTATORS_SCENE | 'endless' = 'arena',
     private readonly endlessSaveOverride?: EndlessSavePort,
+    /** Testy map: bez fal i wrogów. */
+    private readonly peaceful = false,
   ) {}
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
@@ -359,14 +361,19 @@ export class Arena implements Scene {
     });
     await this.buildLayout();
     if (this.disposed) return;
-    await loadDecor(this.root, layout.decor, this.loadModels);
+    const decor = new Group();
+    decor.name = 'static-decor';
+    this.root.add(decor);
+    await loadDecor(decor, layout.decor, this.loadModels);
     if (this.disposed) return;
+    batchStaticGeometry(decor, this.geometries);
     this.dressing = new CityDressing(
       this.root,
       layout,
       this.atmosphere.theme,
       layout.playerSpawn.y,
       'arena',
+      ctx.audio,
     );
 
     const playerId = this.entities.create('player', 'player');
@@ -695,7 +702,7 @@ export class Arena implements Scene {
     this.heldItem.reset(this.loadout.startHeld);
     this.world.step();
     if (choosing) this.enterBuildSelect();
-    else this.director.start();
+    else if (!this.peaceful) this.director.start();
     this.render(1);
   }
 
@@ -1231,7 +1238,7 @@ export class Arena implements Scene {
     if (this.attempt && this.offers.length > 0) this.openEndlessIntermission();
   }
 
-  render(alpha: number, frameDt = 1 / 60): void {
+  render(alpha: number, frameDt = 1 / 60, cameraOverride?: CameraPose): void {
     const executable = this.execute.readyIds();
     this.hud?.setCoolingHint(
       this.state === 'playing' &&
@@ -1303,7 +1310,7 @@ export class Arena implements Scene {
       playerState,
       alpha,
       frameDt,
-      this.state === 'playing',
+      !cameraOverride && this.state === 'playing',
     );
     const pose = this.fpsCamera.update(
       frameDt,
@@ -1328,6 +1335,10 @@ export class Arena implements Scene {
       this.barrierView.render(barrier, pose);
     else this.barrierView.root.visible = false;
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    if (cameraOverride) {
+      camera.position.copy(cameraOverride.position);
+      camera.rotation.copy(cameraOverride.rotation);
+    }
     this.hud?.setViewYaw(pose.yaw);
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
       camera.fov = pose.fov;
@@ -1340,7 +1351,7 @@ export class Arena implements Scene {
       blade: this.blade.view(),
       held: this.heldView(),
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
-      visible: this.state === 'playing',
+      visible: !cameraOverride && this.state === 'playing',
       aim: this.heldItem.aim,
     });
     this.beamView.advance(frameDt);

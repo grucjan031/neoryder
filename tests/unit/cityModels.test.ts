@@ -829,6 +829,83 @@ async function loadSet(name: string): Promise<Object3D> {
   return gltf.scene;
 }
 
+describe('magazyn Kurogane', () => {
+  const sizes = {
+    wh_pallet_rack: [4, 6, 1.2],
+    wh_forklift: [2.8, 2.1, 1.2],
+    wh_overhead_crane: [16, 2.4, 3.2],
+    wh_server_rack: [1.2, 2.4, 1],
+    wh_workbench_weapons: [2.4, 1.5, 0.9],
+    wh_weapon_case_stack: [1.6, 1.1, 1.2],
+    wh_conveyor_scanner: [3.6, 2.2, 1.4],
+    wh_ceiling_lamp: [1.8, 0.45, 0.6],
+    wh_hall_column: [1.4, 10, 0.83],
+    wh_crane_rail: [0.44, 0.64, 6],
+    wh_wall_terminal: [1.42, 0.93, 0.2105],
+    wh_catwalk: [4, 1.2, 1.5],
+  } as const;
+
+  it.each(Object.entries(sizes))(
+    '%s zachowuje obrys, montaż i budżet',
+    async (id, size) => {
+      const scene = await loadSet(id);
+      const box = new Box3().setFromObject(scene, true);
+      box
+        .getSize(new Vector3())
+        .toArray()
+        .forEach((v, i) => expect(v).toBeCloseTo(size[i]!, 4));
+      expect(box.min.y).toBeCloseTo(0, 4);
+      expect(box.min.x).toBeCloseTo(-size[0] / 2, 4);
+      expect(box.min.z).toBeCloseTo(
+        id === 'wh_wall_terminal' ? 0 : -size[2] / 2,
+        4,
+      );
+      let triangles = 0;
+      scene.traverse((node) => {
+        if (!(node instanceof Mesh)) return;
+        const geometry = node.geometry;
+        triangles +=
+          (geometry.index?.count ?? geometry.getAttribute('position').count) /
+          3;
+        for (const mat of [node.material].flat()) {
+          expect(mat.name).toMatch(/^mat_/);
+          expect(reserved(mat.color)).toBe(false);
+          if (mat.emissive.getHex() !== 0) {
+            expect(mat.name).toMatch(/^mat_(neon_|light_white)/);
+            expect(reserved(mat.emissive)).toBe(false);
+          }
+        }
+      });
+      const budget = ['wh_pallet_rack', 'wh_overhead_crane'].includes(id)
+        ? 3000
+        : 1500;
+      expect(triangles).toBeGreaterThan(0);
+      expect(triangles).toBeLessThanOrEqual(budget);
+    },
+  );
+
+  it('dwa zęby wideł wystają przed kabinę w kierunku +X', async () => {
+    const scene = await loadSet('wh_forklift');
+    const cast = (z: number) =>
+      new Raycaster(new Vector3(1.2, 2.1, z), new Vector3(0, -1, 0))
+        .intersectObject(scene, true)[0];
+    for (const z of [-0.3, 0.3]) {
+      const tip = cast(z);
+      expect(tip).toBeDefined();
+      expect(tip!.point.y).toBeGreaterThan(0.1);
+      expect(tip!.point.y).toBeLessThan(0.2);
+    }
+    expect(cast(0)).toBeUndefined();
+  });
+
+  it('wierzch kraty wypada 20 cm nad spodem modułu', async () => {
+    const scene = await loadSet('wh_catwalk');
+    const deck = scene.getObjectByName('deck');
+    expect(deck).toBeInstanceOf(Mesh);
+    expect(new Box3().setFromObject(deck!, true).max.y).toBeCloseTo(0.2, 5);
+  });
+});
+
 describe('zestaw „port i zajezdnia”', () => {
   it('folder i galeria zawierają komplet 24 modeli zestawu', () => {
     expect([...PORT_RAIL_PROP_MODELS].sort()).toEqual([...setNames].sort());

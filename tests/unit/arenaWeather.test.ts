@@ -90,11 +90,13 @@ describe('pogoda z danych', () => {
       dressing.dispose();
     }
   });
-  it('waliduje siedem profili, limity i kolory wyładowań', () => {
+  it('waliduje profile, limity i kolory wyładowań', () => {
     expect([...weatherDefinitions.keys()].sort()).toEqual([
       'ashfall',
       'clearNight',
       'drizzleWind',
+      'indoorIndustrial',
+      'kuroganeWarehouse',
       'rain',
       'smog',
       'snow',
@@ -411,7 +413,7 @@ describe('areny Przejęcia', () => {
       );
     },
   );
-  it('pięć powierzchni aren używa własnych tekstur i parametrów mokrości', () => {
+  it('powierzchnie aren używają własnych tekstur i parametrów mokrości', () => {
     for (const kind of arenaKinds) {
       expect(urbanLooks[kind].texture).toBe(kind);
       const material = createUrbanMaterial(kind);

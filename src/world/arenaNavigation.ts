@@ -1,5 +1,5 @@
 import type { Vec3 } from '../core/math';
-import type { RoomDefinition } from './roomSchema';
+import { FLOOR_EPSILON_M, type RoomDefinition } from './roomSchema';
 import { ArenaSurfaceNavigation } from './arenaSurfaceNavigation';
 import { freeModePosition } from './modeSchema';
 import { tuning } from '../core/tuning';
@@ -24,7 +24,10 @@ export class ArenaNavigation {
       return;
     }
     const floors = room.blocks.filter(
-      (b) => !b.rotation && b.position.y + b.size.y / 2 === room.playerSpawn.y,
+      (b) =>
+        !b.rotation &&
+        Math.abs(b.position.y + b.size.y / 2 - room.playerSpawn.y) <=
+          FLOOR_EPSILON_M,
     );
     const rotated = room.blocks.filter((b) => b.rotation);
     for (const floor of floors) {

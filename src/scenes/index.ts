@@ -1,13 +1,14 @@
-import type { Scene as ThreeScene } from 'three';
+import type { PerspectiveCamera, Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import type { InputSnapshot } from '../core/input';
 
+export type CameraPose = Pick<PerspectiveCamera, 'position' | 'rotation'>;
 export interface Scene {
   readonly id: string;
   init(ctx: GameContext, three: ThreeScene): Promise<void> | void;
   step(dt: number, input: InputSnapshot): void;
   /** frameDt: czas rzeczywisty klatki w s (efekty kamery działające także w hitstopie). */
-  render(alpha: number, frameDt?: number): void;
+  render(alpha: number, frameDt?: number, cameraOverride?: CameraPose): void;
   dispose(): void;
   query?(name: string): unknown;
   reset?(): void;
@@ -17,6 +18,9 @@ export type SceneFactory = () => Scene;
 export type SceneLoader = () => Promise<SceneFactory>;
 // Każda scena to osobny import(): menu i ekran ładowania nie pobierają kodu scen, Rapiera ani danych pokoi.
 export const scenes: Record<string, SceneLoader> = {
+  'map-audit': () =>
+    import('./mapAuditScene').then((m) => () => new m.MapAuditScene()),
+  'map-walk': () => import('./mapWalk').then((m) => () => new m.MapWalkScene()),
   tutorial: () => import('./tutorial').then((m) => () => new m.Tutorial()),
   'pad-test': () => import('./padTest').then((m) => () => new m.PadTest()),
   'city-fx-test': () =>

@@ -6,7 +6,6 @@ import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
 import { Health } from '../combat/damage';
 import { CollisionGroup, interactionGroups } from '../physics';
-import { ArenaNavigation } from '../world/arenaNavigation';
 import type { RoomDefinition } from '../world/roomSchema';
 import { WaveDirector, loadWaves } from '../world/waves';
 import type { WavesDefinition } from '../world/waves';
@@ -66,8 +65,6 @@ export abstract class PrototypeScene extends RoomScene {
     if (this.disposed) return;
     if (!this.room.arena)
       throw new Error(`Pokój ${this.room.id} nie ma danych areny (nawigacja).`);
-    this.navigation?.dispose();
-    this.navigation = new ArenaNavigation(this.room);
   }
 
   override step(dt: number, input: InputSnapshot): void {

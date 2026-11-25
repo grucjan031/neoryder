@@ -36,6 +36,7 @@ export class Gunner implements Enemy {
   removed = false;
   moveGoal?: Vec3;
   moveGoalFinal?: boolean;
+  routeToPlayer?: boolean;
   tacticalGoal?: Vec3;
   private coverPhase: 'travel' | 'hold' | 'exit' | null = null;
   private coverExit: Vec3 | null = null;
@@ -508,6 +509,7 @@ export class Gunner implements Enemy {
     const march =
       this.moveGoal &&
       (!target ||
+        (this.routeToPlayer && this.moveGoalFinal === false) ||
         Math.hypot(
           target.position.x - s.position.x,
           target.position.z - s.position.z,

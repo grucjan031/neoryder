@@ -5,7 +5,7 @@ import type { DamageSystem } from '../../src/combat/damage';
 import { powerDefinitions } from '../../src/combat/powers/registry';
 import type { RoomDefinition } from '../../src/world/roomSchema';
 import { RoomScene } from '../../src/scenes/roomScene';
-import { createRoomTest } from '../../src/scenes/roomTest';
+import { createRoomTest, testRoomById } from '../../src/scenes/roomTest';
 import { Arena } from '../../src/scenes/arena';
 import type { RoomSceneOptions } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
@@ -673,4 +673,30 @@ it('gracz zabity w tym samym kroku nie strzela z wciśniętym spustem', async ()
   fired.length = 0;
   scene.step(SIM_DT, idle);
   expect(fired).toEqual([false]);
+});
+
+it('zwykła fala rusza w pierwszym kroku spawnu z punktem w kadrze i zachowuje trasę na podest', async () => {
+  const room = testRoomById('indoorTest')!;
+  const inView = { x: 0, z: -5 };
+  const { scene, three } = await setup(runState(), new EventBus(), {
+    ...room,
+    spawnPoints: [inView],
+  });
+  expect(three.getObjectByName('city-panorama')).toBeUndefined();
+  expect(three.getObjectByName('room-ceilings')?.visible).toBe(true);
+  const navigation = Reflect.get(
+    scene,
+    'navigation',
+  ) as import('../../src/world/arenaNavigation').ArenaNavigation;
+  const platform = { x: -7, y: 1.2, z: -5 };
+  const path = navigation.path(room.playerSpawn, platform);
+  expect(path.length).toBeGreaterThan(1);
+  expect(path.some((p) => p.y > 0 && p.y < platform.y)).toBe(true);
+  for (let i = 0; i < 150 && scene.query('phase') === 'break'; i++)
+    scene.step(SIM_DT, idle);
+  expect(scene.query('phase')).toBe('spawning');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('spawnLog')).toMatchObject([inView]);
+  untilFighting(scene);
+  expect(scene.query('spawnLog')).toMatchObject([inView, inView]);
 });

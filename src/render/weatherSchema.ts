@@ -54,6 +54,13 @@ export const weatherSchema = z
       snowCoverage: unit.default(0),
       snowColor: color.default('#ffffff'),
     }),
+    lighting: z
+      .object({
+        hemiIntensity: z.number().finite().nonnegative(),
+        keyIntensity: z.number().finite().nonnegative(),
+        panoramaEnabled: z.boolean(),
+      })
+      .optional(),
     sky: z.object({ horizonColor: color }).optional(),
     lightning: z
       .object({

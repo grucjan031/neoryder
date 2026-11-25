@@ -1472,6 +1472,12 @@ F3-19: definicja `GrabPuzzleDefinition` z `src/world/roomSchema.ts` jest wymagan
 dla `type: 'puzzle'` i zawiera `object: { position, size, massKg }` (pozycja środka).
 Cel `kind: 'plate'` ma `position` na podłodze i `radiusM`. Cel `kind: 'laser'`
 wskazuje hazard `laser_gate` przez `laserId`. Laser musi mieć dwa różne końce.
+Oba warianty mogą określić `workArea: { kind: 'box', position, size }` (środek
+i pełne wymiary). Strefa obejmuje środek obiektu na starcie oraz środek skrzyni
+na płycie lub fragment odcinka lasera. Jeśli środek swobodnego obiektu opuści
+strefę przed zaliczeniem, obiekt wraca na wolne pole startowe. Osłona, która
+przecina wiązkę, nadal blokuje ją na całej jej długości. Podczas Chwytu powrót czeka
+na puszczenie ładunku. Zajęte pole startowe opóźnia powrót.
 `GrabPuzzle` w `src/world/grabPuzzle.ts` rejestruje obiekt w `GrabPhysics`,
 w `step(dt)` po kroku Rapiera sprawdza cel i udostępnia migawkę przez `view()`.
 `HazardSystem` przyjmuje opcjonalny callback `laserBlocked(id): boolean`,
@@ -2590,6 +2596,23 @@ snapshots(): AllySnapshot[];                forEachPose(cb): void;    registerCo
 — `id` z `src/data/allies` (unikalne), `spawn` to stopy (sprawdzana osiągalność), `joinAfter`
 musi wskazywać istniejący cel albo spotkanie. Zależność `encounter` zgłasza host misji przez
 `RoomScene.allyDependencyDone('encounter', id)`.
+
+## Audyt map
+
+`auditMap(map, { mapId? })` w `src/world/mapAudit.ts` odczytuje geometrię układu i zwraca znaleziska z polami `mapId, rule, severity, path, message, position`. Pozycja jest podana w metrach świata. Dla klasycznej areny bez pola `id` identyfikator to `arena`.
+
+Scena debug `?scene=map-audit&map=<id>&debug=1` udostępnia przez `__neoryder.query('auditViews')` nazwy ujęć, a przez `__neoryder.command('audit view <nazwa>')` przełącza kamerę. Symulacja stoi podczas inspekcji.
+
+## Fundamenty wnętrz runu
+
+`ArenaNavigation.path(start, goal)` dostarcza trasę po gruncie lub powierzchniach `walkable`.
+Pokój z `arena` przekazuje reżyserowi fal opcjonalne `WaveDirectorDeps.selectSpawn(points, minDistance, rng)`.
+Przy niepustej liście reżyser zawsze wybiera punkt w tym samym wywołaniu. Selektor pokoju preferuje osłonę i długość trasy, a w ostateczności losuje według odległości poziomej. Pusta lista daje `null`.
+Pokój ustawia opcjonalne `Enemy.routeToPlayer` w zwykłym starciu z nawigacją, aby wróg kontynuował marsz do pośredniego węzła (`moveGoalFinal === false`) także po wykryciu celu. W pokojach bez nawigacji pole pozostaje nieustawione.
+Tryby z celami nadal wybierają punkty własnym selektorem.
+
+W danych pokoju blok może mieć `ceiling: true`, światło `cone: true`, a decal `tint` w formacie `#RRGGBB`.
+Profil pogody może podać `lighting` z natężeniami `hemiIntensity`, `keyIntensity` i przełącznikiem `panoramaEnabled`.
 
 ## Wykrywanie w spotkaniach
 

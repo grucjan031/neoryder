@@ -2,6 +2,8 @@ import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import type { RunState } from '../core/runTypes';
 import { z } from 'zod';
+import indoorTest from '../data/scenes/indoorTest.json';
+import { loadRoom } from '../world/roomSchema';
 import { loadWaves } from '../world/waves';
 import type { WavesDefinition } from '../world/waves';
 import { vec3Schema } from '../world/roomSchema';
@@ -55,6 +57,10 @@ export function roomTestRun(
   };
 }
 
+export function testRoomById(id: string): RoomDefinition | undefined {
+  return id === indoorTest.id ? loadRoom(indoorTest) : roomDefinitions.get(id);
+}
+
 export function createRoomTest(
   loadModels = true,
   layout?: RoomDefinition,
@@ -64,7 +70,7 @@ export function createRoomTest(
   );
   const wallMode = !layout && params.get('viewmodel') === 'wall';
   const roomId = wallMode ? wall.room : (params.get('room') ?? 'combatYard');
-  const baseRoom = layout ?? roomDefinitions.get(roomId);
+  const baseRoom = layout ?? testRoomById(roomId);
   if (!baseRoom) throw new Error(`Nieznany pokój: ${roomId}`);
   const room = wallMode
     ? { ...baseRoom, playerSpawn: wall.playerSpawn }

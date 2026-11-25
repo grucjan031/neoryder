@@ -24,29 +24,33 @@ afterEach(() => {
   active.clear();
 });
 
+async function setup() {
+  const scene = new Arena(false);
+  const bus = new EventBus();
+  const commands = new CommandRegistry();
+  await scene.init(
+    {
+      bus,
+      commands,
+      camera: new PerspectiveCamera(),
+      rng: new Rng('arena-turret-spawns'),
+      loop: new GameLoop({ step() {}, render() {} }),
+      tuning: structuredClone(tuning),
+      debug: false,
+    },
+    new ThreeScene(),
+  );
+  active.add(scene);
+  const director = Reflect.get(scene, 'director') as WaveDirector;
+  director.stop();
+  const manager = Reflect.get(scene, 'manager') as EnemyManager;
+  return { scene, bus, commands, manager };
+}
+
 it.each(waves.spawnPoints)(
   'wieżyczka ze spawnu ($x, $z) ostrzeliwuje gracza w dostępnej części areny',
   async ({ x, z }) => {
-    const scene = new Arena(false);
-    const bus = new EventBus();
-    const commands = new CommandRegistry();
-    await scene.init(
-      {
-        bus,
-        commands,
-        camera: new PerspectiveCamera(),
-        rng: new Rng('arena-turret-spawns'),
-        loop: new GameLoop({ step() {}, render() {} }),
-        tuning: structuredClone(tuning),
-        debug: false,
-      },
-      new ThreeScene(),
-    );
-    active.add(scene);
-    // Izolujemy wieżyczkę od fal, zachowując geometrię, fizykę i AI areny.
-    const director = Reflect.get(scene, 'director') as WaveDirector;
-    director.stop();
-    const manager = Reflect.get(scene, 'manager') as EnemyManager;
+    const { scene, bus, commands, manager } = await setup();
     const turret = manager.spawn('turret', { x, y: 0, z });
     // Pozycje przy centrum omijają filary i mieszczą się w zasięgu 20 m.
     commands.execute(x === 0 ? 'tp 4 0' : `tp 0 ${z < 0 ? -4 : 4}`);
@@ -56,5 +60,18 @@ it.each(waves.spawnPoints)(
       scene.step(SIM_DT, idle);
     expect(fired).toHaveBeenCalled();
     expect(turret.current.position).toEqual({ x, y: 0, z });
+  },
+);
+
+it.each(waves.spawnPoints)(
+  'szturmowiec ze spawnu ($x, $z) dociera do gracza na starcie',
+  async ({ x, z }) => {
+    const { scene, bus, manager } = await setup();
+    const attack = vi.fn();
+    bus.on('enemy_telegraph', attack);
+    manager.spawn('assaulter', { x, y: 0, z });
+    for (let i = 0; i < 900 && !attack.mock.calls.length; i++)
+      scene.step(SIM_DT, idle);
+    expect(attack).toHaveBeenCalled();
   },
 );

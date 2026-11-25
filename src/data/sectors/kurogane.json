@@ -116,28 +116,8 @@
     }
   },
   "roomPools": {
-    "combat": [
-      "combatCorridor",
-      "combatPillars",
-      "combatPlatforms",
-      "combatRing",
-      "combatWarehouse",
-      "combatYard",
-      "alleyMarket",
-      "alleyBackstreet",
-      "alleyCrossing",
-      "combatSubstation",
-      "combatLaserYard",
-      "combatFloodedTunnel"
-    ],
-    "elite": [
-      "alleyUnderpass",
-      "eliteCourtyard",
-      "eliteFoundry",
-      "eliteHall",
-      "plazaHolo",
-      "eliteChemPlant"
-    ],
+    "combat": ["run1"],
+    "elite": ["run1"],
     "shop": ["noodleShop", "shopRoom"],
     "rest": ["restRoom", "rooftopRest"],
     "puzzle": ["puzzlePlate", "puzzleLaser"],

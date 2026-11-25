@@ -26,8 +26,8 @@ stosuje `position`, `yaw` w radianach i jednolity `scale`, bez colliderów;
 brak pliku pomija dekorację. Ostrzeżenie i nieudany request występują raz na plik.
 Szablony GLB i ich geometrie są własnością cache renderu, nie sceny.
 `loadModels=false` pomija również dekoracje i modele miejskie, więc RoomScene
-działa nadal bez DOM i sieci. `signs/lights/decals/ambientFx` są zachowywane
-w danych dla integratora; RoomScene i Arena jeszcze ich nie renderują.
+działa nadal bez DOM i sieci. W grze `CityDressing` renderuje szyldy, światła,
+kalkomanie i efekty otoczenia w pokojach oraz na arenie.
 
 `SceneAtmosphere` przywraca poprzedni motyw i tło przy dispose; parametry deszczu
 są dostępne przez `theme.rain` dla modułu VFX. Oprawa nie zmienia symulacji,
@@ -64,6 +64,21 @@ w sekcji `puzzle` i działają na żywo (odczyt co krok symulacji). Czas pokazan
 wyniku w runie to `resultHoldS`. Kolory obiektu i płyty pochodzą z materiałów
 motywu (`neon_amber` / `neon_green`), bez czerwieni. Walidacja danych odrzuca
 obiekt nachodzący na blok układu lub zbyt blisko punktu startu.
+
+W śluzie wagowej Kurogane jasna skrzynia stoi na polu podajnika. Strzałki
+prowadzą pod bramownicę i dalej do północnych drzwi. Pasy boczne i narożniki
+wyznaczają tor o szerokości 4,4 m i długości 9,2 m. Opcjonalne `puzzle.workArea`
+sprawdza położenie środka ładunku. Kiedy swobodna skrzynia opuści tor, trafi
+na dach lub wypadnie pod posadzkę, wraca na pole podajnika. Podczas przenoszenia
+gracz zachowuje Chwyt. Powrót czeka na puszczenie skrzyni i zwolnienie pola.
+Kolejna próba zachowuje stan gracza i zamknięcie bramy.
+
+W kanale kalibracji Kurogane dwie szyny prowadzą osłonę do poprzecznego pasa
+między głowicami lasera. Przewód od zachodniego filara dochodzi do rygla śluzy.
+Przejście w przerwie cyklu ani przeskoczenie promienia nie otwiera drzwi.
+Osłona działa na całym odcinku wiązki. Poza nim swobodna osłona wraca
+z bocznego stanowiska lub znad okapu według tych samych zasad `workArea`
+co skrzynia w śluzie wagowej.
 
 Sprawdzenie w 30 sekund:
 
@@ -108,16 +123,17 @@ Walidacja nie używa Three.js, DOM ani losowości.
 
 Pule `roomPools` w `src/data/sectors/kurogane.json`:
 
-| Typ    | Pokoje                                                                                                                                                                                                               |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| combat | `combatCorridor`, `combatPillars`, `combatPlatforms`, `combatRing`, `combatWarehouse`, `combatYard`, `alleyMarket`, `alleyBackstreet`, `alleyCrossing`, `combatSubstation`, `combatLaserYard`, `combatFloodedTunnel` |
-| elite  | `alleyUnderpass`, `eliteCourtyard`, `eliteFoundry`, `eliteHall`, `plazaHolo`                                                                                                                                         |
-| shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                                                                                                                                                      |
-| rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                                                                                                                                                     |
-| puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                                                                                                                                                     |
-| boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)                                                                                                                               |
+| Typ    | Pokoje                                                                                    |
+| ------ | ----------------------------------------------------------------------------------------- |
+| combat | `run1` (magazyn Kurogane Arms, mapa wzorcowa; na razie jedyna mapa walki w zwykłym runie) |
+| elite  | `run1` (węzeł elitarny losuje mocniejsze fale na tej samej mapie)                         |
+| shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                           |
+| rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                          |
+| puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                          |
+| boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)    |
 
-Pokoje `combatSubstation`,
+Dawne pokoje walki (`combat*`, `alley*`, `elite*`, `plazaHolo`) są tymczasowo poza pulami;
+wrócą po przebudowie według wzorca `run1` ([../maps/run1.md](../maps/run1.md)). Pokoje `combatSubstation`,
 `combatLaserYard`, `combatFloodedTunnel` i `eliteChemPlant` mają `hazards`
 ([hazards.md](hazards.md)). `alleyUnderpassMission` (combat, 8 spawnów,
 `electric_field`) nie jest w żadnej puli sektora: id kończące się na `Mission`
@@ -144,16 +160,16 @@ Pokoje w motywie `neonStreet` (uliczki miasta nocą) dopisane do pul sektora Kur
 Podłoga to bloki z górą na y = 0, budynki to wysokie bloki `facade` za krawędzią podłogi,
 oprawa (napisy, hologramy, światła, naklejki, efekty, dekoracje) w polach z `dressingSchema.ts`.
 
-| id               | Typ   | Wymiary (użyteczne) | Idea                                                                                                                                                                                          |
-| ---------------- | ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `alleyUnderpass` | elite | 68 × 120 m          | zalana stacja metra: plac z wieżą zegarową, perony i tory w wodzie (−1,4 m), wagon, kładka, hala północna z antresolą (4,5 m); kałuże pod napięciem; rain |
-| `eliteChemPlant` | elite | 80 × 110 m          | zakład chemiczny: zbiorniki, estakady rurociągów, kładki serwisowe (3,6 i 7,2 m), toksyczne kałuże i beczki (hazardy); landmark: płuczka smogu 24 m; smog |
-| `eliteCourtyard` | elite | 84 × 104 m          | dziedziniec korporacji: kolumnada, holograficzna fontanna, ogrody z żywopłotów, tarasy biurowe (3,6 i 7,2 m); landmark: wieża z ekranem 40 m; clearNight |
-| `eliteFoundry`   | elite | 90 × 100 m          | odlewnia: piece z żarem, hałda żużla, kominy, kładki (4,2 i 8,4 m), bramki laserowe i beczki; landmark: kadź z ciepłą poświatą; ashfall |
-| `eliteHall`      | elite | 84 × 112 m          | hala dworca zimą: hala kas pod dźwigarami, antresola (4,8 m), perony i tory w rowach (−1,2 m) z wagonami maglev; landmark: wieża zegarowa; snow |
-| `plazaHolo`      | elite | 84 × 100 m          | plac reklam: projektory holo, trybuny amfiteatru (2,4 i 4,8 m) z rampami, pawilony, ściana ekranów; landmark: ściana ekranów 24 m; clearNight |
-| `noodleShop`     | shop  | 10 × 14 m           | spokojna uliczka z budką `city_stall` (terminal sklepu), ciepłe światła i lampiony, napisy ramen/noodles/bar_mleczny, hologram makaronu; bez spawnów i fal                                    |
-| `rooftopRest`    | rest  | 14 × 14 m           | dach z murkami 0,8 m i szklanymi osłonami, antena, generator, widok na panoramę miasta i hologramy na sąsiednich budynkach; bez spawnów i fal                                                 |
+| id               | Typ   | Wymiary (użyteczne) | Idea                                                                                                                                                       |
+| ---------------- | ----- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `alleyUnderpass` | elite | 68 × 120 m          | zalana stacja metra: plac z wieżą zegarową, perony i tory w wodzie (−1,4 m), wagon, kładka, hala północna z antresolą (4,5 m); kałuże pod napięciem; rain  |
+| `eliteChemPlant` | elite | 80 × 110 m          | zakład chemiczny: zbiorniki, estakady rurociągów, kładki serwisowe (3,6 i 7,2 m), toksyczne kałuże i beczki (hazardy); landmark: płuczka smogu 24 m; smog  |
+| `eliteCourtyard` | elite | 84 × 104 m          | dziedziniec korporacji: kolumnada, holograficzna fontanna, ogrody z żywopłotów, tarasy biurowe (3,6 i 7,2 m); landmark: wieża z ekranem 40 m; clearNight   |
+| `eliteFoundry`   | elite | 90 × 100 m          | odlewnia: piece z żarem, hałda żużla, kominy, kładki (4,2 i 8,4 m), bramki laserowe i beczki; landmark: kadź z ciepłą poświatą; ashfall                    |
+| `eliteHall`      | elite | 84 × 112 m          | hala dworca zimą: hala kas pod dźwigarami, antresola (4,8 m), perony i tory w rowach (−1,2 m) z wagonami maglev; landmark: wieża zegarowa; snow            |
+| `plazaHolo`      | elite | 84 × 100 m          | plac reklam: projektory holo, trybuny amfiteatru (2,4 i 4,8 m) z rampami, pawilony, ściana ekranów; landmark: ściana ekranów 24 m; clearNight              |
+| `noodleShop`     | shop  | 10 × 14 m           | spokojna uliczka z budką `city_stall` (terminal sklepu), ciepłe światła i lampiony, napisy ramen/noodles/bar_mleczny, hologram makaronu; bez spawnów i fal |
+| `rooftopRest`    | rest  | 14 × 14 m           | dach z murkami 0,8 m i szklanymi osłonami, antena, generator, widok na panoramę miasta i hologramy na sąsiednich budynkach; bez spawnów i fal              |
 
 Scena kontroli: `?scene=room-test&room=<id>` (pokoje shop/rest nie mają spawnów, więc
 `room-test` wymaga do nich tymczasowej kopii z jednym spawnem).
@@ -176,14 +192,14 @@ zostawiać czytelne trasy boczne, a wszystkie spawny znajdować się poza geomet
 
 ## Mapy w motywie neonStreet
 
-| id                | typ    | wymiary                       | idea                                                                                                  |
-| ----------------- | ------ | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `alleyMarket`     | combat | 84 × 76 m                     | nocny targ pod estakadą (pokład na 10 m, filary), stragany jako niskie osłony, pasarela na 4 m z rampami, lampiony; rain |
-| `alleyBackstreet` | combat | 68 × 88 m                     | zaplecza knajp: zaułki, garaże z dachami (3,2 m) i taras (6,4 m) połączone rampami, wieża z szyldem makaronu; rain |
-| `alleyCrossing`   | combat | 88 × 80 m                     | skrzyżowanie: plac z kioskami i wrakami, hologram na maszcie, zejście do przejścia podziemnego (−3,2 m), taras kawiarni (3,4 m); drizzleWind |
-| `combatSubstation` | combat | 80 × 88 m                    | podstacja: pola transformatorów, łuki elektryczne (hazard), estakada kablowa i dachy rozdzielni (4 m); landmark: pylon HV 30 m; rain |
-| `combatWarehouse` | combat | 80 × 90 m                     | automatyczny magazyn: regały z alejkami, ładownia pod suwnicą (cele M03 w (0, 0) i (0, −10)), stosy kontenerów, antresola (4 m); smog |
-| `combatYard`      | combat | 90 × 80 m                     | złomowisko: hałdy wraków, prasa, dwie hałdy-szczyty (3,2 i 4,8 m), dźwig złomowy; cele M01 w (0, 0) i (10, 0); ashfall |
+| id                 | typ    | wymiary   | idea                                                                                                                                         |
+| ------------------ | ------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `alleyMarket`      | combat | 84 × 76 m | nocny targ pod estakadą (pokład na 10 m, filary), stragany jako niskie osłony, pasarela na 4 m z rampami, lampiony; rain                     |
+| `alleyBackstreet`  | combat | 68 × 88 m | zaplecza knajp: zaułki, garaże z dachami (3,2 m) i taras (6,4 m) połączone rampami, wieża z szyldem makaronu; rain                           |
+| `alleyCrossing`    | combat | 88 × 80 m | skrzyżowanie: plac z kioskami i wrakami, hologram na maszcie, zejście do przejścia podziemnego (−3,2 m), taras kawiarni (3,4 m); drizzleWind |
+| `combatSubstation` | combat | 80 × 88 m | podstacja: pola transformatorów, łuki elektryczne (hazard), estakada kablowa i dachy rozdzielni (4 m); landmark: pylon HV 30 m; rain         |
+| `combatWarehouse`  | combat | 80 × 90 m | automatyczny magazyn: regały z alejkami, ładownia pod suwnicą (cele M03 w (0, 0) i (0, −10)), stosy kontenerów, antresola (4 m); smog        |
+| `combatYard`       | combat | 90 × 80 m | złomowisko: hałdy wraków, prasa, dwie hałdy-szczyty (3,2 i 4,8 m), dźwig złomowy; cele M01 w (0, 0) i (10, 0); ashfall                       |
 
 Pokoje `alleyBackstreet`, `alleyCrossing`, `alleyMarket`, `alleyUnderpass` oraz (partia C) `combatSubstation`, `combatWarehouse`, `combatYard`, `eliteChemPlant`, `eliteCourtyard`, `eliteFoundry`, `eliteHall` i `plazaHolo` (tabele wyżej)
 zostały przebudowane na większe areny runu (70–130 m, ≥ 3 500 m², 3–5 stref, ≥ 2 poziomy
@@ -202,3 +218,26 @@ runu, a jego zwykłe spawny, geometria i oprawa nie zostały zmienione.
 Opcjonalne `blocks[].rotation` (radiany XYZ) obraca render i statyczny collider;
 `blocks[].instance` pozwala grupować powtarzalne bryły portu.
 Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
+
+## Audyt danych i oględziny
+
+`node tools/levels/mapAudit.mjs` podaje liczbę znalezisk dla każdej mapy. Po podaniu id wypisuje ścieżki JSON i współrzędne. Opcja `--json` zwraca pełne wyniki, a `--report` odświeża tabele i listy w raporcie. Test jednostkowy sprawdza osobny limit błędów dla każdej mapy w `tests/unit/mapAudit.baseline.json`. Po usunięciu błędów należy obniżyć odpowiedni limit.
+
+`node tools/screens/mapAudit.mjs bossRoom --tag before` uruchamia serwer i zapisuje dziesięć ujęć PNG. Użycie `--tag after` zapisuje drugą serię w sąsiednim katalogu. Scena audytu korzysta z renderu gry, zatrzymanej symulacji i osobnego zapisu w pamięci. Metodę pomiaru modeli, progi i ręcznie sprawdzone przykłady opisuje [raport audytu](../audits/mapAudit-report.md).
+
+## Wnętrza przemysłowe
+
+Każdy pokój z `arena` buduje `ArenaNavigation`. Gdy choć jeden blok ma `walkable: true`, siatka powstaje wyłącznie z oznaczonych powierzchni. Oznacz także posadzkę i stopnie albo rampy łączące piętra. W takim układzie `arena.navigationMaxRiseM` określa dopuszczalną różnicę wysokości między sąsiednimi komórkami, a `arena.navigationHeadroomM` wymagany prześwit. Zwykli przeciwnicy naziemni korzystają z trasy do celu podczas pościgu. Przejęcie, Szturm i Kradzież rdzenia używają własnych celów i punktów odrodzenia.
+
+Zwykła fala w pokoju z `arena` wybiera punkt z pierwszej niepustej grupy w tym samym kroku symulacji:
+
+1. Punkty osłonięte z trasą od `minSpawnDistance` do `tuning.arena.waveSpawnMaxDistanceM` (domyślnie 22 m).
+2. Punkty osłonięte z dłuższą trasą.
+3. Pozostałe osiągalne punkty z trasą co najmniej `minSpawnDistance`, także w kadrze.
+4. Punkty odległe w poziomie o co najmniej `minSpawnDistance`. Jeśli wszystkie są bliżej, reżyser losuje z całej listy.
+
+W pierwszych trzech grupach reżyser losuje dwa punkty i wybiera ten z krótszą trasą po siatce, uwzględniając zmianę wysokości. Za osłonięty uznaje punkt poza kadrem lub za przesłoną między okiem gracza a wysokością `waveSpawnSightHeightM`. Posiłki skryptowe misji zachowują reguły scenariusza.
+
+Walidator porównuje wierzch posadzki z poziomem startu z tolerancją 0,000001 m. Komórkę 1 × 1 m może podpierać kilka przylegających płyt. Dla prostokątnego bloku obróconego o ćwierć obrotu wokół Y walidator zamienia szerokość i głębokość obrysu.
+
+Pokój testowy `?scene=room-test&room=indoorTest&debug=1` ma pomost ze stopniami, światło ze stożkiem, profil wnętrza, trzy oznaczenia BHP i profilowaną ścianę. Obejdź przegrodę i wejdź na podest podczas fali, żeby sprawdzić trasę pościgu.

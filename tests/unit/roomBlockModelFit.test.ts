@@ -9,7 +9,7 @@ import {
   type Group,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createRoomTest } from '../../src/scenes/roomTest';
+import { createRoomTest, testRoomById } from '../../src/scenes/roomTest';
 import { initPhysics } from '../../src/physics';
 import { roomDefinitions } from '../../src/world/rooms';
 import * as staticBatch from '../../src/render/staticBatch';
@@ -41,10 +41,10 @@ const rooms = [...roomDefinitions.values()].filter((room) =>
   ),
 );
 
-it.each(rooms.map((room) => room.id))(
+it.each([...rooms.map((room) => room.id), 'indoorTest'])(
   '%s: widoczny model bloku wypełnia jego kolizję',
   async (id) => {
-    const room = roomDefinitions.get(id)!;
+    const room = testRoomById(id)!;
     const boxes: Box3[] = [];
     const batch = staticBatch.batchStaticGeometry;
     const spy = vi

@@ -53,6 +53,8 @@ export type SurfaceTexture =
   | 'rubber'
   | 'wood_planks'
   | 'tarp'
+  | 'tread_plate'
+  | 'tiles_wall'
   | 'paving'
   | 'tech_panel'
   | 'plaster';

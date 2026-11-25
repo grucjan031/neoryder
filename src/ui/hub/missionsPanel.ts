@@ -77,7 +77,7 @@ function coresText(count: number, forms = text.threat.victoryCores): string {
 }
 
 /** Seed runu z kryjówki: czysto interfejsowy (symulacja dostaje go przez URL), więc nie przechodzi przez `Rng`. */
-function randomSeed(): string {
+function defaultRunSeed(): string {
   return Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
     value.toString(16),
   ).join('-');
@@ -490,7 +490,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
         loadout: 'meta',
       });
       const seed = seedInput.value.trim();
-      if (seed || !selectedMode) params.set('seed', seed || randomSeed());
+      params.set('seed', seed || defaultRunSeed());
       if (selectedMission) params.set('mission', selectedMission.id);
       if (selectedMode) params.set('mode', selectedMode);
       if (!selectedMission && !selectedMode && district.value === 'bulwar')

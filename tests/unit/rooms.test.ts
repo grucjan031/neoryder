@@ -36,7 +36,8 @@ describe('pokoje F3: format, loader i układ', () => {
       for (const id of ids ?? []) {
         const room = roomDefinitions.get(id);
         expect(room, id).toBeDefined();
-        expect(room!.type).toBe(type);
+        // Na razie zwykły run ma jedną mapę walki (run1), także w węzłach elitarnych.
+        expect(room!.type).toBe(type === 'elite' ? 'combat' : type);
       }
     const used = new Set<string>();
     for (const seed of ['a', 'b', 'c', 'd', 'e', 'f'])
@@ -120,6 +121,31 @@ describe('pokoje F3: format, loader i układ', () => {
         hazards: [{ ...hazard, to: { ...hazard.from } }],
       }),
     ).toThrow(/różnych końcach/);
+  });
+
+  it('strefa osłony obejmuje start i przecina skończony odcinek lasera', () => {
+    const room = roomDefinitions.get('puzzleLaser')!;
+    const puzzle = room.puzzle!;
+    const beam = room.hazards![0]!;
+    if (beam.kind !== 'laser_gate') throw new Error('oczekiwano lasera');
+    const workArea = {
+      kind: 'box',
+      position: beam.from,
+      size: { x: 1, y: 1, z: 1 },
+    };
+    expect(() =>
+      loadRoom({ ...room, puzzle: { ...puzzle, workArea } }),
+    ).toThrow(/na starcie/);
+    expect(() =>
+      loadRoom({
+        ...room,
+        hazards: [{ ...beam, from: beam.to, to: { ...beam.to, x: 3.8 } }],
+      }),
+    ).toThrow(/odcinek wiązki/);
+    expect(
+      loadRoom({ ...room, puzzle: { ...puzzle, workArea: undefined } }).puzzle
+        ?.workArea,
+    ).toBeUndefined();
   });
 
   it('odrzuca punkt w filarze, osłonie i na krawędzi bloku', () => {

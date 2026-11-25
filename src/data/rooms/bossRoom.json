@@ -104,7 +104,8 @@
         "y": 2,
         "z": -7.2
       },
-      "material": "trim"
+      "material": "concrete",
+      "model": "pillar"
     },
     {
       "size": {
@@ -117,20 +118,21 @@
         "y": 2,
         "z": 5.2
       },
-      "material": "trim"
+      "material": "concrete",
+      "model": "pillar"
     },
     {
       "size": {
-        "x": 3.5,
+        "x": 6,
         "y": 0.6,
         "z": 14
       },
       "position": {
-        "x": -9.5,
+        "x": -11,
         "y": 4.3,
         "z": -1
       },
-      "material": "trim"
+      "material": "metal"
     },
     {
       "size": {
@@ -143,7 +145,8 @@
         "y": 2,
         "z": -7.2
       },
-      "material": "trim"
+      "material": "concrete",
+      "model": "pillar"
     },
     {
       "size": {
@@ -156,20 +159,21 @@
         "y": 2,
         "z": 5.2
       },
-      "material": "trim"
+      "material": "concrete",
+      "model": "pillar"
     },
     {
       "size": {
-        "x": 3.5,
+        "x": 6,
         "y": 0.6,
         "z": 14
       },
       "position": {
-        "x": 9.5,
+        "x": 11,
         "y": 4.3,
         "z": -1
       },
-      "material": "trim"
+      "material": "metal"
     },
     {
       "size": {
@@ -180,7 +184,7 @@
       "position": {
         "x": 0,
         "y": 1.8,
-        "z": -13.2
+        "z": -13.875
       },
       "material": "glass"
     },
@@ -188,78 +192,83 @@
       "size": {
         "x": 9.4,
         "y": 0.4,
-        "z": 0.5
+        "z": 1.35
       },
       "position": {
         "x": 0,
         "y": 3.8,
-        "z": -13.2
+        "z": -13.325
       },
       "material": "metal"
     },
     {
       "size": {
-        "x": 1.8,
-        "y": 2.8,
-        "z": 0.6
-      },
-      "position": {
-        "x": -2.5,
+        "x": 1.6,
         "y": 1.4,
-        "z": -13.65
+        "z": 1.005
       },
-      "material": "trim"
+      "position": {
+        "x": -3,
+        "y": 0.7,
+        "z": -13.2
+      },
+      "model": "city_generator",
+      "material": "metal"
     },
     {
       "size": {
-        "x": 1.8,
-        "y": 2.8,
-        "z": 0.6
-      },
-      "position": {
-        "x": 2.5,
+        "x": 1.6,
         "y": 1.4,
-        "z": -13.65
-      },
-      "material": "trim"
-    },
-    {
-      "size": {
-        "x": 4,
-        "y": 1.2,
-        "z": 1.4
+        "z": 1.005
       },
       "position": {
-        "x": 0,
-        "y": 0.6,
-        "z": 1.5
+        "x": 3,
+        "y": 0.7,
+        "z": -13.2
       },
-      "material": "trim"
+      "model": "city_generator",
+      "material": "metal"
     },
     {
       "size": {
-        "x": 2.4,
-        "y": 1.2,
-        "z": 1.2
+        "x": 0.8,
+        "y": 2.235,
+        "z": 0.6238
+      },
+      "position": {
+        "x": 1.4,
+        "y": 1.1175,
+        "z": -13.3
+      },
+      "model": "city_kiosk",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.4,
+        "z": 1.005
       },
       "position": {
         "x": -5.5,
-        "y": 0.6,
+        "y": 0.7,
         "z": -1.5
       },
+      "model": "city_generator",
       "material": "metal"
     },
     {
       "size": {
-        "x": 2.4,
-        "y": 1.2,
-        "z": 1.2
+        "x": 1.6,
+        "y": 1.4,
+        "z": 1.005
       },
       "position": {
         "x": 5.5,
-        "y": 0.6,
+        "y": 0.7,
         "z": -1.5
       },
+      "model": "city_generator",
       "material": "metal"
     },
     {
@@ -486,6 +495,33 @@
         "z": 19
       },
       "material": "facade"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 2.235,
+        "z": 0.6238
+      },
+      "position": {
+        "x": -1.4,
+        "y": 1.1175,
+        "z": -13.3
+      },
+      "model": "city_kiosk",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3.3,
+        "y": 0.24,
+        "z": 3.2
+      },
+      "position": {
+        "x": -12.35,
+        "y": 3.57,
+        "z": -11
+      },
+      "material": "metal"
     }
   ],
   "signs": [
@@ -494,8 +530,8 @@
       "texture": "holo_kurogane",
       "position": {
         "x": 0,
-        "y": 8.5,
-        "z": -15.8
+        "y": 9.28,
+        "z": -14.5
       },
       "size": {
         "w": 10,
@@ -510,8 +546,8 @@
       "texture": "holo_android",
       "position": {
         "x": -10,
-        "y": 7.5,
-        "z": -15.8
+        "y": 9.22,
+        "z": -14.5
       },
       "size": {
         "w": 2.5,
@@ -520,236 +556,104 @@
       "yaw": 0,
       "tint": "#8a5cff",
       "flicker": 0.2
-    },
-    {
-      "kind": "holo",
-      "texture": "holo_implant",
-      "position": {
-        "x": 10,
-        "y": 7.5,
-        "z": -15.8
-      },
-      "size": {
-        "w": 2.5,
-        "h": 5
-      },
-      "yaw": 0,
-      "tint": "#3d7bff",
-      "flicker": 0.2
-    },
-    {
-      "kind": "holo",
-      "texture": "holo_drink",
-      "position": {
-        "x": -15.8,
-        "y": 7.5,
-        "z": -8
-      },
-      "size": {
-        "w": 2,
-        "h": 4
-      },
-      "yaw": 1.5708,
-      "tint": "#ffae1a",
-      "flicker": 0.25
     },
     {
       "kind": "holo",
       "texture": "holo_android",
       "position": {
-        "x": 15.8,
-        "y": 7.5,
-        "z": -8
+        "x": 10,
+        "y": 9.22,
+        "z": -14.5
       },
       "size": {
-        "w": 2,
-        "h": 4
-      },
-      "yaw": -1.5708,
-      "tint": "#8a5cff",
-      "flicker": 0.25
-    },
-    {
-      "kind": "holo",
-      "texture": "holo_kurogane",
-      "position": {
-        "x": -15.8,
-        "y": 7,
-        "z": 2
-      },
-      "size": {
-        "w": 5,
-        "h": 2.5
-      },
-      "yaw": 1.5708,
-      "tint": "#ffae1a",
-      "flicker": 0.15
-    },
-    {
-      "kind": "holo",
-      "texture": "holo_koi",
-      "position": {
-        "x": 15.8,
-        "y": 7,
-        "z": 2
-      },
-      "size": {
-        "w": 5,
-        "h": 2.5
-      },
-      "yaw": -1.5708,
-      "tint": "#3d7bff",
-      "flicker": 0.15
-    },
-    {
-      "kind": "neon",
-      "texture": "implants",
-      "position": {
-        "x": -13.9,
-        "y": 3.1,
-        "z": -3
-      },
-      "size": {
-        "w": 2.8,
-        "h": 1.4
-      },
-      "yaw": 1.5708,
-      "tint": "#3d7bff",
-      "flicker": 0.15
-    },
-    {
-      "kind": "neon",
-      "texture": "hotel",
-      "position": {
-        "x": 13.9,
-        "y": 3.1,
-        "z": -3
-      },
-      "size": {
-        "w": 2.8,
-        "h": 1.4
-      },
-      "yaw": -1.5708,
-      "tint": "#8a5cff",
-      "flicker": 0.2
-    },
-    {
-      "kind": "neon",
-      "texture": "arrow",
-      "position": {
-        "x": -9,
-        "y": 3.1,
-        "z": -13.9
-      },
-      "size": {
-        "w": 2.4,
-        "h": 1.2
+        "w": 2.5,
+        "h": 5
       },
       "yaw": 0,
-      "tint": "#ffae1a",
-      "flicker": 0.1
+      "tint": "#8a5cff",
+      "flicker": 0.2
     }
   ],
   "lights": [
     {
       "position": {
         "x": 0,
-        "y": 6,
-        "z": -11.5
+        "y": 5.5,
+        "z": -10.5
       },
-      "color": "#8a96b0",
-      "intensity": 6,
-      "range": 12
+      "color": "#3d7bff",
+      "intensity": 22,
+      "range": 16
     },
     {
       "position": {
-        "x": -9.5,
-        "y": 5.5,
-        "z": -12
-      },
-      "color": "#8a96b0",
-      "intensity": 5.5,
-      "range": 12
-    },
-    {
-      "position": {
-        "x": 9.5,
-        "y": 5.5,
-        "z": -12
-      },
-      "color": "#8a96b0",
-      "intensity": 5.5,
-      "range": 12
-    },
-    {
-      "position": {
-        "x": -12,
-        "y": 5.5,
-        "z": -7
+        "x": -12.8,
+        "y": 3.18,
+        "z": -11
       },
       "color": "#ffae1a",
-      "intensity": 4.5,
-      "range": 11
-    },
-    {
-      "position": {
-        "x": 12,
-        "y": 5.5,
-        "z": -7
-      },
-      "color": "#8a96b0",
-      "intensity": 5,
+      "intensity": 16,
       "range": 12
     },
     {
       "position": {
-        "x": -12,
-        "y": 5.5,
-        "z": 2
+        "x": 11,
+        "y": 4.2,
+        "z": -11
       },
-      "color": "#ffae1a",
-      "intensity": 4.5,
-      "range": 11
-    },
-    {
-      "position": {
-        "x": 12,
-        "y": 5.5,
-        "z": 2
-      },
-      "color": "#8a96b0",
-      "intensity": 5,
+      "color": "#8a5cff",
+      "intensity": 16,
       "range": 12
     },
     {
       "position": {
         "x": -11.5,
-        "y": 3.5,
-        "z": -3
+        "y": 3.6,
+        "z": -4
       },
-      "color": "#8a96b0",
-      "intensity": 4,
-      "range": 10
+      "color": "#ffae1a",
+      "intensity": 15,
+      "range": 12
     },
     {
       "position": {
         "x": 11.5,
-        "y": 3.5,
-        "z": -3
+        "y": 3.6,
+        "z": -4
       },
-      "color": "#8a96b0",
-      "intensity": 4.5,
-      "range": 10
+      "color": "#ffae1a",
+      "intensity": 15,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": -5.5,
+        "y": 4.8,
+        "z": -1
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 5.5,
+        "y": 4.8,
+        "z": -1
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
     },
     {
       "position": {
         "x": 0,
-        "y": 5,
-        "z": 8
+        "y": 4.8,
+        "z": 8.5
       },
-      "color": "#8a96b0",
-      "intensity": 4,
-      "range": 12
+      "color": "#3d7bff",
+      "intensity": 16,
+      "range": 14
     }
   ],
   "decals": [
@@ -767,21 +671,6 @@
       "yaw": 0,
       "surface": "floor",
       "opacity": 0.7
-    },
-    {
-      "texture": "floor_arrow",
-      "position": {
-        "x": 0,
-        "y": 0.01,
-        "z": 8.5
-      },
-      "size": {
-        "w": 2.4,
-        "h": 2.8
-      },
-      "yaw": 0,
-      "surface": "floor",
-      "opacity": 0.55
     },
     {
       "texture": "puddle1",
@@ -814,72 +703,69 @@
       "opacity": 0.8
     },
     {
-      "texture": "graffiti_resist",
+      "texture": "leak_streak",
       "position": {
         "x": -14,
-        "y": 1.6,
+        "y": 2.2,
         "z": 6
       },
       "size": {
-        "w": 1.8,
-        "h": 1.8
+        "w": 1.6,
+        "h": 2.4
       },
       "yaw": 1.5708,
       "surface": "wall",
-      "opacity": 0.75
+      "opacity": 0.65
     },
     {
-      "texture": "poster_torn1",
+      "texture": "leak_streak",
       "position": {
         "x": 14,
-        "y": 1.6,
+        "y": 2.2,
         "z": 6
       },
       "size": {
-        "w": 1.4,
-        "h": 1.4
+        "w": 1.6,
+        "h": 2.4
       },
       "yaw": -1.5708,
       "surface": "wall",
-      "opacity": 0.8
+      "opacity": 0.65
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -11,
+        "y": 0,
+        "z": -10.9
+      },
+      "size": {
+        "w": 2.8,
+        "h": 3.2
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.65
     }
   ],
   "ambientFx": [
     {
       "kind": "sparks",
       "position": {
-        "x": -13.8,
-        "y": 3.9,
-        "z": -9
+        "x": -13.76,
+        "y": 2.9,
+        "z": -4
       },
       "rate": 0.7
     },
     {
       "kind": "sparks",
       "position": {
-        "x": 13.8,
-        "y": 3.9,
-        "z": -9
+        "x": 13.76,
+        "y": 2.9,
+        "z": -4
       },
       "rate": 0.7
-    },
-    {
-      "kind": "sparks",
-      "position": {
-        "x": -6,
-        "y": 3.9,
-        "z": -13.8
-      },
-      "rate": 0.65
-    },
-    {
-      "kind": "sparks",
-      "position": {
-        "x": 6,
-        "y": 3.9,
-        "z": -13.8
-      },
-      "rate": 0.65
     },
     {
       "kind": "steam",
@@ -902,18 +788,18 @@
     {
       "kind": "drip",
       "position": {
-        "x": -13,
-        "y": 4.8,
-        "z": 0
+        "x": -14,
+        "y": 4,
+        "z": 6
       },
       "rate": 2
     },
     {
       "kind": "drip",
       "position": {
-        "x": 13,
-        "y": 4.8,
-        "z": 0
+        "x": 14,
+        "y": 4,
+        "z": 6
       },
       "rate": 2
     }
@@ -923,8 +809,8 @@
       "model": "city_holo_projector",
       "position": {
         "x": 0,
-        "y": 0,
-        "z": -13.2
+        "y": 4,
+        "z": -14.5
       },
       "yaw": 0,
       "scale": 1.4
@@ -933,8 +819,8 @@
       "model": "city_holo_projector",
       "position": {
         "x": -10,
-        "y": 0,
-        "z": -13.2
+        "y": 4,
+        "z": -14.5
       },
       "yaw": 0,
       "scale": 1.1
@@ -943,8 +829,8 @@
       "model": "city_holo_projector",
       "position": {
         "x": 10,
-        "y": 0,
-        "z": -13.2
+        "y": 4,
+        "z": -14.5
       },
       "yaw": 0,
       "scale": 1.1
@@ -953,21 +839,21 @@
       "model": "city_cable_span",
       "position": {
         "x": 0,
-        "y": 8.5,
-        "z": -5
+        "y": 14,
+        "z": -8
       },
       "yaw": 0,
-      "scale": 2.9
+      "scale": 3.2
     },
     {
       "model": "city_cable_span",
       "position": {
         "x": 0,
         "y": 8.8,
-        "z": 3
+        "z": 1
       },
       "yaw": 0,
-      "scale": 2.9
+      "scale": 3.2
     },
     {
       "model": "city_cable_span",
@@ -977,47 +863,47 @@
         "z": 10
       },
       "yaw": 0,
-      "scale": 2.9
+      "scale": 3.2
     },
     {
       "model": "city_pipe_run",
       "position": {
         "x": -16,
-        "y": 4.5,
-        "z": -4
+        "y": 3.5,
+        "z": -6
       },
       "yaw": 1.5708,
-      "scale": 1.4
+      "scale": 1.1
     },
     {
       "model": "city_pipe_run",
       "position": {
         "x": 16,
-        "y": 4.5,
-        "z": -4
+        "y": 3.5,
+        "z": -6
       },
       "yaw": -1.5708,
-      "scale": 1.4
+      "scale": 1.1
     },
     {
       "model": "city_pipe_run",
       "position": {
         "x": -16,
-        "y": 4.5,
-        "z": 7
+        "y": 3.5,
+        "z": 6
       },
       "yaw": 1.5708,
-      "scale": 1.4
+      "scale": 1.1
     },
     {
       "model": "city_pipe_run",
       "position": {
         "x": 16,
-        "y": 4.5,
-        "z": 7
+        "y": 3.5,
+        "z": 6
       },
       "yaw": -1.5708,
-      "scale": 1.4
+      "scale": 1.1
     },
     {
       "model": "city_ac_unit",
@@ -1044,7 +930,7 @@
       "position": {
         "x": -14,
         "y": 0,
-        "z": -8
+        "z": -4
       },
       "yaw": 1.5708,
       "scale": 1
@@ -1054,50 +940,20 @@
       "position": {
         "x": 14,
         "y": 0,
-        "z": -8
+        "z": -4
       },
       "yaw": -1.5708,
       "scale": 1
     },
     {
-      "model": "city_street_lamp",
+      "model": "city_door",
       "position": {
-        "x": -13.5,
+        "x": -14,
         "y": 0,
-        "z": 10
+        "z": -11
       },
       "yaw": 1.5708,
-      "scale": 1
-    },
-    {
-      "model": "city_street_lamp",
-      "position": {
-        "x": 13.5,
-        "y": 0,
-        "z": 10
-      },
-      "yaw": -1.5708,
-      "scale": 1
-    },
-    {
-      "model": "city_street_lamp",
-      "position": {
-        "x": -13.5,
-        "y": 0,
-        "z": -10
-      },
-      "yaw": 1.5708,
-      "scale": 1
-    },
-    {
-      "model": "city_street_lamp",
-      "position": {
-        "x": 13.5,
-        "y": 0,
-        "z": -10
-      },
-      "yaw": -1.5708,
-      "scale": 1
+      "scale": 1.2
     },
     {
       "model": "city_vent_grate",
@@ -1239,21 +1095,55 @@
         "y": 0,
         "z": -8
       }
-    },
+    }
+  ],
+  "rainShelters": [
     {
-      "kind": "crate",
       "position": {
-        "x": -11.5,
-        "y": 0.5,
-        "z": -1.5
+        "x": -11,
+        "y": 2.3,
+        "z": -1
+      },
+      "size": {
+        "x": 6,
+        "y": 4.6,
+        "z": 14
       }
     },
     {
-      "kind": "crate",
       "position": {
-        "x": 11.5,
-        "y": 0.5,
-        "z": -1.5
+        "x": 11,
+        "y": 2.3,
+        "z": -1
+      },
+      "size": {
+        "x": 6,
+        "y": 4.6,
+        "z": 14
+      }
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": -13.325
+      },
+      "size": {
+        "x": 9.4,
+        "y": 4,
+        "z": 1.35
+      }
+    },
+    {
+      "position": {
+        "x": -12.35,
+        "y": 1.845,
+        "z": -11
+      },
+      "size": {
+        "x": 3.3,
+        "y": 3.69,
+        "z": 3.2
       }
     }
   ]

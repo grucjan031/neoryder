@@ -173,8 +173,11 @@ it.each([
         'weather',
       ]) {
         const part = Reflect.get(dressing, source) as
-          { root: Object3D } | undefined;
-        const count = counts(part ? [part.root] : []);
+          | { root: Object3D }
+          | { root: Object3D }[]
+          | undefined;
+        const parts = Array.isArray(part) ? part : part ? [part] : [];
+        const count = counts(parts.map((item) => item.root));
         rows.push({ source, before: count, after: count });
       }
       const panorama = counts(
@@ -246,11 +249,10 @@ it.each([
   },
 );
 
-// Arena (po init, prawdziwe GLB). Pomiar 2026-11-16: static-blocks 5 -> 1,
-// static-models 11 -> 2, wszystkie siatki sceny 217. Budżet: 217 + ok. 20% zapasu;
-// podnoś go tylko świadomie, z nowym pomiarem w komentarzu.
-const ARENA_SCENE_MESH_BUDGET = 260;
-it('arena: scalone statyczne bloki i modele bloków, budżet siatek', async () => {
+// Klatka po init z GLB: bloki 18 → 4, modele 268 → 26, dekoracje 532 → 18.
+// Łącznie 351 siatek ze wszystkimi pulami VFX, budżet z zapasem ok. 8%.
+const ARENA_SCENE_MESH_BUDGET = 380;
+it('arena: scalone bloki, modele i dekoracje Klatki, budżet siatek', async () => {
   vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
     async (url) => {
       const data = await readFile(`public${url}`);
@@ -269,9 +271,9 @@ it('arena: scalone statyczne bloki i modele bloków, budżet siatek', async () =
   vi.spyOn(staticBatch, 'batchStaticGeometry').mockImplementation(
     (root, owned) => {
       const before = counts([root]);
-      const bounds = new Box3().setFromObject(root);
+      const bounds = new Box3().setFromObject(root, true);
       batch(root, owned);
-      const afterBounds = new Box3().setFromObject(root);
+      const afterBounds = new Box3().setFromObject(root, true);
       expect(afterBounds.min.distanceTo(bounds.min)).toBeLessThan(0.0001);
       expect(afterBounds.max.distanceTo(bounds.max)).toBeLessThan(0.0001);
       expect(counts([root]).materials).toBe(before.materials);
@@ -292,11 +294,12 @@ it('arena: scalone statyczne bloki i modele bloków, budżet siatek', async () =
       three,
     );
     const blocks = rows.filter((row) =>
-      ['static-blocks', 'static-models'].includes(row.source),
+      ['static-blocks', 'static-models', 'static-decor'].includes(row.source),
     );
     expect(blocks.map((row) => row.source)).toEqual([
       'static-blocks',
       'static-models',
+      'static-decor',
     ]);
     for (const row of blocks) {
       expect(row.after.meshes).toBeGreaterThan(0);
@@ -306,8 +309,8 @@ it('arena: scalone statyczne bloki i modele bloków, budżet siatek', async () =
       );
     }
     const after = counts([three]);
-    expect(after.meshes).toBeLessThanOrEqual(ARENA_SCENE_MESH_BUDGET);
     console.log(JSON.stringify({ room: 'arena', sceneMeshes: after, rows }));
+    expect(after.meshes).toBeLessThanOrEqual(ARENA_SCENE_MESH_BUDGET);
   } finally {
     scene.dispose();
   }

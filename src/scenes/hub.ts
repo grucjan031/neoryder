@@ -110,7 +110,7 @@ import { HubNpcs } from './hubNpcs';
 import { HubSoundscape } from './hubSoundscape';
 import { HubFauna } from './hubFauna';
 import { KIDS_CAT_CONVERSATION, KidsCatEncounter } from '../world/hubKidsCat';
-import type { Scene } from './index';
+import type { CameraPose, Scene } from './index';
 import { preserveLiteFx } from '../render/fxMode';
 
 export interface HubSceneOptions {
@@ -1231,7 +1231,7 @@ export class HubScene implements Scene {
     };
   }
 
-  render(alpha: number, frameDt = 1 / 60): void {
+  render(alpha: number, frameDt = 1 / 60, cameraOverride?: CameraPose): void {
     const guideBusy =
       this.cutaway.active ||
       this.stations.opened !== null ||
@@ -1368,7 +1368,7 @@ export class HubScene implements Scene {
       playerState,
       alpha,
       frameDt,
-      !this.seatPose && blend === 0,
+      !cameraOverride && !this.seatPose && blend === 0,
     );
     const pose = this.fpsCamera.update(
       frameDt,
@@ -1388,7 +1388,10 @@ export class HubScene implements Scene {
     }
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
-    if (blend > 0 && this.shotCameraPose) {
+    if (cameraOverride) {
+      camera.position.copy(cameraOverride.position);
+      camera.rotation.copy(cameraOverride.rotation);
+    } else if (blend > 0 && this.shotCameraPose) {
       const { position, look } = this.shotCameraPose;
       const dest = new Vector3().copy(position);
       const rotation = new Matrix4().lookAt(
@@ -1415,7 +1418,7 @@ export class HubScene implements Scene {
       held: 'blade',
       blade: IDLE_BLADE,
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
-      visible: blend === 0,
+      visible: !cameraOverride && blend === 0,
     });
   }
 

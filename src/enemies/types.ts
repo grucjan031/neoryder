@@ -66,6 +66,7 @@ export interface Enemy {
   moveGoal?: Vec3;
   /** false, gdy `moveGoal` jest węzłem pośrednim trasy (bez hamowania i zatrzymania). */
   moveGoalFinal?: boolean;
+  routeToPlayer?: boolean;
   setCarry?(carry: EnemyCarry | null): void;
   readonly id: EntityId;
   readonly definition: EnemyDefinition;

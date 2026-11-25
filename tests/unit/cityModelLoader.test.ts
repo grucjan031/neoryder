@@ -87,6 +87,7 @@ it('rozpoznaje pliki modeli miasta po prefiksach wszystkich zestawów', () => {
     'hw_pillar',
     'roof_vent',
     'dock_crane',
+    'wh_catwalk',
   ])
     expect(isCityModelFile(name), name).toBe(true);
   for (const name of ['crate_small', 'wall_panel', 'portal', ''])

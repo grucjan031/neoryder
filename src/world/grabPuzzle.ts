@@ -7,6 +7,7 @@ import type { Tuning } from '../core/tuning';
 import { CollisionGroup, interactionGroups } from '../physics';
 import type { GrabPhysics } from '../physics/grabPhysics';
 import type { GrabPuzzleDefinition, Hazard } from './roomSchema';
+import { insideLevelZone } from './levelRuntime';
 
 export type PuzzleOutcome = 'solved' | 'skipped';
 
@@ -96,6 +97,28 @@ export class GrabPuzzle {
     this.position = { ...this.body.translation() };
     if (this.outcome !== null) return false;
     this.engaged = this.matchesGoal();
+    if (
+      this.definition.workArea &&
+      this.body.isDynamic() &&
+      !(this.laser && this.engaged) &&
+      !insideLevelZone(this.position, this.definition.workArea)
+    ) {
+      const occupied = this.options.world.intersectionWithShape(
+        this.definition.object.position,
+        this.collider.rotation(),
+        this.collider.shape,
+        undefined,
+        interactionGroups(
+          CollisionGroup.Debris,
+          CollisionGroup.Player | CollisionGroup.Debris,
+        ),
+        this.collider,
+      );
+      if (!occupied) this.reset();
+      this.engaged = false;
+      this.confirmS = 0;
+      return false;
+    }
     this.confirmS = this.engaged ? this.confirmS + dt : 0;
     if (this.engaged && this.confirmS >= this.options.tuning.confirmS)
       return this.finish('solved');
