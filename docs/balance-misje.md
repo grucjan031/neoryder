@@ -1,6 +1,6 @@
 # Balans misji aktu I — fale i eskorta
 
-Data wygenerowania (UTC): 2026-11-24. Generator: `npm run balance:missions`.
+Data wygenerowania (UTC): 2026-11-25. Generator: `npm run balance:missions`.
 
 ## Założenia
 
@@ -16,16 +16,16 @@ DPS serii = obrażenia pocisku × liczba pocisków / (celowanie + odstępy w ser
 
 Ranking według największego odsetka HP spośród trzech ścieżek. Propozycje dotyczą prób w playteście.
 
-1. **m01-maszty / oslona-trzeciego** (m01MastThree) — Ostrze, 593,5% HP; sprawdzić skład fali po usunięciu jednej jednostki typu gunner.
-2. **m01-maszty / patrol-plac** (m01Assault) — Ostrze, 417,9% HP; sprawdzić maxAlive 8 → 6 (obecny szczyt: 7).
-3. **m01-maszty / reinforce-mast-3** (m01Assault) — Ostrze, 417,9% HP; sprawdzić maxAlive 8 → 6 (obecny szczyt: 7).
-4. **m01-maszty / oslona-drugiego** (m01MastTwo) — Ostrze, 285,2% HP; sprawdzić maxAlive 8 → 5 (obecny szczyt: 6).
-5. **m06-odlewnia / piece** (m06Piece) — Ostrze, 281,8% HP; sprawdzić maxAlive 8 → 5 (obecny szczyt: 6).
-6. **m03-list-przewozowy / posterunek-magazynu** (m03Forecourt) — Ostrze, 259,3% HP; sprawdzić maxAlive 8 → 5 (obecny szczyt: 6).
-7. **m06-odlewnia / formowanie-tyl** (m06Rozdzielnia) — Ostrze, 258,2% HP; sprawdzić maxAlive 8 → 5 (obecny szczyt: 6).
-8. **m01-maszty / patrol-tunel** (m01Patrol) — Ostrze, 209,3% HP; sprawdzić maxAlive 8 → 4 (obecny szczyt: 5).
-9. **m01-maszty / patrol-rusztowania** (m01Patrol) — Ostrze, 209,3% HP; sprawdzić maxAlive 8 → 4 (obecny szczyt: 5).
-10. **m03-list-przewozowy / poscig** (m03Pursuit) — Ostrze, 209,3% HP; sprawdzić maxAlive 8 → 4 (obecny szczyt: 5).
+1. **m06-odlewnia / formowanie-tyl** (m06Rozdzielnia) — Ostrze, 258,2% HP; sprawdzić maxAlive 8 → 5 (obecny szczyt: 6).
+2. **m03-list-przewozowy / poscig** (m03Pursuit) — Ostrze, 209,3% HP; sprawdzić maxAlive 8 → 4 (obecny szczyt: 5).
+3. **m05-adiutant / oslona-ladowiska** (m05Escort) — Ostrze, 209,3% HP; sprawdzić maxAlive 8 → 4 (obecny szczyt: 5).
+4. **m06-odlewnia / piece** (m06Piece) — Ostrze, 199,9% HP; sprawdzić skład fali po usunięciu jednej jednostki typu gunner.
+5. **m03-list-przewozowy / posterunek-magazynu** (m03Forecourt) — Ostrze, 189,1% HP; sprawdzić skład fali po usunięciu jednej jednostki typu gunner.
+6. **m06-odlewnia / formowanie-front** (m06Formowanie) — Ostrze, 182,9% HP; sprawdzić maxAlive 8 → 4 (obecny szczyt: 5).
+7. **m01-maszty / oslona-trzeciego** (m01MastThree) — Ostrze, 166,2% HP; sprawdzić maxAlive 4 → 2 (obecny szczyt: 3).
+8. **m05-adiutant / tarcze-suwnic** (m05Shields) — Strzelec, 160,9% HP; sprawdzić skład fali po usunięciu jednej jednostki typu drone.
+9. **m04-ladunek-klasy-k / wschodni** (m04Junction) — Ostrze, 159,5% HP; sprawdzić maxAlive 6 → 4 (obecny szczyt: 5).
+10. **m04-ladunek-klasy-k / executor** (m04Executor) — Ostrze, 159,3% HP; sprawdzić maxAlive 6 → 3 (obecny szczyt: 4).
 
 ## Starcia w kolejności sekcji
 
@@ -36,38 +36,38 @@ Flagi ścieżek według niezaokrąglonego wyniku: powyżej 60% HP ciężkie, pow
 | Sekcja / starcie | Wyzwalacz | Fala i skład tur | HP | Żywi | DPS | Czas (s) | Utrata HP (%) | Flagi ścieżek | Zmiana |
 | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |
 | sluza / patrol-wejscie | strefa | m01Approach: assaulter ×2 | 120 | 2 / 8 / 12 | 7,4 | 4,1 / 3,4 / 3,7 | 30,2 / 25,4 / 27,2 | — / — / — | — |
-| targ / oslona-pierwszego | strefa po patrol-wejscie | m01MastOne: assaulter ×2, gunner ×1, turret ×1 | 235 | 4 / 8 / 12 | 15,4 | 7,8 / 6,5 / 6,7 | 119,0 / 99,3 / 103,1 | zabójcze / ciężkie / zabójcze | presja skok ×3,9 |
-| targ / reinforce-mast-1 | wybuch mast-1 | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,8, presja spadek ×0,6 |
-| tunel / patrol-tunel | strefa po mast-1 | m01Patrol: assaulter ×3, gunner ×2 | 270 | 5 / 8 / 12 | 21,0 | 10,0 / 8,8 / 9,5 | 209,3 / 184,6 / 200,3 | zabójcze / zabójcze / zabójcze | presja skok ×3,0 |
-| dziedziniec / oslona-drugiego | strefa po patrol-tunel | m01MastTwo: assaulter ×3, gunner ×2, turret ×1 | 340 | 6 / 8 / 12 | 24,0 | 11,9 / 10,3 / 11,1 | 285,2 / 247,3 / 265,3 | zabójcze / zabójcze / zabójcze | — |
-| dziedziniec / reinforce-mast-2 | wybuch mast-2 | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,5, presja spadek ×0,2 |
-| zaplecze / patrol-rusztowania | strefa po helix | m01Patrol: assaulter ×3, gunner ×2 | 270 | 5 / 8 / 12 | 21,0 | 10,0 / 8,8 / 9,5 | 209,3 / 184,6 / 200,3 | zabójcze / zabójcze / zabójcze | presja skok ×3,0 |
-| plac / patrol-plac | strefa po patrol-rusztowania | m01Assault: assaulter ×4, gunner ×3 | 375 | 7 / 8 / 12 | 29,7 | 14,1 / 12,6 / 13,9 | 417,9 / 374,3 / 411,4 | zabójcze / zabójcze / zabójcze | presja skok ×2,0 |
-| plac / oslona-trzeciego | strefa po patrol-plac | m01MastThree: assaulter ×4, gunner ×3, turret ×2 | 515 | 8 / 8 / 12 | 32,7 | 18,2 / 16,2 / 17,5 | 593,5 / 527,8 / 573,4 | zabójcze / zabójcze / zabójcze | — |
-| plac / reinforce-mast-3 | wybuch mast-3 | m01Assault: assaulter ×4, gunner ×3 | 375 | 7 / 8 / 12 | 29,7 | 14,1 / 12,6 / 13,9 | 417,9 / 374,3 / 411,4 | zabójcze / zabójcze / zabójcze | czas spadek ×0,8, presja spadek ×0,7 |
+| targ / oslona-pierwszego | strefa po patrol-wejscie | m01MastOne: assaulter ×1, turret ×1 → assaulter ×1, gunner ×1 | 235 | 2 / 2 / 12 | 8,7 | 7,5 / 6,1 / 6,1 | 57,4 / 46,6 / 46,6 | — / — / — | — |
+| targ / reinforce-mast-1 | wybuch mast-1 | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,8 |
+| tunel / patrol-tunel | strefa po mast-1 | m01Patrol: assaulter ×2 → assaulter ×2, gunner ×1 | 285 | 3 / 3 / 12 | 12,4 | 9,9 / 8,4 / 8,9 | 102,3 / 86,5 / 91,5 | zabójcze / ciężkie / ciężkie | — |
+| dziedziniec / oslona-drugiego | strefa po patrol-tunel | m01MastTwo: assaulter ×2, turret ×1 → assaulter ×2, gunner ×1 | 355 | 3 / 3 / 12 | 12,4 | 11,8 / 9,9 / 10,4 | 134,4 / 112,6 / 118,3 | zabójcze / zabójcze / zabójcze | — |
+| dziedziniec / reinforce-mast-2 | wybuch mast-2 | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,5, presja spadek ×0,5 |
+| zaplecze / patrol-rusztowania | strefa po helix | m01Patrol: assaulter ×2 → assaulter ×2, gunner ×1 | 285 | 3 / 3 / 12 | 12,4 | 9,9 / 8,4 / 8,9 | 102,3 / 86,5 / 91,5 | zabójcze / ciężkie / ciężkie | — |
+| plac / patrol-plac | strefa po patrol-rusztowania | m01Assault: assaulter ×2, gunner ×1 → assaulter ×2 → assaulter ×1, gunner ×1 | 390 | 3 / 4 / 12 | 12,4 | 13,6 / 11,4 / 11,9 | 134,0 / 112,8 / 117,7 | zabójcze / zabójcze / zabójcze | — |
+| plac / oslona-trzeciego | strefa po patrol-plac | m01MastThree: assaulter ×2, turret ×1 → assaulter ×2, gunner ×1 → assaulter ×1, gunner ×1 | 460 | 3 / 4 / 12 | 12,4 | 15,5 / 12,9 / 13,4 | 166,2 / 138,9 / 144,6 | zabójcze / zabójcze / zabójcze | — |
+| plac / reinforce-mast-3 | wybuch mast-3 | m01Assault: assaulter ×2, gunner ×1 → assaulter ×2 → assaulter ×1, gunner ×1 | 390 | 3 / 4 / 12 | 12,4 | 13,6 / 11,4 / 11,9 | 134,0 / 112,8 / 117,7 | zabójcze / zabójcze / zabójcze | czas spadek ×0,9, presja spadek ×0,8 |
 
 ### m02-punkt-kontrolny — Punkt kontrolny
 
 | Sekcja / starcie | Wyzwalacz | Fala i skład tur | HP | Żywi | DPS | Czas (s) | Utrata HP (%) | Flagi ścieżek | Zmiana |
 | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |
-| kordon / patrol-kordon | strefa | m02Patrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,4, presja spadek ×0,2 |
-| bocznica / rampa | strefa po patrol-kordon | m02Ramp: gunner ×2, turret ×1 | 160 | 3 / 6 / 12 | 12,9 | 5,6 / 5,0 / 5,2 | 72,7 / 64,0 / 67,2 | ciężkie / ciężkie / ciężkie | czas spadek ×1,0 |
-| cele / straz-cel | strefa po rampa | m02Guards: assaulter ×2, gunner ×2 | 210 | 4 / 6 / 12 | 17,3 | 7,8 / 6,9 / 7,4 | 134,9 / 118,9 / 127,6 | zabójcze / zabójcze / zabójcze | — |
-| cele / poscig-1 | strefa po cell-1 | m02Pursuit: assaulter ×2 | 120 | 2 / 6 / 12 | 7,4 | 4,1 / 3,4 / 3,7 | 30,2 / 25,4 / 27,2 | — / — / — | czas spadek ×0,5, presja spadek ×0,2 |
-| cele / poscig-2 | strefa po cell-2 | m02Pursuit: assaulter ×2 | 120 | 2 / 6 / 12 | 7,4 | 4,1 / 3,4 / 3,7 | 30,2 / 25,4 / 27,2 | — / — / — | — |
-| dowodztwo / oslona-suwnicy | strefa po cell-2 | m02Ramp: gunner ×2, turret ×1 | 160 | 3 / 6 / 12 | 12,9 | 5,6 / 5,0 / 5,2 | 72,7 / 64,0 / 67,2 | ciężkie / ciężkie / ciężkie | presja skok ×2,5 |
-| dowodztwo / egzekutor | strefa po cell-3 | m02Executor: executor ×1, gunner ×2 | 310 | 3 / 6 / 12 | 15,6 | 6,8 / 5,6 / 6,5 | 106,1 / 86,7 / 100,7 | zabójcze / ciężkie / zabójcze | — |
-| dowodztwo / poscig-3 | strefa po cell-3 | m02Pursuit: assaulter ×2 | 120 | 2 / 6 / 12 | 7,4 | 4,1 / 3,4 / 3,7 | 30,2 / 25,4 / 27,2 | — / — / — | czas spadek ×0,6, presja spadek ×0,3 |
+| kordon / patrol-kordon | strefa | m02Patrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,4, presja spadek ×0,5 |
+| bocznica / rampa | strefa po patrol-kordon | m02Ramp: gunner ×3, turret ×1 | 205 | 4 / 4 / 12 | 17,9 | 7,6 / 6,9 / 7,4 | 135,6 / 122,8 / 131,7 | zabójcze / zabójcze / zabójcze | — |
+| cele / straz-cel | strefa po rampa | m02Guards: assaulter ×2, gunner ×2 | 210 | 4 / 6 / 12 | 17,3 | 7,8 / 6,9 / 7,4 | 134,9 / 118,9 / 127,6 | zabójcze / zabójcze / zabójcze | presja spadek ×1,0 |
+| cele / poscig-1 | strefa po cell-1 | m02Pursuit: assaulter ×4 | 240 | 4 / 4 / 12 | 14,8 | 8,4 / 7,3 / 8,0 | 124,5 / 107,5 / 118,6 | zabójcze / zabójcze / zabójcze | presja spadek ×0,9 |
+| cele / poscig-2 | strefa po cell-2 | m02Pursuit: assaulter ×4 | 240 | 4 / 4 / 12 | 14,8 | 8,4 / 7,3 / 8,0 | 124,5 / 107,5 / 118,6 | zabójcze / zabójcze / zabójcze | — |
+| dowodztwo / oslona-suwnicy | strefa po cell-2 | m02Ramp: gunner ×3, turret ×1 | 205 | 4 / 4 / 12 | 17,9 | 7,6 / 6,9 / 7,4 | 135,6 / 122,8 / 131,7 | zabójcze / zabójcze / zabójcze | czas spadek ×0,9 |
+| dowodztwo / egzekutor | strefa po cell-3 | m02Executor: executor ×1, gunner ×2 | 310 | 3 / 6 / 12 | 15,6 | 6,8 / 5,6 / 6,5 | 106,1 / 86,7 / 100,7 | zabójcze / ciężkie / zabójcze | czas spadek ×0,9, presja spadek ×0,8 |
+| dowodztwo / poscig-3 | strefa po cell-3 | m02Pursuit: assaulter ×4 | 240 | 4 / 4 / 12 | 14,8 | 8,4 / 7,3 / 8,0 | 124,5 / 107,5 / 118,6 | zabójcze / zabójcze / zabójcze | — |
 
 ### m03-list-przewozowy — List przewozowy
 
 | Sekcja / starcie | Wyzwalacz | Fala i skład tur | HP | Żywi | DPS | Czas (s) | Utrata HP (%) | Flagi ścieżek | Zmiana |
 | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |
-| nabrzeze / patrol-nabrzeze | strefa | m03Quay: assaulter ×2, gunner ×1 | 165 | 3 / 8 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | presja skok ×2,4 |
-| plac-celny / oslona-celna | strefa po patrol-nabrzeze | m03Customs: shielder ×1, drone ×2, turret ×1 | 196 | 4 / 8 / 12 | 12,8 | 7,1 / 6,3 / 6,3 | 91,0 / 79,9 / 80,1 | ciężkie / ciężkie / ciężkie | — |
-| przedpole / posterunek-magazynu | strefa po oslona-celna | m03Forecourt: shielder ×2, gunner ×2, turret ×2 | 410 | 6 / 8 / 12 | 21,8 | 11,9 / 10,5 / 11,6 | 259,3 / 229,5 / 254,0 | zabójcze / zabójcze / zabójcze | presja skok ×3,0 |
-| magazyn / pierwsza-zmiana | strefa po posterunek-magazynu | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,5, presja spadek ×0,3 |
-| magazyn / transfer-1 | terminal:0 przy 25% | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | — |
+| nabrzeze / patrol-nabrzeze | strefa | m03Quay: assaulter ×3, gunner ×1 | 225 | 3 / 3 / 12 | 12,4 | 8,0 / 6,9 / 7,4 | 98,8 / 84,8 / 91,0 | ciężkie / ciężkie / ciężkie | czas spadek ×0,9, presja spadek ×0,8 |
+| plac-celny / oslona-celna | strefa po patrol-nabrzeze | m03Customs: shielder ×2, drone ×2, turret ×1 | 286 | 5 / 5 / 12 | 15,7 | 9,3 / 8,3 / 9,0 | 146,1 / 130,2 / 141,9 | zabójcze / zabójcze / zabójcze | — |
+| przedpole / posterunek-magazynu | strefa po oslona-celna | m03Forecourt: shielder ×2, gunner ×2, turret ×2 | 410 | 4 / 4 / 12 | 15,9 | 11,9 / 10,5 / 11,6 | 189,1 / 167,3 / 185,2 | zabójcze / zabójcze / zabójcze | — |
+| magazyn / pierwsza-zmiana | strefa po posterunek-magazynu | m03Quay: assaulter ×3, gunner ×1 | 225 | 3 / 3 / 12 | 12,4 | 8,0 / 6,9 / 7,4 | 98,8 / 84,8 / 91,0 | ciężkie / ciężkie / ciężkie | czas spadek ×0,7, presja spadek ×0,5 |
+| magazyn / transfer-1 | terminal:0 przy 25% | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,7, presja spadek ×0,7 |
 | magazyn / transfer-2 | terminal:1 przy 55% | missionDockShields: shielder ×2, drone ×2 | 216 | 4 / 6 / 12 | 12,7 | 7,4 / 6,8 / 7,5 | 93,9 / 86,1 / 95,6 | ciężkie / ciężkie / ciężkie | — |
 | magazyn / transfer-3 | terminal:2 przy 85% | missionPatrol: assaulter ×2, gunner ×1 | 165 | 3 / 6 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,7, presja spadek ×0,7 |
 | magazyn / poscig | strefa po terminal | m03Pursuit: assaulter ×3, gunner ×2 | 270 | 5 / 8 / 12 | 21,0 | 10,0 / 8,8 / 9,5 | 209,3 / 184,6 / 200,3 | zabójcze / zabójcze / zabójcze | presja skok ×3,0 |
@@ -85,18 +85,18 @@ Flagi ścieżek według niezaokrąglonego wyniku: powyżej 60% HP ciężkie, pow
 
 | Sekcja / starcie | Wyzwalacz | Fala i skład tur | HP | Żywi | DPS | Czas (s) | Utrata HP (%) | Flagi ścieżek | Zmiana |
 | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |
-| estakada / tylna-straz | strefa | m05RearGuard: assaulter ×2, gunner ×1, turret ×1 | 235 | 4 / 8 / 12 | 15,4 | 7,8 / 6,5 / 6,7 | 119,0 / 99,3 / 103,1 | zabójcze / ciężkie / zabójcze | czas spadek ×0,9, presja spadek ×0,7 |
-| suwnice / tarcze-suwnic | strefa po estakada | m05Shields: shielder ×2, drone ×2 | 216 | 4 / 8 / 12 | 12,7 | 7,4 / 6,8 / 7,5 | 93,9 / 86,1 / 95,6 | ciężkie / ciężkie / ciężkie | presja spadek ×0,9 |
-| ladowisko / snajperzy | strefa po suwnice | m05Snipers: sniper ×2 | 70 | 2 / 8 / 12 | 5,3 | 3,6 / 3,2 / 3,7 | 18,8 / 16,9 / 19,3 | — / — / — | czas spadek ×0,5, presja spadek ×0,2 |
-| ladowisko / oslona-ladowiska | strefa po snajperzy | m05Escort: assaulter ×3, gunner ×2 | 270 | 5 / 8 / 12 | 21,0 | 10,0 / 8,8 / 9,5 | 209,3 / 184,6 / 200,3 | zabójcze / zabójcze / zabójcze | czas skok ×2,7, presja skok ×10,8 |
+| estakada / tylna-straz | strefa | m05RearGuard: assaulter ×2, gunner ×1, turret ×1 → assaulter ×2 | 355 | 4 / 4 / 12 | 15,4 | 11,8 / 9,9 / 10,4 | 149,2 / 124,7 / 130,4 | zabójcze / zabójcze / zabójcze | presja spadek ×0,9 |
+| suwnice / tarcze-suwnic | strefa po estakada | m05Shields: shielder ×3, drone ×2 | 306 | 5 / 5 / 12 | 15,7 | 9,5 / 8,8 / 10,3 | 149,7 / 137,8 / 160,9 | zabójcze / zabójcze / zabójcze | czas spadek ×0,9 |
+| ladowisko / snajperzy | strefa po suwnice | m05Snipers: sniper ×2, gunner ×1, assaulter ×1 | 175 | 4 / 4 / 12 | 13,9 | 7,3 / 6,3 / 6,7 | 100,8 / 87,0 / 93,4 | zabójcze / ciężkie / ciężkie | czas spadek ×0,7, presja spadek ×0,6 |
+| ladowisko / oslona-ladowiska | strefa po snajperzy | m05Escort: assaulter ×3, gunner ×2 | 270 | 5 / 8 / 12 | 21,0 | 10,0 / 8,8 / 9,5 | 209,3 / 184,6 / 200,3 | zabójcze / zabójcze / zabójcze | presja skok ×2,1 |
 
 ### m06-odlewnia — Odlewnia
 
 | Sekcja / starcie | Wyzwalacz | Fala i skład tur | HP | Żywi | DPS | Czas (s) | Utrata HP (%) | Flagi ścieżek | Zmiana |
 | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |
-| sluza / patrol-sluza | strefa | m06Sluza: assaulter ×2, gunner ×1 | 165 | 3 / 8 / 12 | 12,4 | 5,8 / 5,0 / 5,2 | 72,1 / 61,2 / 64,2 | ciężkie / ciężkie / ciężkie | czas spadek ×0,6, presja spadek ×0,3 |
-| piece / piece | strefa po patrol-sluza | m06Piece: assaulter ×3, gunner ×2, drone ×1 | 288 | 6 / 8 / 12 | 24,4 | 11,5 / 10,3 / 11,1 | 281,8 / 251,5 / 269,8 | zabójcze / zabójcze / zabójcze | czas skok ×2,1, presja skok ×4,1 |
-| formowanie / formowanie-front | strefa po piece | m06Formowanie: shielder ×2, gunner ×2, turret ×1 | 340 | 5 / 8 / 12 | 18,8 | 9,7 / 8,5 / 9,5 | 182,9 / 159,9 / 178,3 | zabójcze / zabójcze / zabójcze | czas spadek ×0,8, presja spadek ×0,6 |
+| sluza / patrol-sluza | strefa | m06Sluza: assaulter ×2, gunner ×2 | 210 | 4 / 4 / 12 | 17,3 | 7,8 / 6,9 / 7,4 | 134,9 / 118,9 / 127,6 | zabójcze / zabójcze / zabójcze | czas spadek ×0,8, presja spadek ×0,6 |
+| piece / piece | strefa po patrol-sluza | m06Piece: assaulter ×3, gunner ×2, drone ×1 | 288 | 4 / 4 / 12 | 17,3 | 11,5 / 10,3 / 11,1 | 199,9 / 178,4 / 191,3 | zabójcze / zabójcze / zabójcze | — |
+| formowanie / formowanie-front | strefa po piece | m06Formowanie: shielder ×2, gunner ×2, turret ×1 | 340 | 5 / 8 / 12 | 18,8 | 9,7 / 8,5 / 9,5 | 182,9 / 159,9 / 178,3 | zabójcze / zabójcze / zabójcze | czas spadek ×0,8, presja spadek ×0,9 |
 | formowanie / formowanie-tyl | strefa po formowanie-front | m06Rozdzielnia: drone ×2, assaulter ×3, gunner ×1 | 261 | 6 / 8 / 12 | 22,9 | 11,3 / 10,1 / 10,6 | 258,2 / 230,7 / 242,5 | zabójcze / zabójcze / zabójcze | — |
 | przedpokoj / straz | strefa po formowanie-tyl | m06Straz: executor ×1, shielder ×1, sniper ×1, gunner ×1 | 390 | 4 / 8 / 12 | 16,2 | 8,5 / 6,7 / 7,3 | 138,0 / 108,3 / 118,8 | zabójcze / zabójcze / zabójcze | czas spadek ×0,7, presja spadek ×0,5 |
 | centrum / brandt | strefa po straz | m06Brandt: securityChief ×1 | 900 | 1 / 1 / 12 | 5,6 | 9,9 / 25,2 / 7,8 | 55,1 / 140,1 / 43,1 | — / zabójcze / — | presja spadek ×0,7 |
@@ -117,14 +117,14 @@ Każde starcie i każda ścieżka mają równą wagę w średniej misji.
 
 | Misja | Starcia | Średni czas (s) | Średnia utrata HP (%) | Zmiana względem poprzedniej misji |
 | --- | ---: | ---: | ---: | --- |
-| m01-maszty | 10 | 9,6 | 229,6 | — |
-| m02-punkt-kontrolny | 8 | 5,1 | 63,7 | czas spadek ×0,5, presja spadek ×0,3 |
-| m03-list-przewozowy | 8 | 7,0 | 110,6 | — |
-| m04-ladunek-klasy-k | 4 | 7,2 | 118,0 | — |
-| m05-adiutant | 4 | 6,8 | 103,8 | czas spadek ×0,9, presja spadek ×0,9 |
-| m06-odlewnia | 6 | 9,7 | 158,7 | — |
+| m01-maszty | 10 | 8,8 | 91,1 | — |
+| m02-punkt-kontrolny | 8 | 7,1 | 112,7 | czas spadek ×0,8 |
+| m03-list-przewozowy | 8 | 7,8 | 115,6 | — |
+| m04-ladunek-klasy-k | 4 | 7,2 | 118,0 | czas spadek ×0,9 |
+| m05-adiutant | 4 | 9,1 | 144,0 | — |
+| m06-odlewnia | 6 | 10,0 | 155,9 | — |
 
-Misje — przebieg niemalejący: czas nie, presja nie.
+Misje — przebieg niemalejący: czas nie, presja tak.
 
 Starcia — przebieg niemalejący: czas nie, presja nie.
 
@@ -134,7 +134,7 @@ Model pomija oczekiwanie na spawny, osłony, tokeny ataku, utratę linii widzeni
 
 ## Wynik generatora
 
-`npm run balance:missions` — liczba misji: 6, starć: 40, eskort: 1. 35 starć przekracza 60% HP dla co najmniej jednej ścieżki.
+`npm run balance:missions` — liczba misji: 6, starć: 40, eskort: 1. 38 starć przekracza 60% HP dla co najmniej jednej ścieżki.
 
 ### Sprawdzenia wersji R4 z 24.11.2026
 

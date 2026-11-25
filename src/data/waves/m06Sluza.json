@@ -2,7 +2,7 @@
   "id": "m06Sluza",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 8,
+  "maxAlive": 4,
   "minSpawnDistance": 6,
   "spawnPoints": [
     {
@@ -20,7 +20,7 @@
         },
         {
           "enemy": "gunner",
-          "count": 1
+          "count": 2
         }
       ]
     }

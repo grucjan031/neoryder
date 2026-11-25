@@ -334,3 +334,23 @@ dostępności przełącznik „Podpowiedzi w misjach” jest domyślnie włączo
 instrukcji według misji. Konsola misji obsługuje `hints list`, `hints off`,
 `hints on` i `hints reset`. Reset czyści historię bieżącej misji, a przy
 włączonych instrukcjach ponownie zgłasza start.
+
+## Krzywa aktu I
+
+Średnia utrata HP w raporcie `npm run balance:missions` służy do porównywania
+presji między misjami. Każde starcie i każda z trzech ścieżek mają równą wagę.
+Liczba wrogów obejmuje wszystkie tury i posiłki na normalnym poziomie trudności.
+
+| Misja |                 Cel presji (%) | Presja przed → po (%) | Wrogowie przed → po |
+| ----- | -----------------------------: | --------------------: | ------------------: |
+| M01   |                           ≤ 95 |          229,6 → 76,1 |             51 → 50 |
+| M02   |                        100–115 |          63,7 → 112,7 |             22 → 30 |
+| M03   |                        115–130 |         110,6 → 115,6 |             31 → 34 |
+| M04   | ok. 125–140 (osobne strojenie) |         118,0 → 118,0 |             16 → 16 |
+| M05   |                        135–150 |         103,8 → 144,0 |             15 → 20 |
+| M06   |                        150–175 |         158,7 → 155,9 |             25 → 26 |
+
+W M01 osłona trzeciego masztu osiąga średnio 114,0% HP, czyli 1,50× średniej
+misji. Największy wzrost między kolejnymi starciami poza finałami wynosi 1,98×
+(M02, od kordonu do rampy). Wyjątkiem powyżej 2,2× jest końcowy pościg M03
+po ostatniej turze obrony terminala (3,0×).

@@ -2,7 +2,7 @@
   "id": "m02Ramp",
   "firstBreakS": 0,
   "breakS": 0,
-  "maxAlive": 6,
+  "maxAlive": 4,
   "minSpawnDistance": 2,
   "spawnPoints": [
     {
@@ -16,7 +16,7 @@
       "groups": [
         {
           "enemy": "gunner",
-          "count": 2
+          "count": 3
         },
         {
           "enemy": "turret",

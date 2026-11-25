@@ -1,8 +1,8 @@
 {
   "id": "m01MastTwo",
   "firstBreakS": 0,
-  "breakS": 0,
-  "maxAlive": 8,
+  "breakS": 2,
+  "maxAlive": 3,
   "minSpawnDistance": 6,
   "spawnPoints": [
     {
@@ -16,14 +16,23 @@
       "groups": [
         {
           "enemy": "assaulter",
-          "count": 3
-        },
-        {
-          "enemy": "gunner",
           "count": 2
         },
         {
           "enemy": "turret",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 2
+        },
+        {
+          "enemy": "gunner",
           "count": 1
         }
       ]
