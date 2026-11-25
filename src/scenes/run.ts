@@ -29,6 +29,7 @@ import { createIndexedDbSaveStore } from '../core/save';
 import type { RunEnded, SaveStore } from '../core/save';
 import { localChallengeDate } from '../core/challengeDate';
 import { dailyChallenge } from '../world/dailyChallenge';
+import { pathToNode, pickRoomChain } from '../world/roomChain';
 import { loadoutDefinitions } from '../progression/loadout';
 import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
@@ -961,12 +962,26 @@ export class RunScene implements Scene {
     return true;
   }
 
-  private chooseRoom(node: MapNode, rng: Rng): RoomDefinition {
+  private chooseRoom(node: MapNode, seed: string | number): RoomDefinition {
+    const path = pathToNode(this.manager.state.visited, node.id);
+    const nodes = new Map(
+      this.manager.state.map.layers.flat().map((entry) => [entry.id, entry]),
+    );
+    const ids = pickRoomChain(seed, path, (id) =>
+      this.roomCandidates(nodes.get(id) ?? node).map((room) => room.id),
+    );
+    const id = ids[ids.length - 1]!;
+    const room = this.rooms.get(id);
+    if (!room) throw new Error(`Nieznany pokój: ${id}`);
+    return room;
+  }
+
+  private roomCandidates(node: MapNode): RoomDefinition[] {
     const mission = missionDefinitions.get(this.manager.state.missionId ?? '');
     if (node.fixed) {
       const room = this.rooms.get(node.fixed.roomId);
       if (!room) throw new Error(`Nieznany pokój: ${node.fixed.roomId}`);
-      return room;
+      return [room];
     }
     const pool =
       mission?.roomPools?.find(
@@ -995,9 +1010,7 @@ export class RunScene implements Scene {
             !room.arena?.exclusive &&
             !room.id.endsWith('Mission'),
         );
-    return rng
-      .fork(`room-layout:${node.id}`)
-      .pick(available.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
+    return available.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
   /**
@@ -1026,7 +1039,7 @@ export class RunScene implements Scene {
     const node = this.manager.currentNode!;
     const state = this.manager.serialize();
     const rng = new Rng(state.seed);
-    const layout = this.chooseRoom(node, rng);
+    const layout = this.chooseRoom(node, state.seed);
     const combat =
       node.type === 'combat' || node.type === 'elite' || node.type === 'boss';
     const puzzle = node.type === 'puzzle';

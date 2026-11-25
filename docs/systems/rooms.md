@@ -125,8 +125,8 @@ Pule `roomPools` w `src/data/sectors/kurogane.json`:
 
 | Typ    | Pokoje                                                                                    |
 | ------ | ----------------------------------------------------------------------------------------- |
-| combat | `run1` (magazyn Kurogane Arms, mapa wzorcowa; na razie jedyna mapa walki w zwykłym runie) |
-| elite  | `run1` (węzeł elitarny losuje mocniejsze fale na tej samej mapie)                         |
+| combat | `run1` (magazyn Kurogane Arms), `run2` (galeria Atrium Nova); losowane bez powtórki pod rząd |
+| elite  | `run1`, `run2` (węzeł elitarny losuje mocniejsze fale na tych samych mapach)              |
 | shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                           |
 | rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                          |
 | puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                          |
@@ -153,6 +153,12 @@ toLayer` (pierwszy pasujący wpis), inaczej `roomPools[typ]` sektora, inaczej
 4. Kandydaci sortowani po `id` (`localeCompare`), potem
    `new Rng(seed runu).fork('room-layout:<nodeId>').pick(kandydaci)` — jedno
    losowanie z osobnego strumienia, więc nie przesuwa innych strumieni.
+5. Bez powtórki pod rząd: z kandydatów wypada pokój poprzednio odwiedzonego węzła
+   (poprzedni wpis `visited` przed bieżącym węzłem), o ile zostaje ≥ 1 kandydat;
+   pula jednoelementowa działa jak dotąd. Pokój poprzednika liczy się tą samą regułą
+   od początku ścieżki (`pickRoomChain` w `src/world/roomChain.ts`, czysta funkcja:
+   seed + lista węzłów + kandydaci węzła), więc nie ma nowego pola w zapisie, a po
+   wczytaniu wynik jest identyczny. Sklep lub odpoczynek między walkami przerywa ciąg.
 
 ## Mapy Neon Noir
 
