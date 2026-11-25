@@ -36,8 +36,23 @@ export type MaterialKind =
   | 'light_white';
 
 /** Rodzaje bez własnego koloru w tuning (kolor pochodny). */
-type StyleKind = MaterialKind | 'enemyDark' | 'helixShell';
-type PaletteKind = Exclude<StyleKind, UrbanKind>;
+const clinicSurfaces = {
+  clinic_laminate: { color: '#e6e3d2', roughness: 0.43 },
+  clinic_vinyl: { color: '#969ca0', roughness: 0.7 },
+  clinic_glass: {
+    color: '#a5b5ab',
+    roughness: 0.16,
+    transparent: true,
+    opacity: 0.22,
+    depthWrite: false,
+  },
+} as const;
+type ClinicKind = keyof typeof clinicSurfaces;
+type StyleKind = MaterialKind | 'enemyDark' | 'helixShell' | ClinicKind;
+function isClinicKind(kind: StyleKind): kind is ClinicKind {
+  return Object.hasOwn(clinicSurfaces, kind);
+}
+type PaletteKind = Exclude<StyleKind, UrbanKind | ClinicKind>;
 
 function isUrbanKind(kind: StyleKind): kind is UrbanKind {
   return urbanKinds.includes(kind as UrbanKind);
@@ -56,6 +71,8 @@ const names = new Map<string, StyleKind>([
   ['mat_player_cyan', 'player'],
   ['mat_power_magenta', 'power'],
 ]);
+for (const kind of Object.keys(clinicSurfaces) as ClinicKind[])
+  names.set(`mat_${kind}`, kind);
 for (const kind of [
   ...urbanKinds,
   'neon_amber',
@@ -172,15 +189,17 @@ export function getMaterial(kind: StyleKind): StyleMaterial {
     throw new Error(`Nieznany rodzaj materiału: ${kind}`);
   const existing = cache.get(kind);
   if (existing) return existing;
-  const material = isUrbanKind(kind)
-    ? createUrbanMaterial(kind)
-    : kind === 'world' ||
-        kind === 'enemy' ||
-        kind === 'enemyDark' ||
-        kind === 'helixShell' ||
-        kind === 'interactive'
-      ? new MeshToonMaterial({ color: colorFor(kind), gradientMap })
-      : new MeshBasicMaterial({ color: colorFor(kind), toneMapped: false });
+  const material = isClinicKind(kind)
+    ? new MeshStandardMaterial(clinicSurfaces[kind])
+    : isUrbanKind(kind)
+      ? createUrbanMaterial(kind)
+      : kind === 'world' ||
+          kind === 'enemy' ||
+          kind === 'enemyDark' ||
+          kind === 'helixShell' ||
+          kind === 'interactive'
+        ? new MeshToonMaterial({ color: colorFor(kind), gradientMap })
+        : new MeshBasicMaterial({ color: colorFor(kind), toneMapped: false });
   if (emissiveKinds.has(kind)) material.userData.bloom = true;
   if (kind === 'helixShell')
     // Płyty Helixy: jasna sterylna biel, ale krawędź wciąż w czerwieni wroga.
@@ -205,7 +224,8 @@ export function syncMaterials(): void {
     0.01,
   );
   for (const [kind, material] of cache) {
-    if (!isUrbanKind(kind)) colorFor(kind, material.color);
+    if (!isUrbanKind(kind) && !isClinicKind(kind))
+      colorFor(kind, material.color);
   }
   syncPrintPower(getPowerLevel());
 }
