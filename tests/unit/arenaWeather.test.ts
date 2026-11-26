@@ -96,6 +96,7 @@ describe('pogoda z danych', () => {
       'clearNight',
       'drizzleWind',
       'indoorIndustrial',
+      'kuroganeSecretLab',
       'kuroganeWarehouse',
       'mallAfterHours',
       'rain',

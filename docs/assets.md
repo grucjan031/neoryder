@@ -303,6 +303,62 @@ Zasoby własne projektu. Nowe obrazy wygenerowano sekwencyjnie wbudowanym **imag
 
 Szyldy i decale są ładowane po nazwie (`textureId`, bez zamkniętej listy). Model informatora ma już materiał `mat_screen_mall_directory`. Napisy zachowują proporcje i ciepłą paletę bez czerwieni, cyanu i magenty. Napisy i alfa są zapisane bezstratnie. Kamień i strop bazowy używają WebP quality 85, bazowe terrazzo pozostaje bezstratne (kodek YUV wprowadzał pojedyncze czerwone piksele). Powierzchnie komiksowe przechodzą istniejącą kontrolę palety po kompresji. Raport `artifacts/maps/run2/texture-validation.json` sprawdza rzeczywiście zdekodowane pliki, wymiary, paletę i przeciwległe krawędzie.
 
+## Tajne laboratorium Kurogane Arms (run3)
+
+Generator buduje 25 własnych modeli Sektora X-51 i renderuje studyjny podgląd każdego z nich. Polecenia należy uruchamiać z katalogu projektu.
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python-exit-code 1 --python tools/blender/sets/kurogane_lab.py
+node tools/levels/mapModelBounds.mjs
+```
+
+Opcja `-- --only lab_cocoon_tall lab_cocoon_breached` wybiera modele do ponownego eksportu. GLB trafiają do `public/assets/models/city/`, a podglądy do `artifacts/models/lab/`. Oś Y biegnie w górę, front w +Z. Początek leży pośrodku podstawy, z wyjątkiem tablicy śledczej, której tył leży na Z = 0. Wysokość modeli sufitowych obejmuje uchwyty.
+
+| Model i podgląd | X × Y × Z [m] | Trójkąty GLB | Budżet |
+| --- | --- | ---: | ---: |
+| [`lab_cocoon_tall`](../artifacts/models/lab/lab_cocoon_tall.png) | 2.20 × 4.40 × 2.20 | 10886 | 12000 |
+| [`lab_cocoon_tall_cryo`](../artifacts/models/lab/lab_cocoon_tall_cryo.png) | 2.20 × 4.40 × 2.20 | 10892 | 12000 |
+| [`lab_cocoon_breached`](../artifacts/models/lab/lab_cocoon_breached.png) | 2.40 × 4.40 × 2.40 | 1092 | 3000 |
+| [`lab_cocoon_incubator`](../artifacts/models/lab/lab_cocoon_incubator.png) | 1.10 × 2.10 × 1.10 | 6842 | 7000 |
+| [`lab_ceiling_manifold`](../artifacts/models/lab/lab_ceiling_manifold.png) | 6.00 × 5.20 × 5.50 | 1052 | 1120 |
+| [`lab_freight_elevator`](../artifacts/models/lab/lab_freight_elevator.png) | 4.80 × 11.60 × 4.00 | 1186 | 1460 |
+| [`lab_bio_scanner_gate`](../artifacts/models/lab/lab_bio_scanner_gate.png) | 3.20 × 2.60 × 1.40 | 330 | 780 |
+| [`lab_blast_door_frame`](../artifacts/models/lab/lab_blast_door_frame.png) | 4.80 × 3.80 × 0.60 | 440 | 580 |
+| [`lab_observation_window`](../artifacts/models/lab/lab_observation_window.png) | 8.00 × 2.60 × 0.45 | 436 | 440 |
+| [`lab_security_desk`](../artifacts/models/lab/lab_security_desk.png) | 3.40 × 1.25 × 1.40 | 464 | 680 |
+| [`lab_catwalk_rail`](../artifacts/models/lab/lab_catwalk_rail.png) | 4.00 × 1.10 × 0.14 | 188 | 260 |
+| [`lab_ceiling_strip`](../artifacts/models/lab/lab_ceiling_strip.png) | 2.40 × 0.35 × 0.60 | 188 | 220 |
+| [`lab_locker_bank`](../artifacts/models/lab/lab_locker_bank.png) | 2.40 × 2.10 × 0.65 | 370 | 640 |
+| [`lab_locker_bench`](../artifacts/models/lab/lab_locker_bench.png) | 2.20 × 0.50 × 0.80 | 204 | 240 |
+| [`lab_decon_shower`](../artifacts/models/lab/lab_decon_shower.png) | 1.80 × 2.40 × 1.60 | 426 | 620 |
+| [`lab_hazmat_suit_rack`](../artifacts/models/lab/lab_hazmat_suit_rack.png) | 2.20 × 2.10 × 0.75 | 4434 | 4500 |
+| [`lab_corkboard_evidence`](../artifacts/models/lab/lab_corkboard_evidence.png) | 2.80 × 1.60 × 0.18 | 504 | 580 |
+| [`lab_classified_cabinet`](../artifacts/models/lab/lab_classified_cabinet.png) | 1.60 × 2.20 × 0.85 | 448 | 560 |
+| [`lab_briefing_holotable`](../artifacts/models/lab/lab_briefing_holotable.png) | 3.20 × 1.10 × 2.00 | 404 | 720 |
+| [`lab_chem_fume_hood`](../artifacts/models/lab/lab_chem_fume_hood.png) | 2.40 × 2.40 × 1.10 | 852 | 860 |
+| [`lab_centrifuge_bench`](../artifacts/models/lab/lab_centrifuge_bench.png) | 3.20 × 1.45 × 1.10 | 862 | 940 |
+| [`lab_prototype_weapon_rack`](../artifacts/models/lab/lab_prototype_weapon_rack.png) | 2.40 × 2.20 × 0.80 | 826 | 880 |
+| [`lab_anomaly_containment_pod`](../artifacts/models/lab/lab_anomaly_containment_pod.png) | 2.80 × 3.20 × 2.80 | 1064 | 1160 |
+| [`lab_cryo_server_rack`](../artifacts/models/lab/lab_cryo_server_rack.png) | 1.40 × 2.40 × 1.00 | 784 | 820 |
+| [`lab_mainframe_console`](../artifacts/models/lab/lab_mainframe_console.png) | 3.00 × 1.35 × 1.40 | 654 | 840 |
+
+Kokony mają trzy deterministyczne pozy: `tall` dotyka szkła uniesioną dłonią, `tall_cryo` zwisa z pochyloną głową, a `incubator` jest zwinięty z kolanami podciągniętymi do klatki i zgiętym grzbietem. Ciągłą skórę tworzy voxel remesh organicznych przekrojów, wygładzanie i Decimate; normalne są gładkie. Podłużna czaszka ma oczodoły, zamknięte powieki, łuki policzkowe, szczątkowe uszy i maskę. Osobna geometria podkreśla obojczyki, sześć par żeber, mostek, dziewięć wyrostków kręgosłupa, ścięgna dłoni, pięć palców ze stawami i pięć palców każdej stopy. Gruba pępowina prowadzi do podstawy, trzy falujące przewody do portów grzbietowych, a wąż oddechowy jest dopasowany do pochylenia maski. Żyłki kończyn i skroni używają zieleni albo królewskiego błękitu cryo. Blada skóra `mat_snow` ma delikatną przezierność (alfa 0,97); podgląd Blendera stosuje dodatkowo subtelne SSS. Pozostają istniejące materiały `mat_*`, bez zmian materiałów współdzielonych w rendererze.
+
+Figury wraz z detalami i przewodami mają odpowiednio **8622 / 8622 / 4886 trójkątów** (limit 9000). W komorach dodano 15 bąbelków w czterech rozmiarach, osad oraz dolny dyfuzor. Całe modele mają **10886 / 10892 / 6842 trójkątów**; AABB pozostają bez zmian. `breached` pozostaje pustą komorą i nie był regenerowany.
+
+Stojak HAZMAT ma osobne uszczelki, zakrzywione przezroczyste wizjery z widocznym wnętrzem, boczne filtry, szwy kapturów, zamki, fałdy łokci/kolan, palce rękawic, mankiety, grube podeszwy, butle na plecach z przewodami i geometryczne piktogramy biohazard. Środkowy strój jest obrócony o 12°. Materiały pozostają w istniejącej palecie gry; nie dodano tekstur ani nowych rodzajów materiałów. Zewnętrzne obudowy, stojak i AABB pozostały bez zmian.
+
+Generator sprawdza budżety tych pięciu modeli przed eksportem i zapisuje także zbliżenia:
+[figura](../artifacts/models/lab/lab_cocoon_tall_closeup.png),
+[cryo](../artifacts/models/lab/lab_cocoon_tall_cryo_closeup.png),
+[inkubator](../artifacts/models/lab/lab_cocoon_incubator_closeup.png),
+[pusta komora](../artifacts/models/lab/lab_cocoon_breached_closeup.png),
+[jeden kombinezon](../artifacts/models/lab/lab_hazmat_suit_rack_closeup.png).
+Dodatkowe zbliżenia dłoni: [tall](../artifacts/models/lab/lab_cocoon_tall_hands.png), [cryo](../artifacts/models/lab/lab_cocoon_tall_cryo_hands.png), [inkubator](../artifacts/models/lab/lab_cocoon_incubator_hands.png).
+Kontrola ręczna na mapie `run3`: obejrzeć figury przez szkło z 10–15 m i podejść do dłoni i twarzy. Zmiana dotyczy oprawy, bez zmian mechanik i parametrów walki.
+
+Do etapu C materiały `lab_epoxy_floor`, `lab_bunker_concrete` i `lab_cleanroom_wall` pobierają odpowiednio tekstury `mall_stone_floor`, `concrete_raw_cast` i `tiles_wall`. Pulpit ma przygotowane pola UV na nadruk kubka i biomonitor. Do czasu dostarczenia grafiki pod biomonitorem widać ekran stanu.
+
 ## Port kontenerowy (arena Przejęcie)
 
 Osiem modeli do dużej areny „Port kontenerowy”, w stylu zestawu miasta (proceduralne,

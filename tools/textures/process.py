@@ -74,7 +74,7 @@ def gallery_texture(source, item):
     if category == "surfaces":
         image = seamless(ImageOps.fit(source.convert("RGB"), size, Image.Resampling.LANCZOS))
     else:
-        decal = category == "decals"
+        decal = category in ("decals", "labels")
         mode = "RGBA" if decal else "RGB"
         image = Image.new(mode, size)
         inner = ImageOps.contain(source.convert(mode), (size[0]-48, size[1]-48), Image.Resampling.LANCZOS)
@@ -141,7 +141,7 @@ def build(ids):
                 continue
             raise FileNotFoundError(raw)
         with Image.open(raw) as source:
-            if item.get("set") == "mall":
+            if item.get("set") in ("mall", "lab"):
                 image = gallery_texture(source, item)
                 if item["category"] == "surfaces" and not item.get("lossless"):
                     image.save(destination(item), "WEBP", quality=QUALITY, method=6)

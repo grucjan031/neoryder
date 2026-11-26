@@ -224,7 +224,7 @@ def build():
                 raise ValueError(f"Za małe źródło: {raw}")
             sources.append({"id": item["id"], "size": list(source.size),
                             "sha256": hashlib.sha256(raw.read_bytes()).hexdigest()})
-            if item.get("set") == "mall":
+            if item.get("set") in ("mall", "lab"):
                 image = gallery_texture(source, item)
             elif item["category"] == "surfaces":
                 if item["id"] == "komiks_plaster":
@@ -239,7 +239,7 @@ def build():
                 image = ImageOps.fit(green_key(source), (512, 512), Image.Resampling.LANCZOS)
         path = destination(item)
         path.parent.mkdir(parents=True, exist_ok=True)
-        if item.get("set") == "mall":
+        if item.get("set") in ("mall", "lab"):
             corrections.append(dict(id=item["id"], **save_verified(image, path)))
         else:
             corrections.append(dict(id=item["id"], **save_verified(

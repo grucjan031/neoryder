@@ -38,12 +38,24 @@ const WALL_FIXTURES = new Set([
   'mall_security_fixture',
   'mall_floor_sign',
   'mall_entrance_doors',
+  'lab_blast_door_frame',
+  'lab_observation_window',
+  'lab_corkboard_evidence',
+  'lab_decon_shower',
+  'lab_hazmat_suit_rack',
+]);
+// Ramy grodzi i bramki skanerów stoją na podłodze, ale w środku podstawy mają celowy otwór przejścia.
+const PASSAGE_FIXTURES = new Set([
+  'lab_blast_door_frame',
+  'lab_bio_scanner_gate',
 ]);
 const CEILING_FIXTURES = new Set([
   'wh_ceiling_lamp',
   'mall_ceiling_panel',
   'mall_skylight',
   'mall_hanging_banner',
+  'lab_ceiling_strip',
+  'lab_ceiling_manifold',
 ]);
 const EDGE = 0.35;
 const LARGE_HEIGHT = 0.6;
@@ -531,6 +543,7 @@ export function auditMap(
       Math.min(box.half[0]!, box.half[2]!) * 2 > LARGE_BASE &&
       !covered &&
       !model.ends &&
+      !PASSAGE_FIXTURES.has(def.model) &&
       !['city_traffic_cone', 'city_trash_bags'].includes(def.model)
     ) {
       add(

@@ -20,6 +20,11 @@ pole: cztery rogi, laser: oba końce) oraz spawn gracza lub wroga w rzucie pola/
 (również gdy hazard jest wyłączony). Dla beczek margines spawnu nie jest sprawdzany walidatorem
 (kontroluje to `contentZ11.test.ts`).
 
+Spód pola i podstawa beczki wymagają podparcia. Laser wybiera najwyższą podłogę
+obejmującą rzut obu końców, od 0 do 2 m poniżej `from.y`. Poza parterem podłogą
+może być poziomy blok `walkable`. Margines spawnu dotyczy punktów oddalonych
+w pionie od podłogi zagrożenia o najwyżej 2 m.
+
 ## Cykl i trafienia
 
 Czas lokalny to `(czasSymulacji + offsetS) % (offS + onS)`.

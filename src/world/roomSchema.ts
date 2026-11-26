@@ -400,6 +400,30 @@ function supportedCell(floors: Rect[], x: number, z: number): boolean {
   return true;
 }
 
+const HAZARD_LEVEL_RANGE_M = 2;
+
+function hazardFloorY(
+  hazard: Hazard,
+  supports: { rect: Rect; top: number }[],
+): number | undefined {
+  if (hazard.kind === 'explosive_barrel') return hazard.position.y;
+  if (hazard.kind === 'electric_field')
+    return hazard.position.y - hazard.size.y / 2;
+  let highest: number | undefined;
+  for (const { rect, top } of supports) {
+    const clearance = hazard.from.y - top;
+    if (
+      clearance >= -FLOOR_EPSILON_M &&
+      clearance <= HAZARD_LEVEL_RANGE_M + FLOOR_EPSILON_M &&
+      contains(rect, hazard.from.x, hazard.from.z) &&
+      contains(rect, hazard.to.x, hazard.to.z) &&
+      (highest === undefined || top > highest)
+    )
+      highest = top;
+  }
+  return highest;
+}
+
 export function validateLayout(
   room: {
     playerSpawn: z.infer<typeof vec3Schema>;
@@ -434,6 +458,17 @@ export function validateLayout(
   }
 
   const points = [room.playerSpawn, ...room.spawnPoints];
+  const upperFloors = room.blocks.filter(
+    (block) =>
+      block.walkable === true && !block.rotation?.x && !block.rotation?.z,
+  );
+  const supports = [
+    ...floors.map((rect) => ({ rect, top: groundY })),
+    ...upperFloors.map((block) => ({
+      rect: footprint(block),
+      top: block.position.y + block.size.y / 2,
+    })),
+  ];
   const hazardIds = new Set<string>();
   for (const [index, hazard] of (room.hazards ?? []).entries()) {
     const issue = (message: string) =>
@@ -455,10 +490,29 @@ export function validateLayout(
               { x: hazard.position.x - 0.4, z: hazard.position.z - 0.4 },
               { x: hazard.position.x + 0.4, z: hazard.position.z + 0.4 },
             ];
-    if (bounds.some((p) => !floors.some((floor) => contains(floor, p.x, p.z))))
+    const hy = hazardFloorY(hazard, supports);
+    if (hy === undefined) {
+      issue('Zagrożenie poza granicami podłogi pokoju.');
+      continue;
+    }
+    const levelFloors =
+      Math.abs(hy - groundY) <= FLOOR_EPSILON_M
+        ? floors
+        : supports
+            .filter(({ top }) => Math.abs(top - hy) <= FLOOR_EPSILON_M)
+            .map(({ rect }) => rect);
+    if (
+      bounds.some(
+        (p) => !levelFloors.some((floor) => contains(floor, p.x, p.z)),
+      )
+    )
       issue('Zagrożenie poza granicami podłogi pokoju.');
     for (const point of points) {
-      if (hazard.kind === 'explosive_barrel') continue;
+      if (
+        hazard.kind === 'explosive_barrel' ||
+        Math.abs((point.y ?? groundY) - hy) > HAZARD_LEVEL_RANGE_M
+      )
+        continue;
       let unsafe: boolean;
       if (hazard.kind === 'electric_field') {
         unsafe =
@@ -495,10 +549,6 @@ export function validateLayout(
   const elevated = points.map(
     (point) =>
       point.y !== undefined && Math.abs(point.y - groundY) > FLOOR_EPSILON_M,
-  );
-  const upperFloors = room.blocks.filter(
-    (block) =>
-      block.walkable === true && !block.rotation?.x && !block.rotation?.z,
   );
   const valid = points.map((point, index) => {
     const path = index === 0 ? ['playerSpawn'] : ['spawnPoints', index - 1];

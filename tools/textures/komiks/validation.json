@@ -1,7 +1,7 @@
 {
-  "totalBytes": 1908346,
+  "totalBytes": 2096255,
   "budgetBytes": 6000000,
-  "fileCount": 20,
+  "fileCount": 23,
   "edgeLimit255": 6.0,
   "paletteRule": "HSV: S>=0.25, V>=0.12, delta>=10/255, alpha>=16; red [0,20)/[345,360), cyan [165,200], magenta [290,345)",
   "files": [
@@ -418,6 +418,69 @@
       "edgeDifference255": [
         3.2064,
         3.2946
+      ]
+    },
+    {
+      "id": "komiks_lab_epoxy_floor",
+      "category": "surfaces",
+      "path": "surfaces/komiks_lab_epoxy_floor.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#525152",
+      "description": "Gładka posadzka epoksydowa, stalowy grafit, delikatne dylatacje ? wersja komiksowa",
+      "bytes": 17946,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        2.2197,
+        3.9443
+      ]
+    },
+    {
+      "id": "komiks_lab_bunker_concrete",
+      "category": "surfaces",
+      "path": "surfaces/komiks_lab_bunker_concrete.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#585858",
+      "description": "Żelbet bunkra ze śladami szalunku, boniami i gniazdami ściągów ? wersja komiksowa",
+      "bytes": 116238,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        3.7334,
+        4.3516
+      ]
+    },
+    {
+      "id": "komiks_lab_cleanroom_wall",
+      "category": "surfaces",
+      "path": "surfaces/komiks_lab_cleanroom_wall.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#666666",
+      "description": "Modułowe panele cleanroom z aluminiową listwą techniczną ? wersja komiksowa",
+      "bytes": 52718,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        3.6771,
+        2.6631
       ]
     }
   ],

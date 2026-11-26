@@ -57,6 +57,16 @@ it('duży model na podłodze lub podeście, mały model, osobny kolider i dach t
       decor: [{ ...car, position: pos(0, 10, -14) }],
     }),
   ).toEqual([]);
+  expect(
+    matches('noCollisionLargeProp', {
+      blocks: [floor],
+      decor: [
+        { model: 'lab_blast_door_frame', position: pos(-4, 0, 0) },
+        { model: 'lab_bio_scanner_gate', position: pos(4, 0, 0) },
+        { model: 'city_car', position: pos(0, 0, 6) },
+      ],
+    }).map((f) => f.path),
+  ).toEqual(['decor[2]']);
 });
 
 it('spód modelu, elewacja, szyld i oprawa lampy potrzebują podparcia', () => {

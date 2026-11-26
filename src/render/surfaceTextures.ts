@@ -2,6 +2,9 @@ import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 import { resolveTextureKey } from './comicSurfaces';
 
 export type SurfaceTexture =
+  | 'lab_epoxy_floor'
+  | 'lab_bunker_concrete'
+  | 'lab_cleanroom_wall'
   | 'mall_stone_floor'
   | 'mall_terrazzo_inlay'
   | 'mall_acoustic_ceiling'

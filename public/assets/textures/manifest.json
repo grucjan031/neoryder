@@ -1448,5 +1448,275 @@
     "dominantColor": "#ad74fc",
     "description": "AURA // SYNTH-PERFUME",
     "bytes": 10758
+  },
+  {
+    "id": "lab_restricted_omega",
+    "category": "signs",
+    "path": "signs/lab_restricted_omega.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0b111c",
+    "description": "Szyld laboratorium — lab_restricted_omega",
+    "bytes": 15152
+  },
+  {
+    "id": "lab_sector_x51",
+    "category": "signs",
+    "path": "signs/lab_sector_x51.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#000b33",
+    "description": "Szyld laboratorium — lab_sector_x51",
+    "bytes": 11176
+  },
+  {
+    "id": "lab_chimera_incubator",
+    "category": "signs",
+    "path": "signs/lab_chimera_incubator.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#061125",
+    "description": "Szyld laboratorium — lab_chimera_incubator",
+    "bytes": 12448
+  },
+  {
+    "id": "lab_black_archive",
+    "category": "signs",
+    "path": "signs/lab_black_archive.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fef3d4",
+    "description": "Szyld laboratorium — lab_black_archive",
+    "bytes": 12504
+  },
+  {
+    "id": "lab_xenobio_lab",
+    "category": "signs",
+    "path": "signs/lab_xenobio_lab.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0a111d",
+    "description": "Szyld laboratorium — lab_xenobio_lab",
+    "bytes": 11290
+  },
+  {
+    "id": "lab_prototype_armory",
+    "category": "signs",
+    "path": "signs/lab_prototype_armory.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#090a25",
+    "description": "Szyld laboratorium — lab_prototype_armory",
+    "bytes": 12352
+  },
+  {
+    "id": "lab_decon_lockers",
+    "category": "signs",
+    "path": "signs/lab_decon_lockers.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0a111d",
+    "description": "Szyld laboratorium — lab_decon_lockers",
+    "bytes": 14238
+  },
+  {
+    "id": "lab_data_vault",
+    "category": "signs",
+    "path": "signs/lab_data_vault.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0b1425",
+    "description": "Szyld laboratorium — lab_data_vault",
+    "bytes": 10144
+  },
+  {
+    "id": "lab_checkpoint",
+    "category": "signs",
+    "path": "signs/lab_checkpoint.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#feae02",
+    "description": "Szyld laboratorium — lab_checkpoint",
+    "bytes": 11964
+  },
+  {
+    "id": "lab_humanoid_tests",
+    "category": "signs",
+    "path": "signs/lab_humanoid_tests.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0c1420",
+    "description": "Szyld laboratorium — lab_humanoid_tests",
+    "bytes": 9356
+  },
+  {
+    "id": "lab_ground_floor",
+    "category": "signs",
+    "path": "signs/lab_ground_floor.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0a1421",
+    "description": "Szyld laboratorium — lab_ground_floor",
+    "bytes": 11364
+  },
+  {
+    "id": "lab_basement_floor",
+    "category": "signs",
+    "path": "signs/lab_basement_floor.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#191c22",
+    "description": "Szyld laboratorium — lab_basement_floor",
+    "bytes": 21210
+  },
+  {
+    "id": "poster_we_are_not_alone",
+    "category": "decals",
+    "path": "decals/poster_we_are_not_alone.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#12213a",
+    "description": "Dekal laboratorium — poster_we_are_not_alone",
+    "bytes": 82966
+  },
+  {
+    "id": "plaque_evil_corp",
+    "category": "decals",
+    "path": "decals/plaque_evil_corp.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#484647",
+    "description": "Dekal laboratorium — plaque_evil_corp",
+    "bytes": 37366
+  },
+  {
+    "id": "note_object_07",
+    "category": "decals",
+    "path": "decals/note_object_07.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#f7e4ca",
+    "description": "Dekal laboratorium — note_object_07",
+    "bytes": 66354
+  },
+  {
+    "id": "board_resonance_profit",
+    "category": "decals",
+    "path": "decals/board_resonance_profit.webp",
+    "width": 768,
+    "height": 512,
+    "dominantColor": "#fceed6",
+    "description": "Dekal laboratorium — board_resonance_profit",
+    "bytes": 80814
+  },
+  {
+    "id": "sticky_code_0451",
+    "category": "decals",
+    "path": "decals/sticky_code_0451.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#fba40d",
+    "description": "Dekal laboratorium — sticky_code_0451",
+    "bytes": 15910
+  },
+  {
+    "id": "note_intern_locker13",
+    "category": "decals",
+    "path": "decals/note_intern_locker13.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#f6deb6",
+    "description": "Dekal laboratorium — note_intern_locker13",
+    "bytes": 73706
+  },
+  {
+    "id": "cocoon_04_empty_hand",
+    "category": "decals",
+    "path": "decals/cocoon_04_empty_hand.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#161b28",
+    "description": "Dekal laboratorium — cocoon_04_empty_hand",
+    "bytes": 47206
+  },
+  {
+    "id": "lab_redacted_papers",
+    "category": "decals",
+    "path": "decals/lab_redacted_papers.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#f8e5ca",
+    "description": "Dekal laboratorium — lab_redacted_papers",
+    "bytes": 54722
+  },
+  {
+    "id": "lab_biohazard_warning",
+    "category": "decals",
+    "path": "decals/lab_biohazard_warning.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#14263a",
+    "description": "Dekal laboratorium — lab_biohazard_warning",
+    "bytes": 27952
+  },
+  {
+    "id": "lab_clearance_line",
+    "category": "decals",
+    "path": "decals/lab_clearance_line.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#111d2e",
+    "description": "Dekal laboratorium — lab_clearance_line",
+    "bytes": 19412
+  },
+  {
+    "id": "screen_lab_biomonitor",
+    "category": "screens",
+    "path": "screens/screen_lab_biomonitor.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#08111d",
+    "description": "Biomonitor inkubacji — screen_lab_biomonitor",
+    "bytes": 37200
+  },
+  {
+    "id": "label_lab_mug",
+    "category": "labels",
+    "path": "labels/label_lab_mug.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#fda702",
+    "description": "Etykieta kubka laboranta — label_lab_mug",
+    "bytes": 14398
+  },
+  {
+    "id": "lab_epoxy_floor",
+    "category": "surfaces",
+    "path": "surfaces/lab_epoxy_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#4f5b65",
+    "description": "Gładka posadzka epoksydowa, stalowy grafit, delikatne dylatacje",
+    "bytes": 3560
+  },
+  {
+    "id": "lab_bunker_concrete",
+    "category": "surfaces",
+    "path": "surfaces/lab_bunker_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#4b535c",
+    "description": "Żelbet bunkra ze śladami szalunku, boniami i gniazdami ściągów",
+    "bytes": 90338
+  },
+  {
+    "id": "lab_cleanroom_wall",
+    "category": "surfaces",
+    "path": "surfaces/lab_cleanroom_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#5c6a7a",
+    "description": "Modułowe panele cleanroom z aluminiową listwą techniczną",
+    "bytes": 8960
   }
 ]
