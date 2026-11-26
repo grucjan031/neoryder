@@ -1733,7 +1733,10 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   emisyjna jak `light_white`, synchronizowana z zasilaniem, ale bez `userData.bloom`.
   Jej płaski wpis w `arenaMaterials.json` rejestruje także powierzchnię dla `mapAudit`.
   `portLooks` ma opcjonalne `opacity` < 1 włączające `transparent`.
-  Prefiks modeli `mall_` jest w `CITY_MODEL_PREFIXES` (`src/render/cityModels.ts`).
+  Prefiks modeli `mall_` jest w `CITY_MODEL_PREFIXES` (`src/render/cityModels.ts`), podobnie
+  `lab_` oraz `off_` (wykończenia biurowca `off_carpet_tile`, `off_polished_granite`,
+  `off_wood_slat_wall` w `arenaMaterials.json`, `urbanMaterials.ts`, `surfaceTextures.ts`
+  i `BLOCK_MATERIALS`).
   `BLOCK_MATERIALS` (`src/world/dressingSchema.ts`, pole `block.material`)
   dopuszcza: `world`, `concrete`, `asphalt`, `metal`, `facade`, `trim`, `glass`,
   `paving`, `plaster`, `corrugated`, `rust`, `hazard`. Parametry motywu:
@@ -1745,6 +1748,9 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.
   Opcjonalny `panoramaExclusion` (`Box3` w przestrzeni świata) wyklucza bryły
   panoramy przecinające obszar poziomu liniowego.
+  Parametr `panoramaDropM` obniża bazę panoramy względem `floorY`. Po osiągnięciu
+  `tuning.horizon.elevated.minDropM` obniża również grunt zewnętrzny i włącza
+  sąsiednie wieże oraz tory przelotu względem obwiedni fasad.
   `sync(dt)` odświeża oprawę; wyłącznie render, bez zmian symulacji.
 - Pola `signs/lights/decals/ambientFx` pozostają danymi dla integratora.
 

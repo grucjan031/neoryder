@@ -253,5 +253,32 @@
     "metalness": 0.25,
     "bump": 0.3,
     "wetness": 0.1
+  },
+  "off_carpet_tile": {
+    "texture": "off_carpet_tile",
+    "tint": "#353f52",
+    "scale": 0.6,
+    "roughness": 0.82,
+    "metalness": 0.04,
+    "bump": 0.35,
+    "wetness": 0.08
+  },
+  "off_polished_granite": {
+    "texture": "off_polished_granite",
+    "tint": "#2d3646",
+    "scale": 0.35,
+    "roughness": 0.18,
+    "metalness": 0.16,
+    "bump": 0.22,
+    "wetness": 0.72
+  },
+  "off_wood_slat_wall": {
+    "texture": "off_wood_slat_wall",
+    "tint": "#4a3f37",
+    "scale": 0.5,
+    "roughness": 0.58,
+    "metalness": 0.1,
+    "bump": 0.5,
+    "wetness": 0.05
   }
 }
