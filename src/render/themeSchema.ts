@@ -70,6 +70,7 @@ export const themeSchema = z.object({
       outlineFadeFar: nonnegative.optional(),
       outlineFarNormal: unit.optional(),
       outlineFarOuter: unit.optional(),
+      outlinePlaneDeltaLimit: unit.optional(),
       /** Opcjonalne: styl komiksowy (tusz, pasma, kreski, farba); bez nich wyłączony. */
       inkNearScale: nonnegative.optional(),
       inkWidth: nonnegative.optional(),

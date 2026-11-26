@@ -497,6 +497,12 @@ export const tuning = {
     outlineFarNormal: 0,
     outlineFarOuter: 1,
     /**
+     * Górna granica poprawki głębi na płaszczyznę (ułamek głębi środka): posadzka widziana pod
+     * małym kątem nie dostaje konturu od samego nachylenia. Przewidywany skok większy niż ta
+     * wartość jest ucinany, więc prawdziwe krawędzie dalej wychodzą z pełną siłą.
+     */
+    outlinePlaneDeltaLimit: 0.5,
+    /**
      * Styl komiksowy (próbki kierunku „Borderlands”, 0 = wyłączone, wygląd bez zmian):
      * inkNearScale ogranicza perspektywiczne pogrubienie konturu blisko kamery,
      * celBands > 0 dzieli jasność na pasma (celStrength = siła), hatchStrength przyciemnia
