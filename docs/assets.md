@@ -316,10 +316,10 @@ Opcja `-- --only lab_cocoon_tall lab_cocoon_breached` wybiera modele do ponowneg
 
 | Model i podgląd | X × Y × Z [m] | Trójkąty GLB | Budżet |
 | --- | --- | ---: | ---: |
-| [`lab_cocoon_tall`](../artifacts/models/lab/lab_cocoon_tall.png) | 2.20 × 4.40 × 2.20 | 3412 | 4500 |
-| [`lab_cocoon_tall_cryo`](../artifacts/models/lab/lab_cocoon_tall_cryo.png) | 2.20 × 4.40 × 2.20 | 3418 | 4500 |
+| [`lab_cocoon_tall`](../artifacts/models/lab/lab_cocoon_tall.png) | 2.20 × 4.40 × 2.20 | 10886 | 12000 |
+| [`lab_cocoon_tall_cryo`](../artifacts/models/lab/lab_cocoon_tall_cryo.png) | 2.20 × 4.40 × 2.20 | 10892 | 12000 |
 | [`lab_cocoon_breached`](../artifacts/models/lab/lab_cocoon_breached.png) | 2.40 × 4.40 × 2.40 | 1092 | 3000 |
-| [`lab_cocoon_incubator`](../artifacts/models/lab/lab_cocoon_incubator.png) | 1.10 × 2.10 × 1.10 | 2466 | 2500 |
+| [`lab_cocoon_incubator`](../artifacts/models/lab/lab_cocoon_incubator.png) | 1.10 × 2.10 × 1.10 | 6842 | 7000 |
 | [`lab_ceiling_manifold`](../artifacts/models/lab/lab_ceiling_manifold.png) | 6.00 × 5.20 × 5.50 | 1052 | 1120 |
 | [`lab_freight_elevator`](../artifacts/models/lab/lab_freight_elevator.png) | 4.80 × 11.60 × 4.00 | 1186 | 1460 |
 | [`lab_bio_scanner_gate`](../artifacts/models/lab/lab_bio_scanner_gate.png) | 3.20 × 2.60 × 1.40 | 330 | 780 |
@@ -342,7 +342,9 @@ Opcja `-- --only lab_cocoon_tall lab_cocoon_breached` wybiera modele do ponowneg
 | [`lab_cryo_server_rack`](../artifacts/models/lab/lab_cryo_server_rack.png) | 1.40 × 2.40 × 1.00 | 784 | 820 |
 | [`lab_mainframe_console`](../artifacts/models/lab/lab_mainframe_console.png) | 3.00 × 1.35 × 1.40 | 654 | 840 |
 
-Kokony `tall`, `tall_cryo` i `incubator` korzystają ze wspólnej figury: blada skóra, podłużna czaszka z oczodołami i maską, żebra, kręgosłup, wydłużone kończyny, cztery zgięte palce i kciuk każdej dłoni, mocowania ramion/kostek oraz przewody oddechowe i grzbietowe. Żyłki są zielone albo królewsko-błękitne w cryo. Pęcherzyki i warstwy szkła z tyłu komory sugerują płyn o rosnącej gęstości optycznej; przód pozostaje czytelny. W inkubatorze zmniejszono liczbę boków przekrojów i przewodów, zachowując tę samą anatomię. `breached` pozostaje pustą, opuszczoną komorą (bez figury ani szczątków), dlatego jego geometria nie wymagała rozbudowy.
+Kokony mają trzy deterministyczne pozy: `tall` dotyka szkła uniesioną dłonią, `tall_cryo` zwisa z pochyloną głową, a `incubator` jest zwinięty z kolanami podciągniętymi do klatki i zgiętym grzbietem. Ciągłą skórę tworzy voxel remesh organicznych przekrojów, wygładzanie i Decimate; normalne są gładkie. Podłużna czaszka ma oczodoły, zamknięte powieki, łuki policzkowe, szczątkowe uszy i maskę. Osobna geometria podkreśla obojczyki, sześć par żeber, mostek, dziewięć wyrostków kręgosłupa, ścięgna dłoni, pięć palców ze stawami i pięć palców każdej stopy. Gruba pępowina prowadzi do podstawy, trzy falujące przewody do portów grzbietowych, a wąż oddechowy jest dopasowany do pochylenia maski. Żyłki kończyn i skroni używają zieleni albo królewskiego błękitu cryo. Blada skóra `mat_snow` ma delikatną przezierność (alfa 0,97); podgląd Blendera stosuje dodatkowo subtelne SSS. Pozostają istniejące materiały `mat_*`, bez zmian materiałów współdzielonych w rendererze.
+
+Figury wraz z detalami i przewodami mają odpowiednio **8622 / 8622 / 4886 trójkątów** (limit 9000). W komorach dodano 15 bąbelków w czterech rozmiarach, osad oraz dolny dyfuzor. Całe modele mają **10886 / 10892 / 6842 trójkątów**; AABB pozostają bez zmian. `breached` pozostaje pustą komorą i nie był regenerowany.
 
 Stojak HAZMAT ma osobne uszczelki, zakrzywione przezroczyste wizjery z widocznym wnętrzem, boczne filtry, szwy kapturów, zamki, fałdy łokci/kolan, palce rękawic, mankiety, grube podeszwy, butle na plecach z przewodami i geometryczne piktogramy biohazard. Środkowy strój jest obrócony o 12°. Materiały pozostają w istniejącej palecie gry; nie dodano tekstur ani nowych rodzajów materiałów. Zewnętrzne obudowy, stojak i AABB pozostały bez zmian.
 
@@ -352,7 +354,8 @@ Generator sprawdza budżety tych pięciu modeli przed eksportem i zapisuje takż
 [inkubator](../artifacts/models/lab/lab_cocoon_incubator_closeup.png),
 [pusta komora](../artifacts/models/lab/lab_cocoon_breached_closeup.png),
 [jeden kombinezon](../artifacts/models/lab/lab_hazmat_suit_rack_closeup.png).
-Kontrola ręczna na mapie `run3`: obejrzeć figury przez szkło z 10–15 m i podejść do rękawic/wizjerów. Zmiana dotyczy oprawy, bez zmian mechanik i parametrów walki.
+Dodatkowe zbliżenia dłoni: [tall](../artifacts/models/lab/lab_cocoon_tall_hands.png), [cryo](../artifacts/models/lab/lab_cocoon_tall_cryo_hands.png), [inkubator](../artifacts/models/lab/lab_cocoon_incubator_hands.png).
+Kontrola ręczna na mapie `run3`: obejrzeć figury przez szkło z 10–15 m i podejść do dłoni i twarzy. Zmiana dotyczy oprawy, bez zmian mechanik i parametrów walki.
 
 Do etapu C materiały `lab_epoxy_floor`, `lab_bunker_concrete` i `lab_cleanroom_wall` pobierają odpowiednio tekstury `mall_stone_floor`, `concrete_raw_cast` i `tiles_wall`. Pulpit ma przygotowane pola UV na nadruk kubka i biomonitor. Do czasu dostarczenia grafiki pod biomonitorem widać ekran stanu.
 

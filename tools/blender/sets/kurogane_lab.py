@@ -90,84 +90,209 @@ def screen(r, x, y, z, w, h, art=STATUS):
     print_on(r, art, x, y, z + 0.001, w * 0.88, h * 0.76)
 
 
+def organic_oval(r, name, center, radii, mat, segments=12, rings=8):
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=rings,
+                                       location=ba._city_point(center))
+    obj = bpy.context.object
+    obj.name, obj.parent = name, r
+    obj.scale = (radii[0], radii[2], radii[1])
+    obj.data.materials.append(ba.material(mat))
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    for polygon in obj.data.polygons:
+        polygon.use_smooth = True
+    return obj
+
+
+def organic_path(r, name, points, radii, mat, sides=8, steps=3):
+    """Catmull-Rom centreline, tapered circular sections and smooth vertex normals."""
+    from port_rail import loft
+    points = [Vector(p) for p in points]
+    samples = []
+    for i in range(len(points)-1):
+        a, b, c, d = points[max(0,i-1)], points[i], points[i+1], points[min(len(points)-1,i+2)]
+        for j in range(steps):
+            t = j/steps
+            pos = .5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t)
+            samples.append((pos, radii[i]*(1-t)+radii[i+1]*t))
+    samples.append((points[-1], radii[-1]))
+    sections = []
+    for i, (point, radius) in enumerate(samples):
+        tangent = samples[min(i+1,len(samples)-1)][0]-samples[max(0,i-1)][0]
+        tangent.normalize()
+        axis = Vector((0,0,1)) if abs(tangent.z)<.9 else Vector((1,0,0))
+        u = tangent.cross(axis).normalized()
+        v = tangent.cross(u).normalized()
+        sections.append([tuple(point+radius*(u*math.cos(j*math.tau/sides)+v*math.sin(j*math.tau/sides))) for j in range(sides)])
+    obj = loft(r, name, sections, mat)
+    for polygon in obj.data.polygons:
+        polygon.use_smooth = True
+    return obj
+
+
 def specimen(r, cryo=False, scale=1, offset=(0, 0, 0)):
-    """Wspólna, zawieszona figura; wariant inkubatora skaluje całą anatomię."""
+    """Continuous remeshed anatomy; three deterministic poses, no box-shaped flesh."""
     before = set(r.children)
-    sides = 5 if scale < 1 else 8
-    wire_sides = 3 if scale < 1 else 5
     skin, glow = "mat_snow", BLUE if cryo else GREEN
-    form(r, "cranium", 0, 0.14, [
-        (2.87, .055, .064, .055), (2.94, .123, .113, .052),
-        (3.08, .158, .143, .018), (3.24, .130, .134, -.024),
-        (3.31, .065, .076, -.040)], skin, sides+2)
-    rod(r, "neck", (0, 2.73, .035), (0, 2.97, .12), .072, skin, sides, .059)
-    form(r, "ribcage", 0, 0, [
-        (2.14, .14, .105, -.05), (2.28, .117, .10, -.03),
-        (2.48, .205, .145, .005), (2.66, .25, .14, .025),
-        (2.75, .19, .11, .04), (2.80, .075, .07, .05)], skin, sides+2)
-    form(r, "pelvis", 0, -.05, [(2.05,.12,.10,0), (2.14,.174,.13,0),
-                              (2.25,.126,.10,0)], skin, sides)
-    for side in (-1, 1):
-        panel(r, "eye_socket", side*.071, 3.071, .274, .093, .049, .012, .018, DARK)
-        rod(r, "brow", (side*.025,3.115,.265), (side*.128,3.102,.247), .020, skin, 5)
-        rod(r, "cheekbone", (side*.12,3.04,.258), (side*.075,2.995,.277), .024, skin, 5)
-        for i in range(3 if scale < 1 else 4):
-            y = 2.40+i*.069
-            tube(r, "rib_contour", [(side*.025,y,.136), (side*.13,y+.024,.145),
-                                    (side*(.17+i*.013),y+.056,.075)], .014, skin, 4)
-        rod(r, "clavicle", (side*.025,2.70,.141), (side*.205,2.689,.11), .021, skin, 5)
-        knee = (side*.212, 1.93+side*.13, .36+side*.08)
-        ankle = (side*.19, 1.35+side*.035, .09)
-        elbow = (side*.33, 2.39+side*.09, .13)
-        wrist = (side*.255, 2.14+side*.09, .30)
-        shoulder = (side*.218,2.67,.055)
-        for name, start, end, radius, tip in (
-            ("upper_arm",shoulder,elbow,.083,.059),
-            ("forearm",elbow,wrist,.066,.041),
-            ("thigh",(side*.105,2.14,-.05),knee,.113,.071),
-            ("calf",knee,ankle,.078,.042)):
-            mid = tuple(a*.58+b*.42 for a,b in zip(start,end))
-            rod(r,name,start,mid,radius,skin,sides,radius*1.06)
-            rod(r,name+"_taper",mid,end,radius*1.06,skin,sides,tip)
-        rod(r,"palm",wrist,(wrist[0],wrist[1]-.095,.325),.049,skin,sides,.037)
-        for finger in range(4):
-            x = wrist[0]+(finger-1.5)*.023
-            y = wrist[1]-.075
-            length = .10-abs(finger-1.5)*.012
-            tube(r,"finger",[(x,y,.326),(x,y-length*.6,.35),
-                              (x,y-length,.379),(x,y-length*.9,.403)],.012,skin,3)
-        tube(r,"thumb",[(wrist[0]-side*.038,wrist[1]-.02,.32),
-                         (wrist[0]-side*.069,wrist[1]-.06,.35),
-                         (wrist[0]-side*.06,wrist[1]-.09,.38)],.017,skin,3)
-        rod(r,"foot",ankle,(side*.19,1.255+side*.035,.255),.058,skin,sides,.044)
-        for start, end, radius in (
-            (shoulder,elbow,.091), (ankle,knee,.054)):
-            a, b = Vector(start), Vector(end)
-            axis = (b-a).normalized()
-            rod(r,"restraint_collar",a+axis*.055,a+axis*.10,radius,STEEL,sides)
-            tube(r,"restraint_tether",[tuple(a+axis*.075),
-                  (side*.48,a.y+.08,-.10),(side*.67,a.y+.30,-.34)],.016,INK,4)
-        tube(r,"arm_vein",[(side*.22,2.67,.132), (side*.314,elbow[1],.189),
-                            (wrist[0]+side*.02,wrist[1]+.035,.34)],.009,glow,3)
-        tube(r,"leg_vein",[(side*.11,2.10,.07),(knee[0],knee[1],knee[2]+.075),
-                            (ankle[0],ankle[1]+.05,ankle[2]+.045)],.009,glow,3)
-        tube(r,"temple_vein",[(side*.10,3.24,.212),(side*.133,3.17,.235),
-                               (side*.118,3.13,.255)],.007,glow,3)
-    for i in range(7):
-        box(r,"vertebra",0,2.22+i*.078,-.135,.055,.046,.045,skin)
-    for y in ((2.34,2.82) if scale < 1 else (2.34,2.60,2.82)):
-        rod(r,"spinal_port",(0,y,-.12),(0,y,-.20),.040,ENAMEL,6)
-        tube(r,"spinal_feed",[(0,y,-.19),(-.20,y-.12,-.29),
-                              (-.51,y+.12,-.34),(-.60,3.55,-.34),(-.38,3.77,-.30)],.026,INK,wire_sides)
-    panel(r,"respirator",0,2.969,.289,.16,.094,.047,.024,DARK)
+    curled = scale < 1
+    shader = ba.material(skin).node_tree.nodes.get("Principled BSDF")
+    shader.inputs["Roughness"].default_value = .48
+    shader.inputs["Subsurface Weight"].default_value = .08
+    shader.inputs["Alpha"].default_value = .97
+    ba.material(skin).surface_render_method = "BLENDED"
+
+    def oval(name, center, radii, mat=skin):
+        return organic_oval(r, name, center, radii, mat)
+
+    def path(name, points, radii, mat=skin, sides=8, steps=3):
+        return organic_path(r, name, points, radii, mat, sides, steps)
+
+    oval("thorax", (0,2.54,0), (.239,.279,.148))
+    oval("abdomen", (0,2.30,-.015), (.129,.235,.104))
+    oval("pelvis", (0,2.12,-.035), (.175,.145,.126))
+    path("neck", [(0,2.70,.01),(0,2.83,.055),(0,2.96,.12)], [.093,.061,.078])
+    limbs = []
     for side in (-1,1):
-        rod(r,"mask_filter",(side*.065,2.972,.31),(side*.118,2.972,.31),.039,STEEL,6)
-    tube(r,"breathing_hose",[(.10,2.97,.31),(.22,2.86,.34),(.37,2.90,.20),
-                              (.47,3.20,-.12),(.40,3.77,-.24)],.025,INK,wire_sides)
-    tube(r,"sternal_vein",[(0,2.69,.146),(.025,2.54,.158),(0,2.39,.13),
-                           (.04,2.25,.087)],.009,glow,3)
-    # Keep the same authored mesh in the small culture vessel.
-    for obj in set(r.children)-before:
+        shoulder = (side*.237,2.66,.015)
+        elbow = (side*.355,2.34,.13)
+        wrist = (side*.32,2.04,.24)
+        knee = (side*.17,1.64,.11)
+        ankle = (side*.15,1.13,.04)
+        if not cryo and not curled and side == 1:
+            elbow, wrist = (.49,2.46,.43), (.34,2.91,.76)
+        if curled:
+            knee, ankle = (side*.22,2.43,.40), (side*.23,1.88,.40)
+            elbow, wrist = (side*.35,2.43,.25), (side*.18,2.53,.49)
+        hip = (side*.115,2.13,-.025)
+        for name, start, end, radius, tip in (
+            ("deltoid_biceps",shoulder,elbow,.085,.049),
+            ("ulna_radius",elbow,wrist,.055,.029),
+            ("quadriceps",hip,knee,.115,.065),
+            ("calf_tendon",knee,ankle,.066,.032)):
+            mid = tuple(Vector(start).lerp(Vector(end),.40))
+            path(name,[start,mid,end],[radius*.85,radius,tip],sides=12)
+        oval("patella",knee,(.067,.075,.058))
+        oval("elbow",elbow,(.052,.058,.051))
+        oval("deltoid",shoulder,(.089,.096,.081))
+        limbs.append((side,shoulder,elbow,wrist,hip,knee,ankle))
+    # Voxel union removes intersecting primitive seams; relax and decimate the continuous skin.
+    body = list(set(r.children)-before)
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in body:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = body[0]
+    bpy.ops.object.join()
+    body = bpy.context.object
+    body.name = "continuous_anatomy"
+    remesh = body.modifiers.new("organic_union", "REMESH")
+    remesh.mode, remesh.voxel_size = "VOXEL", .012
+    bpy.ops.object.modifier_apply(modifier=remesh.name)
+    relax = body.modifiers.new("relax_skin", "SMOOTH")
+    relax.factor, relax.iterations = 1.0, 4
+    bpy.ops.object.modifier_apply(modifier=relax.name)
+    dec = body.modifiers.new("anatomy_budget", "DECIMATE")
+    dec.ratio = min(1, (1800 if curled else 3000)/sum(len(p.vertices)-2 for p in body.data.polygons))
+    bpy.ops.object.modifier_apply(modifier=dec.name)
+    for polygon in body.data.polygons:
+        polygon.use_smooth = True
+
+    head_start = set(r.children)
+    organic_oval(r,"elongated_cranium", (0,3.14,.10), (.163,.255,.153),skin,24,16)
+    oval("jaw", (0,2.985,.18), (.105,.111,.10))
+    oval("nasal_bridge", (0,3.075,.252), (.030,.078,.043))
+    for side in (-1,1):
+        oval("orbital_recess", (side*.078,3.105,.237), (.063,.044,.025), RUBBER)
+        oval("closed_eye_membrane", (side*.078,3.102,.255), (.046,.023,.013))
+        path("closed_eyelid",[(side*.034,3.101,.262),(side*.078,3.095,.269),(side*.122,3.109,.253)], [.003,.005,.002], DARK,6,2)
+        path("orbital_rim",[(side*.025,3.132,.248),(side*.074,3.155,.245),(side*.137,3.129,.215)], [.013,.024,.014])
+        path("zygomatic_arch",[(side*.142,3.082,.205),(side*.116,3.052,.257),(side*.064,3.008,.263)], [.011,.016,.007])
+        oval("vestigial_ear", (side*.159,3.075,.065), (.024,.061,.028))
+        oval("ear_fold", (side*.178,3.075,.076), (.008,.034,.016), DARK)
+        path("temple_capillary",[(side*.075,3.31,.185),(side*.134,3.23,.201),(side*.14,3.16,.207)], [.003,.005,.003],glow,5)
+    oval("respirator", (0,2.978,.276), (.085,.046,.033),DARK)
+    path("mask_strap",[(-.15,3.02,.08),(-.13,2.98,.22),(0,2.97,.28),(.13,2.98,.22),(.15,3.02,.08)], [.012]*5,STEEL,6)
+    for side in (-1,1):
+        oval("filter",(side*.075,2.979,.294),(.028,.029,.027),STEEL)
+    # Bow the entire head, including eyelids, mask and ears, around the neck pivot.
+    from mathutils import Matrix
+    bpy.context.view_layer.update()
+    angle = .48 if cryo else (.85 if curled else .10)
+    pivot = ba._city_point((0,2.85,.06))
+    transform = Matrix.Translation(pivot) @ Matrix.Rotation(angle,4,"X") @ Matrix.Translation(-pivot)
+    for obj in set(r.children)-head_start:
+        obj.matrix_world = transform @ obj.matrix_world
+
+    for side, shoulder, elbow, wrist, hip, knee, ankle in limbs:
+        raised = not cryo and not curled and side == 1
+        palm = Vector(wrist)+Vector((0,.062 if raised else -.060,.018))
+        oval("palm",palm,(.061,.085,.025))
+        for finger in range(5):
+            thumb = finger == 4
+            x = palm.x+((finger-1.5)*.030 if not thumb else -side*.062)
+            sign = 1 if raised else -1
+            start = (x,palm.y+sign*(.052 if not thumb else .005),palm.z)
+            length = (.16-abs(finger-1.5)*.023) if not thumb else .095
+            endx = x+(finger-1.5)*.012 if not thumb else x-side*.045
+            points = [start,(x,palm.y+sign*length*.65,palm.z+.012),
+                      (endx,palm.y+sign*length,palm.z+.027),(endx,palm.y+sign*(length+.025),palm.z+.012)]
+            path("articulated_digit",points,[.014,.013,.010,.004],sides=7,steps=2)
+            organic_oval(r,"knuckle",points[1],(.014,.017,.015),skin,8,6)
+            path("hand_tendon",[(wrist[0],wrist[1],wrist[2]+.022),start,points[1]],[.004,.004,.002],sides=5,steps=2)
+        foot = (ankle[0],ankle[1]-.045,ankle[2]+.07)
+        oval("foot",foot,(.065,.049,.117))
+        for toe in range(5):
+            x = foot[0]+(toe-2)*.024
+            path("toe",[(x,foot[1],foot[2]+.07),(x,foot[1]-.008,foot[2]+.135-abs(toe-1)*.008)], [.018,.006],sides=7,steps=2)
+        path("clavicle",[(side*.015,2.72,.116),(side*.11,2.724,.139),(side*.221,2.69,.087)], [.013,.019,.012])
+        for rib in range(6):
+            y = 2.36+rib*.052
+            width = .15+rib*.012
+            path("subcutaneous_rib",[(side*.018,y,.114),(side*.10,y+.015,.143),(side*width,y+.047,.076)], [.008,.011,.006],sides=6,steps=3)
+        for name, pts in (("arm",[shoulder,elbow,wrist]),("leg",[hip,knee,ankle])):
+            pts = [(x,y,z+.065) for x,y,z in pts]
+            path(name+"_vessel",pts,[.004,.006,.003],glow,5)
+            mid = pts[1]
+            path(name+"_capillary",[mid,(mid[0]+side*.03,mid[1]+.06,mid[2]-.012),(mid[0]+side*.045,mid[1]+.10,mid[2]-.025)],[.004,.003,.001],glow,5,2)
+    path("sternum",[(0,2.71,.137),(0,2.56,.151),(0,2.38,.116)],[.015,.012,.007])
+    for i in range(9):
+        y = 2.18+i*.071
+        organic_oval(r,"vertebral_process",(0,y,-.127),(.031,.025,.036),skin,8,6)
+    for y in (2.32,2.55,2.77):
+        oval("spinal_connector",(0,y,-.163),(.027,.030,.023),STEEL)
+        path("floating_spinal_lead",[(0,y,-.18),(-.24,y-.15,-.28),(-.52,y+.15,-.35),(-.59,3.5,-.30),(-.39,3.75,-.30)],[.016]*5,INK,6)
+    path("umbilical",[(0,2.26,.095),(.17,2.19,.27),(.40,1.90,.29),(.39,1.42,.10),(.18,1.19,-.18),(0,1.32,-.24),(0,1.34 if curled else .76,-.30)],[.038,.038,.034,.032,.032,.030,.030],INK,8,4)
+    oval("abdominal_socket",(0,2.26,.105),(.055,.049,.030),STEEL)
+    port = transform @ ba._city_point((.085,2.978,.30))
+    if curled:
+        bend = max(0,port.z-2.25)
+        port.y -= bend*.22
+        port.z -= bend*bend*.20
+    path("respiratory_hose",[(port.x,port.z,-port.y),(.25,2.86,.38),(.44,3.0,.20),(.48,3.4,-.12),(.40,3.75,-.24)],[.022]*5,INK,7)
+    if curled:
+        # Curl the upper back over the raised knees; service tails retain their anchors.
+        for obj in set(r.children)-before:
+            if obj.name.startswith(("floating_spinal", "umbilical", "respiratory")):
+                continue
+            bpy.context.view_layer.update()
+            for vertex in obj.data.vertices:
+                point = obj.matrix_world @ vertex.co
+                y = point.z
+                bend = max(0, y-2.25)
+                point.y -= bend*.22
+                point.z -= bend*bend*.20
+                vertex.co = obj.matrix_world.inverted() @ point
+    # Cap the complete figure, including anatomy details and its medical tubing.
+    objects = list(set(r.children)-before)
+    total = sum(len(p.vertices)-2 for obj in objects for p in obj.data.polygons)
+    limit = 5150 if curled else 8900
+    if total > limit:
+        for obj in objects:
+            bpy.context.view_layer.objects.active = obj
+            dec = obj.modifiers.new("detail_budget", "DECIMATE")
+            dec.ratio = (limit-150)/total
+            bpy.ops.object.modifier_apply(modifier=dec.name)
+    total = sum(len(p.vertices)-2 for obj in objects for p in obj.data.polygons)
+    print(f"[specimen] {r.name}: {total} tri",flush=True)
+    for obj in objects:
         obj.location = obj.location*scale + ba._city_point(offset)
         obj.scale *= scale
 
@@ -181,12 +306,17 @@ def culture_fluid(r, bottom, top, radius):
             y = bottom + (top-bottom)*(1-layer*.23)
             pane(r,"fluid_gradient",[(radius*math.cos(t),h,radius*math.sin(t))
                  for t,h in ((a,bottom),(b,bottom),(b,y),(a,y))],GLASS)
+    for i in range(15):
+        y = bottom+(top-bottom)*(.10+i*.055)
+        rad = radius*(.012+(i%4)*.009)
+        x = (-1 if i%2 else 1)*radius*(.50+(i%3)*.11)
+        organic_oval(r,"bubble",(x,y,.12*radius),(rad,rad*1.18,rad),GLASS,8,4)
     for i in range(7):
-        y = bottom+(top-bottom)*(.12+i*.115)
-        rad = radius*(.022+(i%3)*.012)
-        x = (-1 if i%2 else 1)*radius*(.52+(i%3)*.10)
-        form(r,"bubble",x,.10*radius,[(y-rad,.004,.004,0),
-             (y,rad,rad,0),(y+rad,.004,.004,0)],GLASS,4 if radius < .5 else 6)
+        angle = i*2.399
+        rad = radius*(.12+(i%3)*.14)
+        organic_oval(r,"sump_sediment",(rad*math.cos(angle),bottom+.012,rad*math.sin(angle)),
+                     (.09*radius,.012,.07*radius),GOLD,8,4)
+    drum(r,"sump_diffuser",0,0,bottom,bottom+.012,radius*.52,WHITE,16)
 
 
 def cocoon(r, cryo=False, breached=False):
@@ -333,7 +463,6 @@ def cocoon(r, cryo=False, breached=False):
             )
             # Feed ports and the cryo coil collars are visible from the gallery above.
             drum(r, "inlet", s * 0.34, 0, 4.37, 4.394, 0.105, DARK, 6)
-            face(r, "mask_filter", s * 0.102, 2.978, 0.281, 0.048, 0.051, STEEL)
 
 
 def cocoon_tall(r):
@@ -1323,6 +1452,8 @@ def studio(root, output):
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.view_settings.look = "AgX - Medium High Contrast"
+    if root.name in ("lab_cocoon_tall", "lab_cocoon_tall_cryo", "lab_cocoon_incubator"):
+        scene.view_settings.exposure = -.6
     scene.cycles.samples = 24
     scene.cycles.use_denoising = True
     scene.render.resolution_x = scene.render.resolution_y = 720
@@ -1375,9 +1506,9 @@ def studio(root, output):
 
 
 DETAIL_BUDGETS = {
-    "lab_cocoon_tall": 4500,
-    "lab_cocoon_tall_cryo": 4500,
-    "lab_cocoon_incubator": 2500,
+    "lab_cocoon_tall": 12000,
+    "lab_cocoon_tall_cryo": 12000,
+    "lab_cocoon_incubator": 7000,
     "lab_cocoon_breached": 3000,
     "lab_hazmat_suit_rack": 4500,
 }
@@ -1403,9 +1534,9 @@ def export(builder, preview):
         if name in DETAIL_BUDGETS:
             scene = bpy.context.scene
             target, span = {
-                "lab_cocoon_tall": ((0,2.35,.12),2.55),
-                "lab_cocoon_tall_cryo": ((0,2.35,.12),2.55),
-                "lab_cocoon_incubator": ((0,1.31,.05),1.12),
+                "lab_cocoon_tall": ((0,2.68,.12),1.92),
+                "lab_cocoon_tall_cryo": ((0,2.68,.12),1.92),
+                "lab_cocoon_incubator": ((0,1.43,.14),.91),
                 "lab_cocoon_breached": ((0,2.35,0),3.4),
                 "lab_hazmat_suit_rack": ((0,1.05,.04),1.84),
             }[name]
@@ -1418,6 +1549,17 @@ def export(builder, preview):
                 scene.render.resolution_x, scene.render.resolution_y = 512, 1280
             scene.render.filepath = str(REPO / "artifacts/models/lab" / (name + "_closeup.png"))
             bpy.ops.render.render(write_still=True)
+            hands = {
+                "lab_cocoon_tall": ((.34,3.03,.80),.44),
+                "lab_cocoon_tall_cryo": ((-.32,1.91,.28),.44),
+                "lab_cocoon_incubator": ((.077,1.33,.23),.22),
+            }
+            if name in hands:
+                target, span = hands[name]
+                camera.location = ba._city_point(target) + direction*12
+                camera.data.ortho_scale = span
+                scene.render.filepath = str(REPO / "artifacts/models/lab" / (name + "_hands.png"))
+                bpy.ops.render.render(write_still=True)
 
 
 BUILDERS = [

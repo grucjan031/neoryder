@@ -519,6 +519,27 @@ function signage(k) {
     const width = Math.min(w, h * 2);
     k.neon(texture, x, y, z, width, width / 2, yaw, tint, flicker);
   };
+  // Dwie linki z kotwami dochodzą do rzeczywistego spodu stropu B1.
+  const suspend = (x, y, z, w, h) => {
+    for (const side of [-1, 1]) {
+      const px = x + side * w * 0.36;
+      const bottom = y + h * 0.4;
+      box(
+        k,
+        px,
+        (bottom + Y_B1_CEIL) / 2,
+        z + 0.04,
+        0.035,
+        Y_B1_CEIL - bottom,
+        0.035,
+        'metal',
+        { walkable: false },
+      );
+      box(k, px, Y_B1_CEIL - 0.025, z + 0.04, 0.2, 0.05, 0.2, 'metal', {
+        walkable: false,
+      });
+    }
+  };
   // P5 Centralny Hol: nad wejściem głównym, nad szybem windy i przed zejściem do B1.
   neon(LAB_TEXTURES.lab_sector_x51, 0, 4.3, 27.75, 3.6, 1.2, PI, C.blue, 0);
   neon(
@@ -602,6 +623,7 @@ function signage(k) {
     C.green,
     0,
   );
+  suspend(0, 2.4, -3.65, 2.4, 1.2);
   neon(
     LAB_TEXTURES.lab_ground_floor,
     -8.2,
@@ -634,7 +656,8 @@ function signage(k) {
     -Q,
     C.warm,
   );
-  neon(LAB_TEXTURES.lab_humanoid_tests, 0, 0.4, -0.25, 4.8, 1.6, PI, C.warm);
+  neon(LAB_TEXTURES.lab_humanoid_tests, 0, 3.4, -0.25, 4.8, 1.6, PI, C.warm);
+  suspend(0, 3.4, -0.25, 3.2, 1.6);
   // Lico zachodniego muru B1 przy północnej rampie (prawa strona corner-nw).
   mark(
     k,
@@ -651,10 +674,10 @@ function signage(k) {
   );
   // Oznaczenia sektorów (numery gniazd kokonów) na ścianach bocznych B1 oraz na Mostku Centralnym.
   for (const [x, z, yaw, tint] of [
-    [-19.45, -16.25, Q, C.green],
-    [19.45, -16.25, -Q, C.blue],
-    [-19.45, -28.25, Q, C.green],
-    [19.45, -28.25, -Q, C.blue],
+    [-19.75, -16.25, Q, C.green],
+    [19.75, -16.25, -Q, C.blue],
+    [-19.75, -28.25, Q, C.green],
+    [19.75, -28.25, -Q, C.blue],
   ])
     neon(LAB_TEXTURES.lab_chimera_incubator, x, 0.2, z, 2.8, 0.9, yaw, tint, 0);
   for (const sx of [-1, 1]) {
@@ -684,7 +707,7 @@ function signage(k) {
   neon(
     LAB_TEXTURES.lab_decon_lockers,
     -19.75,
-    Y_BASEMENT + 3.45,
+    Y_CATWALK + 0.65,
     -14.0,
     2.4,
     0.75,
@@ -695,7 +718,7 @@ function signage(k) {
   neon(
     LAB_TEXTURES.lab_decon_lockers,
     -19.75,
-    Y_BASEMENT + 3.45,
+    Y_CATWALK + 0.65,
     -22.0,
     2.4,
     0.75,
@@ -706,7 +729,7 @@ function signage(k) {
   neon(
     LAB_TEXTURES.lab_data_vault,
     19.75,
-    Y_BASEMENT + 3.45,
+    Y_CATWALK + 0.65,
     -14.0,
     2.4,
     0.75,
@@ -717,7 +740,7 @@ function signage(k) {
   neon(
     LAB_TEXTURES.lab_data_vault,
     19.75,
-    Y_BASEMENT + 3.45,
+    Y_CATWALK + 0.65,
     -22.0,
     2.4,
     0.75,

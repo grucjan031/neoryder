@@ -910,10 +910,10 @@ describe('magazyn Kurogane', () => {
 
 describe('tajne laboratorium Kurogane Arms', () => {
   const specs = {
-    lab_cocoon_tall: [2.2, 4.4, 2.2, 4500],
-    lab_cocoon_tall_cryo: [2.2, 4.4, 2.2, 4500],
+    lab_cocoon_tall: [2.2, 4.4, 2.2, 12000],
+    lab_cocoon_tall_cryo: [2.2, 4.4, 2.2, 12000],
     lab_cocoon_breached: [2.4, 4.4, 2.4, 3000],
-    lab_cocoon_incubator: [1.1, 2.1, 1.1, 2500],
+    lab_cocoon_incubator: [1.1, 2.1, 1.1, 7000],
     lab_ceiling_manifold: [6, 5.2, 5.5, 1120],
     lab_freight_elevator: [4.8, 11.6, 4, 1460],
     lab_bio_scanner_gate: [3.2, 2.6, 1.4, 780],
@@ -941,7 +941,7 @@ describe('tajne laboratorium Kurogane Arms', () => {
   const required: Partial<Record<keyof typeof specs, string[]>> = {
     lab_cocoon_tall: [
       'glass_clear',
-      'lacquer',
+      'snow',
       'cable',
       'screen_status',
       'light_panel',
@@ -949,7 +949,7 @@ describe('tajne laboratorium Kurogane Arms', () => {
     ],
     lab_cocoon_tall_cryo: [
       'glass_clear',
-      'lacquer',
+      'snow',
       'cable',
       'light_panel',
       'neon_blue',
