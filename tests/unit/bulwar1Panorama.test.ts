@@ -6,7 +6,7 @@ import { buildSkyline } from '../../src/render/skyline';
 import { resolveTheme } from '../../src/render/themes';
 import { roomDefinitions } from '../../src/world/rooms';
 
-const room = roomDefinitions.get('run2')!;
+const room = roomDefinitions.get('bulwar1')!;
 
 function buildings(drop?: number) {
   const scene = new Scene();

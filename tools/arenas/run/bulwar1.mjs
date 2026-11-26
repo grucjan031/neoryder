@@ -1,4 +1,4 @@
-// Generowanie: node tools/arenas/run/run2.mjs
+// Generowanie: node tools/arenas/run/bulwar1.mjs
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { COLOR, R, createRunRoom, vec } from './_runKit.mjs';
 
@@ -566,7 +566,7 @@ function overlook(k) {
 
 export default function generate() {
   const k = createRunRoom({
-    id: 'run2',
+    id: 'bulwar1',
     name: 'Bulwar — przychodnia Helixa Dynamics',
     weather: 'bulwarNightMarket',
     bounds: R(-26, 30, -36, 36),
@@ -662,6 +662,6 @@ export default function generate() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
   generate().write(
     fileURLToPath(
-      new URL('../../../src/data/rooms/run2.json', import.meta.url),
+      new URL('../../../src/data/rooms/bulwar1.json', import.meta.url),
     ),
   );

@@ -228,7 +228,7 @@ node tools/levels/mapModelBounds.mjs
 
 **Punkty montażu.** Góra konsoli słupa leży na Y = 8,20 m. Postawiona na niej belka ma główkę szyny na Y = 8,84 m. Osie kół suwnicy leżą na X = ±7,68 m, a styk koła z szyną wypada 0,34 m nad spodem haka. Przy tym zestawieniu początek suwnicy umieść na Y = 8,50 m. Zaczep ładunku leży pod wózkiem na osi X = Z = 0. Początek lampy umieść 0,45 m poniżej spodu widocznego stropu lub dźwigara.
 
-## Przychodnia Helixy na Bulwarze (run2)
+## Przychodnia Helixy na Bulwarze (bulwar1)
 
 Siedem modeli własnych `bw_*` ma początek na środku podstawy, przód w +Z i wymiary w metrach. Generator zapisuje GLB w `public/assets/models/city/` i trzy podglądy każdego modelu w `tools/blender/previews/bulwar/<id>-{front,side,top}.png`.
 

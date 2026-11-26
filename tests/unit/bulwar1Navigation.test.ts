@@ -2,7 +2,7 @@ import { beforeAll, expect, it } from 'vitest';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
-const room = roomDefinitions.get('run2')!;
+const room = roomDefinitions.get('bulwar1')!;
 const p = (x: number, y: number, z: number) => ({ x, y, z });
 let nav: ArenaNavigation;
 beforeAll(() => {
