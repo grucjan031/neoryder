@@ -90,79 +90,103 @@ def screen(r, x, y, z, w, h, art=STATUS):
     print_on(r, art, x, y, z + 0.001, w * 0.88, h * 0.76)
 
 
-def specimen(r):
-    # Offset sections sculpt the brow, jaw, ribcage and flexed hips in silhouette.
-    form(
-        r,
-        "cranium",
-        0,
-        0.12,
-        [
-            (2.86, 0.075, 0.082, 0.015),
-            (2.94, 0.155, 0.14, 0.025),
-            (3.10, 0.164, 0.154, 0),
-            (3.20, 0.100, 0.102, -0.025),
-        ],
-        DARK,
-    )
-    form(
-        r,
-        "ribcage",
-        0,
-        0,
-        [
-            (2.12, 0.18, 0.14, -0.07),
-            (2.29, 0.145, 0.13, -0.04),
-            (2.56, 0.25, 0.19, 0.015),
-            (2.74, 0.285, 0.145, 0.07),
-            (2.85, 0.10, 0.10, 0.10),
-        ],
-        ENAMEL,
-    )
-    form(
-        r,
-        "respirator",
-        0,
-        0.244,
-        [(2.91, 0.070, 0.045, 0), (2.98, 0.12, 0.072, 0.020), (3.024, 0.10, 0.044, 0)],
-        INK,
-        6,
-    )
-    face(r, "visor", 0, 3.057, 0.275, 0.16, 0.028, STEEL)
-    tube(
-        r,
-        "mask_feed",
-        [(0.06, 2.97, 0.306), (0.115, 2.89, 0.29), (0.14, 2.79, 0.19), (0.15, 2.68, 0.18)],
-        0.019,
-        INK,
-        4,
-    )
-    for s in (-1, 1):
-        knee = (s * 0.212, 1.99 + s * 0.16, 0.38 + s * 0.105)
-        ankle = (s * 0.18, 1.47 + s * 0.04, 0.07 + s * 0.04)
-        elbow = (s * 0.324, 2.42 + s * 0.12, 0.145 + s * 0.08)
-        wrist = (s * 0.21, 2.45 + s * 0.29, 0.36)
-        rod(r, "upper_arm", (s * 0.215, 2.67, 0.065), elbow, 0.106, DARK, 6, 0.071)
-        rod(r, "forearm", elbow, wrist, 0.085, ENAMEL, 6, 0.056)
-        rod(r, "fingers", wrist, (s * 0.15, 2.46 + s * 0.29, 0.385), 0.060, DARK, 5, 0.036)
-        rod(r, "thigh", (s * 0.102, 2.18, -0.064), knee, 0.14, ENAMEL, 7, 0.084)
-        rod(r, "calf", knee, ankle, 0.095, DARK, 6, 0.055)
-        rod(r, "foot", ankle, (s * 0.18, 1.370 + s * 0.012, 0.19), 0.064, DARK, 5, 0.04)
-        for i in range(3):
-            tube(
-                r,
-                "umbilical",
-                [
-                    (s * (0.13 + i * 0.025), 2.44 + i * 0.13, 0.05 - i * 0.09),
-                    (s * (0.38 + i * 0.08), 2.16 + i * 0.13, -0.16),
-                    (s * (0.53 + i * 0.075), 2.26 + i * 0.19, -0.28),
-                    (s * (0.64 + i * 0.03), 3.10 + i * 0.10, -0.35),
-                    (s * (0.46 + i * 0.07), 3.78, -0.39),
-                ],
-                0.023 if i else 0.037,
-                INK,
-                4 if i == 0 else 3,
-            )
+def specimen(r, cryo=False, scale=1, offset=(0, 0, 0)):
+    """Wspólna, zawieszona figura; wariant inkubatora skaluje całą anatomię."""
+    before = set(r.children)
+    sides = 5 if scale < 1 else 8
+    wire_sides = 3 if scale < 1 else 5
+    skin, glow = "mat_snow", BLUE if cryo else GREEN
+    form(r, "cranium", 0, 0.14, [
+        (2.87, .055, .064, .055), (2.94, .123, .113, .052),
+        (3.08, .158, .143, .018), (3.24, .130, .134, -.024),
+        (3.31, .065, .076, -.040)], skin, sides+2)
+    rod(r, "neck", (0, 2.73, .035), (0, 2.97, .12), .072, skin, sides, .059)
+    form(r, "ribcage", 0, 0, [
+        (2.14, .14, .105, -.05), (2.28, .117, .10, -.03),
+        (2.48, .205, .145, .005), (2.66, .25, .14, .025),
+        (2.75, .19, .11, .04), (2.80, .075, .07, .05)], skin, sides+2)
+    form(r, "pelvis", 0, -.05, [(2.05,.12,.10,0), (2.14,.174,.13,0),
+                              (2.25,.126,.10,0)], skin, sides)
+    for side in (-1, 1):
+        panel(r, "eye_socket", side*.071, 3.071, .274, .093, .049, .012, .018, DARK)
+        rod(r, "brow", (side*.025,3.115,.265), (side*.128,3.102,.247), .020, skin, 5)
+        rod(r, "cheekbone", (side*.12,3.04,.258), (side*.075,2.995,.277), .024, skin, 5)
+        for i in range(3 if scale < 1 else 4):
+            y = 2.40+i*.069
+            tube(r, "rib_contour", [(side*.025,y,.136), (side*.13,y+.024,.145),
+                                    (side*(.17+i*.013),y+.056,.075)], .014, skin, 4)
+        rod(r, "clavicle", (side*.025,2.70,.141), (side*.205,2.689,.11), .021, skin, 5)
+        knee = (side*.212, 1.93+side*.13, .36+side*.08)
+        ankle = (side*.19, 1.35+side*.035, .09)
+        elbow = (side*.33, 2.39+side*.09, .13)
+        wrist = (side*.255, 2.14+side*.09, .30)
+        shoulder = (side*.218,2.67,.055)
+        for name, start, end, radius, tip in (
+            ("upper_arm",shoulder,elbow,.083,.059),
+            ("forearm",elbow,wrist,.066,.041),
+            ("thigh",(side*.105,2.14,-.05),knee,.113,.071),
+            ("calf",knee,ankle,.078,.042)):
+            mid = tuple(a*.58+b*.42 for a,b in zip(start,end))
+            rod(r,name,start,mid,radius,skin,sides,radius*1.06)
+            rod(r,name+"_taper",mid,end,radius*1.06,skin,sides,tip)
+        rod(r,"palm",wrist,(wrist[0],wrist[1]-.095,.325),.049,skin,sides,.037)
+        for finger in range(4):
+            x = wrist[0]+(finger-1.5)*.023
+            y = wrist[1]-.075
+            length = .10-abs(finger-1.5)*.012
+            tube(r,"finger",[(x,y,.326),(x,y-length*.6,.35),
+                              (x,y-length,.379),(x,y-length*.9,.403)],.012,skin,3)
+        tube(r,"thumb",[(wrist[0]-side*.038,wrist[1]-.02,.32),
+                         (wrist[0]-side*.069,wrist[1]-.06,.35),
+                         (wrist[0]-side*.06,wrist[1]-.09,.38)],.017,skin,3)
+        rod(r,"foot",ankle,(side*.19,1.255+side*.035,.255),.058,skin,sides,.044)
+        for start, end, radius in (
+            (shoulder,elbow,.091), (ankle,knee,.054)):
+            a, b = Vector(start), Vector(end)
+            axis = (b-a).normalized()
+            rod(r,"restraint_collar",a+axis*.055,a+axis*.10,radius,STEEL,sides)
+            tube(r,"restraint_tether",[tuple(a+axis*.075),
+                  (side*.48,a.y+.08,-.10),(side*.67,a.y+.30,-.34)],.016,INK,4)
+        tube(r,"arm_vein",[(side*.22,2.67,.132), (side*.314,elbow[1],.189),
+                            (wrist[0]+side*.02,wrist[1]+.035,.34)],.009,glow,3)
+        tube(r,"leg_vein",[(side*.11,2.10,.07),(knee[0],knee[1],knee[2]+.075),
+                            (ankle[0],ankle[1]+.05,ankle[2]+.045)],.009,glow,3)
+        tube(r,"temple_vein",[(side*.10,3.24,.212),(side*.133,3.17,.235),
+                               (side*.118,3.13,.255)],.007,glow,3)
+    for i in range(7):
+        box(r,"vertebra",0,2.22+i*.078,-.135,.055,.046,.045,skin)
+    for y in ((2.34,2.82) if scale < 1 else (2.34,2.60,2.82)):
+        rod(r,"spinal_port",(0,y,-.12),(0,y,-.20),.040,ENAMEL,6)
+        tube(r,"spinal_feed",[(0,y,-.19),(-.20,y-.12,-.29),
+                              (-.51,y+.12,-.34),(-.60,3.55,-.34),(-.38,3.77,-.30)],.026,INK,wire_sides)
+    panel(r,"respirator",0,2.969,.289,.16,.094,.047,.024,DARK)
+    for side in (-1,1):
+        rod(r,"mask_filter",(side*.065,2.972,.31),(side*.118,2.972,.31),.039,STEEL,6)
+    tube(r,"breathing_hose",[(.10,2.97,.31),(.22,2.86,.34),(.37,2.90,.20),
+                              (.47,3.20,-.12),(.40,3.77,-.24)],.025,INK,wire_sides)
+    tube(r,"sternal_vein",[(0,2.69,.146),(.025,2.54,.158),(0,2.39,.13),
+                           (.04,2.25,.087)],.009,glow,3)
+    # Keep the same authored mesh in the small culture vessel.
+    for obj in set(r.children)-before:
+        obj.location = obj.location*scale + ba._city_point(offset)
+        obj.scale *= scale
+
+
+def culture_fluid(r, bottom, top, radius):
+    # Rear-only translucent bands build optical density towards the sump,
+    # leaving the front silhouette clear with the runtime glass material.
+    for layer in range(3):
+        for i in range(8):
+            a, b = [math.pi + math.pi*j/8 for j in (i,i+1)]
+            y = bottom + (top-bottom)*(1-layer*.23)
+            pane(r,"fluid_gradient",[(radius*math.cos(t),h,radius*math.sin(t))
+                 for t,h in ((a,bottom),(b,bottom),(b,y),(a,y))],GLASS)
+    for i in range(7):
+        y = bottom+(top-bottom)*(.12+i*.115)
+        rad = radius*(.022+(i%3)*.012)
+        x = (-1 if i%2 else 1)*radius*(.52+(i%3)*.10)
+        form(r,"bubble",x,.10*radius,[(y-rad,.004,.004,0),
+             (y,rad,rad,0),(y+rad,.004,.004,0)],GLASS,4 if radius < .5 else 6)
 
 
 def cocoon(r, cryo=False, breached=False):
@@ -294,7 +318,8 @@ def cocoon(r, cryo=False, breached=False):
                 ],
                 VIOLET if cryo else glow,
             )
-        specimen(r)
+        specimen(r, cryo)
+        culture_fluid(r, .77, 3.53, .86)
         for s in (-1, 1):
             y = 1.50 + s * 0.28
             form(
@@ -335,45 +360,8 @@ def cocoon_incubator(r):
     for i in range(5):
         face(r, "keys", (i - 2) * 0.068, 0.332, 0.546, 0.049, 0.025, GOLD)
     drum(r, "culture_glass", 0, 0, 0.85, 1.85, 0.445, GLASS, 20)
-    tube(
-        r,
-        "culture_stem",
-        [
-            (0, 0.85, 0),
-            (-0.10, 1.07, 0.03),
-            (-0.14, 1.29, 0.06),
-            (0.02, 1.39, 0.12),
-            (0.17, 1.31, 0.13),
-            (0.18, 1.18, 0.10),
-        ],
-        0.041,
-        GREEN,
-        6,
-    )
-    form(
-        r,
-        "sample",
-        0.07,
-        0.08,
-        [
-            (1.33, 0.067, 0.077, 0),
-            (1.43, 0.149, 0.12, 0.02),
-            (1.54, 0.127, 0.111, 0.012),
-            (1.60, 0.050, 0.050, 0),
-        ],
-        ENAMEL,
-    )
-    for i in range(4):
-        rod(
-            r,
-            "filament",
-            (-0.12, 1.15 + i * 0.053, 0.03),
-            (-0.22, 1.20 + i * 0.06, -0.016),
-            0.022,
-            GREEN,
-            5,
-            0.006,
-        )
+    specimen(r, scale=.43, offset=(0, .30, 0))
+    culture_fluid(r, .86, 1.81, .42)
     drum(r, "cap", 0, 0, 1.85, 1.99, 0.48, STEEL, 12, 0.43)
     drum(r, "flange", 0, 0, 1.99, 2.026, 0.34, WHITE)
     drum(r, "filter", 0, 0, 2.026, 2.10, 0.24, DARK, 8)
@@ -666,6 +654,7 @@ def hazmat_suit_rack(r):
     box(r, "hanger_rail", 0, 2.06, -0.14, 2.20, 0.08, 0.09, ALLOY)
     slab(r, "tank_shelf", 0, 0.14, -0.08, 2.10, 0.065, 0.55, 0.05, DARK)
     for index, x in enumerate((-0.69, 0, 0.69)):
+        before = set(r.children)
         z = 0.014 if index % 2 else -0.01
         tube(r, "hook", [(x, 1.85, z), (x, 1.97, z), (x, 2.035, -0.09), (x, 2.035, -0.145)], 0.017, STEEL, 4)
         form(
@@ -697,18 +686,70 @@ def hazmat_suit_rack(r):
             GOLD,
             6,
         )
-        panel(r, "face_seal", x, 1.655, z + 0.122, 0.225, 0.143, 0.030, 0.034, INK)
-        face(r, "visor", x, 1.664, z + 0.139, 0.176, 0.085, GLASS)
-        face(r, "visor_rim", x, 1.696, z + 0.140, 0.158, 0.010, STEEL)
+        # Recessed helmet cavity, separate gasket and proud curved glazing.
+        panel(r, "helmet_interior", x, 1.655, z + .139, .217, .137, .013, .028, INK)
+        face(r, "inner_headband", x, 1.681, z+.149, .139, .019, STEEL)
+        face(r, "inner_mask", x, 1.620, z+.150, .076, .030, DARK)
+        outline = [(-.081,-.065),(.081,-.065),(.111,-.035),(.111,.035),
+                   (.081,.065),(-.081,.065),(-.111,.035),(-.111,-.035)]
+        tube(r,"visor_gasket",[(x+u,1.655+v,z+.173) for u,v in outline],.012,RUBBER,4,closed=True)
+        for a,b in ((-.102,-.035),(-.035,.035),(.035,.102)):
+            pane(r,"visor",[(x+u,1.655+v,z+.179+(.017 if abs(u)<.04 else 0))
+                 for u,v in ((a,-.051),(b,-.051),(b,.051),(a,.051))],GLASS)
+        for side in (-1,1):
+            rod(r,"respirator_filter",(x+side*.112,1.577,z+.13),
+                (x+side*.167,1.577,z+.13),.043,DARK,6)
+            rod(r,"filter_cap",(x+side*.167,1.577,z+.13),
+                (x+side*.178,1.577,z+.13),.034,STEEL,6)
+        tube(r,"hood_seam",[(x-.125,1.48,z+.065),(x-.154,1.60,z+.064),
+             (x-.12,1.754,z+.071),(x,1.812,z+.07),(x+.12,1.754,z+.071),
+             (x+.154,1.60,z+.064),(x+.125,1.48,z+.065)],.008,DARK,3)
+        tube(r,"hanger",[(x-.20,1.46,z-.06),(x,1.85,z-.06),
+                          (x+.20,1.46,z-.06)],.016,STEEL,4)
         face(r, "sewn_pocket", x + 0.083, 1.31, z + 0.109, 0.088, 0.088, DARK)
         face(r, "id_patch", x + 0.083, 1.332, z + 0.110, 0.063, 0.021, WHITE)
-        face(r, "zipper", x, 1.154, z + 0.12, 0.019, 0.49, DARK)
+        tube(r,"sealed_zipper",[(x,.84,z+.121),(x,1.03,z+.118),
+             (x,1.28,z+.144),(x,1.47,z+.122)],.014,DARK,4)
+        for y in (.94,1.04,1.14,1.24,1.34):
+            face(r,"zipper_stitch",x,y,z+.154,.023,.009,STEEL)
+        box(r,"zipper_pull",x,1.36,z+.16,.025,.040,.012,STEEL)
+        for side in (-1,1):
+            tube(r,"shoulder_tape",[(x+side*.09,1.48,z+.11),
+                 (x+side*.17,1.39,z+.127),(x+side*.16,1.30,z+.13)],.011,DARK,3)
+        # Three open lobes and central ring form a geometry-only biohazard badge.
+        face(r,"hazard_patch",x-.085,1.28,z+.142,.106,.105,DARK)
+        for lobe in range(3):
+            angle=math.tau*lobe/3
+            cx=x-.085+math.sin(angle)*.020
+            cy=1.28+math.cos(angle)*.020
+            points=[]
+            for j in range(7):
+                a=angle+.55+j*(math.tau-1.1)/6
+                points.append((cx+math.sin(a)*.026,cy+math.cos(a)*.026,z+.147))
+            tube(r,"biohazard_lobe",points,.0035,GOLD,3)
+        ba._city_ring(r,"biohazard_center",(x-.085,1.28,z+.149),.011,
+                      thickness=.003,mat=GOLD,segments=6)
         for s in (-1, 1):
             elbow = (x + s * 0.242, 1.19, z + 0.012)
             cuff = (x + s * 0.224, 1.00, z + 0.081)
             rod(r, "sleeve", (x + s * 0.148, 1.41, z), elbow, 0.080, GOLD, 5, 0.064)
             rod(r, "lower_sleeve", elbow, cuff, 0.068, GOLD, 5, 0.049)
-            rod(r, "glove", cuff, (x + s * 0.209, 0.907, z + 0.081), 0.055, RUBBER, 4, 0.035)
+            rod(r,"sealed_cuff",cuff,(cuff[0],.963,cuff[2]),.058,DARK,6)
+            rod(r,"glove",(cuff[0],.963,cuff[2]),(x+s*.209,.907,z+.081),.048,RUBBER,6,.034)
+            for finger in range(4):
+                fx=x+s*.209+(finger-1.5)*.018
+                tube(r,"glove_finger",[(fx,.919,z+.088),(fx,.865,z+.10),
+                     (fx,.855,z+.121)],.010,RUBBER,3)
+            tube(r,"glove_thumb",[(cuff[0]-s*.036,.946,z+.08),
+                 (cuff[0]-s*.064,.913,z+.10),(cuff[0]-s*.05,.894,z+.12)],.015,RUBBER,4)
+            for i in range(3):
+                a=Vector(elbow).lerp(Vector(cuff),.05+i*.16)
+                axis=(Vector(cuff)-Vector(elbow)).normalized()
+                rod(r,"elbow_fold",a,a+axis*.014,.073-i*.004,GOLD,5)
+                y=.52+i*.039
+                drum(r,"knee_fold",x+s*.103,z-.014,y,y+.016,.084,GOLD,5)
+            tube(r,"sleeve_seam",[(x+s*.18,1.40,z+.065),
+                 (elbow[0],elbow[1],elbow[2]+.067),(cuff[0],1.02,cuff[2]+.05)],.006,DARK,3)
             rod(
                 r,
                 "trouser",
@@ -728,8 +769,23 @@ def hazmat_suit_rack(r):
                 RUBBER,
                 4,
             )
-        drum(r, "oxygen_bottle", x + 0.235, -0.142, 0.211, 1.004, 0.095, GOLD, 6, 0.089)
-        drum(r, "pressure_tap", x + 0.235, -0.142, 1.004, 1.080, 0.045, DARK, 4)
+            slab(r,"boot_sole",x+s*.11,.224,z+.028,.153,.034,.229,.024,DARK)
+            for y in (.30,.35):
+                face(r,"boot_rib",x+s*.11,y,z+.136,.105,.012,STEEL)
+        drum(r,"back_air_bottle",x,-.19,.92,1.42,.085,STEEL,8,.068)
+        drum(r,"pressure_tap",x,-.19,1.42,1.48,.036,DARK,6)
+        for y in (1.02,1.30):
+            drum(r,"tank_strap",x,-.19,y,y+.036,.090,DARK,8)
+        tube(r,"air_supply",[(x,1.46,-.19),(x+.18,1.48,-.22),
+             (x+.245,1.36,-.12),(x+.23,1.29,.02),(x+.17,1.44,.15),
+             (x+.14,1.57,z+.13)],.018,INK,5)
+        if index == 1:
+            from mathutils import Matrix
+            bpy.context.view_layer.update()
+            pivot=ba._city_point((x,0,z))
+            transform=Matrix.Translation(pivot) @ Matrix.Rotation(math.radians(-12),4,"Z") @ Matrix.Translation(-pivot)
+            for obj in set(r.children)-before:
+                obj.matrix_basis=transform @ obj.matrix_basis
 
 
 def corkboard_evidence(r):
@@ -1318,6 +1374,15 @@ def studio(root, output):
     bpy.ops.render.render(write_still=True)
 
 
+DETAIL_BUDGETS = {
+    "lab_cocoon_tall": 4500,
+    "lab_cocoon_tall_cryo": 4500,
+    "lab_cocoon_incubator": 2500,
+    "lab_cocoon_breached": 3000,
+    "lab_hazmat_suit_rack": 4500,
+}
+
+
 def export(builder, preview):
     name = "lab_" + builder.__name__
     ba.reset_scene()
@@ -1328,11 +1393,31 @@ def export(builder, preview):
     builder(root)
     finish_glazing(root)
     ba._port_merge(root, {})
-    ba.export_glb(root, str(REPO / "public/assets/models/city" / (name + ".glb")), animations=False)
     triangles = sum(len(p.vertices) - 2 for obj in root.children for p in obj.data.polygons)
+    if name in DETAIL_BUDGETS and triangles > DETAIL_BUDGETS[name]:
+        raise ValueError(f"{name}: {triangles} > {DETAIL_BUDGETS[name]} triangles")
+    ba.export_glb(root, str(REPO / "public/assets/models/city" / (name + ".glb")), animations=False)
     print(f"[lab] {name}: {triangles} tri", flush=True)
     if preview:
         studio(root, REPO / "artifacts/models/lab" / (name + ".png"))
+        if name in DETAIL_BUDGETS:
+            scene = bpy.context.scene
+            target, span = {
+                "lab_cocoon_tall": ((0,2.35,.12),2.55),
+                "lab_cocoon_tall_cryo": ((0,2.35,.12),2.55),
+                "lab_cocoon_incubator": ((0,1.31,.05),1.12),
+                "lab_cocoon_breached": ((0,2.35,0),3.4),
+                "lab_hazmat_suit_rack": ((0,1.05,.04),1.84),
+            }[name]
+            camera = scene.camera
+            direction = ba._city_point((.12,.06,1)).normalized()
+            camera.location = ba._city_point(target) + direction*12
+            camera.rotation_euler = (-direction).to_track_quat("-Z","Y").to_euler()
+            camera.data.ortho_scale = span
+            if name == "lab_hazmat_suit_rack":
+                scene.render.resolution_x, scene.render.resolution_y = 512, 1280
+            scene.render.filepath = str(REPO / "artifacts/models/lab" / (name + "_closeup.png"))
+            bpy.ops.render.render(write_still=True)
 
 
 BUILDERS = [

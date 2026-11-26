@@ -910,10 +910,10 @@ describe('magazyn Kurogane', () => {
 
 describe('tajne laboratorium Kurogane Arms', () => {
   const specs = {
-    lab_cocoon_tall: [2.2, 4.4, 2.2, 1480],
-    lab_cocoon_tall_cryo: [2.2, 4.4, 2.2, 1480],
-    lab_cocoon_breached: [2.4, 4.4, 2.4, 1360],
-    lab_cocoon_incubator: [1.1, 2.1, 1.1, 760],
+    lab_cocoon_tall: [2.2, 4.4, 2.2, 4500],
+    lab_cocoon_tall_cryo: [2.2, 4.4, 2.2, 4500],
+    lab_cocoon_breached: [2.4, 4.4, 2.4, 3000],
+    lab_cocoon_incubator: [1.1, 2.1, 1.1, 2500],
     lab_ceiling_manifold: [6, 5.2, 5.5, 1120],
     lab_freight_elevator: [4.8, 11.6, 4, 1460],
     lab_bio_scanner_gate: [3.2, 2.6, 1.4, 780],
@@ -925,7 +925,7 @@ describe('tajne laboratorium Kurogane Arms', () => {
     lab_locker_bank: [2.4, 2.1, 0.65, 640],
     lab_locker_bench: [2.2, 0.5, 0.8, 240],
     lab_decon_shower: [1.8, 2.4, 1.6, 620],
-    lab_hazmat_suit_rack: [2.2, 2.1, 0.75, 1180],
+    lab_hazmat_suit_rack: [2.2, 2.1, 0.75, 4500],
     lab_corkboard_evidence: [2.8, 1.6, 0.18, 580],
     lab_classified_cabinet: [1.6, 2.2, 0.85, 560],
     lab_briefing_holotable: [3.2, 1.1, 2, 720],
