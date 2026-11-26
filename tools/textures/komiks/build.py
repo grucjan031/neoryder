@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import platform
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,9 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps, __version__ as PIL_VERSIO
 
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from process import gallery_texture
+
 ROOT = HERE.parents[2]
 OUT = ROOT / "public/assets/textures/komiks"
 CATALOG = json.loads((HERE / "catalog.json").read_text(encoding="utf-8"))
@@ -220,7 +224,9 @@ def build():
                 raise ValueError(f"Za małe źródło: {raw}")
             sources.append({"id": item["id"], "size": list(source.size),
                             "sha256": hashlib.sha256(raw.read_bytes()).hexdigest()})
-            if item["category"] == "surfaces":
+            if item.get("set") == "mall":
+                image = gallery_texture(source, item)
+            elif item["category"] == "surfaces":
                 if item["id"] == "komiks_plaster":
                     prepared = material_fragments(source)
                 elif item["id"] == "komiks_concrete":
@@ -233,14 +239,17 @@ def build():
                 image = ImageOps.fit(green_key(source), (512, 512), Image.Resampling.LANCZOS)
         path = destination(item)
         path.parent.mkdir(parents=True, exist_ok=True)
-        corrections.append(dict(id=item["id"], **save_verified(
-            image, path, legacy_tint=item["category"] == "decals"
-        )))
+        if item.get("set") == "mall":
+            corrections.append(dict(id=item["id"], **save_verified(image, path)))
+        else:
+            corrections.append(dict(id=item["id"], **save_verified(
+                image, path, legacy_tint=item["category"] == "decals"
+            )))
         with Image.open(path) as decoded:
             entries.append(entry(item, decoded))
         print(f"{path.relative_to(ROOT).as_posix()}: {path.stat().st_size} B")
     write_json(OUT / "manifest.json", entries)
-    write_json(HERE / "sources.json", {"tool": "built-in imagegen", "calls": 17,
+    write_json(HERE / "sources.json", {"tool": "built-in imagegen", "calls": len(sources),
                "regenerations": 0, "python": platform.python_version(),
                "pillow": PIL_VERSION, "numpy": np.__version__, "files": sources})
     write_json(HERE / "palette-corrections.json", corrections)
@@ -333,7 +342,7 @@ def validate():
     if set(OUT.rglob("*.webp")) != expected:
         errors.append("Nieprawidłowy zestaw WebP")
     ids = [item["id"] for item in CATALOG]
-    if len(ids) != 17 or len(set(ids)) != 17 or [item["id"] for item in manifest] != ids:
+    if len(set(ids)) != len(ids) or [item["id"] for item in manifest] != ids:
         errors.append("Nieprawidłowy zestaw identyfikatorów manifestu")
     indexed = {item["id"]: item for item in manifest}
     for item in CATALOG:
@@ -398,8 +407,9 @@ def previews():
     directory = HERE / "previews"
     directory.mkdir(exist_ok=True)
     font = ImageFont.load_default(size=19)
-    sheet = Image.new("RGB", (2048, 3 * 552 + 432), "#111725")
-    details = Image.new("RGB", (2048, 3 * 552 + 432), "#111725")
+    surface_rows = (sum(item["category"] == "surfaces" for item in CATALOG) + 3) // 4
+    sheet = Image.new("RGB", (2048, surface_rows * 552 + 432), "#111725")
+    details = Image.new("RGB", sheet.size, "#111725")
     draw = ImageDraw.Draw(sheet)
     detail_draw = ImageDraw.Draw(details)
     surface_index, decal_index = 0, 0
@@ -425,13 +435,12 @@ def previews():
             dark = Image.new("RGBA", (512, 512), "#1b2436")
             dark.alpha_composite(image.convert("RGBA"))
             dark.convert("RGB").save(directory / (item["id"] + "-dark.png"))
-            x, y = decal_index * 400 + 16, 3 * 552
+            x, y = decal_index * 400 + 16, surface_rows * 552
             sheet.paste(board.convert("RGB").resize((384, 384), Image.Resampling.LANCZOS), (x, y))
             draw.text((x, y + 390), item["id"], font=font, fill="#fff1d6")
             details.paste(dark.convert("RGB").resize((384, 384), Image.Resampling.LANCZOS), (x, y))
             detail_draw.text((x, y + 390), item["id"], font=font, fill="#fff1d6")
             decal_index += 1
-    # Zwarty arkusz: 12 powierzchni (3 rzędy), następnie 5 nakładek.
     sheet.save(HERE / "podglad.png")
     details.save(directory / "detale-laczen.png")
     print((HERE / "podglad.png").relative_to(ROOT).as_posix())

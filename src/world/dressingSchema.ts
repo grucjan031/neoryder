@@ -69,6 +69,7 @@ export const BLOCK_MATERIALS = [
   'glass',
   'paving',
   'light_white',
+  'light_panel',
   'neon_green',
   'neon_amber',
   'power_quay_floor',
@@ -89,6 +90,10 @@ export const BLOCK_MATERIALS = [
   'neon_white',
   'rubber',
   'hazard',
+  'glass_clear',
+  'mall_stone_floor',
+  'mall_terrazzo_inlay',
+  'mall_acoustic_ceiling',
 ] as const;
 export const blockMaterialSchema = z.enum(BLOCK_MATERIALS);
 export type BlockMaterial = z.infer<typeof blockMaterialSchema>;

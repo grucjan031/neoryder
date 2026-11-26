@@ -85,6 +85,7 @@ for (const kind of [
   names.set(`mat_${kind}`, kind);
 }
 /** Materiały neonów: bloom selektywny świeci tylko z nich (patrz bloom.ts). */
+// light_panel pozostaje emisyjny bez bloomu, również na dużych kasetonach.
 const emissiveKinds = new Set<StyleKind>([
   'enemyGlow',
   'player',

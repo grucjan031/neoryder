@@ -67,6 +67,38 @@ def destination(item):
     return OUT / item["category"] / (item["id"] + ".webp")
 
 
+def gallery_texture(source, item):
+    """Zachowuje alfę, proporcje napisów i rytm fug w obu wersjach galerii."""
+    size = item["width"], item["height"]
+    category = item["category"]
+    if category == "surfaces":
+        image = seamless(ImageOps.fit(source.convert("RGB"), size, Image.Resampling.LANCZOS))
+    else:
+        decal = category == "decals"
+        mode = "RGBA" if decal else "RGB"
+        image = Image.new(mode, size)
+        inner = ImageOps.contain(source.convert(mode), (size[0]-48, size[1]-48), Image.Resampling.LANCZOS)
+        image.paste(inner, ((size[0]-inner.width)//2, (size[1]-inner.height)//2))
+        if not decal:
+            image = black_key(image)
+    # Kwantyzacja przed korektą zachowuje drobne detale. Napisy i decale
+    # zapisujemy bezstratnie, by nie zmieniać barw na krawędziach liter.
+    rgb = image.convert("RGB").quantize(128, dither=Image.Dither.NONE).convert("RGB")
+    hsv = np.asarray(rgb.convert("HSV")).copy()
+    hue = hsv[:, :, 0].astype(float) * 360 / 255
+    chromatic = (hsv[:, :, 1] >= 36) & (hsv[:, :, 2] >= 16)
+    for mask, degrees in (
+        ((hue < 23) | (hue >= 342), 41),
+        ((hue >= 163) & (hue <= 204), 223),
+        ((hue >= 280) & (hue < 342), 251),
+    ):
+        hsv[:, :, 0][mask & chromatic] = round(degrees * 255 / 360)
+    result = Image.frombytes("HSV", rgb.size, hsv.tobytes()).convert("RGB")
+    if image.mode == "RGBA":
+        result.putalpha(image.getchannel("A"))
+    return result
+
+
 def dominant(image):
     a = np.asarray(image.convert("RGBA"))
     pixels = a[:, :, :3][(a[:, :, 3] > 127) & (a[:, :, :3].max(axis=2) > 25)]
@@ -109,6 +141,13 @@ def build(ids):
                 continue
             raise FileNotFoundError(raw)
         with Image.open(raw) as source:
+            if item.get("set") == "mall":
+                image = gallery_texture(source, item)
+                if item["category"] == "surfaces" and not item.get("lossless"):
+                    image.save(destination(item), "WEBP", quality=QUALITY, method=6)
+                else:
+                    image.save(destination(item), "WEBP", lossless=True, method=6)
+                continue
             image = source.convert("RGB")
         if item["category"] in ("decals", "labels"):
             image = green_key(image)

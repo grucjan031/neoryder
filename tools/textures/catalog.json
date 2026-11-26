@@ -981,5 +981,222 @@
     "height": 1024,
     "description": "Wytarte ukośne pasy ostrzegawcze bursztyn i grafit",
     "subject": "Worn diagonal hazard stripes, alternating amber #c8902a and graphite #24272d, chipped paint, scratches, grime."
+  },
+  {
+    "id": "screen_mall_directory",
+    "category": "screens",
+    "width": 512,
+    "height": 768,
+    "description": "Plan trzech poziomów Atrium Nova; TU JESTEŚ",
+    "subject": "Plan trzech poziomów Atrium Nova; TU JESTEŚ",
+    "set": "mall"
+  },
+  {
+    "id": "mall_tactile_strip",
+    "category": "decals",
+    "width": 512,
+    "height": 256,
+    "description": "Mosiężna listwa prowadząca",
+    "subject": "Mosiężna listwa prowadząca",
+    "set": "mall"
+  },
+  {
+    "id": "mall_escalator_comb",
+    "category": "decals",
+    "width": 512,
+    "height": 256,
+    "description": "Grzebień schodów z bursztynową krawędzią",
+    "subject": "Grzebień schodów z bursztynową krawędzią",
+    "set": "mall"
+  },
+  {
+    "id": "mall_wet_footprints",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "Mokre ślady butów przy wejściu",
+    "subject": "Mokre ślady butów przy wejściu",
+    "set": "mall"
+  },
+  {
+    "id": "mall_exit_stencil",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "WYJŚCIE ze strzałką i piktogramem",
+    "subject": "WYJŚCIE ze strzałką i piktogramem",
+    "set": "mall"
+  },
+  {
+    "id": "mall_stone_floor",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Płyty kamienne 1,2 m z ciemną fugą",
+    "subject": "Płyty kamienne 1,2 m z ciemną fugą",
+    "set": "mall"
+  },
+  {
+    "id": "mall_terrazzo_inlay",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Grafitowe terrazzo z mosiężną listwą",
+    "subject": "Grafitowe terrazzo z mosiężną listwą",
+    "set": "mall",
+    "lossless": true
+  },
+  {
+    "id": "mall_acoustic_ceiling",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Płyty akustyczne na ruszcie",
+    "subject": "Płyty akustyczne na ruszcie",
+    "set": "mall"
+  },
+  {
+    "id": "mall_fashion",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "VERVE // MODA",
+    "subject": "VERVE // MODA",
+    "set": "mall"
+  },
+  {
+    "id": "mall_footwear",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "STRIDE // OBUWIE",
+    "subject": "STRIDE // OBUWIE",
+    "set": "mall"
+  },
+  {
+    "id": "mall_electronics",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "VOLT-X // AUDIO-HOL",
+    "subject": "VOLT-X // AUDIO-HOL",
+    "set": "mall"
+  },
+  {
+    "id": "mall_optics",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "IRIS // OPTYKA",
+    "subject": "IRIS // OPTYKA",
+    "set": "mall"
+  },
+  {
+    "id": "mall_jewelry",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "AUREA // ZEGARKI",
+    "subject": "AUREA // ZEGARKI",
+    "set": "mall"
+  },
+  {
+    "id": "mall_books",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "KODEKS // MEDIA",
+    "subject": "KODEKS // MEDIA",
+    "set": "mall"
+  },
+  {
+    "id": "mall_kurogane",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "KUROGANE // TAKTYKA",
+    "subject": "KUROGANE // TAKTYKA",
+    "set": "mall"
+  },
+  {
+    "id": "floor_l0",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "POZIOM 0",
+    "subject": "POZIOM 0",
+    "set": "mall"
+  },
+  {
+    "id": "floor_l1",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "POZIOM 1",
+    "subject": "POZIOM 1",
+    "set": "mall"
+  },
+  {
+    "id": "floor_l2",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "POZIOM 2",
+    "subject": "POZIOM 2",
+    "set": "mall"
+  },
+  {
+    "id": "mall_new_collection",
+    "category": "signs",
+    "width": 512,
+    "height": 768,
+    "description": "NOWA KOLEKCJA",
+    "subject": "NOWA KOLEKCJA",
+    "set": "mall"
+  },
+  {
+    "id": "mall_sale",
+    "category": "signs",
+    "width": 512,
+    "height": 768,
+    "description": "-30%",
+    "subject": "-30%",
+    "set": "mall"
+  },
+  {
+    "id": "mall_opening",
+    "category": "signs",
+    "width": 512,
+    "height": 768,
+    "description": "OTWARCIE 9:00",
+    "subject": "OTWARCIE 9:00",
+    "set": "mall"
+  },
+  {
+    "id": "mall_pharmacy",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "HELIX-MED // APTEKA 24H",
+    "subject": "HELIX-MED // APTEKA 24H",
+    "set": "mall"
+  },
+  {
+    "id": "mall_outdoor",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "APEX // OUTDOOR",
+    "subject": "APEX // OUTDOOR",
+    "set": "mall"
+  },
+  {
+    "id": "mall_perfume",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "AURA // SYNTH-PERFUME",
+    "subject": "AURA // SYNTH-PERFUME",
+    "set": "mall"
   }
 ]

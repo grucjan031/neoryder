@@ -20,10 +20,6 @@ const STRETCH_TOLERANCE = 0.02;
 // Rekwizyty city_* mają stałe proporcje; tolerancja wymiarów z docs/assets.md.
 const PROP_TOLERANCE = 0.05;
 
-function checksBlock(model: string | undefined): boolean {
-  return !!model && (STRETCH.has(model) || /^(city|bw)_/.test(model));
-}
-
 beforeAll(() => {
   vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
     async (url) => {
@@ -37,8 +33,18 @@ beforeAll(() => {
 });
 afterAll(() => vi.restoreAllMocks());
 
+function hasMeasuredFit(model: string | undefined): model is string {
+  return (
+    !!model &&
+    (STRETCH.has(model) ||
+      model.startsWith('city_') ||
+      model.startsWith('mall_') ||
+      model.startsWith('bw_'))
+  );
+}
+
 const rooms = [...roomDefinitions.values()].filter((room) =>
-  room.blocks.some((block) => checksBlock(block.model)),
+  room.blocks.some((block) => hasMeasuredFit(block.model)),
 );
 
 it.each([...rooms.map((room) => room.id), 'indoorTest'])(
@@ -73,7 +79,7 @@ it.each([...rooms.map((room) => room.id), 'indoorTest'])(
       const failures: string[] = [];
       for (const block of room.blocks) {
         const { model, size, position } = block;
-        if (!model || !checksBlock(model)) continue;
+        if (!hasMeasuredFit(model)) continue;
         const centre = new Vector3(position.x, position.y, position.z);
         // Model należy do bloku, jeśli jego środek w XZ i spód pokrywają się z blokiem.
         const box = boxes.find((candidate) => {

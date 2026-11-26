@@ -26,6 +26,7 @@ import {
 } from '../../src/render/urbanMaterials';
 import { surfaceTexture } from '../../src/render/surfaceTextures';
 import { applyTheme, themeDefinitions } from '../../src/render/themes';
+import { setPowerLevel } from '../../src/render/powerLevel';
 
 const portExpected = {
   container_navy: ['container_corrugated_navy', '283a62'],
@@ -50,12 +51,38 @@ const mappings = [
 const defaults = { ...tuning.render };
 
 afterEach(() => {
+  setPowerLevel(1);
   Object.assign(tuning.render, defaults);
   syncMaterials();
   vi.restoreAllMocks();
 });
 
 describe('rejestr materiałów stylu', () => {
+  it('light_panel zachowuje emisję ciepłej bieli bez bloomu po imporcie i zmianie zasilania', () => {
+    const source = new MeshBasicMaterial();
+    source.name = 'mat_light_panel';
+    const mesh = new Mesh(new BoxGeometry(), source);
+    const warn = vi.spyOn(console, 'warn');
+    applyStyle(mesh);
+    const panel = getMaterial('light_panel') as MeshStandardMaterial;
+    const white = getMaterial('light_white');
+    expect(mesh.material).toBe(panel);
+    expect(panel.toneMapped).toBe(false);
+    expect(panel.color.getHex()).toBe(0);
+    expect(panel.map).toBeNull();
+    for (const power of [1, 0.35, 0, 1]) {
+      setPowerLevel(power);
+      syncMaterials();
+      expect(panel.emissive.equals(white.color)).toBe(true);
+      expect(panel.userData.bloom).not.toBe(true);
+      expect(white.userData.bloom).toBe(true);
+    }
+    for (const kind of ['neon_amber', 'neon_green', 'neon_violet'] as const)
+      expect(getMaterial(kind).userData.bloom).toBe(true);
+    expect(warn).not.toHaveBeenCalled();
+    mesh.geometry.dispose();
+    source.dispose();
+  });
   it('synchronizuje materiał utworzony bezpośrednio przed zmianą motywu', () => {
     applyTheme(themeDefinitions.get('white')!);
     const material = createUrbanMaterial('steel_grating');
