@@ -11,8 +11,20 @@ import type {
   ElevatorButton,
   ElevatorCabin,
 } from '../world/elevatorCabin';
-import { cabinHeight, slab } from '../world/elevatorSchema';
+import {
+  cabinHeight,
+  facePoint,
+  slab,
+  type Side,
+} from '../world/elevatorSchema';
 import { cloneCityModel } from './cityModels';
+
+const sideYaw: Record<Side, number> = {
+  n: Math.PI,
+  s: 0,
+  e: Math.PI / 2,
+  w: -Math.PI / 2,
+};
 
 export class ElevatorView {
   private readonly root = new Group();
@@ -38,7 +50,13 @@ export class ElevatorView {
   private readonly lit = new MeshBasicMaterial({ color: 0xfff1d1 });
   private readonly dim = new MeshBasicMaterial({ color: 0x57514a });
   private readonly panels = new Map<ElevatorButton, Mesh[]>();
-  private readonly leaves: { part: CabinPart; mesh: Mesh; sign: number }[] = [];
+  private readonly carShell: Mesh[] = [];
+  private readonly leaves: {
+    part: CabinPart;
+    mesh: Object3D;
+    sign: number;
+    glb?: boolean;
+  }[] = [];
   constructor(
     private readonly cabin: ElevatorCabin,
     parent: Object3D,
@@ -54,6 +72,7 @@ export class ElevatorView {
         mesh.scale.copy(part.size);
         group.add(mesh);
         if (isDoor) this.leaves.push({ part, mesh, sign });
+        else if (part.cabin) this.carShell.push(mesh);
       }
     }
     const { width, depth } = cabin.def;
@@ -67,16 +86,16 @@ export class ElevatorView {
           z * (depth / 2 - slab),
         );
         this.car.add(post);
+        this.carShell.push(post);
       }
     for (const button of cabin.buttons) {
       const panel = new Mesh(this.box, this.frame);
       panel.position.copy(button.position);
       panel.rotation.y =
-        button.stop === undefined
-          ? -Math.PI / 2
-          : { n: Math.PI, s: 0, e: Math.PI / 2, w: -Math.PI / 2 }[button.side];
+        button.stop === undefined ? -Math.PI / 2 : sideYaw[button.side];
       const group = button.stop === undefined ? this.car : this.root;
       group.add(panel);
+      if (button.stop === undefined) this.carShell.push(panel);
       const face = new Group();
       face.position.copy(panel.position);
       face.rotation.copy(panel.rotation);
@@ -104,9 +123,45 @@ export class ElevatorView {
     this.render(1);
   }
   async loadModel(): Promise<void> {
-    if (!this.cabin.def.model) return;
-    const model = await cloneCityModel(this.cabin.def.model);
-    if (model) this.car.add(model);
+    const modelId = this.cabin.def.model;
+    if (!modelId) return;
+    const model = await cloneCityModel(modelId);
+    if (!model) return;
+    this.car.add(model);
+    for (const mesh of this.carShell) mesh.visible = false;
+    if (modelId !== 'off_elevator_cab') return;
+    for (const leaf of this.leaves) if (leaf.part.cabin) leaf.mesh.visible = false;
+    for (const part of this.cabin.parts) {
+      if (part.cabin || part.material !== 'door' || part.stop === undefined)
+        continue;
+      const stop = this.cabin.def.stops[part.stop]!;
+      const portal = await cloneCityModel('off_elevator_shaft_door');
+      if (!portal) continue;
+      const at = facePoint(this.cabin.def, stop.doorSide, stop.y, 0);
+      portal.position.set(at.x, at.y, at.z);
+      portal.rotation.y = sideYaw[stop.doorSide];
+      this.root.add(portal);
+      const left = portal.getObjectByName('door_left');
+      const right = portal.getObjectByName('door_right');
+      if (left && right) {
+        for (const leaf of this.leaves)
+          if (leaf.part === part) leaf.mesh.visible = false;
+        this.leaves.push(
+          { part, mesh: left, sign: -1, glb: true },
+          { part, mesh: right, sign: 1, glb: true },
+        );
+      }
+    }
+    for (const button of this.cabin.buttons) {
+      if (button.stop === undefined) continue;
+      const stop = this.cabin.def.stops[button.stop]!;
+      const callPanel = await cloneCityModel('off_elevator_call_panel');
+      if (!callPanel) continue;
+      callPanel.position.set(button.position.x, stop.y, button.position.z);
+      callPanel.rotation.y = sideYaw[button.side];
+      this.root.add(callPanel);
+    }
+    this.render(1);
   }
   render(alpha: number, focus?: ElevatorButton): void {
     const c = this.cabin,
@@ -116,10 +171,23 @@ export class ElevatorView {
       c.previousY + (s.y - c.previousY) * alpha,
       c.def.z,
     );
-    for (const { part, mesh, sign } of this.leaves) {
+    for (const { part, mesh, sign, glb } of this.leaves) {
+      if (part.cabin && c.def.model === 'off_elevator_cab') continue;
       const before = c.opening(part, c.previousStop, c.previousDoor);
       const after = c.opening(part, s.stop, s.door);
       const fraction = before + (after - before) * alpha;
+      if (glb) {
+        mesh.scale.x = 1 - fraction;
+        mesh.position.x = sign * 0.55 * (1 + fraction);
+        mesh.visible = fraction < 1;
+        continue;
+      }
+      if (
+        !part.cabin &&
+        c.def.model === 'off_elevator_cab' &&
+        this.leaves.some((l) => l.part === part && l.glb)
+      )
+        continue;
       const axis = part.side === 'n' || part.side === 's' ? 'x' : 'z';
       // Skrzydła teleskopowe chowają się w ościeżach wewnątrz obrysu szybu.
       mesh.scale[axis] = (part.size[axis] * (1 - fraction)) / 2;
