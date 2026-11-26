@@ -40,11 +40,14 @@ export function mountWeatherControls(
   controls.dataset.weatherControls = '';
   Object.assign(controls.style, {
     position: 'fixed',
-    top: '12px',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    // Pod licznikiem stats.js (lewy górny róg, 48 px); prawy margines zostawia
+    // miejsce na panel lil-gui; przy wielu profilach rząd się zawija.
+    top: '60px',
+    left: '12px',
+    maxWidth: 'calc(100% - 300px)',
     zIndex: '30',
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '6px',
   });
   for (const profile of weatherDefinitions.values()) {
