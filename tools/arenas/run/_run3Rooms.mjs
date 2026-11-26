@@ -447,6 +447,13 @@ function buildRoomB1(k, p) {
       box(k, sx * 19.44, 1.4, z, 0.04, 4.4, 0.06, ledColor, { walkable: false });
     }
     // Górne pilastry nad Rampami Pomostowymi Północnymi (y = -0.8..+4.4 m, pełny prześwit na rampie)
+    // Płytkie podziały lica i światło cokołu rozbijają gładki mur widoczny z corner-nw.
+    for (const z of [-35.2, -38.8, -42.4]) {
+      box(k, sx * 19.78, -0.4, z, 0.04, 6.4, 0.14, 'trim', { walkable: false });
+      box(k, sx * 19.75, -0.4, z, 0.02, 3.2, 0.04, 'light_panel', {
+        walkable: false,
+      });
+    }
     for (const z of [-37.0, -41.0]) {
       box(k, xPil, 1.8, z, 0.3, 5.2, 0.48, MAT_BUNKER, { walkable: false });
       box(k, sx * 19.44, 1.8, z, 0.04, 4.2, 0.06, ledColor, { walkable: false });

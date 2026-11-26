@@ -1,5 +1,11 @@
 # Narzędzia i prompty tekstur NEORYDER
 
+## Pakiet run3 — Etap C
+
+30 nowych tekstur laboratorium wygenerowano sekwencyjnie wbudowanym imagegen; źródła są w `raw/` i `komiks/raw/`, a prompty w `run3-prompts.json`. Odcisk dłoni ponowiono raz, aby uzyskać sześć palców. Każdy wynik oraz końcowy arkusz obejrzano.
+
+`python tools/textures/run3.py` buduje wyłącznie ten pakiet, aktualizuje jego wpisy manifestów i zapisuje `artifacts/maps/run3/textures_sheet.png` oraz `textures_palette.json`. Napisy mają bezstratny WebP z 32-kolorową paletą i zachowaną alfą; powierzchnie używają WebP quality 70. Skrypt sprawdza zabronione pasma HSV na zdekodowanych plikach. Następnie uruchom `python tools/textures/process.py validate`. Rejestracja w rendererze i generatorze jest osobnym krokiem od budowy bitmap.
+
 Wszystkie 121 obrazów (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra, 2 atlasy okien, 13 powierzchni dużych aren i 20 powierzchni drugiego pakietu dużych aren) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
 
 ## Odtworzenie

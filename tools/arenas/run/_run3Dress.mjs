@@ -1,7 +1,4 @@
 // Oprawa wizualna, easter eggi, zagrożenia, skrzynie, światła i spawny mapy run3 (Sektor X-51).
-// Uwaga dot. Etapu C: docelowe tekstury z docs/maps/run3.md §4.2 jeszcze nie istnieją.
-// Wszystkie odwołania przechodzą przez stałą `LAB_TEXTURES` poniżej — po wygenerowaniu tekstur
-// w Etapie C wystarczy podmienić wartości w `LAB_TEXTURES` (1 linia na teksturę).
 import {
   COLOR,
   H_HALL,
@@ -23,33 +20,35 @@ const C = COLOR;
 
 /**
  * Mapa tekstur szyldów, plakatów i decali laboratorium (§4.2 docs/maps/run3.md).
- * Tymczasowo przypisana do istniejących tekstur z `public/assets/textures/{signs,decals}/`
- * w dozwolonych barwach Neon Noir. W Etapie C podmień każdą wartość na docelowy klucz z komentarza.
  */
 export const LAB_TEXTURES = {
   // --- Szyldy i tablice (public/assets/textures/signs/) ---
-  lab_restricted_omega: 'mall_kurogane', // docelowo Etap C: 'lab_restricted_omega'
-  lab_sector_x51: 'floor_l0', // docelowo Etap C: 'lab_sector_x51'
-  lab_chimera_incubator: 'floor_l1', // docelowo Etap C: 'lab_chimera_incubator'
-  lab_black_archive: 'mall_books', // docelowo Etap C: 'lab_black_archive'
-  lab_xenobio_lab: 'mall_pharmacy', // docelowo Etap C: 'lab_xenobio_lab'
-  lab_prototype_armory: 'warsztat', // docelowo Etap C: 'lab_prototype_armory'
-  lab_decon_lockers: 'repair', // docelowo Etap C: 'lab_decon_lockers'
-  lab_data_vault: 'mall_electronics', // docelowo Etap C: 'lab_data_vault'
+  lab_restricted_omega: 'lab_restricted_omega',
+  lab_sector_x51: 'lab_sector_x51',
+  lab_chimera_incubator: 'lab_chimera_incubator',
+  lab_black_archive: 'lab_black_archive',
+  lab_xenobio_lab: 'lab_xenobio_lab',
+  lab_prototype_armory: 'lab_prototype_armory',
+  lab_decon_lockers: 'lab_decon_lockers',
+  lab_data_vault: 'lab_data_vault',
+  lab_checkpoint: 'lab_checkpoint',
+  lab_humanoid_tests: 'lab_humanoid_tests',
+  lab_ground_floor: 'lab_ground_floor',
+  lab_basement_floor: 'lab_basement_floor',
 
   // --- Easter Eggi i plakaty (public/assets/textures/decals/) ---
-  poster_we_are_not_alone: 'poster_torn1', // docelowo Etap C: 'poster_we_are_not_alone' (EE-1: UFO)
-  plaque_evil_corp: 'poster_torn2', // docelowo Etap C: 'plaque_evil_corp' (EE-2: EVIL CORP)
-  note_object_07: 'sticker_cluster', // docelowo Etap C: 'note_object_07' (EE-3: Obiekt nr 7)
-  board_resonance_profit: 'poster_torn3', // docelowo Etap C: 'board_resonance_profit' (EE-5: Rezonans -> Zysk)
-  sticky_code_0451: 'sticker_cluster', // docelowo Etap C: 'sticky_code_0451' (EE-6: Kod 0451)
-  note_intern_locker13: 'poster_torn2', // docelowo Etap C: 'note_intern_locker13' (EE-7: Szafka 13)
-  cocoon_04_empty_hand: 'poster_torn1', // docelowo Etap C: 'cocoon_04_empty_hand' (EE-8: Zbiornik 04)
+  poster_we_are_not_alone: 'poster_we_are_not_alone',
+  plaque_evil_corp: 'plaque_evil_corp',
+  note_object_07: 'note_object_07',
+  board_resonance_profit: 'board_resonance_profit',
+  sticky_code_0451: 'sticky_code_0451',
+  note_intern_locker13: 'note_intern_locker13',
+  cocoon_04_empty_hand: 'cocoon_04_empty_hand',
 
   // --- Notatki i oznakowanie BHP (public/assets/textures/decals/) ---
-  lab_redacted_papers: 'sticker_cluster', // docelowo Etap C: 'lab_redacted_papers'
-  lab_biohazard_warning: 'floor_hazard', // docelowo Etap C: 'lab_biohazard_warning'
-  lab_clearance_line: 'mall_tactile_strip', // docelowo Etap C: 'lab_clearance_line'
+  lab_redacted_papers: 'lab_redacted_papers',
+  lab_biohazard_warning: 'lab_biohazard_warning',
+  lab_clearance_line: 'lab_clearance_line',
 };
 
 /** Pomocnik dodający naklejkę podłogową lub ścienną z `tint`. */
@@ -516,19 +515,13 @@ function easterEggsAndDecals(k) {
 
 /** Szyldy neonowe (`kind: "neon"`, zero stożków `holo` w osiach widoku!) nad portalami 8 pomieszczeń. */
 function signage(k) {
+  const neon = (texture, x, y, z, w, h, yaw, tint, flicker = 0) => {
+    const width = Math.min(w, h * 2);
+    k.neon(texture, x, y, z, width, width / 2, yaw, tint, flicker);
+  };
   // P5 Centralny Hol: nad wejściem głównym, nad szybem windy i przed zejściem do B1.
-  k.neon(
-    LAB_TEXTURES.lab_sector_x51,
-    0,
-    4.3,
-    27.75,
-    3.6,
-    1.2,
-    PI,
-    C.blue,
-    0,
-  );
-  k.neon(
+  neon(LAB_TEXTURES.lab_sector_x51, 0, 4.3, 27.75, 3.6, 1.2, PI, C.blue, 0);
+  neon(
     LAB_TEXTURES.lab_restricted_omega,
     0,
     5.2,
@@ -540,18 +533,8 @@ function signage(k) {
     0.15,
   );
   // Nad bramami z Holu P5 do P1, P2, P3, P4 (na wysokości nadproża y = 3.85 m, przy ścianach X = ±10).
-  k.neon(
-    LAB_TEXTURES.lab_restricted_omega,
-    -9.75,
-    3.85,
-    21.0,
-    2.8,
-    0.9,
-    Q,
-    C.amber,
-    0,
-  );
-  k.neon(
+  neon(LAB_TEXTURES.lab_checkpoint, -9.75, 3.85, 21.0, 2.8, 0.9, Q, C.amber, 0);
+  neon(
     LAB_TEXTURES.lab_black_archive,
     -9.75,
     3.85,
@@ -562,7 +545,7 @@ function signage(k) {
     C.amber,
     0,
   );
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_xenobio_lab,
     9.75,
     3.85,
@@ -573,7 +556,7 @@ function signage(k) {
     C.green,
     0,
   );
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_prototype_armory,
     9.75,
     3.85,
@@ -585,7 +568,7 @@ function signage(k) {
     0,
   );
   // Wewnątrz P1..P4 nad grodziami między skrzydłami (Z = 14).
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_black_archive,
     -18.0,
     3.85,
@@ -596,7 +579,7 @@ function signage(k) {
     C.warm,
     0,
   );
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_prototype_armory,
     18.0,
     3.85,
@@ -608,7 +591,7 @@ function signage(k) {
     0,
   );
   // B1 Wielka Sala Testów Humanoidalnych: główny szyld Projektu Chimera, bramy B2/B3 oraz portal EXIT.
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_chimera_incubator,
     0,
     2.4,
@@ -619,8 +602,8 @@ function signage(k) {
     C.green,
     0,
   );
-  k.neon(
-    LAB_TEXTURES.lab_sector_x51,
+  neon(
+    LAB_TEXTURES.lab_ground_floor,
     -8.2,
     2.2,
     -0.25,
@@ -630,16 +613,41 @@ function signage(k) {
     C.blue,
     0,
   );
-  k.neon(
-    LAB_TEXTURES.lab_sector_x51,
-    8.2,
-    2.2,
-    -0.25,
-    2.8,
-    0.9,
-    PI,
-    C.blue,
-    0,
+  neon(LAB_TEXTURES.lab_ground_floor, 8.2, 2.2, -0.25, 2.8, 0.9, PI, C.blue, 0);
+  neon(
+    LAB_TEXTURES.lab_basement_floor,
+    -19.75,
+    -0.3,
+    -38.8,
+    2.4,
+    1.2,
+    Q,
+    C.warm,
+  );
+  neon(
+    LAB_TEXTURES.lab_basement_floor,
+    19.75,
+    -0.3,
+    -38.8,
+    2.4,
+    1.2,
+    -Q,
+    C.warm,
+  );
+  neon(LAB_TEXTURES.lab_humanoid_tests, 0, 0.4, -0.25, 4.8, 1.6, PI, C.warm);
+  // Lico zachodniego muru B1 przy północnej rampie (prawa strona corner-nw).
+  mark(
+    k,
+    LAB_TEXTURES.lab_clearance_line,
+    -19.79,
+    -0.15,
+    -35,
+    2.4,
+    1.2,
+    Q,
+    C.warm,
+    0.95,
+    'wall',
   );
   // Oznaczenia sektorów (numery gniazd kokonów) na ścianach bocznych B1 oraz na Mostku Centralnym.
   for (const [x, z, yaw, tint] of [
@@ -648,9 +656,9 @@ function signage(k) {
     [-19.45, -28.25, Q, C.green],
     [19.45, -28.25, -Q, C.blue],
   ])
-    k.neon(LAB_TEXTURES.lab_chimera_incubator, x, 0.2, z, 2.8, 0.9, yaw, tint, 0);
+    neon(LAB_TEXTURES.lab_chimera_incubator, x, 0.2, z, 2.8, 0.9, yaw, tint, 0);
   for (const sx of [-1, 1]) {
-    k.neon(
+    neon(
       LAB_TEXTURES.lab_restricted_omega,
       sx * 9.5,
       Y_CATWALK - 0.2,
@@ -661,7 +669,7 @@ function signage(k) {
       C.amber,
       0,
     );
-    k.neon(
+    neon(
       LAB_TEXTURES.lab_chimera_incubator,
       sx * 9.5,
       Y_CATWALK - 0.2,
@@ -673,7 +681,7 @@ function signage(k) {
       0,
     );
   }
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_decon_lockers,
     -19.75,
     Y_BASEMENT + 3.45,
@@ -684,7 +692,7 @@ function signage(k) {
     C.green,
     0,
   );
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_decon_lockers,
     -19.75,
     Y_BASEMENT + 3.45,
@@ -695,7 +703,7 @@ function signage(k) {
     C.amber,
     0,
   );
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_data_vault,
     19.75,
     Y_BASEMENT + 3.45,
@@ -706,7 +714,7 @@ function signage(k) {
     C.blue,
     0,
   );
-  k.neon(
+  neon(
     LAB_TEXTURES.lab_data_vault,
     19.75,
     Y_BASEMENT + 3.45,

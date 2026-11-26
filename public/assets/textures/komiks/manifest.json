@@ -198,5 +198,35 @@
     "dominantColor": "#797d83",
     "description": "Komiksowy strop akustyczny galerii",
     "bytes": 254352
+  },
+  {
+    "id": "komiks_lab_epoxy_floor",
+    "category": "surfaces",
+    "path": "surfaces/komiks_lab_epoxy_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#525152",
+    "description": "Gładka posadzka epoksydowa, stalowy grafit, delikatne dylatacje ? wersja komiksowa",
+    "bytes": 17946
+  },
+  {
+    "id": "komiks_lab_bunker_concrete",
+    "category": "surfaces",
+    "path": "surfaces/komiks_lab_bunker_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#585858",
+    "description": "Żelbet bunkra ze śladami szalunku, boniami i gniazdami ściągów ? wersja komiksowa",
+    "bytes": 116238
+  },
+  {
+    "id": "komiks_lab_cleanroom_wall",
+    "category": "surfaces",
+    "path": "surfaces/komiks_lab_cleanroom_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#666666",
+    "description": "Modułowe panele cleanroom z aluminiową listwą techniczną ? wersja komiksowa",
+    "bytes": 52718
   }
 ]
