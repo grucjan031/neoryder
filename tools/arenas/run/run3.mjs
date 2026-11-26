@@ -22,6 +22,7 @@ import {
   Y_CATWALK,
   Y_PARTER,
   blastDoorFrame,
+  box,
   catwalkRail,
   ceilingSlab,
   createPlacer,
@@ -214,6 +215,45 @@ function structure(k) {
 
 // --- Komunikacja pionowa: 6 biegów ramp (czysty obrót rotation.x, nachylenie <= 26.6°) ---------
 
+/**
+ * Boczne policzki, świecące listwy cokołowe LED i poręcze dla pochyłego biegu rampy.
+ * Odsunięte na zewnątrz szerokości biegu i cofnięte o 0.45 m od progów, by nie zawężać nawigacji.
+ */
+function rampSideRails(k, xCenter, width, yFrom, zFrom, yTo, zTo, ledMat = 'neon_amber') {
+  const z0 = Math.min(zFrom, zTo) + 0.45;
+  const z1 = Math.max(zFrom, zTo) - 0.45;
+  const run = z1 - z0;
+  if (run <= 0.5) return;
+  const totalRun = Math.abs(zTo - zFrom);
+  const rise = ((yTo - yFrom) * run) / totalRun;
+  const dz = Math.sign(zTo - zFrom);
+  const angle = Math.atan2(yTo - yFrom, totalRun);
+  const rx = -dz * angle;
+  const len = Math.hypot(run, rise);
+  const midY = (yFrom + yTo) / 2;
+  const midZ = (zFrom + zTo) / 2;
+  const ny = Math.cos(rx);
+  const nz = Math.sin(rx);
+  for (const side of [-1, 1]) {
+    const x = xCenter + side * (width / 2 + 0.1);
+    // Stalowy policzek cokołu
+    box(k, x, midY + ny * 0.1, midZ + nz * 0.1, 0.14, 0.22, len, 'trim', {
+      rotation: vec(rx, 0, 0),
+      walkable: false,
+    });
+    // Świecąca listwa LED cokołu
+    box(k, x - side * 0.02, midY + ny * 0.23, midZ + nz * 0.23, 0.16, 0.05, len, ledMat, {
+      rotation: vec(rx, 0, 0),
+      walkable: false,
+    });
+    // Pochyła poręcz górna
+    box(k, x, midY + ny * 0.92, midZ + nz * 0.92, 0.08, 0.08, len, 'hivis', {
+      rotation: vec(rx, 0, 0),
+      walkable: false,
+    });
+  }
+}
+
 function circulation(k, placer) {
   // 1. Dwa biegi Ramp Górnych wokół Szybu Windy Towarowej (P5 y=0.0 -> Spocznik B1 y=-1.6):
   // szer. 3.6 m, dł. 3.6 m, kąt 23.96° <= 26.6°.
@@ -225,6 +265,24 @@ function circulation(k, placer) {
       width: 3.6,
       material: 'tread_plate',
     });
+    rampSideRails(k, x, 3.6, Y_PARTER, 0, Y_CATWALK, -3.6, 'neon_amber');
+    // Policzek boczny obudowy rampy górnej od strony Galerii Południowej
+    solid(
+      k,
+      R(sx > 0 ? 6.38 : -6.54, sx > 0 ? 6.54 : -6.38, -3.5, -0.1),
+      Y_CATWALK,
+      Y_PARTER,
+      'machine',
+      { walkable: false },
+    );
+    solid(
+      k,
+      R(sx > 0 ? 6.36 : -6.56, sx > 0 ? 6.56 : -6.36, -3.5, -0.1),
+      -0.85,
+      -0.77,
+      'neon_amber',
+      { walkable: false },
+    );
     placer.reserve(R(x - 1.8, x + 1.8, -3.6, 0.2), Y_PARTER);
     placer.reserve(R(x - 1.8, x + 1.8, -3.8, 0), Y_CATWALK);
   }
@@ -239,6 +297,16 @@ function circulation(k, placer) {
       width: 3.2,
       material: 'tread_plate',
     });
+    rampSideRails(
+      k,
+      x,
+      3.2,
+      Y_CATWALK,
+      -6.6,
+      Y_BASEMENT,
+      -14.6,
+      sx < 0 ? 'neon_green' : 'neon_blue',
+    );
     placer.reserve(R(x - 1.6, x + 1.6, -14.8, -6.4), Y_CATWALK);
     placer.reserve(R(x - 1.6, x + 1.6, -14.8, -6.4), Y_BASEMENT);
   }
@@ -253,6 +321,16 @@ function circulation(k, placer) {
       width: 3.0,
       material: 'tread_plate',
     });
+    rampSideRails(
+      k,
+      x,
+      3.0,
+      Y_CATWALK,
+      -34,
+      Y_BASEMENT,
+      -42,
+      sx < 0 ? 'neon_green' : 'neon_blue',
+    );
     placer.reserve(R(x - 1.5, x + 1.5, -42.2, -33.8), Y_CATWALK);
     placer.reserve(R(x - 1.5, x + 1.5, -42.2, -33.8), Y_BASEMENT);
   }

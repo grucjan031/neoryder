@@ -107,34 +107,18 @@ export const SPAWNS = [
 
 /** Skrzynie zniszczalne `crate` i dynamiczne `crate_small` (do Chwytu Rezonansem) na wszystkich poziomach. */
 function crates(k, p) {
+  // Ograniczona, celowa pula skrzyń interaktywnych obok ciemnych osłon (bez białych pudeł na osi 01-spawn!).
   const big = [
-    // Parter: P1, P2, P3, P4, P5 (zagęszczenie osłon <= 8 m)
-    [-15.5, Y_PARTER, 23.5],
-    [-21.5, Y_PARTER, 20.5],
+    // Parter: P1, P2, P3, P4 (przy stanowiskach bocznych)
+    [-12.2, Y_PARTER, 22.8],
     [-18.0, Y_PARTER, 11.8],
-    [-18.0, Y_PARTER, 2.2],
     [18.0, Y_PARTER, 25.0],
     [18.0, Y_PARTER, 11.5],
-    [-3.2, Y_PARTER, 14.5],
-    [3.2, Y_PARTER, 14.5],
-    [-3.2, Y_PARTER, 22.5],
-    [3.2, Y_PARTER, 22.5],
-    [-3.2, Y_PARTER, 3.5],
-    [3.2, Y_PARTER, 3.5],
     // Piwnica B1..B3
-    [-4.5, Y_BASEMENT, -3.5],
-    [4.5, Y_BASEMENT, -3.5],
-    [-11.5, Y_BASEMENT, -3.5],
-    [11.5, Y_BASEMENT, -3.5],
-    [3.6, Y_BASEMENT, -18.5],
     [-10.0, Y_BASEMENT, -16.25],
     [10.0, Y_BASEMENT, -16.25],
-    [-10.0, Y_BASEMENT, -22.0],
-    [10.0, Y_BASEMENT, -22.0],
     [-3.8, Y_BASEMENT, -41.0],
     [3.8, Y_BASEMENT, -41.0],
-    [-11.5, Y_BASEMENT, -41.5],
-    [11.5, Y_BASEMENT, -41.5],
     [30.3, Y_BASEMENT, -24.2], // B3: częściowo zasłania tabliczkę EE-2 EVIL CORP w narożniku NE
   ];
   for (const [x, y, z] of big) {
@@ -148,12 +132,10 @@ function crates(k, p) {
 
   const small = [
     // Parter
-    [-16.5, Y_PARTER, 23.5],
+    [-16.8, Y_PARTER, 23.5],
     [-19.2, Y_PARTER, 11.8],
     [16.8, Y_PARTER, 25.0],
     [19.2, Y_PARTER, 11.5],
-    [-2.4, Y_PARTER, 9.5],
-    [2.4, Y_PARTER, 9.5],
     // Pomosty B1 (przy murze zewnętrznym / w zatoce konsoli, >= 2.1 m wolnego przejścia!)
     [-19.5, Y_CATWALK, -12.0],
     [19.5, Y_CATWALK, -12.0],
@@ -456,11 +438,11 @@ function easterEggsAndDecals(k) {
         x,
         Y_PARTER + 0.01,
         z,
-        5.5,
-        0.38,
+        6.5,
+        0.42,
         Q,
         C.amber,
-        0.82,
+        0.85,
       );
     for (const z of [-18.0, -28.0, -37.0])
       mark(
@@ -469,15 +451,42 @@ function easterEggsAndDecals(k) {
         x,
         Y_BASEMENT + 0.01,
         z,
-        5.5,
-        0.38,
+        6.5,
+        0.42,
         Q,
         C.green,
-        0.78,
+        0.8,
       );
   }
-  for (const z of [21.5, 13.5, 3.5])
-    mark(k, 'floor_arrow', 0, Y_PARTER + 0.01, z, 1.5, 1.7, PI, C.blue, 0.55);
+  // Pasy ostrzegawcze i strefy autoryzacji na posadzce Centralnego Holu P5 oraz Galerii B1.
+  for (const [z, w, h, tint] of [
+    [22.5, 9.6, 0.75, C.amber],
+    [18.5, 3.8, 1.4, C.amber],
+    [14.5, 9.6, 0.75, C.blue],
+    [9.5, 7.6, 2.2, C.amber],
+    [0.6, 13.4, 0.85, C.amber],
+  ])
+    mark(k, 'floor_hazard', 0, Y_PARTER + 0.011, z, w, h, 0, tint, 0.72);
+  for (const sx of [-1, 1]) {
+    mark(k, 'floor_stop', sx * 4.6, Y_PARTER + 0.012, 1.2, 3.2, 0.8, PI, C.amber, 0.82);
+    mark(
+      k,
+      LAB_TEXTURES.lab_clearance_line,
+      sx * 12.5,
+      Y_CATWALK + 0.01,
+      -4.8,
+      9.0,
+      0.4,
+      0,
+      C.amber,
+      0.85,
+    );
+    mark(k, 'floor_hazard', sx * 4.6, Y_CATWALK + 0.011, -6.1, 3.2, 0.75, 0, C.amber, 0.8);
+    mark(k, 'floor_arrow', sx * 7.5, Y_PARTER + 0.01, 21.0, 1.4, 1.5, sx < 0 ? Q : -Q, C.amber, 0.55);
+    mark(k, 'floor_arrow', sx * 7.5, Y_PARTER + 0.01, 7.0, 1.4, 1.5, sx < 0 ? Q : -Q, C.blue, 0.55);
+  }
+  for (const z of [23.8, 16.2, 12.2, 6.2, 2.8])
+    mark(k, 'floor_arrow', 0, Y_PARTER + 0.01, z, 1.5, 1.7, PI, C.blue, 0.6);
   for (const z of [-11.5, -21.0, -30.5, -40.5])
     mark(
       k,
@@ -632,6 +641,38 @@ function signage(k) {
     C.blue,
     0,
   );
+  // Oznaczenia sektorów (numery gniazd kokonów) na ścianach bocznych B1 oraz na Mostku Centralnym.
+  for (const [x, z, yaw, tint] of [
+    [-19.45, -16.25, Q, C.green],
+    [19.45, -16.25, -Q, C.blue],
+    [-19.45, -28.25, Q, C.green],
+    [19.45, -28.25, -Q, C.blue],
+  ])
+    k.neon(LAB_TEXTURES.lab_chimera_incubator, x, 0.2, z, 2.8, 0.9, yaw, tint, 0);
+  for (const sx of [-1, 1]) {
+    k.neon(
+      LAB_TEXTURES.lab_restricted_omega,
+      sx * 9.5,
+      Y_CATWALK - 0.2,
+      -20.42,
+      2.4,
+      0.7,
+      0,
+      C.amber,
+      0,
+    );
+    k.neon(
+      LAB_TEXTURES.lab_chimera_incubator,
+      sx * 9.5,
+      Y_CATWALK - 0.2,
+      -23.58,
+      2.4,
+      0.7,
+      PI,
+      sx < 0 ? C.green : C.blue,
+      0,
+    );
+  }
   k.neon(
     LAB_TEXTURES.lab_decon_lockers,
     -19.75,
