@@ -7,6 +7,8 @@ import {
   kuroganeSector,
 } from '../../src/world/sectors';
 import { roomDefinitions } from '../../src/world/rooms';
+import { planWaves } from '../../src/world/threat';
+import { Rng } from '../../src/core/rng';
 import {
   enemyDefinitions,
   simulateSectorPath,
@@ -51,7 +53,7 @@ it('rozwiązuje pule i mierzy większą presję przy tym samym czasie trasy', ()
   for (const [type, ids] of Object.entries(bulwarSector.roomPools!))
     for (const id of ids!)
       expect(roomDefinitions.get(id)?.type).toBe(
-        type === 'elite' && id === 'run1' ? 'combat' : type,
+        type === 'elite' && id === 'bulwar1' ? 'combat' : type,
       );
   for (const pool of Object.values(bulwarSector.threat!.pools))
     for (const id of Object.keys(pool!))
@@ -62,4 +64,20 @@ it('rozwiązuje pule i mierzy większą presję przy tym samym czasie trasy', ()
   expect(act2!.elapsedS).toBe(base!.elapsedS);
   expect(act2!.pressure / base!.pressure).toBeGreaterThanOrEqual(1.15);
   expect(act2!.pressure / base!.pressure).toBeLessThanOrEqual(1.25);
+});
+
+it('elita Bulwaru gwarantuje ochroniarza Helixy zamiast egzekutora', () => {
+  expect(bulwarSector.eliteGuarantee).toBe('helixGuard');
+  const room = roomDefinitions.get('bulwar1')!;
+  for (let seed = 0; seed < 20; seed++) {
+    const plan = planWaves(
+      room,
+      bulwarSector,
+      { id: 'L3N1', type: 'elite', layer: 3, index: 0, next: [] },
+      new Rng(seed),
+    );
+    const ids = plan.waves.flatMap((wave) => wave.groups.map((g) => g.enemy));
+    expect(ids).toContain('helixGuard');
+    expect(ids).not.toContain('executor');
+  }
 });

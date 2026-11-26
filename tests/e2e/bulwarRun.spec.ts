@@ -72,7 +72,7 @@ test('tablica blokuje Bulwar do M07, a wznowienie zachowuje dzielnicę i jej fal
   await page.locator('[data-node-id=L1N1]').click();
   await expect
     .poll(() => query('room'), { timeout: LOAD_TIMEOUT })
-    .toBe('run1');
+    .toBe('bulwar1');
   await expect(page.getByText('SEKTOR BULWAR // FALA')).toBeVisible();
   await expect
     .poll(() => query('spawnLog'), { timeout: SIM_TIMEOUT })

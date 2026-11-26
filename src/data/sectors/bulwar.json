@@ -48,6 +48,7 @@
     },
     "maxElitesPerPath": 2
   },
+  "eliteGuarantee": "helixGuard",
   "expectedDurationS": {
     "combat": 150,
     "elite": 210,
@@ -110,8 +111,8 @@
     }
   },
   "roomPools": {
-    "combat": ["run1"],
-    "elite": ["run1"],
+    "combat": ["bulwar1"],
+    "elite": ["bulwar1"],
     "shop": ["noodleShop", "shopRoom"],
     "rest": ["restRoom", "rooftopRest"],
     "puzzle": ["puzzlePlate", "puzzleLaser"],
