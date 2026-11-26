@@ -1,5 +1,16 @@
 # Render — styl F1 #05
 
+## Kasetony emisyjne bez bloomu (run2, E3)
+
+`light_panel` / `mat_light_panel` jest zarejestrowany w `mallKinds`/`urbanKinds`,
+schemacie bloków i `arenaMaterials.json` (stąd także w powierzchniach `mapAudit`).
+Ma zerową barwę rozproszoną, emisję ciepłej bieli z `tuning.render.light_white`,
+wyłączony tone mapping i tekstury oraz mnożnik zasilania z `getPowerLevel()`.
+Pozostaje poza `emissiveKinds`, więc duże kasetony i powtarzalne listwy nie
+tworzą pasm po rozmyciu selektywnego bloomu. `light_white` i kolorowe neony
+zachowują dotychczasowy bloom. Test: `renderMaterials.test.ts` (import glTF,
+emisja przy pełnym zasilaniu, spadku napięcia i zaniku oraz flagi bloomu).
+
 ## Migotanie świateł i neonów
 
 `src/render/city/flicker.ts`: czysta, bezalokacyjna funkcja

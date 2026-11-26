@@ -1,5 +1,20 @@
 import { z } from 'zod';
 import { NODE_TYPES, RARITIES } from '../core/runTypes';
+import { enemySchema } from '../enemies/enemySchema';
+
+const enemies = Object.values(
+  import.meta.glob<unknown>('../data/enemies/*.json', {
+    eager: true,
+    import: 'default',
+  }),
+).map((raw) => enemySchema.parse(raw));
+const costs = new Map(enemies.map((enemy) => [enemy.id, enemy.threatCost]));
+
+export function enemyThreatCost(id: string): number {
+  const cost = costs.get(id);
+  if (cost === undefined) throw new Error(`Brak threatCost wroga: ${id}.`);
+  return cost;
+}
 
 const positive = z.number().finite().positive();
 const nonnegative = z.number().finite().nonnegative();
@@ -97,6 +112,12 @@ export const sectorSchema = z.object({
   guarantees: z.array(sectorGuaranteeSchema),
   limits: sectorLimitsSchema,
   expectedDurationS: z.record(nodeTypeSchema, positive),
+  eliteGuarantee: z
+    .string()
+    .refine((id) => costs.get(id) !== undefined, {
+      error: (issue) => `Nieznany wróg lub brak threatCost: ${issue.input}.`,
+    })
+    .optional(),
   threat: sectorThreatSchema.optional(),
   rewardWeights: sectorRewardWeightsSchema.optional(),
   economy: sectorEconomySchema.optional(),

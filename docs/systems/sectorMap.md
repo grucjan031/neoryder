@@ -6,6 +6,10 @@ waliduje definicję przez `loadSector`, nie zmienia wejścia, używa wyłącznie
 gotową do zapisania w `RunState`. Warstwy mają numery od 1, indeksy węzłów od 0,
 id od `L1N1`. Ten sam seed i definicja dają identyczny graf.
 
+Opcjonalne pole sektora `eliteGuarantee` wskazuje wroga w ostatniej fali węzła
+`elite`. Kurogane korzysta z wartości domyślnej `executor`. Koszt jednostki
+uwzględnia [planer fal](threat.md#budżet-i-losowanie).
+
 ## Algorytm
 
 1. Liczba węzłów z `nodesPerLayer`; boss ma jeden węzeł. Pierwsza warstwa to

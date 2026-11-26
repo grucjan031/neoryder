@@ -25,6 +25,7 @@ export class SceneAtmosphere {
     private readonly camera?: PerspectiveCamera,
     private readonly water?: { shoreZ: number; y: number; color: string },
     deferSync = false,
+    private readonly panoramaDropM = 0,
   ) {
     this.previousClip = camera && { near: camera.near, far: camera.far };
     this.theme = resolveTheme(themeId);
@@ -101,7 +102,7 @@ export class SceneAtmosphere {
     if (!this.panorama && tuning.render.panoramaEnabled > 0) {
       this.panorama = new Panorama(
         this.seed,
-        this.floorY,
+        this.floorY - this.panoramaDropM,
         this.panoramaExclusion,
       );
       this.scene.add(this.panorama);

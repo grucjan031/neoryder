@@ -1,4 +1,5 @@
 import lantern from '../../src/data/render/lanternString.json';
+import modelBounds from '../../src/data/render/mapModelBounds.json';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -903,6 +904,132 @@ describe('magazyn Kurogane', () => {
     const deck = scene.getObjectByName('deck');
     expect(deck).toBeInstanceOf(Mesh);
     expect(new Box3().setFromObject(deck!, true).max.y).toBeCloseTo(0.2, 5);
+  });
+});
+
+describe('galeria handlowa Atrium Nova', () => {
+  // X × Y × Z w metrach oraz maksymalna liczba trójkątów całego GLB.
+  const specs = {
+    mall_shutter_grille: [4, 3.6, 0.18, 620],
+    mall_storefront: [6, 4.6, 0.5, 680],
+    mall_escalator: [2.4, 6.25, 11.6, 1480],
+    mall_glass_rail: [4, 1.1, 0.14, 280],
+    mall_elevator: [3.6, 15.8, 3.6, 1450],
+    mall_skylight: [24, 1.6, 6, 760],
+    mall_kiosk: [3.6, 2.4, 2.6, 980],
+    mall_planter: [3.2, 1.35, 1.4, 740],
+    mall_bench: [2.6, 0.85, 0.9, 340],
+    mall_fountain: [6.4, 3.8, 6.4, 1380],
+    mall_directory: [1.2, 2.4, 0.45, 380],
+    mall_ceiling_panel: [2.4, 0.45, 1.2, 260],
+    mall_security_fixture: [0.9, 1.3, 0.35, 420],
+    mall_mannequin: [1.8, 2.15, 0.9, 780],
+    mall_shoe_wall: [3.4, 2.6, 0.55, 820],
+    mall_electronics_shelf: [3.4, 2.5, 0.85, 860],
+    mall_cafe_set: [3.2, 1.75, 2.2, 940],
+    mall_pharmacy_counter: [3.4, 2.5, 1.1, 760],
+    mall_kurogane_display: [3.4, 2.5, 0.95, 840],
+    mall_clothes_rack: [2.12, 1.819, 0.78, 800],
+    mall_clothes_rack_amber: [2.12, 1.819, 0.78, 800],
+    mall_checkout_counter: [2.6, 1.475, 0.95, 800],
+    mall_security_gates: [1.64, 1.5267, 0.61, 800],
+    mall_display_table: [2.12, 0.907, 1.04, 800],
+    mall_promo_stand: [0.8, 1.354, 0.8, 800],
+    mall_trash_bin: [1.36, 0.94, 0.606, 800],
+    mall_entrance_doors: [4.8, 3, 0.32, 800],
+  } as const;
+  const wallBack = new Set([
+    'mall_storefront',
+    'mall_security_fixture',
+    'mall_shoe_wall',
+  ]);
+  const ids = Object.keys(specs) as (keyof typeof specs)[];
+
+  it.each(ids)(
+    '%s ma właściwe AABB, punkt montażu, budżet i materiały',
+    async (id) => {
+      const [width, height, depth, budget] = specs[id];
+      const scene = await loadSet(id);
+      expect(scene.getObjectByName(id)).toBeDefined();
+      const box = new Box3().setFromObject(scene, true);
+      const back = wallBack.has(id) ? 0 : -depth / 2;
+      const measured = [...box.min.toArray(), ...box.max.toArray()];
+      const expected = [-width / 2, 0, back, width / 2, height, back + depth];
+      const registered = [...modelBounds[id].min, ...modelBounds[id].max];
+      measured.forEach((v, i) => {
+        expect(v).toBeCloseTo(expected[i]!, 3);
+        expect(v).toBeCloseTo(registered[i]!, 3);
+      });
+      expect(
+        existsSync(join(__dirname, '../../artifacts/models/mall', id + '.png')),
+      ).toBe(true);
+      let triangles = 0;
+      const materials = new Set<string>();
+      scene.traverse((mesh) => {
+        if (!(mesh instanceof Mesh)) return;
+        triangles +=
+          (mesh.geometry.index?.count ??
+            mesh.geometry.getAttribute('position').count) / 3;
+        for (const mat of [mesh.material].flat()) {
+          materials.add(mat.name);
+          expect(reserved(mat.color)).toBe(false);
+          if (mat.name === 'mat_glass_clear') {
+            expect(mat.transparent).toBe(true);
+            expect(mat.opacity).toBeCloseTo(0.22);
+          }
+          if (mat.emissive.getHex() !== 0) {
+            expect(mat.name).toMatch(/^mat_(neon_|light_white|light_panel)/);
+            expect(reserved(mat.emissive)).toBe(false);
+          }
+          if (
+            !/^mat_(neon_|light_white|light_panel|label_|screen_)/.test(
+              mat.name,
+            )
+          )
+            expect(urbanKinds).toContain(mat.name.slice(4));
+        }
+      });
+      expect([...materials].sort()).toEqual(modelBounds[id].materials);
+      expect(triangles).toBeGreaterThan(0);
+      expect(triangles).toBeLessThanOrEqual(budget);
+    },
+  );
+
+  it('otwór portalu przepuszcza widok, a prześwit pola roboczego kraty przekracza 80%', async () => {
+    const [portal, grille] = await Promise.all([
+      loadSet('mall_storefront'),
+      loadSet('mall_shutter_grille'),
+    ]);
+    const ray = new Raycaster(new Vector3(), new Vector3(0, 0, -1));
+    let open = 0;
+    const cols = 67,
+      rows = 71;
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        ray.ray.origin.set(
+          -1.9 + (3.8 * (i + 0.5)) / cols,
+          0.18 + (3.12 * (j + 0.5)) / rows,
+          8,
+        );
+        if (ray.intersectObject(portal, true).length)
+          throw new Error('Zasłonięty otwór witryny');
+        if (!ray.intersectObject(grille, true).length) open++;
+      }
+    }
+    expect(open / (cols * rows)).toBeGreaterThan(0.8);
+    expect(open / (cols * rows)).toBeLessThan(0.95);
+  });
+
+  it('26 stopnic prowadzi z dolnego spocznika +Z na górny −Z', async () => {
+    const scene = await loadSet('mall_escalator');
+    const ray = new Raycaster(new Vector3(), new Vector3(0, -1, 0));
+    for (let step = 0; step < 26; step++) {
+      ray.ray.origin.set(0, 7, 5 - step * 0.4);
+      expect(ray.intersectObject(scene, true)[0]?.point.y).toBeCloseTo(
+        (step + 1) * 0.2,
+        3,
+      );
+    }
   });
 });
 

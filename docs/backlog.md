@@ -80,6 +80,8 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 ## Audio, UI i dostępność
 
+- Odsłuch wnętrz (bryły odsłuchu, wyciszenie ulicy w klinice bulwar1) — P1, projekt [`docs/maps/bulwar1.md` §2](maps/bulwar1.md#2-fundamenty-właściwe-dla-bulwaru).
+
 | Pomysł                                                        | Dlaczego odłożone                            |
 | ------------------------------------------------------------- | -------------------------------------------- |
 | Muzyka reaktywna | F7 — **zaimplementowane, czeka na playtest (PR #34, `src/audio/musicDirector.ts`)** |

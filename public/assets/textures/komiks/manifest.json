@@ -168,5 +168,35 @@
     "dominantColor": "#07091b",
     "description": "Kreskowanie tuszem do cieni",
     "bytes": 56320
+  },
+  {
+    "id": "komiks_mall_stone_floor",
+    "category": "surfaces",
+    "path": "surfaces/komiks_mall_stone_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#8b8d91",
+    "description": "Kamienne płyty galerii w wersji komiksowej",
+    "bytes": 39624
+  },
+  {
+    "id": "komiks_mall_terrazzo_inlay",
+    "category": "surfaces",
+    "path": "surfaces/komiks_mall_terrazzo_inlay.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#4b4b4a",
+    "description": "Terrazzo galerii w wersji komiksowej",
+    "bytes": 365682
+  },
+  {
+    "id": "komiks_mall_acoustic_ceiling",
+    "category": "surfaces",
+    "path": "surfaces/komiks_mall_acoustic_ceiling.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#797d83",
+    "description": "Komiksowy strop akustyczny galerii",
+    "bytes": 254352
   }
 ]
