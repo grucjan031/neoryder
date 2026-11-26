@@ -1,0 +1,8498 @@
+{
+  "ambientFx": [
+    {
+      "kind": "steam",
+      "position": {
+        "x": 14.8,
+        "y": 0.06,
+        "z": 24.5
+      },
+      "rate": 0.55
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 21.2,
+        "y": 0.06,
+        "z": 17.5
+      },
+      "rate": 0.55
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -7.5,
+        "y": -5.140000000000001,
+        "z": -21.2
+      },
+      "rate": 0.7
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 7.5,
+        "y": -5.140000000000001,
+        "z": -21.2
+      },
+      "rate": 0.7
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -10,
+        "y": -5.140000000000001,
+        "z": -35
+      },
+      "rate": 0.7
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 10,
+        "y": -5.140000000000001,
+        "z": -35
+      },
+      "rate": 0.7
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -28.5,
+        "y": -3.4000000000000004,
+        "z": -24.9
+      },
+      "rate": 0.9
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -23.5,
+        "y": -3.4000000000000004,
+        "z": -24.9
+      },
+      "rate": 0.9
+    },
+    {
+      "kind": "sparks",
+      "position": {
+        "x": -4.5,
+        "y": -4.4,
+        "z": -18.5
+      },
+      "rate": 1.3
+    },
+    {
+      "kind": "sparks",
+      "position": {
+        "x": 12.5,
+        "y": 0.85,
+        "z": 7
+      },
+      "rate": 0.9
+    }
+  ],
+  "arena": {
+    "batchCellM": 24,
+    "navigationCellM": 0.5,
+    "navigationClearanceM": 0.4,
+    "navigationHeadroomM": 2.2,
+    "navigationMaxRiseM": 0.55,
+    "points": [
+      {
+        "id": "A",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 14
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "B",
+        "position": {
+          "x": 0,
+          "y": -1.6,
+          "z": -22
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "C",
+        "position": {
+          "x": 0,
+          "y": -5.2,
+          "z": -36
+        },
+        "radiusM": 4
+      }
+    ],
+    "spawnRing": {
+      "maxM": 28,
+      "minM": 10
+    }
+  },
+  "blocks": [
+    {
+      "material": "lab_epoxy_floor",
+      "position": {
+        "x": -18,
+        "y": -0.5,
+        "z": 21
+      },
+      "size": {
+        "x": 16,
+        "y": 1,
+        "z": 14
+      },
+      "walkable": true
+    },
+    {
+      "material": "lab_epoxy_floor",
+      "position": {
+        "x": -18,
+        "y": -0.5,
+        "z": 7
+      },
+      "size": {
+        "x": 16,
+        "y": 1,
+        "z": 14
+      },
+      "walkable": true
+    },
+    {
+      "material": "lab_epoxy_floor",
+      "position": {
+        "x": 18,
+        "y": -0.5,
+        "z": 21
+      },
+      "size": {
+        "x": 16,
+        "y": 1,
+        "z": 14
+      },
+      "walkable": true
+    },
+    {
+      "material": "tread_plate",
+      "position": {
+        "x": 18,
+        "y": -0.5,
+        "z": 7
+      },
+      "size": {
+        "x": 16,
+        "y": 1,
+        "z": 14
+      },
+      "walkable": true
+    },
+    {
+      "material": "lab_epoxy_floor",
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 14
+      },
+      "size": {
+        "x": 20,
+        "y": 1,
+        "z": 28
+      },
+      "walkable": true
+    },
+    {
+      "material": "lab_epoxy_floor",
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 28.5
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 1
+      },
+      "walkable": true
+    },
+    {
+      "material": "turbine_hall_floor",
+      "position": {
+        "x": 0,
+        "y": -5.4,
+        "z": -22
+      },
+      "size": {
+        "x": 40,
+        "y": 0.40000000000000036,
+        "z": 44
+      },
+      "walkable": true
+    },
+    {
+      "material": "lab_epoxy_floor",
+      "position": {
+        "x": -26,
+        "y": -5.4,
+        "z": -18
+      },
+      "size": {
+        "x": 12,
+        "y": 0.40000000000000036,
+        "z": 16
+      },
+      "walkable": true
+    },
+    {
+      "material": "power_quay_floor",
+      "position": {
+        "x": 26,
+        "y": -5.4,
+        "z": -18
+      },
+      "size": {
+        "x": 12,
+        "y": 0.40000000000000036,
+        "z": 16
+      },
+      "walkable": true
+    },
+    {
+      "material": "turbine_hall_floor",
+      "position": {
+        "x": 0,
+        "y": -5.4,
+        "z": -44.5
+      },
+      "size": {
+        "x": 4,
+        "y": 0.40000000000000036,
+        "z": 1
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": -13.2,
+        "y": -1.8,
+        "z": -3.3
+      },
+      "size": {
+        "x": 13.6,
+        "y": 0.3999999999999999,
+        "z": 6.6
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 13.2,
+        "y": -1.8,
+        "z": -3.3
+      },
+      "size": {
+        "x": 13.6,
+        "y": 0.3999999999999999,
+        "z": 6.6
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 0,
+        "y": -1.8,
+        "z": -5
+      },
+      "size": {
+        "x": 12.8,
+        "y": 0.3999999999999999,
+        "z": 3.1999999999999997
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": -18.5,
+        "y": -1.8,
+        "z": -20.3
+      },
+      "size": {
+        "x": 3,
+        "y": 0.3999999999999999,
+        "z": 27.4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 18.5,
+        "y": -1.8,
+        "z": -20.3
+      },
+      "size": {
+        "x": 3,
+        "y": 0.3999999999999999,
+        "z": 27.4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 0,
+        "y": -1.8,
+        "z": -22
+      },
+      "size": {
+        "x": 34,
+        "y": 0.3999999999999999,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 0,
+        "y": -1.8,
+        "z": -19.65
+      },
+      "size": {
+        "x": 7,
+        "y": 0.3999999999999999,
+        "z": 1.6999999999999993
+      },
+      "walkable": true
+    },
+    {
+      "ceiling": true,
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -18,
+        "y": 5,
+        "z": 14
+      },
+      "size": {
+        "x": 16,
+        "y": 0.40000000000000036,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "ceiling": true,
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 18,
+        "y": 5,
+        "z": 14
+      },
+      "size": {
+        "x": 16,
+        "y": 0.40000000000000036,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "ceiling": true,
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 0,
+        "y": 6.6000000000000005,
+        "z": 14
+      },
+      "size": {
+        "x": 20,
+        "y": 0.40000000000000036,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "ceiling": true,
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 0,
+        "y": 3.8,
+        "z": 28.6
+      },
+      "size": {
+        "x": 4.8,
+        "y": 0.3999999999999999,
+        "z": 1.1999999999999993
+      },
+      "walkable": false
+    },
+    {
+      "ceiling": true,
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 0,
+        "y": 4.6000000000000005,
+        "z": -22
+      },
+      "size": {
+        "x": 40,
+        "y": 0.40000000000000036,
+        "z": 44
+      },
+      "walkable": false
+    },
+    {
+      "ceiling": true,
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 0,
+        "y": -1.6000000000000003,
+        "z": -44.6
+      },
+      "size": {
+        "x": 4.8,
+        "y": 0.3999999999999999,
+        "z": 1.2000000000000028
+      },
+      "walkable": false
+    },
+    {
+      "ceiling": true,
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -26,
+        "y": -0.6000000000000001,
+        "z": -18
+      },
+      "size": {
+        "x": 12,
+        "y": 0.4,
+        "z": 16
+      },
+      "walkable": false
+    },
+    {
+      "ceiling": true,
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 26,
+        "y": -0.6000000000000001,
+        "z": -18
+      },
+      "size": {
+        "x": 12,
+        "y": 0.4,
+        "z": 16
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -18,
+        "y": 2.4,
+        "z": 28
+      },
+      "size": {
+        "x": 16,
+        "y": 4.8,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 18,
+        "y": 2.4,
+        "z": 28
+      },
+      "size": {
+        "x": 16,
+        "y": 4.8,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -6,
+        "y": 3.2,
+        "z": 28
+      },
+      "size": {
+        "x": 8,
+        "y": 6.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 0,
+        "y": 4.800000000000001,
+        "z": 28
+      },
+      "size": {
+        "x": 4,
+        "y": 3.2,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 6,
+        "y": 3.2,
+        "z": 28
+      },
+      "size": {
+        "x": 8,
+        "y": 6.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -2.2,
+        "y": 1.8,
+        "z": 28.6
+      },
+      "size": {
+        "x": 0.3999999999999999,
+        "y": 3.6,
+        "z": 1.1999999999999993
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 2.2,
+        "y": 1.8,
+        "z": 28.6
+      },
+      "size": {
+        "x": 0.3999999999999999,
+        "y": 3.6,
+        "z": 1.1999999999999993
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 0,
+        "y": 1.8,
+        "z": 29.2
+      },
+      "size": {
+        "x": 4.8,
+        "y": 3.6,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -26,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 26,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -23,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 6,
+        "y": 4.8,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -18,
+        "y": 4.1,
+        "z": 14
+      },
+      "size": {
+        "x": 4,
+        "y": 1.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -13,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 6,
+        "y": 4.8,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -20.2,
+        "y": 1.7,
+        "z": 14
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -15.8,
+        "y": 1.7,
+        "z": 14
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -18,
+        "y": 3.6,
+        "z": 14
+      },
+      "size": {
+        "x": 4.8,
+        "y": 0.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 13,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 6,
+        "y": 4.8,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 18,
+        "y": 4.1,
+        "z": 14
+      },
+      "size": {
+        "x": 4,
+        "y": 1.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 23,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 6,
+        "y": 4.8,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 15.8,
+        "y": 1.7,
+        "z": 14
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 20.2,
+        "y": 1.7,
+        "z": 14
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 18,
+        "y": 3.6,
+        "z": 14
+      },
+      "size": {
+        "x": 4.8,
+        "y": 0.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -10,
+        "y": 2.4,
+        "z": 2.5
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 5
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -10,
+        "y": 4.1,
+        "z": 7
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 1.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -10,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 10
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -10,
+        "y": 4.1,
+        "z": 21
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 1.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -10,
+        "y": 2.4,
+        "z": 25.5
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 5
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -10,
+        "y": 5.6,
+        "z": 14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 1.6000000000000005,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 1.7,
+        "z": 4.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 1.7,
+        "z": 9.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 3.6,
+        "z": 7
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 1.7,
+        "z": 18.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 1.7,
+        "z": 23.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 3.6,
+        "z": 21
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 10,
+        "y": 2.4,
+        "z": 2.5
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 5
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 10,
+        "y": 4.1,
+        "z": 7
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 1.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 10,
+        "y": 2.4,
+        "z": 14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 10
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 10,
+        "y": 4.1,
+        "z": 21
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 1.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 10,
+        "y": 2.4,
+        "z": 25.5
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 4.8,
+        "z": 5
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 10,
+        "y": 5.6,
+        "z": 14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 1.6000000000000005,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 10,
+        "y": 1.7,
+        "z": 4.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 10,
+        "y": 1.7,
+        "z": 9.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 10,
+        "y": 3.6,
+        "z": 7
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 10,
+        "y": 1.7,
+        "z": 18.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 10,
+        "y": 1.7,
+        "z": 23.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 10,
+        "y": 3.6,
+        "z": 21
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -23,
+        "y": 2.4,
+        "z": 0
+      },
+      "size": {
+        "x": 6,
+        "y": 4.8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 23,
+        "y": 2.4,
+        "z": 0
+      },
+      "size": {
+        "x": 6,
+        "y": 4.8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -19.75,
+        "y": 2.4,
+        "z": 0
+      },
+      "size": {
+        "x": 0.5,
+        "y": 4.8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -15.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 8,
+        "y": 1,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -15.5,
+        "y": 4.2,
+        "z": 0
+      },
+      "size": {
+        "x": 8,
+        "y": 1.1999999999999997,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -10.75,
+        "y": 2.4,
+        "z": 0
+      },
+      "size": {
+        "x": 1.5,
+        "y": 4.8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 10.75,
+        "y": 2.4,
+        "z": 0
+      },
+      "size": {
+        "x": 1.5,
+        "y": 4.8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 15.5,
+        "y": 0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 8,
+        "y": 1,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 15.5,
+        "y": 4.2,
+        "z": 0
+      },
+      "size": {
+        "x": 8,
+        "y": 1.1999999999999997,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 19.75,
+        "y": 2.4,
+        "z": 0
+      },
+      "size": {
+        "x": 0.5,
+        "y": 4.8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -8.2,
+        "y": 2.4000000000000004,
+        "z": 0
+      },
+      "size": {
+        "x": 3.5999999999999996,
+        "y": 8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 8.2,
+        "y": 2.4000000000000004,
+        "z": 0
+      },
+      "size": {
+        "x": 3.5999999999999996,
+        "y": 8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 0,
+        "y": 5.4,
+        "z": 0
+      },
+      "size": {
+        "x": 12.8,
+        "y": 2,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 0,
+        "y": -3.4000000000000004,
+        "z": 0
+      },
+      "size": {
+        "x": 40,
+        "y": 3.6,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -13.2,
+        "y": -0.8,
+        "z": 0
+      },
+      "size": {
+        "x": 13.6,
+        "y": 1.6,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 13.2,
+        "y": -0.8,
+        "z": 0
+      },
+      "size": {
+        "x": 13.6,
+        "y": 1.6,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -11,
+        "y": -0.3999999999999999,
+        "z": -44
+      },
+      "size": {
+        "x": 18,
+        "y": 9.600000000000001,
+        "z": 0.4000000000000057
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 0,
+        "y": 1.2000000000000002,
+        "z": -44
+      },
+      "size": {
+        "x": 4,
+        "y": 6.4,
+        "z": 0.4000000000000057
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 11,
+        "y": -0.3999999999999999,
+        "z": -44
+      },
+      "size": {
+        "x": 18,
+        "y": 9.600000000000001,
+        "z": 0.4000000000000057
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -2.2,
+        "y": -3.5,
+        "z": -44
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 2.2,
+        "y": -3.5,
+        "z": -44
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 0,
+        "y": -1.6,
+        "z": -44
+      },
+      "size": {
+        "x": 4.8,
+        "y": 0.4,
+        "z": 0.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -2.2,
+        "y": -3.5,
+        "z": -44.6
+      },
+      "size": {
+        "x": 0.3999999999999999,
+        "y": 3.4,
+        "z": 1.2000000000000028
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 2.2,
+        "y": -3.5,
+        "z": -44.6
+      },
+      "size": {
+        "x": 0.3999999999999999,
+        "y": 3.4,
+        "z": 1.2000000000000028
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 0,
+        "y": -3.5,
+        "z": -45.2
+      },
+      "size": {
+        "x": 4.8,
+        "y": 3.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -20,
+        "y": -0.3999999999999999,
+        "z": -34
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 9.600000000000001,
+        "z": 20
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -20,
+        "y": 1.2000000000000002,
+        "z": -22
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 6.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -20,
+        "y": -0.3999999999999999,
+        "z": -18
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 9.600000000000001,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -20,
+        "y": 1.2000000000000002,
+        "z": -14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 6.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": -20,
+        "y": -0.3999999999999999,
+        "z": -6
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 9.600000000000001,
+        "z": 12
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -20,
+        "y": -3.5,
+        "z": -24.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -20,
+        "y": -3.5,
+        "z": -19.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -20,
+        "y": -1.6,
+        "z": -22
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -20,
+        "y": -3.5,
+        "z": -16.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -20,
+        "y": -3.5,
+        "z": -11.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -20,
+        "y": -1.6,
+        "z": -14
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 20,
+        "y": -0.3999999999999999,
+        "z": -34
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 9.600000000000001,
+        "z": 20
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 20,
+        "y": 1.2000000000000002,
+        "z": -22
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 6.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 20,
+        "y": -0.3999999999999999,
+        "z": -18
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 9.600000000000001,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 20,
+        "y": 1.2000000000000002,
+        "z": -14
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 6.4,
+        "z": 4
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_bunker_concrete",
+      "position": {
+        "x": 20,
+        "y": -0.3999999999999999,
+        "z": -6
+      },
+      "size": {
+        "x": 0.3999999999999986,
+        "y": 9.600000000000001,
+        "z": 12
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 20,
+        "y": -3.5,
+        "z": -24.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 20,
+        "y": -3.5,
+        "z": -19.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 20,
+        "y": -1.6,
+        "z": -22
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 20,
+        "y": -3.5,
+        "z": -16.2
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 20,
+        "y": -3.5,
+        "z": -11.8
+      },
+      "size": {
+        "x": 0.6,
+        "y": 3.4,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 20,
+        "y": -1.6,
+        "z": -14
+      },
+      "size": {
+        "x": 0.6,
+        "y": 0.4,
+        "z": 4.8
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "tiles_wall",
+      "position": {
+        "x": -32,
+        "y": -3,
+        "z": -18
+      },
+      "size": {
+        "x": 0.40000000000000213,
+        "y": 4.4,
+        "z": 16
+      },
+      "walkable": false
+    },
+    {
+      "material": "tiles_wall",
+      "position": {
+        "x": -26,
+        "y": -3,
+        "z": -26
+      },
+      "size": {
+        "x": 12,
+        "y": 4.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "tiles_wall",
+      "position": {
+        "x": -26,
+        "y": -3,
+        "z": -10
+      },
+      "size": {
+        "x": 12,
+        "y": 4.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 32,
+        "y": -3,
+        "z": -18
+      },
+      "size": {
+        "x": 0.40000000000000213,
+        "y": 4.4,
+        "z": 16
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 26,
+        "y": -3,
+        "z": -26
+      },
+      "size": {
+        "x": 12,
+        "y": 4.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 26,
+        "y": -3,
+        "z": -10
+      },
+      "size": {
+        "x": 12,
+        "y": 4.4,
+        "z": 0.3999999999999986
+      },
+      "walkable": false
+    },
+    {
+      "material": "tread_plate",
+      "position": {
+        "x": -4.6,
+        "y": -0.9827623097240514,
+        "z": -1.7187723067893106
+      },
+      "rotation": {
+        "x": -0.4182243295792291,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "x": 3.6,
+        "y": 0.4,
+        "z": 3.939543120718442
+      },
+      "walkable": true
+    },
+    {
+      "material": "tread_plate",
+      "position": {
+        "x": 4.6,
+        "y": -0.9827623097240514,
+        "z": -1.7187723067893106
+      },
+      "rotation": {
+        "x": -0.4182243295792291,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "x": 3.6,
+        "y": 0.4,
+        "z": 3.939543120718442
+      },
+      "walkable": true
+    },
+    {
+      "material": "tread_plate",
+      "position": {
+        "x": -4.6,
+        "y": -3.5823843010350216,
+        "z": -10.51792706453424
+      },
+      "rotation": {
+        "x": -0.4228539261329407,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "x": 3.2,
+        "y": 0.4,
+        "z": 8.772684879784524
+      },
+      "walkable": true
+    },
+    {
+      "material": "tread_plate",
+      "position": {
+        "x": 4.6,
+        "y": -3.5823843010350216,
+        "z": -10.51792706453424
+      },
+      "rotation": {
+        "x": -0.4228539261329407,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "x": 3.2,
+        "y": 0.4,
+        "z": 8.772684879784524
+      },
+      "walkable": true
+    },
+    {
+      "material": "tread_plate",
+      "position": {
+        "x": -18.5,
+        "y": -3.5823843010350216,
+        "z": -37.91792706453424
+      },
+      "rotation": {
+        "x": -0.4228539261329407,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "x": 3,
+        "y": 0.4,
+        "z": 8.772684879784524
+      },
+      "walkable": true
+    },
+    {
+      "material": "tread_plate",
+      "position": {
+        "x": 18.5,
+        "y": -3.5823843010350216,
+        "z": -37.91792706453424
+      },
+      "rotation": {
+        "x": -0.4228539261329407,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "x": 3,
+        "y": 0.4,
+        "z": 8.772684879784524
+      },
+      "walkable": true
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -15,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -11,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": -7.6,
+        "y": -1.5250000000000001,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2.8,
+        "y": 0.15,
+        "z": 0.14
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -7.6,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2.8,
+        "y": 0.8,
+        "z": 0.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": -7.6,
+        "y": -0.55,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2.8,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -1,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 2,
+        "y": -1.5250000000000001,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2,
+        "y": 0.15,
+        "z": 0.14
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 2,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2,
+        "y": 0.8,
+        "z": 0.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 2,
+        "y": -0.55,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 8.2,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 12.2,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 15.6,
+        "y": -1.5250000000000001,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2.8000000000000007,
+        "y": 0.15,
+        "z": 0.14
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 15.6,
+        "y": -1.05,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2.8000000000000007,
+        "y": 0.8,
+        "z": 0.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 15.6,
+        "y": -0.55,
+        "z": -6.53
+      },
+      "size": {
+        "x": 2.8000000000000007,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -17.07,
+        "y": -1.05,
+        "z": -32
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -17.07,
+        "y": -1.05,
+        "z": -28
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": -17.07,
+        "y": -1.5250000000000001,
+        "z": -24.75
+      },
+      "size": {
+        "x": 0.14,
+        "y": 0.15,
+        "z": 2.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -17.07,
+        "y": -1.05,
+        "z": -24.75
+      },
+      "size": {
+        "x": 0.06,
+        "y": 0.8,
+        "z": 2.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": -17.07,
+        "y": -0.55,
+        "z": -24.75
+      },
+      "size": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 2.5
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -17.07,
+        "y": -1.05,
+        "z": -18.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -17.07,
+        "y": -1.05,
+        "z": -14.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -17.07,
+        "y": -1.05,
+        "z": -10.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": -17.07,
+        "y": -1.5250000000000001,
+        "z": -7.55
+      },
+      "size": {
+        "x": 0.14,
+        "y": 0.15,
+        "z": 1.9000000000000004
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -17.07,
+        "y": -1.05,
+        "z": -7.55
+      },
+      "size": {
+        "x": 0.06,
+        "y": 0.8,
+        "z": 1.9000000000000004
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": -17.07,
+        "y": -0.55,
+        "z": -7.55
+      },
+      "size": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 1.9000000000000004
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 17.07,
+        "y": -1.05,
+        "z": -32
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 17.07,
+        "y": -1.05,
+        "z": -28
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 17.07,
+        "y": -1.5250000000000001,
+        "z": -24.75
+      },
+      "size": {
+        "x": 0.14,
+        "y": 0.15,
+        "z": 2.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 17.07,
+        "y": -1.05,
+        "z": -24.75
+      },
+      "size": {
+        "x": 0.06,
+        "y": 0.8,
+        "z": 2.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 17.07,
+        "y": -0.55,
+        "z": -24.75
+      },
+      "size": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 2.5
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 17.07,
+        "y": -1.05,
+        "z": -18.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 17.07,
+        "y": -1.05,
+        "z": -14.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 17.07,
+        "y": -1.05,
+        "z": -10.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 17.07,
+        "y": -1.5250000000000001,
+        "z": -7.55
+      },
+      "size": {
+        "x": 0.14,
+        "y": 0.15,
+        "z": 1.9000000000000004
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 17.07,
+        "y": -1.05,
+        "z": -7.55
+      },
+      "size": {
+        "x": 0.06,
+        "y": 0.8,
+        "z": 1.9000000000000004
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 17.07,
+        "y": -0.55,
+        "z": -7.55
+      },
+      "size": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 1.9000000000000004
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -14.899999999999999,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -10.899999999999999,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -6.899999999999999,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -2.8999999999999986,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 1.1000000000000014,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 5.100000000000001,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 9.100000000000001,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 13.100000000000001,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 16,
+        "y": -1.5250000000000001,
+        "z": -23.43
+      },
+      "size": {
+        "x": 1.7999999999999972,
+        "y": 0.15,
+        "z": 0.14
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 16,
+        "y": -1.05,
+        "z": -23.43
+      },
+      "size": {
+        "x": 1.7999999999999972,
+        "y": 0.8,
+        "z": 0.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 16,
+        "y": -0.55,
+        "z": -23.43
+      },
+      "size": {
+        "x": 1.7999999999999972,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -14.899999999999999,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -10.899999999999999,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -6.899999999999999,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": -4.199999999999999,
+        "y": -1.5250000000000001,
+        "z": -20.57
+      },
+      "size": {
+        "x": 1.3999999999999986,
+        "y": 0.15,
+        "z": 0.14
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -4.199999999999999,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 1.3999999999999986,
+        "y": 0.8,
+        "z": 0.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": -4.199999999999999,
+        "y": -0.55,
+        "z": -20.57
+      },
+      "size": {
+        "x": 1.3999999999999986,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 5.5,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 9.5,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": 13.5,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 16.2,
+        "y": -1.5250000000000001,
+        "z": -20.57
+      },
+      "size": {
+        "x": 1.3999999999999986,
+        "y": 0.15,
+        "z": 0.14
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 16.2,
+        "y": -1.05,
+        "z": -20.57
+      },
+      "size": {
+        "x": 1.3999999999999986,
+        "y": 0.8,
+        "z": 0.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 16.2,
+        "y": -0.55,
+        "z": -20.57
+      },
+      "size": {
+        "x": 1.3999999999999986,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_catwalk_rail",
+      "position": {
+        "x": -1.5,
+        "y": -1.05,
+        "z": -18.87
+      },
+      "size": {
+        "x": 4,
+        "y": 1.1,
+        "z": 0.1403
+      }
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 2,
+        "y": -1.5250000000000001,
+        "z": -18.87
+      },
+      "size": {
+        "x": 3,
+        "y": 0.15,
+        "z": 0.14
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 2,
+        "y": -1.05,
+        "z": -18.87
+      },
+      "size": {
+        "x": 3,
+        "y": 0.8,
+        "z": 0.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 2,
+        "y": -0.55,
+        "z": -18.87
+      },
+      "size": {
+        "x": 3,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "walkable": false
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": -3.43,
+        "y": -1.5250000000000001,
+        "z": -19.685000000000002
+      },
+      "size": {
+        "x": 0.14,
+        "y": 0.15,
+        "z": 1.629999999999999
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -3.43,
+        "y": -1.05,
+        "z": -19.685000000000002
+      },
+      "size": {
+        "x": 0.06,
+        "y": 0.8,
+        "z": 1.629999999999999
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": -3.43,
+        "y": -0.55,
+        "z": -19.685000000000002
+      },
+      "size": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 1.629999999999999
+      },
+      "walkable": false
+    },
+    {
+      "material": "hazard",
+      "position": {
+        "x": 3.43,
+        "y": -1.5250000000000001,
+        "z": -19.685000000000002
+      },
+      "size": {
+        "x": 0.14,
+        "y": 0.15,
+        "z": 1.629999999999999
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 3.43,
+        "y": -1.05,
+        "z": -19.685000000000002
+      },
+      "size": {
+        "x": 0.06,
+        "y": 0.8,
+        "z": 1.629999999999999
+      },
+      "walkable": false
+    },
+    {
+      "material": "hivis",
+      "position": {
+        "x": 3.43,
+        "y": -0.55,
+        "z": -19.685000000000002
+      },
+      "size": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 1.629999999999999
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -19.35,
+        "y": 1.3,
+        "z": 21
+      },
+      "size": {
+        "x": 0.5,
+        "y": 2.6,
+        "z": 1.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -16.65,
+        "y": 1.3,
+        "z": 21
+      },
+      "size": {
+        "x": 0.5,
+        "y": 2.6,
+        "z": 1.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -18,
+        "y": 2.45,
+        "z": 21
+      },
+      "size": {
+        "x": 3.2,
+        "y": 0.3,
+        "z": 1.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_security_desk",
+      "position": {
+        "x": -22.5,
+        "y": 0.625,
+        "z": 24.2
+      },
+      "size": {
+        "x": 3.4,
+        "y": 1.25,
+        "z": 1.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_classified_cabinet",
+      "position": {
+        "x": -25.1,
+        "y": 1.1,
+        "z": 17.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.85
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_classified_cabinet",
+      "position": {
+        "x": -25.1,
+        "y": 1.1,
+        "z": 19.6
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.85
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_vending",
+      "position": {
+        "x": -24.9,
+        "y": 1,
+        "z": 26.8
+      },
+      "size": {
+        "x": 1.014,
+        "y": 2,
+        "z": 0.816
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_hazmat_suit_rack",
+      "position": {
+        "x": -15.5,
+        "y": 1.05,
+        "z": 27.2
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 2.1,
+        "z": 0.75
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -12.2,
+        "y": 0.55,
+        "z": 25.8
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": -13.5,
+        "y": 0.4644,
+        "z": 17.5
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": -22,
+        "y": 0.4644,
+        "z": 16.5
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_briefing_holotable",
+      "position": {
+        "x": -18,
+        "y": 0.55,
+        "z": 7
+      },
+      "size": {
+        "x": 3.2,
+        "y": 1.1,
+        "z": 2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_classified_cabinet",
+      "position": {
+        "x": -23.6,
+        "y": 1.1,
+        "z": 2.2
+      },
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.85
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_classified_cabinet",
+      "position": {
+        "x": -23.6,
+        "y": 1.1,
+        "z": 10.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.85
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_classified_cabinet",
+      "position": {
+        "x": -12.5,
+        "y": 1.1,
+        "z": 12.2
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.85
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_classified_cabinet",
+      "position": {
+        "x": -14.2,
+        "y": 1.1,
+        "z": 2.2
+      },
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.85
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cryo_server_rack",
+      "position": {
+        "x": -24.8,
+        "y": 1.2,
+        "z": 12.4
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.4,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_server_rack",
+      "position": {
+        "x": -11.4,
+        "y": 1.2,
+        "z": 2.2
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.2,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": -25.76,
+        "y": 1.65,
+        "z": 3.2
+      },
+      "size": {
+        "x": 0.06,
+        "y": 1.3,
+        "z": 2
+      },
+      "walkable": false
+    },
+    {
+      "material": "trim",
+      "position": {
+        "x": -25.78,
+        "y": 1.65,
+        "z": 3.2
+      },
+      "size": {
+        "x": 0.04,
+        "y": 1.42,
+        "z": 2.12
+      },
+      "walkable": false
+    },
+    {
+      "material": "glass_clear",
+      "position": {
+        "x": -15.5,
+        "y": 2.3,
+        "z": 0
+      },
+      "size": {
+        "x": 8,
+        "y": 2.6,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_centrifuge_bench",
+      "position": {
+        "x": 14.8,
+        "y": 0.725,
+        "z": 21.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 3.2,
+        "y": 1.45,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_centrifuge_bench",
+      "position": {
+        "x": 21.2,
+        "y": 0.725,
+        "z": 21.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 3.2,
+        "y": 1.45,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_chem_fume_hood",
+      "position": {
+        "x": 24.8,
+        "y": 1.2,
+        "z": 18
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.4,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_chem_fume_hood",
+      "position": {
+        "x": 24.8,
+        "y": 1.2,
+        "z": 24
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.4,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": 14,
+        "y": 1.05,
+        "z": 26.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": 22,
+        "y": 1.05,
+        "z": 26.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": 13.2,
+        "y": 1.05,
+        "z": 16.2
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": 22.2,
+        "y": 0.4644,
+        "z": 16
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_anomaly_containment_pod",
+      "position": {
+        "x": 18,
+        "y": 1.6,
+        "z": 7
+      },
+      "size": {
+        "x": 2.8,
+        "y": 3.2,
+        "z": 2.8
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_prototype_weapon_rack",
+      "position": {
+        "x": 25,
+        "y": 1.1,
+        "z": 5
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.2,
+        "z": 0.8
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_prototype_weapon_rack",
+      "position": {
+        "x": 25,
+        "y": 1.1,
+        "z": 10
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.2,
+        "z": 0.8
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_prototype_weapon_rack",
+      "position": {
+        "x": 13.8,
+        "y": 1.1,
+        "z": 13
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.2,
+        "z": 0.8
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_workbench_weapons",
+      "position": {
+        "x": 22.2,
+        "y": 0.75,
+        "z": 13
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 1.5,
+        "z": 0.9
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 21.2,
+        "y": 0.55,
+        "z": 3.2
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 12.4,
+        "y": 0.55,
+        "z": 3.2
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "material": "machine",
+      "position": {
+        "x": 12.3,
+        "y": 0.6,
+        "z": 7
+      },
+      "size": {
+        "x": 0.22,
+        "y": 1.2,
+        "z": 0.22
+      },
+      "walkable": false
+    },
+    {
+      "material": "neon_violet",
+      "position": {
+        "x": 12.3,
+        "y": 1.26,
+        "z": 7
+      },
+      "size": {
+        "x": 0.26,
+        "y": 0.12,
+        "z": 0.26
+      },
+      "walkable": false
+    },
+    {
+      "material": "machine",
+      "position": {
+        "x": 16.35,
+        "y": 0.6,
+        "z": 7
+      },
+      "size": {
+        "x": 0.22,
+        "y": 1.2,
+        "z": 0.22
+      },
+      "walkable": false
+    },
+    {
+      "material": "neon_violet",
+      "position": {
+        "x": 16.35,
+        "y": 1.26,
+        "z": 7
+      },
+      "size": {
+        "x": 0.26,
+        "y": 0.12,
+        "z": 0.26
+      },
+      "walkable": false
+    },
+    {
+      "material": "glass_clear",
+      "position": {
+        "x": 15.5,
+        "y": 2.3,
+        "z": 0
+      },
+      "size": {
+        "x": 8,
+        "y": 2.6,
+        "z": 0.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -1.35,
+        "y": 1.3,
+        "z": 18.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 2.6,
+        "z": 1.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 1.35,
+        "y": 1.3,
+        "z": 18.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 2.6,
+        "z": 1.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 0,
+        "y": 2.45,
+        "z": 18.5
+      },
+      "size": {
+        "x": 3.2,
+        "y": 0.3,
+        "z": 1.4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_security_desk",
+      "position": {
+        "x": -5.6,
+        "y": 0.625,
+        "z": 18.5
+      },
+      "size": {
+        "x": 3.4,
+        "y": 1.25,
+        "z": 1.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_security_desk",
+      "position": {
+        "x": 5.6,
+        "y": 0.625,
+        "z": 18.5
+      },
+      "size": {
+        "x": 3.4,
+        "y": 1.25,
+        "z": 1.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -5.6,
+        "y": 0.55,
+        "z": 24.2
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 5.6,
+        "y": 0.55,
+        "z": 24.2
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": -5.6,
+        "y": 0.4644,
+        "z": 10.5
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": 5.6,
+        "y": 0.4644,
+        "z": 10.5
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": -8.2,
+        "y": 1.05,
+        "z": 3
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": 8.2,
+        "y": 1.05,
+        "z": 3
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -8.2,
+        "y": 3.2,
+        "z": 12
+      },
+      "size": {
+        "x": 1,
+        "y": 6.4,
+        "z": 1
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": -8.2,
+        "y": 3.2,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 6.4,
+        "z": 1
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 8.2,
+        "y": 3.2,
+        "z": 12
+      },
+      "size": {
+        "x": 1,
+        "y": 6.4,
+        "z": 1
+      },
+      "walkable": false
+    },
+    {
+      "material": "lab_cleanroom_wall",
+      "position": {
+        "x": 8.2,
+        "y": 3.2,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 6.4,
+        "z": 1
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_mainframe_console",
+      "position": {
+        "x": 0,
+        "y": 0.675,
+        "z": 9.5
+      },
+      "size": {
+        "x": 3,
+        "y": 1.35,
+        "z": 1.4
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 0,
+        "y": 0.6,
+        "z": -1.6
+      },
+      "size": {
+        "x": 4.8,
+        "y": 11.6,
+        "z": 4
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall",
+      "position": {
+        "x": -12.5,
+        "y": -3,
+        "z": -14
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall",
+      "position": {
+        "x": -7.5,
+        "y": -3,
+        "z": -14
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall",
+      "position": {
+        "x": -12.5,
+        "y": -3,
+        "z": -18.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_breached",
+      "position": {
+        "x": -7.5,
+        "y": -3,
+        "z": -18.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 4.4,
+        "z": 2.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 7.5,
+        "y": -3,
+        "z": -14
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 12.5,
+        "y": -3,
+        "z": -14
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 7.5,
+        "y": -3,
+        "z": -18.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 12.5,
+        "y": -3,
+        "z": -18.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall",
+      "position": {
+        "x": -12.5,
+        "y": -3,
+        "z": -26
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall",
+      "position": {
+        "x": -7.5,
+        "y": -3,
+        "z": -26
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall",
+      "position": {
+        "x": -12.5,
+        "y": -3,
+        "z": -30.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall",
+      "position": {
+        "x": -7.5,
+        "y": -3,
+        "z": -30.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 7.5,
+        "y": -3,
+        "z": -26
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 12.5,
+        "y": -3,
+        "z": -26
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 7.5,
+        "y": -3,
+        "z": -30.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_tall_cryo",
+      "position": {
+        "x": 12.5,
+        "y": -3,
+        "z": -30.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 4.4,
+        "z": 2.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_mainframe_console",
+      "position": {
+        "x": 0,
+        "y": -0.925,
+        "z": -19.75
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 3,
+        "y": 1.35,
+        "z": 1.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -13.5,
+        "y": -1.05,
+        "z": -3.3
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 13.5,
+        "y": -1.05,
+        "z": -3.3
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -17.3,
+        "y": -3.6,
+        "z": -9
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -17.3,
+        "y": -3.6,
+        "z": -17.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -17.3,
+        "y": -3.6,
+        "z": -26
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -17.3,
+        "y": -3.6,
+        "z": -33.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -5.5,
+        "y": -3.6,
+        "z": -23.3
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.2,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 5.5,
+        "y": -3.6,
+        "z": -23.3
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.2,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -4.6,
+        "y": -4.3,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.6,
+        "y": 1.8,
+        "z": 0.6
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -18.5,
+        "y": -4.4,
+        "z": -37
+      },
+      "size": {
+        "x": 0.6,
+        "y": 1.6,
+        "z": 0.6
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 17.3,
+        "y": -3.6,
+        "z": -9
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 17.3,
+        "y": -3.6,
+        "z": -17.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 17.3,
+        "y": -3.6,
+        "z": -26
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 17.3,
+        "y": -3.6,
+        "z": -33.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 3.2,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -5.5,
+        "y": -3.6,
+        "z": -20.7
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.2,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 5.5,
+        "y": -3.6,
+        "z": -20.7
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3.2,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 4.6,
+        "y": -4.3,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.6,
+        "y": 1.8,
+        "z": 0.6
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 18.5,
+        "y": -4.4,
+        "z": -37
+      },
+      "size": {
+        "x": 0.6,
+        "y": 1.6,
+        "z": 0.6
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_mainframe_console",
+      "position": {
+        "x": 0,
+        "y": -4.525,
+        "z": -9.5
+      },
+      "size": {
+        "x": 3,
+        "y": 1.35,
+        "z": 1.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": 0,
+        "y": -4.15,
+        "z": -12.2
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -7.8,
+        "y": -4.65,
+        "z": -8.5
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 7.8,
+        "y": -4.65,
+        "z": -8.5
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -16,
+        "y": -4.65,
+        "z": -4
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 16,
+        "y": -4.65,
+        "z": -4
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_centrifuge_bench",
+      "position": {
+        "x": -3.8,
+        "y": -4.4750000000000005,
+        "z": -24.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 3.2,
+        "y": 1.45,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_centrifuge_bench",
+      "position": {
+        "x": 3.8,
+        "y": -4.4750000000000005,
+        "z": -24.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 3.2,
+        "y": 1.45,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_mainframe_console",
+      "position": {
+        "x": 0,
+        "y": -4.525,
+        "z": -33
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 3,
+        "y": 1.35,
+        "z": 1.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": -4.2,
+        "y": -4.7356,
+        "z": -36.5
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": 4.2,
+        "y": -4.7356,
+        "z": -35
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -7.5,
+        "y": -4.65,
+        "z": -37.5
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 7.5,
+        "y": -4.65,
+        "z": -37.5
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": -13,
+        "y": -4.15,
+        "z": -37.5
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cocoon_incubator",
+      "position": {
+        "x": 13,
+        "y": -4.15,
+        "z": -37.5
+      },
+      "size": {
+        "x": 1.1,
+        "y": 2.1,
+        "z": 1.1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": -11.5,
+        "y": -4.7356,
+        "z": -8
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": 11.5,
+        "y": -4.7356,
+        "z": -8
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -15.2,
+        "y": -4.65,
+        "z": -18
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 15.2,
+        "y": -4.65,
+        "z": -18
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": -15.2,
+        "y": -4.65,
+        "z": -28
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_weapon_case_stack",
+      "position": {
+        "x": 15.2,
+        "y": -4.65,
+        "z": -28
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.6,
+        "y": 1.1,
+        "z": 1.2
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": -3.5,
+        "y": -4.7356,
+        "z": -29.5
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_barrier",
+      "position": {
+        "x": 3.5,
+        "y": -4.7356,
+        "z": -29.5
+      },
+      "size": {
+        "x": 2,
+        "y": 0.9288,
+        "z": 0.51
+      }
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": -17.05,
+        "y": -1.99,
+        "z": -20.3
+      },
+      "size": {
+        "x": 0.11999999999999744,
+        "y": 0.06000000000000005,
+        "z": 27.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": 17.05,
+        "y": -1.99,
+        "z": -20.3
+      },
+      "size": {
+        "x": 0.11999999999999744,
+        "y": 0.06000000000000005,
+        "z": 27.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": 0,
+        "y": -1.99,
+        "z": -23.45
+      },
+      "size": {
+        "x": 34,
+        "y": 0.06000000000000005,
+        "z": 0.10000000000000142
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": 0,
+        "y": -1.99,
+        "z": -20.55
+      },
+      "size": {
+        "x": 34,
+        "y": 0.06000000000000005,
+        "z": 0.10000000000000142
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_locker_bank",
+      "position": {
+        "x": -31.2,
+        "y": -4.15,
+        "z": -14
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.1,
+        "z": 0.65
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_locker_bank",
+      "position": {
+        "x": -31.2,
+        "y": -4.15,
+        "z": -22
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.1,
+        "z": 0.65
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_locker_bank",
+      "position": {
+        "x": -26,
+        "y": -4.15,
+        "z": -16.4
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.1,
+        "z": 0.65
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_locker_bank",
+      "position": {
+        "x": -26,
+        "y": -4.15,
+        "z": -19.6
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 2.1,
+        "z": 0.65
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_locker_bench",
+      "position": {
+        "x": -28.8,
+        "y": -4.95,
+        "z": -14
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.5,
+        "z": 0.8
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_locker_bench",
+      "position": {
+        "x": -28.8,
+        "y": -4.95,
+        "z": -22
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.5,
+        "z": 0.8
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_locker_bench",
+      "position": {
+        "x": -23,
+        "y": -4.95,
+        "z": -18
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.5,
+        "z": 0.8
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_hazmat_suit_rack",
+      "position": {
+        "x": -28.2,
+        "y": -4.15,
+        "z": -10.8
+      },
+      "size": {
+        "x": 2.2,
+        "y": 2.1,
+        "z": 0.75
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_hazmat_suit_rack",
+      "position": {
+        "x": -23.8,
+        "y": -4.15,
+        "z": -10.8
+      },
+      "size": {
+        "x": 2.2,
+        "y": 2.1,
+        "z": 0.75
+      }
+    },
+    {
+      "material": "glass_clear",
+      "position": {
+        "x": -29.34,
+        "y": -4,
+        "z": -24.9
+      },
+      "size": {
+        "x": 0.12,
+        "y": 2.4,
+        "z": 1.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "glass_clear",
+      "position": {
+        "x": -27.66,
+        "y": -4,
+        "z": -24.9
+      },
+      "size": {
+        "x": 0.12,
+        "y": 2.4,
+        "z": 1.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "glass_clear",
+      "position": {
+        "x": -24.34,
+        "y": -4,
+        "z": -24.9
+      },
+      "size": {
+        "x": 0.12,
+        "y": 2.4,
+        "z": 1.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "glass_clear",
+      "position": {
+        "x": -22.66,
+        "y": -4,
+        "z": -24.9
+      },
+      "size": {
+        "x": 0.12,
+        "y": 2.4,
+        "z": 1.6
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cryo_server_rack",
+      "position": {
+        "x": 24.5,
+        "y": -4,
+        "z": -14.5
+      },
+      "size": {
+        "x": 1.4,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cryo_server_rack",
+      "position": {
+        "x": 27.5,
+        "y": -4,
+        "z": -14.5
+      },
+      "size": {
+        "x": 1.4,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cryo_server_rack",
+      "position": {
+        "x": 24.5,
+        "y": -4,
+        "z": -21.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 1.4,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_cryo_server_rack",
+      "position": {
+        "x": 27.5,
+        "y": -4,
+        "z": -21.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 1.4,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_server_rack",
+      "position": {
+        "x": 30.8,
+        "y": -4,
+        "z": -14
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.2,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "wh_server_rack",
+      "position": {
+        "x": 30.8,
+        "y": -4,
+        "z": -22
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 1.2,
+        "y": 2.4,
+        "z": 1
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "lab_mainframe_console",
+      "position": {
+        "x": 29.8,
+        "y": -4.525,
+        "z": -18
+      },
+      "rotation": {
+        "x": 0,
+        "y": -1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 3,
+        "y": 1.35,
+        "z": 1.4
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_roof_hvac_unit",
+      "position": {
+        "x": 26,
+        "y": -4.20105,
+        "z": -24.5
+      },
+      "size": {
+        "x": 4,
+        "y": 1.9979,
+        "z": 2.0525
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "city_roof_hvac_unit",
+      "position": {
+        "x": 26,
+        "y": -4.20105,
+        "z": -11.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1.9979,
+        "z": 2.0525
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -15.5,
+        "y": 0.5,
+        "z": 23.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -21.5,
+        "y": 0.5,
+        "z": 20.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -18,
+        "y": 0.5,
+        "z": 11.8
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -18,
+        "y": 0.5,
+        "z": 2.2
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 18,
+        "y": 0.5,
+        "z": 25
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 18,
+        "y": 0.5,
+        "z": 11.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -3.2,
+        "y": 0.5,
+        "z": 14.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 3.2,
+        "y": 0.5,
+        "z": 14.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -3.2,
+        "y": 0.5,
+        "z": 22.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 3.2,
+        "y": 0.5,
+        "z": 22.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -3.2,
+        "y": 0.5,
+        "z": 3.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 3.2,
+        "y": 0.5,
+        "z": 3.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -4.5,
+        "y": -4.7,
+        "z": -3.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 4.5,
+        "y": -4.7,
+        "z": -3.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -11.5,
+        "y": -4.7,
+        "z": -3.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 11.5,
+        "y": -4.7,
+        "z": -3.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 3.6,
+        "y": -4.7,
+        "z": -18.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -10,
+        "y": -4.7,
+        "z": -16.25
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 10,
+        "y": -4.7,
+        "z": -16.25
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -10,
+        "y": -4.7,
+        "z": -22
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 10,
+        "y": -4.7,
+        "z": -22
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -3.8,
+        "y": -4.7,
+        "z": -41
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 3.8,
+        "y": -4.7,
+        "z": -41
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": -11.5,
+        "y": -4.7,
+        "z": -41.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 11.5,
+        "y": -4.7,
+        "z": -41.5
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate",
+      "position": {
+        "x": 30.3,
+        "y": -4.7,
+        "z": -24.2
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -16.5,
+        "y": 0.25,
+        "z": 23.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -19.2,
+        "y": 0.25,
+        "z": 11.8
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 16.8,
+        "y": 0.25,
+        "z": 25
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 19.2,
+        "y": 0.25,
+        "z": 11.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -2.4,
+        "y": 0.25,
+        "z": 9.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 2.4,
+        "y": 0.25,
+        "z": 9.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -19.5,
+        "y": -1.35,
+        "z": -12
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 19.5,
+        "y": -1.35,
+        "z": -12
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -2.6,
+        "y": -1.35,
+        "z": -19.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 2.6,
+        "y": -1.35,
+        "z": -19.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -2.2,
+        "y": -4.95,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 2.2,
+        "y": -4.95,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -2.8,
+        "y": -4.95,
+        "z": -24.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 2.8,
+        "y": -4.95,
+        "z": -24.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -2.6,
+        "y": -4.95,
+        "z": -36.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 2.6,
+        "y": -4.95,
+        "z": -35
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": -23,
+        "y": -4.95,
+        "z": -13.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "model": "crate_small",
+      "position": {
+        "x": 23,
+        "y": -4.95,
+        "z": -18
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      }
+    },
+    {
+      "material": "machine",
+      "position": {
+        "x": -5.8,
+        "y": -4.6000000000000005,
+        "z": -18.5
+      },
+      "size": {
+        "x": 0.22,
+        "y": 1.2,
+        "z": 0.22
+      },
+      "walkable": false
+    },
+    {
+      "material": "neon_violet",
+      "position": {
+        "x": -5.8,
+        "y": -3.9400000000000004,
+        "z": -18.5
+      },
+      "size": {
+        "x": 0.26,
+        "y": 0.12,
+        "z": 0.26
+      },
+      "walkable": false
+    },
+    {
+      "material": "machine",
+      "position": {
+        "x": -3.2,
+        "y": -4.6000000000000005,
+        "z": -18.5
+      },
+      "size": {
+        "x": 0.22,
+        "y": 1.2,
+        "z": 0.22
+      },
+      "walkable": false
+    },
+    {
+      "material": "neon_violet",
+      "position": {
+        "x": -3.2,
+        "y": -3.9400000000000004,
+        "z": -18.5
+      },
+      "size": {
+        "x": 0.26,
+        "y": 0.12,
+        "z": 0.26
+      },
+      "walkable": false
+    },
+    {
+      "material": "neon_green",
+      "position": {
+        "x": 0,
+        "y": -1.85,
+        "z": -43.8
+      },
+      "size": {
+        "x": 4.6,
+        "y": 0.14,
+        "z": 0.25
+      },
+      "walkable": false
+    }
+  ],
+  "decals": [
+    {
+      "opacity": 0.75,
+      "position": {
+        "x": 14.35,
+        "y": 0.01,
+        "z": 7
+      },
+      "size": {
+        "h": 0.8,
+        "w": 4.2
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.7,
+      "position": {
+        "x": -4.5,
+        "y": -5.19,
+        "z": -18.5
+      },
+      "size": {
+        "h": 4,
+        "w": 3.6
+      },
+      "surface": "floor",
+      "texture": "puddle2",
+      "tint": "#6dff4a",
+      "yaw": 0.2
+    },
+    {
+      "opacity": 0.65,
+      "position": {
+        "x": -4.5,
+        "y": -5.1850000000000005,
+        "z": -18.5
+      },
+      "size": {
+        "h": 3.6,
+        "w": 3.2
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.92,
+      "position": {
+        "x": -25.78,
+        "y": 1.85,
+        "z": 11
+      },
+      "size": {
+        "h": 1.8,
+        "w": 1.2
+      },
+      "surface": "wall",
+      "texture": "poster_torn1",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.88,
+      "position": {
+        "x": 31.78,
+        "y": -4.25,
+        "z": -24.6
+      },
+      "size": {
+        "h": 0.75,
+        "w": 1.5
+      },
+      "surface": "wall",
+      "texture": "poster_torn2",
+      "tint": "#ffae1a",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.9,
+      "position": {
+        "x": 15.2,
+        "y": 0.015,
+        "z": 19.2
+      },
+      "size": {
+        "h": 1.1,
+        "w": 1.1
+      },
+      "surface": "floor",
+      "texture": "sticker_cluster",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.85,
+      "position": {
+        "x": 1.2,
+        "y": 0.012,
+        "z": 10.4
+      },
+      "size": {
+        "h": 1.2,
+        "w": 1.2
+      },
+      "surface": "floor",
+      "texture": "sticker_cluster",
+      "tint": "#fff1d6",
+      "yaw": 0.3
+    },
+    {
+      "opacity": 0.92,
+      "position": {
+        "x": -25.72,
+        "y": 1.65,
+        "z": 3.2
+      },
+      "size": {
+        "h": 1.15,
+        "w": 1.8
+      },
+      "surface": "wall",
+      "texture": "poster_torn3",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.95,
+      "position": {
+        "x": 10.22,
+        "y": 1.35,
+        "z": 10.8
+      },
+      "size": {
+        "h": 0.55,
+        "w": 0.55
+      },
+      "surface": "wall",
+      "texture": "sticker_cluster",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.9,
+      "position": {
+        "x": -31.78,
+        "y": -3.75,
+        "z": -18
+      },
+      "size": {
+        "h": 0.95,
+        "w": 0.95
+      },
+      "surface": "wall",
+      "texture": "poster_torn2",
+      "tint": "#fff1d6",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.92,
+      "position": {
+        "x": -7.5,
+        "y": -5.1850000000000005,
+        "z": -20.1
+      },
+      "size": {
+        "h": 1.5,
+        "w": 1.5
+      },
+      "surface": "floor",
+      "texture": "poster_torn1",
+      "tint": "#6dff4a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.85,
+      "position": {
+        "x": -7.5,
+        "y": -5.182,
+        "z": -20.6
+      },
+      "size": {
+        "h": 2.2,
+        "w": 1.1
+      },
+      "surface": "floor",
+      "texture": "mall_wet_footprints",
+      "tint": "#6dff4a",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -19.8,
+        "y": 0.012,
+        "z": 7.2
+      },
+      "size": {
+        "h": 1.3,
+        "w": 1.3
+      },
+      "surface": "floor",
+      "texture": "sticker_cluster",
+      "tint": "#fff1d6",
+      "yaw": 0.4
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -16.2,
+        "y": 0.012,
+        "z": 6.5
+      },
+      "size": {
+        "h": 1.3,
+        "w": 1.3
+      },
+      "surface": "floor",
+      "texture": "sticker_cluster",
+      "tint": "#fff1d6",
+      "yaw": -0.5
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -21.5,
+        "y": 0.012,
+        "z": 9.2
+      },
+      "size": {
+        "h": 1.3,
+        "w": 1.3
+      },
+      "surface": "floor",
+      "texture": "sticker_cluster",
+      "tint": "#fff1d6",
+      "yaw": 0.2
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": 18,
+        "y": 0.012,
+        "z": 21
+      },
+      "size": {
+        "h": 1.3,
+        "w": 1.3
+      },
+      "surface": "floor",
+      "texture": "sticker_cluster",
+      "tint": "#fff1d6",
+      "yaw": -0.3
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -1.4,
+        "y": 0.012,
+        "z": 8.6
+      },
+      "size": {
+        "h": 1.3,
+        "w": 1.3
+      },
+      "surface": "floor",
+      "texture": "sticker_cluster",
+      "tint": "#fff1d6",
+      "yaw": 0.15
+    },
+    {
+      "opacity": 0.75,
+      "position": {
+        "x": -18,
+        "y": 0.012,
+        "z": 23
+      },
+      "size": {
+        "h": 1.4,
+        "w": 2.6
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.75,
+      "position": {
+        "x": 18,
+        "y": 0.012,
+        "z": 19
+      },
+      "size": {
+        "h": 1.4,
+        "w": 2.6
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.75,
+      "position": {
+        "x": -10,
+        "y": -5.188000000000001,
+        "z": -11.5
+      },
+      "size": {
+        "h": 1.4,
+        "w": 2.6
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.75,
+      "position": {
+        "x": 10,
+        "y": -5.188000000000001,
+        "z": -11.5
+      },
+      "size": {
+        "h": 1.4,
+        "w": 2.6
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.75,
+      "position": {
+        "x": -10,
+        "y": -5.188000000000001,
+        "z": -33
+      },
+      "size": {
+        "h": 1.4,
+        "w": 2.6
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.75,
+      "position": {
+        "x": 10,
+        "y": -5.188000000000001,
+        "z": -33
+      },
+      "size": {
+        "h": 1.4,
+        "w": 2.6
+      },
+      "surface": "floor",
+      "texture": "floor_hazard",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.82,
+      "position": {
+        "x": -4.6,
+        "y": 0.01,
+        "z": 4
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.82,
+      "position": {
+        "x": -4.6,
+        "y": 0.01,
+        "z": 12
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.82,
+      "position": {
+        "x": -4.6,
+        "y": 0.01,
+        "z": 20
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.78,
+      "position": {
+        "x": -4.6,
+        "y": -5.19,
+        "z": -18
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.78,
+      "position": {
+        "x": -4.6,
+        "y": -5.19,
+        "z": -28
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.78,
+      "position": {
+        "x": -4.6,
+        "y": -5.19,
+        "z": -37
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.82,
+      "position": {
+        "x": 4.6,
+        "y": 0.01,
+        "z": 4
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.82,
+      "position": {
+        "x": 4.6,
+        "y": 0.01,
+        "z": 12
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.82,
+      "position": {
+        "x": 4.6,
+        "y": 0.01,
+        "z": 20
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.78,
+      "position": {
+        "x": 4.6,
+        "y": -5.19,
+        "z": -18
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.78,
+      "position": {
+        "x": 4.6,
+        "y": -5.19,
+        "z": -28
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.78,
+      "position": {
+        "x": 4.6,
+        "y": -5.19,
+        "z": -37
+      },
+      "size": {
+        "h": 0.38,
+        "w": 5.5
+      },
+      "surface": "floor",
+      "texture": "mall_tactile_strip",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.55,
+      "position": {
+        "x": 0,
+        "y": 0.01,
+        "z": 21.5
+      },
+      "size": {
+        "h": 1.7,
+        "w": 1.5
+      },
+      "surface": "floor",
+      "texture": "floor_arrow",
+      "tint": "#3d7bff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.55,
+      "position": {
+        "x": 0,
+        "y": 0.01,
+        "z": 13.5
+      },
+      "size": {
+        "h": 1.7,
+        "w": 1.5
+      },
+      "surface": "floor",
+      "texture": "floor_arrow",
+      "tint": "#3d7bff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.55,
+      "position": {
+        "x": 0,
+        "y": 0.01,
+        "z": 3.5
+      },
+      "size": {
+        "h": 1.7,
+        "w": 1.5
+      },
+      "surface": "floor",
+      "texture": "floor_arrow",
+      "tint": "#3d7bff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.58,
+      "position": {
+        "x": 0,
+        "y": -5.19,
+        "z": -11.5
+      },
+      "size": {
+        "h": 1.8,
+        "w": 1.6
+      },
+      "surface": "floor",
+      "texture": "floor_arrow",
+      "tint": "#6dff4a",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.58,
+      "position": {
+        "x": 0,
+        "y": -5.19,
+        "z": -21
+      },
+      "size": {
+        "h": 1.8,
+        "w": 1.6
+      },
+      "surface": "floor",
+      "texture": "floor_arrow",
+      "tint": "#6dff4a",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.58,
+      "position": {
+        "x": 0,
+        "y": -5.19,
+        "z": -30.5
+      },
+      "size": {
+        "h": 1.8,
+        "w": 1.6
+      },
+      "surface": "floor",
+      "texture": "floor_arrow",
+      "tint": "#6dff4a",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.58,
+      "position": {
+        "x": 0,
+        "y": -5.19,
+        "z": -40.5
+      },
+      "size": {
+        "h": 1.8,
+        "w": 1.6
+      },
+      "surface": "floor",
+      "texture": "floor_arrow",
+      "tint": "#6dff4a",
+      "yaw": 3.141592653589793
+    },
+    {
+      "opacity": 0.85,
+      "position": {
+        "x": 0,
+        "y": -5.188000000000001,
+        "z": -42.4
+      },
+      "size": {
+        "h": 2.2,
+        "w": 2.2
+      },
+      "surface": "floor",
+      "texture": "mall_exit_stencil",
+      "tint": "#fff1d6",
+      "yaw": 0
+    }
+  ],
+  "decor": [
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": -18,
+        "y": 0,
+        "z": 14
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": 18,
+        "y": 0,
+        "z": 14
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": -10,
+        "y": 0,
+        "z": 7
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": -10,
+        "y": 0,
+        "z": 21
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": 10,
+        "y": 0,
+        "z": 7
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": 10,
+        "y": 0,
+        "z": 21
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": 0,
+        "y": -5.2,
+        "z": -44
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": -20,
+        "y": -5.2,
+        "z": -22
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": -20,
+        "y": -5.2,
+        "z": -14
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": 20,
+        "y": -5.2,
+        "z": -22
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "lab_blast_door_frame",
+      "position": {
+        "x": 20,
+        "y": -5.2,
+        "z": -14
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "lab_bio_scanner_gate",
+      "position": {
+        "x": -18,
+        "y": 0,
+        "z": 21
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -22,
+        "y": 4.45,
+        "z": 17.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -22,
+        "y": 4.45,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -14,
+        "y": 4.45,
+        "z": 17.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -14,
+        "y": 4.45,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": -10.2,
+        "y": 1.2,
+        "z": 24.5
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "wh_wall_terminal",
+      "position": {
+        "x": -10.2,
+        "y": 1.2,
+        "z": 17.8
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_door",
+      "position": {
+        "x": -25.8,
+        "y": 0,
+        "z": 22.2
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_corkboard_evidence",
+      "position": {
+        "x": -25.8,
+        "y": 1.1,
+        "z": 7
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_observation_window",
+      "position": {
+        "x": -15.5,
+        "y": 1,
+        "z": 0
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -22,
+        "y": 4.45,
+        "z": 3.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -22,
+        "y": 4.45,
+        "z": 10.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -14,
+        "y": 4.45,
+        "z": 3.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -14,
+        "y": 4.45,
+        "z": 10.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": -10.2,
+        "y": 1.2,
+        "z": 11.2
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "wh_wall_terminal",
+      "position": {
+        "x": -10.2,
+        "y": 1.2,
+        "z": 3.6
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 25.78,
+        "y": -1.2,
+        "z": 21
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 18,
+        "y": -1.2,
+        "z": 27.78
+      },
+      "yaw": 3.141592653589793
+    },
+    {
+      "model": "lab_corkboard_evidence",
+      "position": {
+        "x": 10.22,
+        "y": 1.1,
+        "z": 25.2
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 14.8,
+        "y": 0,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 21.2,
+        "y": 0,
+        "z": 17.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 14,
+        "y": 4.45,
+        "z": 17.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 14,
+        "y": 4.45,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 22,
+        "y": 4.45,
+        "z": 17.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 22,
+        "y": 4.45,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": 10.2,
+        "y": 1.2,
+        "z": 16.8
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_observation_window",
+      "position": {
+        "x": 15.5,
+        "y": 1,
+        "z": 0
+      },
+      "yaw": 0
+    },
+    {
+      "model": "wh_wall_terminal",
+      "position": {
+        "x": 10.2,
+        "y": 1.2,
+        "z": 9.8
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": 10.2,
+        "y": 1.2,
+        "z": 3.5
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 14,
+        "y": 4.45,
+        "z": 3.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 14,
+        "y": 4.45,
+        "z": 10.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 22,
+        "y": 4.45,
+        "z": 3.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 22,
+        "y": 4.45,
+        "z": 10.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_bio_scanner_gate",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 18.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": -7.699999999999999,
+        "y": 1.25,
+        "z": 12
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": -7.699999999999999,
+        "y": 1.25,
+        "z": 16
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": 7.699999999999999,
+        "y": 1.25,
+        "z": 12
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": 7.699999999999999,
+        "y": 1.25,
+        "z": 16
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "lab_freight_elevator",
+      "position": {
+        "x": 0,
+        "y": -5.2,
+        "z": -1.6
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -4.5,
+        "y": 6.050000000000001,
+        "z": 4
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -4.5,
+        "y": 6.050000000000001,
+        "z": 11
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -4.5,
+        "y": 6.050000000000001,
+        "z": 18.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -4.5,
+        "y": 6.050000000000001,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 0,
+        "y": 6.050000000000001,
+        "z": 4
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 0,
+        "y": 6.050000000000001,
+        "z": 11
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 0,
+        "y": 6.050000000000001,
+        "z": 18.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 0,
+        "y": 6.050000000000001,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 4.5,
+        "y": 6.050000000000001,
+        "z": 4
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 4.5,
+        "y": 6.050000000000001,
+        "z": 11
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 4.5,
+        "y": 6.050000000000001,
+        "z": 18.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 4.5,
+        "y": 6.050000000000001,
+        "z": 24.5
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_manifold",
+      "position": {
+        "x": -10,
+        "y": -0.8,
+        "z": -16.25
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_manifold",
+      "position": {
+        "x": 10,
+        "y": -0.8,
+        "z": -16.25
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_manifold",
+      "position": {
+        "x": -10,
+        "y": -0.8,
+        "z": -28.25
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_manifold",
+      "position": {
+        "x": 10,
+        "y": -0.8,
+        "z": -28.25
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -7.5,
+        "y": -5.2,
+        "z": -21.2
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 7.5,
+        "y": -5.2,
+        "z": -21.2
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -10,
+        "y": -5.2,
+        "z": -35
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 10,
+        "y": -5.2,
+        "z": -35
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -12.5,
+        "y": -5.2,
+        "z": -43.78
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -8.5,
+        "y": -5.2,
+        "z": -43.78
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 8.5,
+        "y": -5.2,
+        "z": -43.78
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 12.5,
+        "y": -5.2,
+        "z": -43.78
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -19.78,
+        "y": -1.6,
+        "z": -12
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 19.78,
+        "y": -1.6,
+        "z": -12
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -19.78,
+        "y": -1.6,
+        "z": -26
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 19.78,
+        "y": -1.6,
+        "z": -26
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -15,
+        "y": 4.050000000000001,
+        "z": -8
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -15,
+        "y": 4.050000000000001,
+        "z": -16
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -15,
+        "y": 4.050000000000001,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -15,
+        "y": 4.050000000000001,
+        "z": -28
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -15,
+        "y": 4.050000000000001,
+        "z": -37
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -5,
+        "y": 4.050000000000001,
+        "z": -8
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -5,
+        "y": 4.050000000000001,
+        "z": -16
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -5,
+        "y": 4.050000000000001,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -5,
+        "y": 4.050000000000001,
+        "z": -28
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -5,
+        "y": 4.050000000000001,
+        "z": -37
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 5,
+        "y": 4.050000000000001,
+        "z": -8
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 5,
+        "y": 4.050000000000001,
+        "z": -16
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 5,
+        "y": 4.050000000000001,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 5,
+        "y": 4.050000000000001,
+        "z": -28
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 5,
+        "y": 4.050000000000001,
+        "z": -37
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 15,
+        "y": 4.050000000000001,
+        "z": -8
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 15,
+        "y": 4.050000000000001,
+        "z": -16
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 15,
+        "y": 4.050000000000001,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 15,
+        "y": 4.050000000000001,
+        "z": -28
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 15,
+        "y": 4.050000000000001,
+        "z": -37
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_decon_shower",
+      "position": {
+        "x": -28.5,
+        "y": -5.2,
+        "z": -24.9
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_decon_shower",
+      "position": {
+        "x": -23.5,
+        "y": -5.2,
+        "z": -24.9
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -28.5,
+        "y": -5.2,
+        "z": -23
+      },
+      "yaw": 0
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -23.5,
+        "y": -5.2,
+        "z": -23
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -29,
+        "y": -1.15,
+        "z": -14
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -29,
+        "y": -1.15,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -23,
+        "y": -1.15,
+        "z": -14
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": -23,
+        "y": -1.15,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "mall_security_fixture",
+      "position": {
+        "x": -31.8,
+        "y": -4,
+        "z": -18
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 31.78,
+        "y": -5.2,
+        "z": -16
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 31.78,
+        "y": -5.2,
+        "z": -20
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 31.78,
+        "y": -2.8000000000000003,
+        "z": -19.5
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 26,
+        "y": -0.9,
+        "z": -17
+      },
+      "scale": 1.2,
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 23,
+        "y": -1.15,
+        "z": -14
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 23,
+        "y": -1.15,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 29,
+        "y": -1.15,
+        "z": -14
+      },
+      "yaw": 0
+    },
+    {
+      "model": "lab_ceiling_strip",
+      "position": {
+        "x": 29,
+        "y": -1.15,
+        "z": -22
+      },
+      "yaw": 0
+    },
+    {
+      "model": "wh_wall_terminal",
+      "position": {
+        "x": 20.2,
+        "y": -4,
+        "z": -18
+      },
+      "yaw": 1.5707963267948966
+    }
+  ],
+  "director": {
+    "attackTokens": 3,
+    "maxHoldS": 4,
+    "probeHeightM": 0.5,
+    "reassignS": 1,
+    "shotTokens": 2,
+    "slots": {
+      "melee": {
+        "count": 8,
+        "offsetDeg": 0
+      },
+      "shot": {
+        "count": 6,
+        "offsetDeg": 30
+      }
+    }
+  },
+  "doors": [
+    {
+      "id": "entry",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": 28.5
+      },
+      "role": "entry",
+      "size": {
+        "x": 4,
+        "y": 3,
+        "z": 1
+      }
+    },
+    {
+      "id": "exit",
+      "position": {
+        "x": 0,
+        "y": -3.7,
+        "z": -44.5
+      },
+      "role": "exit",
+      "size": {
+        "x": 4,
+        "y": 3,
+        "z": 1
+      }
+    }
+  ],
+  "hazards": [
+    {
+      "cycle": {
+        "offS": 1.8,
+        "onS": 2.5
+      },
+      "from": {
+        "x": 12.5,
+        "y": 0.85,
+        "z": 7
+      },
+      "id": "prototype-test-beam",
+      "kind": "laser_gate",
+      "to": {
+        "x": 16.2,
+        "y": 0.85,
+        "z": 7
+      }
+    },
+    {
+      "id": "armory-plasma-cell",
+      "kind": "explosive_barrel",
+      "position": {
+        "x": 23.5,
+        "y": 0,
+        "z": 3
+      }
+    },
+    {
+      "cycle": {
+        "offS": 2.2,
+        "onS": 3
+      },
+      "id": "breached-cocoon-electrolyte",
+      "kind": "electric_field",
+      "position": {
+        "x": -4.5,
+        "y": -4.2,
+        "z": -18.5
+      },
+      "size": {
+        "x": 3,
+        "y": 2,
+        "z": 3.6
+      }
+    },
+    {
+      "id": "cryo-tank-north",
+      "kind": "explosive_barrel",
+      "position": {
+        "x": 4.5,
+        "y": -5.2,
+        "z": -37.5
+      }
+    }
+  ],
+  "id": "run3",
+  "lights": [
+    {
+      "color": "#fff1d6",
+      "floorY": 0,
+      "intensity": 30,
+      "position": {
+        "x": 0,
+        "y": 5.95,
+        "z": 18.5
+      },
+      "range": 14
+    },
+    {
+      "color": "#3d7bff",
+      "floorY": 0,
+      "intensity": 28,
+      "position": {
+        "x": 0,
+        "y": 5.95,
+        "z": 9.5
+      },
+      "range": 14
+    },
+    {
+      "color": "#ffae1a",
+      "flicker": {
+        "pattern": "pulse",
+        "periodS": 2.2
+      },
+      "floorY": 0,
+      "intensity": 26,
+      "position": {
+        "x": 0,
+        "y": 4.2,
+        "z": -1.2
+      },
+      "range": 13
+    },
+    {
+      "color": "#ffae1a",
+      "floorY": 0,
+      "intensity": 26,
+      "position": {
+        "x": -18,
+        "y": 4.35,
+        "z": 21
+      },
+      "range": 12
+    },
+    {
+      "color": "#fff1d6",
+      "floorY": 0,
+      "intensity": 22,
+      "position": {
+        "x": -22,
+        "y": 4.35,
+        "z": 24
+      },
+      "range": 10
+    },
+    {
+      "color": "#fff1d6",
+      "floorY": 0,
+      "intensity": 28,
+      "position": {
+        "x": -18,
+        "y": 4.35,
+        "z": 7
+      },
+      "range": 12
+    },
+    {
+      "color": "#ffae1a",
+      "floorY": 0,
+      "groundGlow": false,
+      "intensity": 18,
+      "position": {
+        "x": -24.5,
+        "y": 3.2,
+        "z": 7
+      },
+      "range": 8
+    },
+    {
+      "color": "#6dff4a",
+      "floorY": 0,
+      "intensity": 26,
+      "position": {
+        "x": 18,
+        "y": 4.35,
+        "z": 21
+      },
+      "range": 12
+    },
+    {
+      "color": "#3d7bff",
+      "floorY": 0,
+      "intensity": 22,
+      "position": {
+        "x": 23.5,
+        "y": 4.35,
+        "z": 21
+      },
+      "range": 10
+    },
+    {
+      "color": "#8a5cff",
+      "flicker": {
+        "pattern": "buzz",
+        "strength": 0.25
+      },
+      "floorY": 0,
+      "intensity": 32,
+      "position": {
+        "x": 18,
+        "y": 4.35,
+        "z": 7
+      },
+      "range": 13
+    },
+    {
+      "color": "#6dff4a",
+      "floorY": -5.2,
+      "intensity": 38,
+      "position": {
+        "x": -10,
+        "y": -0.9,
+        "z": -16.2
+      },
+      "range": 16
+    },
+    {
+      "color": "#3d7bff",
+      "floorY": -5.2,
+      "intensity": 38,
+      "position": {
+        "x": 10,
+        "y": -0.9,
+        "z": -16.2
+      },
+      "range": 16
+    },
+    {
+      "color": "#6dff4a",
+      "floorY": -5.2,
+      "intensity": 38,
+      "position": {
+        "x": -10,
+        "y": -0.9,
+        "z": -28.2
+      },
+      "range": 16
+    },
+    {
+      "color": "#3d7bff",
+      "floorY": -5.2,
+      "intensity": 38,
+      "position": {
+        "x": 10,
+        "y": -0.9,
+        "z": -28.2
+      },
+      "range": 16
+    },
+    {
+      "color": "#ffae1a",
+      "floorY": -1.6,
+      "intensity": 26,
+      "position": {
+        "x": 0,
+        "y": 3.95,
+        "z": -22
+      },
+      "range": 14
+    },
+    {
+      "color": "#fff1d6",
+      "floorY": -1.6,
+      "intensity": 24,
+      "position": {
+        "x": 0,
+        "y": 3.95,
+        "z": -5
+      },
+      "range": 13
+    },
+    {
+      "color": "#8a5cff",
+      "flicker": {
+        "pattern": "buzz",
+        "strength": 0.35
+      },
+      "floorY": -5.2,
+      "groundGlow": false,
+      "intensity": 20,
+      "position": {
+        "x": -4.5,
+        "y": -3.5,
+        "z": -18.5
+      },
+      "range": 9
+    },
+    {
+      "color": "#6dff4a",
+      "floorY": -5.2,
+      "intensity": 34,
+      "position": {
+        "x": 0,
+        "y": -1.6,
+        "z": -43.5
+      },
+      "range": 15
+    },
+    {
+      "color": "#fff1d6",
+      "floorY": -5.2,
+      "intensity": 24,
+      "position": {
+        "x": -26,
+        "y": -1.25,
+        "z": -18
+      },
+      "range": 11
+    },
+    {
+      "color": "#6dff4a",
+      "floorY": -5.2,
+      "intensity": 18,
+      "position": {
+        "x": -26,
+        "y": -1.25,
+        "z": -24.2
+      },
+      "range": 9
+    },
+    {
+      "color": "#3d7bff",
+      "floorY": -5.2,
+      "intensity": 24,
+      "position": {
+        "x": 26,
+        "y": -1.25,
+        "z": -14.5
+      },
+      "range": 11
+    },
+    {
+      "color": "#8a5cff",
+      "floorY": -5.2,
+      "intensity": 24,
+      "position": {
+        "x": 26,
+        "y": -1.25,
+        "z": -21.5
+      },
+      "range": 11
+    }
+  ],
+  "maxAlive": 10,
+  "minSpawnDistance": 10,
+  "name": "Tajne Laboratorium Kurogane Arms — Sektor X-51",
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 25
+  },
+  "rainShelters": [
+    {
+      "position": {
+        "x": 0,
+        "y": 0.5,
+        "z": -8
+      },
+      "size": {
+        "x": 68,
+        "y": 16,
+        "z": 76
+      }
+    }
+  ],
+  "signs": [
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 0,
+        "y": 4.3,
+        "z": 27.75
+      },
+      "size": {
+        "h": 1.2,
+        "w": 3.6
+      },
+      "texture": "floor_l0",
+      "tint": "#3d7bff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "flicker": 0.15,
+      "kind": "neon",
+      "position": {
+        "x": 0,
+        "y": 5.2,
+        "z": 0.25
+      },
+      "size": {
+        "h": 1.1,
+        "w": 3.8
+      },
+      "texture": "mall_kurogane",
+      "tint": "#ffae1a",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -9.75,
+        "y": 3.85,
+        "z": 21
+      },
+      "size": {
+        "h": 0.9,
+        "w": 2.8
+      },
+      "texture": "mall_kurogane",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -9.75,
+        "y": 3.85,
+        "z": 7
+      },
+      "size": {
+        "h": 0.9,
+        "w": 2.8
+      },
+      "texture": "mall_books",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 9.75,
+        "y": 3.85,
+        "z": 21
+      },
+      "size": {
+        "h": 0.9,
+        "w": 2.8
+      },
+      "texture": "mall_pharmacy",
+      "tint": "#6dff4a",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 9.75,
+        "y": 3.85,
+        "z": 7
+      },
+      "size": {
+        "h": 0.9,
+        "w": 2.8
+      },
+      "texture": "warsztat",
+      "tint": "#8a5cff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -18,
+        "y": 3.85,
+        "z": 14.25
+      },
+      "size": {
+        "h": 0.85,
+        "w": 2.6
+      },
+      "texture": "mall_books",
+      "tint": "#fff1d6",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 18,
+        "y": 3.85,
+        "z": 14.25
+      },
+      "size": {
+        "h": 0.85,
+        "w": 2.6
+      },
+      "texture": "warsztat",
+      "tint": "#8a5cff",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 0,
+        "y": 2.4,
+        "z": -3.65
+      },
+      "size": {
+        "h": 1.2,
+        "w": 4
+      },
+      "texture": "floor_l1",
+      "tint": "#6dff4a",
+      "yaw": 3.141592653589793
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -8.2,
+        "y": 2.2,
+        "z": -0.25
+      },
+      "size": {
+        "h": 0.9,
+        "w": 2.8
+      },
+      "texture": "floor_l0",
+      "tint": "#3d7bff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 8.2,
+        "y": 2.2,
+        "z": -0.25
+      },
+      "size": {
+        "h": 0.9,
+        "w": 2.8
+      },
+      "texture": "floor_l0",
+      "tint": "#3d7bff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -19.75,
+        "y": -1.75,
+        "z": -14
+      },
+      "size": {
+        "h": 0.75,
+        "w": 2.4
+      },
+      "texture": "repair",
+      "tint": "#6dff4a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -19.75,
+        "y": -1.75,
+        "z": -22
+      },
+      "size": {
+        "h": 0.75,
+        "w": 2.4
+      },
+      "texture": "repair",
+      "tint": "#ffae1a",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 19.75,
+        "y": -1.75,
+        "z": -14
+      },
+      "size": {
+        "h": 0.75,
+        "w": 2.4
+      },
+      "texture": "mall_electronics",
+      "tint": "#3d7bff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 19.75,
+        "y": -1.75,
+        "z": -22
+      },
+      "size": {
+        "h": 0.75,
+        "w": 2.4
+      },
+      "texture": "mall_electronics",
+      "tint": "#8a5cff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 0,
+        "y": -1.4000000000000004,
+        "z": -43.75
+      },
+      "size": {
+        "h": 1,
+        "w": 2.8
+      },
+      "texture": "arrow",
+      "tint": "#6dff4a",
+      "yaw": 0
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -18,
+      "z": 17
+    },
+    {
+      "x": -15,
+      "z": 10
+    },
+    {
+      "x": -21,
+      "z": 4
+    },
+    {
+      "x": 18,
+      "z": 17
+    },
+    {
+      "x": 21,
+      "z": 10
+    },
+    {
+      "x": 15,
+      "z": 3
+    },
+    {
+      "x": 0,
+      "z": 5
+    },
+    {
+      "x": -18.5,
+      "y": -1.6,
+      "z": -16
+    },
+    {
+      "x": 18.5,
+      "y": -1.6,
+      "z": -16
+    },
+    {
+      "x": 0,
+      "y": -1.6,
+      "z": -22
+    },
+    {
+      "x": 0,
+      "y": -5.2,
+      "z": -15
+    },
+    {
+      "x": -26,
+      "y": -5.2,
+      "z": -18
+    },
+    {
+      "x": 26,
+      "y": -5.2,
+      "z": -18
+    },
+    {
+      "x": -10,
+      "y": -5.2,
+      "z": -28
+    },
+    {
+      "x": 10,
+      "y": -5.2,
+      "z": -28
+    },
+    {
+      "x": 0,
+      "y": -5.2,
+      "z": -39
+    }
+  ],
+  "theme": "neonStreet",
+  "type": "combat",
+  "weather": "kuroganeSecretLab",
+  "weatherFloorY": 8
+}
