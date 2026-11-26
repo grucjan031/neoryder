@@ -2648,6 +2648,12 @@ Opcjonalne `encounters[].stealth` przyjmuje `alarmGroup` (domyślnie id spotkani
 
 `alarm_raised { groupId: string }` oznacza pierwsze zakończone zgłoszenie grupy. Subskrybenci widzą już zaalarmowanych strażników. Zabicie zgłaszającego przed końcem opóźnienia anuluje jego zgłoszenie. Cicha likwidacja emituje standardowe `execute_performed`.
 
+## Windy pokojowe
+
+`RoomDefinition.elevators?` opisuje kabiny i przystanki. Indeksy przystanków zaczynają się od zera, a `y` oznacza wysokość stóp. Panele i nawigacja wywołują tę samą operację `request(stop)`. Stan kabiny i kolejka zawierają wyłącznie dane JSON. W stałym kroku pokój najpierw wyznacza ruch kabiny, następnie kontrolery dodają pionowe przesunięcie podpierającej je podłogi i na końcu wykonuje krok świata Rapiera.
+
+EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `elevatorDeparted { id, from, to }` przy rozpoczęciu jazdy, `elevatorArrived { id, stop }` po wyrównaniu podłogi i `elevatorDoors { id, stop, opening }` przy rozpoczęciu ruchu drzwi. Graf powierzchni udostępnia przejazd z id windy oraz indeksami wejścia i wyjścia. AI może osobno zapytać o trasę pieszą po przekroczeniu czasu oczekiwania.
+
 ## Skiny broni
 
 `skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.

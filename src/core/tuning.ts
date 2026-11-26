@@ -777,6 +777,19 @@ export const tuning = {
     spawnIntervalS: 0.7,
   },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
+  elevator: {
+    elevatorSpeedMps: 2.5,
+    elevatorAccelMps2: 3.5,
+    elevatorDoorOpenS: 0.55,
+    elevatorDoorDwellS: 2.5,
+    elevatorPanelReachM: 1.6,
+    maxEnemies: 2,
+    waitTimeoutS: 12,
+    landingOffsetM: 0.85,
+    boardingToleranceM: 0.24,
+    navCellM: 0.5,
+    navWalkMps: 3,
+  },
   arena: {
     maxEnemies: 30,
     /**
