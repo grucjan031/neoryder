@@ -459,6 +459,7 @@ export class RoomScene implements Scene {
       this.layout.arena?.water,
       weatherDefinitions.get(this.layout.weather ?? '')?.lighting
         ?.panoramaEnabled === false,
+      this.layout.panoramaDropM,
     );
     three.add(this.root);
     this.root.add(this.lights);

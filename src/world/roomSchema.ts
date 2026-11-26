@@ -194,6 +194,7 @@ export const roomSchema = z
     name: z.string().min(1),
     type: z.enum(NODE_TYPES),
     playerSpawn: vec3Schema,
+    panoramaDropM: nonnegative.optional(),
     arena: arenaSchema.optional(),
     blocks: z.array(roomBlockSchema),
     spawnPoints: z.array(roomSpawnPointSchema),

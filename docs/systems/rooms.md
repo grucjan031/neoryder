@@ -1,5 +1,7 @@
 # Pokoje runu — F3-03
 
+Opcjonalne `panoramaDropM` obniża podstawę zabudowy i świateł panoramy względem posadzki startowej o podaną liczbę metrów. Domyślne `0` zachowuje dotychczasowy horyzont.
+
 `src/world/roomSchema.ts` rozszerza istniejący schemat F3-01 o walidację
 przestrzenną. `loadRoom(data)` sprawdza strukturę i układ przez zod; błędy
 zawierają polski komunikat oraz ścieżkę pola (np. `spawnPoints.0`).
