@@ -15,6 +15,7 @@ import type { Color, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { describe, expect, it } from 'vitest';
 import { applyStyle } from '../../src/render/materials';
+import { isCityModelFile } from '../../src/render/cityModels';
 import { urbanKinds } from '../../src/render/urbanMaterials';
 import {
   CITY_PROP_MODELS,
@@ -904,6 +905,118 @@ describe('magazyn Kurogane', () => {
     const deck = scene.getObjectByName('deck');
     expect(deck).toBeInstanceOf(Mesh);
     expect(new Box3().setFromObject(deck!, true).max.y).toBeCloseTo(0.2, 5);
+  });
+});
+
+describe('tajne laboratorium Kurogane Arms', () => {
+  const specs = {
+    lab_cocoon_tall: [2.2, 4.4, 2.2, 1480],
+    lab_cocoon_tall_cryo: [2.2, 4.4, 2.2, 1480],
+    lab_cocoon_breached: [2.4, 4.4, 2.4, 1360],
+    lab_cocoon_incubator: [1.1, 2.1, 1.1, 760],
+    lab_ceiling_manifold: [6, 5.2, 5.5, 1120],
+    lab_freight_elevator: [4.8, 11.6, 4, 1460],
+    lab_bio_scanner_gate: [3.2, 2.6, 1.4, 780],
+    lab_blast_door_frame: [4.8, 3.8, 0.6, 580],
+    lab_observation_window: [8, 2.6, 0.45, 440],
+    lab_security_desk: [3.4, 1.25, 1.4, 680],
+    lab_catwalk_rail: [4, 1.1, 0.14, 260],
+    lab_ceiling_strip: [2.4, 0.35, 0.6, 220],
+    lab_locker_bank: [2.4, 2.1, 0.65, 640],
+    lab_locker_bench: [2.2, 0.5, 0.8, 240],
+    lab_decon_shower: [1.8, 2.4, 1.6, 620],
+    lab_hazmat_suit_rack: [2.2, 2.1, 0.75, 1180],
+    lab_corkboard_evidence: [2.8, 1.6, 0.18, 580],
+    lab_classified_cabinet: [1.6, 2.2, 0.85, 560],
+    lab_briefing_holotable: [3.2, 1.1, 2, 720],
+    lab_chem_fume_hood: [2.4, 2.4, 1.1, 860],
+    lab_centrifuge_bench: [3.2, 1.45, 1.1, 940],
+    lab_prototype_weapon_rack: [2.4, 2.2, 0.8, 880],
+    lab_anomaly_containment_pod: [2.8, 3.2, 2.8, 1160],
+    lab_cryo_server_rack: [1.4, 2.4, 1, 820],
+    lab_mainframe_console: [3, 1.35, 1.4, 840],
+  } as const;
+  const ids = Object.keys(specs) as (keyof typeof specs)[];
+
+  const required: Partial<Record<keyof typeof specs, string[]>> = {
+    lab_cocoon_tall: [
+      'glass_clear',
+      'lacquer',
+      'cable',
+      'screen_status',
+      'light_panel',
+      'neon_green',
+    ],
+    lab_cocoon_tall_cryo: [
+      'glass_clear',
+      'lacquer',
+      'cable',
+      'light_panel',
+      'neon_blue',
+      'neon_violet',
+    ],
+    lab_cocoon_breached: [
+      'glass_clear',
+      'cable',
+      'neon_amber',
+      'label_warning',
+    ],
+    lab_ceiling_strip: ['light_panel'],
+    lab_corkboard_evidence: ['wood', 'screen_map', 'neon_green', 'neon_amber'],
+    lab_mainframe_console: ['screen_lab_biomonitor', 'label_lab_mug'],
+  };
+  it.each(ids)('%s odpowiada tabeli §4.1 i ma podgląd', async (id) => {
+    expect(isCityModelFile(id)).toBe(true);
+    const [width, height, depth, budget] = specs[id];
+    const scene = await loadSet(id);
+    expect(scene.getObjectByName(id)).toBeDefined();
+    const box = new Box3().setFromObject(scene, true);
+    const back = id === 'lab_corkboard_evidence' ? 0 : -depth / 2;
+    const expected = [-width / 2, 0, back, width / 2, height, back + depth];
+    const bounds = [...box.min.toArray(), ...box.max.toArray()];
+    const registered = [...modelBounds[id].min, ...modelBounds[id].max];
+    bounds.forEach((value, i) => {
+      expect(value).toBeCloseTo(expected[i]!, 3);
+      expect(value).toBeCloseTo(registered[i]!, 3);
+    });
+
+    expect(
+      existsSync(join(__dirname, '../../artifacts/models/lab', id + '.png')),
+    ).toBe(true);
+    let triangles = 0;
+    const materials = new Set<string>();
+    scene.traverse((mesh) => {
+      if (!(mesh instanceof Mesh)) return;
+      triangles +=
+        (mesh.geometry.index?.count ??
+          mesh.geometry.getAttribute('position').count) / 3;
+      for (const mat of [mesh.material].flat()) {
+        expect(materials.has(mat.name)).toBe(false);
+        materials.add(mat.name);
+        expect(mat.map).toBeNull();
+        expect(reserved(mat.color)).toBe(false);
+        expect(reserved(mat.emissive)).toBe(false);
+        if (mat.emissive.getHex() !== 0)
+          expect(mat.name).toMatch(
+            /^mat_(neon_(green|blue|violet|amber)|light_panel)$/,
+          );
+        if (mat.name === 'mat_glass_clear') {
+          expect(mat.transparent).toBe(true);
+          expect(mat.opacity).toBeCloseTo(0.22);
+        }
+        if (
+          !/^mat_(neon_(green|blue|violet|amber)$|label_|screen_)/.test(
+            mat.name,
+          )
+        )
+          expect(urbanKinds).toContain(mat.name.slice(4));
+      }
+    });
+    for (const kind of required[id] ?? [])
+      expect(materials.has(`mat_${kind}`)).toBe(true);
+    expect([...materials].sort()).toEqual(modelBounds[id].materials);
+    expect(triangles).toBeGreaterThan(0);
+    expect(triangles).toBeLessThanOrEqual(budget);
   });
 });
 

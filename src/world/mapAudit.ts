@@ -38,12 +38,19 @@ const WALL_FIXTURES = new Set([
   'mall_security_fixture',
   'mall_floor_sign',
   'mall_entrance_doors',
+  'lab_blast_door_frame',
+  'lab_observation_window',
+  'lab_corkboard_evidence',
+  'lab_decon_shower',
+  'lab_hazmat_suit_rack',
 ]);
 const CEILING_FIXTURES = new Set([
   'wh_ceiling_lamp',
   'mall_ceiling_panel',
   'mall_skylight',
   'mall_hanging_banner',
+  'lab_ceiling_strip',
+  'lab_ceiling_manifold',
 ]);
 const EDGE = 0.35;
 const LARGE_HEIGHT = 0.6;

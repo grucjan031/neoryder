@@ -226,5 +226,32 @@
     "metalness": 0.2,
     "bump": 0.45,
     "wetness": 0
+  },
+  "lab_epoxy_floor": {
+    "texture": "mall_stone_floor",
+    "tint": "#465466",
+    "scale": 0.4,
+    "roughness": 0.22,
+    "metalness": 0.12,
+    "bump": 0.25,
+    "wetness": 0.65
+  },
+  "lab_bunker_concrete": {
+    "texture": "concrete_raw_cast",
+    "tint": "#3e4858",
+    "scale": 0.25,
+    "roughness": 0.78,
+    "metalness": 0.05,
+    "bump": 0.55,
+    "wetness": 0.2
+  },
+  "lab_cleanroom_wall": {
+    "texture": "tiles_wall",
+    "tint": "#58657a",
+    "scale": 0.5,
+    "roughness": 0.35,
+    "metalness": 0.25,
+    "bump": 0.3,
+    "wetness": 0.1
   }
 }

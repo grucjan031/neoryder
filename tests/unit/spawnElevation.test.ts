@@ -77,6 +77,98 @@ describe('spawn z y (F-01)', () => {
   });
 });
 
+describe('podparcie hazardów na różnych kondygnacjach', () => {
+  const basement = { ...deck, position: { x: 0, y: -5.4, z: 9 } };
+  const field = {
+    id: 'pole',
+    kind: 'electric_field',
+    position: { x: 0, y: -4.2, z: 9 },
+    size: { x: 2, y: 2, z: 2 },
+  };
+  const laser = (height: number) => ({
+    id: 'laser',
+    kind: 'laser_gate',
+    from: { x: -1, y: height, z: 9 },
+    to: { x: 1, y: height, z: 9 },
+    cycle: { onS: 1, offS: 1 },
+  });
+  const room = { ...yard, blocks: [...yard.blocks, basement] };
+  it('sprawdza spód pola, podstawę beczki i odległość wiązki od podłogi', () => {
+    for (const hazard of [
+      field,
+      {
+        id: 'beczka',
+        kind: 'explosive_barrel',
+        position: { x: 0, y: -5.2, z: 9 },
+      },
+      laser(-3.2),
+      laser(-5.2),
+    ]) {
+      expect(() => loadRoom({ ...room, hazards: [hazard] })).not.toThrow();
+      expect(() => loadRoom({ ...yard, hazards: [hazard] })).toThrow(/podłogi/);
+    }
+    expect(() => loadRoom({ ...room, hazards: [laser(-3.19)] })).toThrow(
+      /podłogi/,
+    );
+  });
+  it('wymaga podparcia całej wiązki i każdego narożnika pola', () => {
+    expect(() =>
+      loadRoom({
+        ...room,
+        hazards: [{ ...laser(-4), to: { x: 4, y: -4, z: 9 } }],
+      }),
+    ).toThrow(/podłogi/);
+    expect(() =>
+      loadRoom({
+        ...room,
+        hazards: [{ ...field, position: { ...field.position, x: 2.5 } }],
+      }),
+    ).toThrow(/podłogi/);
+  });
+  it('sprawdza margines na kondygnacji hazardu i wybiera najwyższą podłogę pod laserem', () => {
+    expect(() =>
+      loadRoom({
+        ...room,
+        hazards: [field],
+        spawnPoints: [...yard.spawnPoints, { x: 1.8, y: -5.2, z: 9 }],
+      }),
+    ).toThrow(/marginesie/);
+    const intermediate = { ...deck, position: { x: 0, y: 1.3, z: 9 } };
+    // Szczyt podestu na 1,5 m; spawn na 3,6 m od parteru leży 2,1 m nad podestem.
+    const top = { ...deck, position: { x: 0, y: 3.4, z: 9 } };
+    const stacked = {
+      ...yard,
+      playerSpawn: { x: 0, y: 0, z: 0 },
+      blocks: [...yard.blocks, intermediate, top],
+      hazards: [laser(1.9)],
+    };
+    expect(() =>
+      loadRoom({
+        ...stacked,
+        spawnPoints: [...yard.spawnPoints, { x: 0, y: 3.6, z: 9 }],
+      }),
+    ).not.toThrow();
+    // Podest na 3,5 m mieści się dokładnie w marginesie od 1,5 m, ale nie od parteru.
+    expect(() =>
+      loadRoom({
+        ...stacked,
+        blocks: [
+          ...yard.blocks,
+          intermediate,
+          { ...top, position: { ...top.position, y: 3.3 } },
+        ],
+        spawnPoints: [...yard.spawnPoints, { x: 0, y: 3.5, z: 9 }],
+      }),
+    ).toThrow(/marginesie/);
+    expect(() =>
+      loadRoom({
+        ...stacked,
+        spawnPoints: [...yard.spawnPoints, { x: 0, y: 1.5, z: 9 }],
+      }),
+    ).toThrow(/marginesie/);
+  });
+});
+
 describe('wysokość spawnu fal (F-01)', () => {
   const def = (spawnPoints: { x: number; y?: number; z: number }[]) =>
     loadWaves({
