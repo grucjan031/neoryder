@@ -48,6 +48,9 @@ import { ScatterProps, isScatterModel } from '../world/scatterProps';
 import { ScatterRenderer } from '../render/scatterRenderer';
 import { getLiteFx } from '../render/fxMode';
 import type { HazardTarget } from '../world/hazards';
+import { ElevatorCabin, type ElevatorButton } from '../world/elevatorCabin';
+import { ElevatorPassengers } from '../world/elevatorPassengers';
+import { ElevatorView } from '../render/elevatorView';
 import { HazardView } from '../render/hazardView';
 import { GrabPuzzle } from '../world/grabPuzzle';
 import { GrabPhysics } from '../physics/grabPhysics';
@@ -374,6 +377,11 @@ export class RoomScene implements Scene {
   private heistView?: HeistView;
   private assaultView?: AssaultView;
   protected navigation?: ArenaNavigation;
+  private readonly cabins = new Map<string, ElevatorCabin>();
+  private readonly elevatorViews: ElevatorView[] = [];
+  private platformFloors?: ElevatorCabin[];
+  private passengers?: ElevatorPassengers;
+  private focusedButton?: ElevatorButton;
   private staticWorld?: Group;
   private readonly staticInstances: InstancedMesh[] = [];
   private conquestView?: ConquestView;
@@ -512,6 +520,27 @@ export class RoomScene implements Scene {
     );
 
     this.atmosphere.sync(0);
+    if (this.layout.elevators?.length) {
+      this.navigation = new ArenaNavigation(this.layout, ctx.tuning);
+      for (const def of this.layout.elevators) {
+        const cabin = new ElevatorCabin(
+          def,
+          ctx.tuning.elevator,
+          this.world,
+          ctx.bus,
+        );
+        this.cabins.set(def.id, cabin);
+        this.elevatorViews.push(new ElevatorView(cabin, this.root));
+      }
+      this.platformFloors = [...this.cabins.values()];
+      this.passengers = new ElevatorPassengers(this.cabins, this.navigation);
+      this.off.push(
+        ctx.bus.on('entity_despawned', ({ id }) => this.passengers?.remove(id)),
+      );
+      if (this.loadModels)
+        await Promise.all(this.elevatorViews.map((view) => view.loadModel()));
+      if (this.disposed) return;
+    }
     const playerId = this.entities.create('player', 'player');
     this.player = new PlayerController(
       playerId,
@@ -520,6 +549,7 @@ export class RoomScene implements Scene {
       this.spawnPosition(),
       loadSettings(),
       playerDefaults,
+      this.platformFloors,
     );
     this.applyImplants();
     this.applyTalents();
@@ -570,12 +600,18 @@ export class RoomScene implements Scene {
         damage: this.damage,
         hurtboxes: this.hurtboxes,
         statuses: this.statuses,
-        stepClimbing: !!(
-          this.layout.arena &&
-          (this.layout.arena.exclusive ||
-            this.layout.arena.spawnRing ||
-            this.layout.blocks.some((b) => b.walkable))
-        ),
+        platformFloors: this.platformFloors,
+        transitWaypoint: this.passengers
+          ? (id) => this.passengers?.waypoints.get(id)
+          : undefined,
+        stepClimbing:
+          !!this.passengers ||
+          !!(
+            this.layout.arena &&
+            (this.layout.arena.exclusive ||
+              this.layout.arena.spawnRing ||
+              this.layout.blocks.some((b) => b.walkable))
+          ),
         los: (from, to) => {
           const x = to.x - from.x,
             y = to.y - from.y,
@@ -894,7 +930,8 @@ export class RoomScene implements Scene {
     });
     this.refreshSynergyInputs();
 
-    if (this.layout.arena) this.navigation = new ArenaNavigation(this.layout);
+    if (this.layout.arena && !this.navigation)
+      this.navigation = new ArenaNavigation(this.layout);
     this.director = new WaveDirector(
       this.waves,
       {
@@ -1953,13 +1990,39 @@ export class RoomScene implements Scene {
       this.weapon.definition.aimSensitivityScale,
     );
     this.syncHeistCarry();
+    if (this.platformFloors && dt > 0) {
+      const p = this.previous,
+        feet = { ...p.position, y: p.position.y - p.height / 2 };
+      for (const cabin of this.cabins.values()) {
+        let occupied = cabin.inDoorway(
+          feet,
+          this.ctx.tuning.player.capsuleRadius,
+        );
+        if (!occupied && cabin.state.door > 0)
+          this.manager.forEach((e) => {
+            if (
+              e.definition.body &&
+              e.current.state !== 'dead' &&
+              cabin.inDoorway(e.current.position, e.definition.body.radius)
+            )
+              occupied = true;
+          });
+        cabin.step(
+          dt,
+          occupied ||
+            this.passengers?.boardingAt(cabin.def.id, cabin.state.stop),
+        );
+      }
+    }
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
     // Powalony sojusznik w zasięgu: klawisz interakcji (Moc 2) podnosi go zamiast rzucać moc.
-    const reviving = this.squad.reviveCandidate() !== null;
+    if (this.passengers) this.focusElevator(input.pressed.has('power2'));
+    const reviving =
+      !this.focusedButton && this.squad.reviveCandidate() !== null;
     this.powers.step(
       pdt,
-      reviving ? withoutAction(input, 'power2') : input,
+      reviving || this.focusedButton ? withoutAction(input, 'power2') : input,
       this.puzzle ? dt : undefined,
     );
     if (input.pressed.has('squadCommand') && this.squad.size > 0)
@@ -2093,6 +2156,27 @@ export class RoomScene implements Scene {
     }
     this.director.step(dt);
     this.squad.step(dt, reviving && input.held.has('power2'));
+    if (this.passengers && !this.passiveEncounter) {
+      const player = this.player.getState();
+      const feet = {
+        ...player.position,
+        y: player.position.y - player.height / 2,
+      };
+      this.manager.forEach((e) => {
+        if (!e.definition.body || e.current.state === 'dead') {
+          this.passengers!.remove(e.id);
+          return;
+        }
+        if (e.perception && e.perception.state !== 'alerted' && !e.moveGoal)
+          return;
+        this.passengers!.update(
+          e.id,
+          e.current.position,
+          e.moveGoal ?? feet,
+          dt,
+        );
+      });
+    }
     const modeHasRoutes = this.conquest
       ? this.layout.arena?.exclusive || this.layout.arena?.spawnRing
       : this.assault
@@ -2125,11 +2209,31 @@ export class RoomScene implements Scene {
     this.executeTarget = this.execute.targetId();
   }
 
+  private focusElevator(pressed: boolean): void {
+    const { origin, dir } = this.aim();
+    let max = this.ctx.tuning.elevator.elevatorPanelReachM;
+    max = this.castWall(origin, dir, max) ?? max;
+    let selected: ElevatorCabin | undefined;
+    this.focusedButton = undefined;
+    for (const cabin of this.cabins.values()) {
+      const hit = cabin.hitButton(origin, dir, max);
+      if (hit) {
+        selected = cabin;
+        this.focusedButton = hit.button;
+        max = hit.distance;
+      }
+    }
+    if (pressed && this.focusedButton && selected)
+      selected.request(selected.buttonTarget(this.focusedButton)!);
+  }
+
   render(
     alpha: number,
     frameDt = 1 / 60,
     cameraOverride?: { position: Vector3; rotation: Euler },
   ): void {
+    for (const view of this.elevatorViews)
+      view.render(alpha, this.focusedButton);
     const executable = this.execute.readyIds();
     this.hud?.setCoolingHint(
       this.state === 'playing' &&
@@ -2143,6 +2247,7 @@ export class RoomScene implements Scene {
         this.heldItem.held === 'blade' &&
         this.blade.view().state !== 'throwing' &&
         this.executeTarget !== null,
+      this.state === 'playing' ? this.focusedButton?.action : undefined,
     );
     this.hazardView.advance(frameDt);
     this.hazardView.update(this.hazards.state(), alpha);
@@ -2808,6 +2913,19 @@ export class RoomScene implements Scene {
       register('puzzle status', puzzleText.debugStatus, () =>
         JSON.stringify(this.query('puzzle')),
       );
+    if (this.cabins.size)
+      register('elevator call', 'elevator call <id> <piętro od 0>', (args) => {
+        const cabin = this.cabins.get(args[0] ?? ''),
+          stop = Number(args[1]);
+        if (
+          args.length !== 2 ||
+          !Number.isInteger(stop) ||
+          !cabin?.def.stops[stop]
+        )
+          return 'Podaj id windy i indeks przystanku od 0.';
+        cabin.request(stop);
+        return `Wezwanie na piętro ${stop}.`;
+      });
     this.squad.registerCommands(register);
     register('heist grab', 'heist grab', (args) => {
       const ok = args.length === 0 && this.heist?.grab();
@@ -3131,6 +3249,11 @@ export class RoomScene implements Scene {
               ),
             }
           : null;
+      case 'elevators':
+        return [...this.cabins.values()].map((c) => ({
+          id: c.def.id,
+          ...structuredClone(c.state),
+        }));
       case 'hazards':
         return this.hazards.state();
       case 'props':
@@ -3272,6 +3395,7 @@ export class RoomScene implements Scene {
 
   /** Sprząta również zasoby utworzone przed przerwaniem asynchronicznego init(). */
   private disposeParts(): void {
+    for (const view of this.elevatorViews) view.dispose();
     this.navigation?.dispose();
     this.hazardView?.dispose();
     this.conquestView?.dispose();
