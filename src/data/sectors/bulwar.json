@@ -1,0 +1,161 @@
+{
+  "id": "bulwar",
+  "name": "Bulwar · Helixa Dynamics",
+  "layers": 8,
+  "nodesPerLayer": {
+    "min": 2,
+    "max": 4
+  },
+  "extraEdgeChance": 0.3,
+  "typeWeights": [
+    {
+      "fromLayer": 1,
+      "toLayer": 2,
+      "weights": {
+        "combat": 1
+      }
+    },
+    {
+      "fromLayer": 3,
+      "toLayer": 6,
+      "weights": {
+        "combat": 7,
+        "elite": 3,
+        "shop": 1,
+        "rest": 0,
+        "puzzle": 0.08
+      }
+    }
+  ],
+  "guarantees": [
+    {
+      "type": "shop",
+      "min": 1,
+      "fromLayer": 3,
+      "toLayer": 6
+    },
+    {
+      "type": "elite",
+      "min": 2,
+      "fromLayer": 3,
+      "toLayer": 6
+    }
+  ],
+  "limits": {
+    "maxPerLayer": {
+      "elite": 1,
+      "puzzle": 1
+    },
+    "maxElitesPerPath": 2
+  },
+  "eliteGuarantee": "helixGuard",
+  "expectedDurationS": {
+    "combat": 150,
+    "elite": 210,
+    "shop": 60,
+    "rest": 45,
+    "puzzle": 90,
+    "boss": 300
+  },
+  "threat": {
+    "base": {
+      "combat": 4.8,
+      "elite": 9.6
+    },
+    "perLayer": {
+      "combat": 1.8,
+      "elite": 2.4
+    },
+    "waveCount": {
+      "combat": {
+        "min": 2,
+        "max": 3
+      },
+      "elite": {
+        "min": 2,
+        "max": 3
+      }
+    },
+    "pools": {
+      "combat": {
+        "helixGuard": 8,
+        "helixMedic": 5,
+        "assaulter": 2,
+        "drone": 2,
+        "hacker": 1,
+        "rozstrojony": 2
+      },
+      "elite": {
+        "helixGuard": 10,
+        "helixMedic": 7,
+        "assaulter": 2,
+        "drone": 1,
+        "hacker": 1,
+        "rozstrojony": 2,
+        "shielder": 1
+      }
+    },
+    "unlockLayer": {},
+    "waveWeights": [1, 1.3, 1.6],
+    "pacing": {
+      "combat": {
+        "firstBreakS": 2,
+        "breakS": 4,
+        "spawnIntervalS": 0.8
+      },
+      "elite": {
+        "firstBreakS": 2,
+        "breakS": 4,
+        "spawnIntervalS": 0.8
+      }
+    }
+  },
+  "roomPools": {
+    "combat": ["bulwar1"],
+    "elite": ["bulwar1"],
+    "shop": ["noodleShop", "shopRoom"],
+    "rest": ["restRoom", "rooftopRest"],
+    "puzzle": ["puzzlePlate", "puzzleLaser"],
+    "boss": ["bossRoom"]
+  },
+  "rewardWeights": {
+    "combat": {
+      "common": 70,
+      "rare": 25,
+      "epic": 5,
+      "legendary": 0
+    },
+    "elite": {
+      "common": 20,
+      "rare": 50,
+      "epic": 25,
+      "legendary": 5
+    },
+    "puzzle": {
+      "common": 70,
+      "rare": 25,
+      "epic": 5,
+      "legendary": 0
+    },
+    "shop": {
+      "common": 45,
+      "rare": 35,
+      "epic": 15,
+      "legendary": 5
+    }
+  },
+  "economy": {
+    "creditsPerThreat": 6,
+    "eliteBonusCredits": 30,
+    "shopPrices": {
+      "common": 40,
+      "rare": 75,
+      "epic": 120,
+      "legendary": 180
+    },
+    "shopHealPrice": 35,
+    "shopHealFraction": 0.3,
+    "puzzleCredits": 60,
+    "restHealFraction": 0.4
+  }
+}

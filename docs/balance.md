@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-25. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-26. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -469,6 +469,17 @@ Nagrody za typowe zwycięstwo i śmierć w warstwie 5 na Poziomach zagrożenia 0
 | 1 | 1.15 | 379 | 130 | 6 | 161 | 55 | 1 |
 | 2 | 1.3 | 429 | 147 | 6 | 182 | 62 | 1 |
 | 3 | 1.45 | 479 | 164 | 6 | 203 | 70 | 1 |
+
+## Dzielnice runów (R5d)
+
+Typowa trasa ma osiem warstw. Czas to suma projektowych czasów pokoi. Presja to średnia suma kosztów wrogów z faktycznego planera fal dla 100 seedów r5d-0…99, na bazowym poziomie zagrożenia. Wspólny boss jest pominięty w presji.
+
+| Dzielnica | Czas modelowy (s) | Presja | Kredyty / zagrożenie |
+| --- | ---: | ---: | ---: |
+| Kurogane Arms | 1275 | 47.52 | 5 |
+| Bulwar · Helixa Dynamics | 1275 | 56.03 | 6 |
+
+Wzrost presji na Bulwarze wynosi 17.9%.
 
 ## Decyzje i strojenie
 

@@ -25,7 +25,7 @@ import {
   loadMetaManagerStrict,
   saveMetaManager,
 } from '../progression/metaSave';
-import { createIndexedDbSaveStore } from '../core/save';
+import { createIndexedDbSaveStore, loadSettings } from '../core/save';
 import type { RunEnded, SaveStore } from '../core/save';
 import { localChallengeDate } from '../core/challengeDate';
 import { dailyChallenge } from '../world/dailyChallenge';
@@ -49,7 +49,7 @@ import { achievementDefinitions } from '../progression/achievementsSchema';
 import { AchievementToast } from '../ui/achievementToast';
 import { AchievementTracker } from '../progression/achievementTracker';
 import type { SectorDefinition } from '../world/sectorSchema';
-import { kuroganeSector } from '../world/sectors';
+import { bulwarSector, bulwarUnlocked, kuroganeSector } from '../world/sectors';
 import { roomPlanner } from '../world/threat';
 import type { WavesDefinition } from '../world/waves';
 import type { Scene } from './index';
@@ -154,7 +154,7 @@ export class RunScene implements Scene {
   private metaStore: SaveStore | null = null;
   private readonly save: RunSavePort;
   private challengeDay: string | null = null;
-  private readonly sector: SectorDefinition;
+  private sector: SectorDefinition;
   private readonly rooms: ReadonlyMap<string, RoomDefinition>;
   private missionRadio?: MissionRadio;
   private inventory?: RunInventoryMenu;
@@ -196,6 +196,36 @@ export class RunScene implements Scene {
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
     this.three = three;
+    const params =
+      this.options.params ??
+      new URLSearchParams(
+        typeof location === 'undefined' ? '' : location.search,
+      );
+    this.meta = await loadMetaManager(this.getMetaStore(), ctx.bus);
+    const continuing =
+      !this.options.dailyChallenge && params.get('continue') === '1';
+    const checkpoint = continuing ? await this.save.loadRun() : null;
+    if (this.disposed) return;
+    if (!this.options.sector && !this.options.dailyChallenge) {
+      if (checkpoint) {
+        this.sector =
+          checkpoint.sectorId === 'bulwar' ? bulwarSector : kuroganeSector;
+      } else if (
+        !continuing &&
+        !params.has('mission') &&
+        !params.has('mode') &&
+        params.get('scene') === 'run'
+      ) {
+        const override = ctx.debug ? params.get('sector') : null;
+        const district =
+          override ?? params.get('district') ?? loadSettings().lastDistrict;
+        if (
+          district === 'bulwar' &&
+          (override || bulwarUnlocked(this.meta.state.campaign.completed))
+        )
+          this.sector = bulwarSector;
+      }
+    }
     this.screens = this.options.screens ?? new HtmlRunScreens();
     if (typeof document !== 'undefined')
       this.inventory = new RunInventoryMenu(ctx, () =>
@@ -205,12 +235,7 @@ export class RunScene implements Scene {
       generateMap: (seed) => {
         if (this.options.dailyChallenge)
           return generateSectorMap(this.sector, seed);
-        const id = (
-          this.options.params ??
-          new URLSearchParams(
-            typeof location === 'undefined' ? '' : location.search,
-          )
-        ).get('mission');
+        const id = params.get('mission');
         const mission = id ? missionDefinitions.get(id) : undefined;
         if (id && !mission) throw new Error(`Nieznana misja: ${id}`);
         return mission
@@ -309,13 +334,6 @@ export class RunScene implements Scene {
         );
       }),
     );
-    const params =
-      this.options.params ??
-      new URLSearchParams(
-        typeof location === 'undefined' ? '' : location.search,
-      );
-    this.meta = await loadMetaManager(this.getMetaStore(), ctx.bus);
-    if (this.disposed) return;
     if (this.options.dailyChallenge) {
       const day = localChallengeDate();
       const challenge = this.getMetaStore().challenge!;
@@ -347,8 +365,8 @@ export class RunScene implements Scene {
     });
     if (typeof document !== 'undefined')
       this.achievementToast = new AchievementToast(ctx.bus);
-    if (params.get('continue') === '1') {
-      const state = await this.save.loadRun();
+    if (continuing) {
+      const state = checkpoint;
       const ended = state ? ((await this.save.loadEnded?.()) ?? null) : null;
       if (this.disposed) return;
       if (!state) {

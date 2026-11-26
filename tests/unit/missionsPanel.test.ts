@@ -236,8 +236,8 @@ it('dispose usuwa panel z DOM', () => {
 it('odprawa misji ukrywa nagłówek Poziomu zagrożenia i listę, a Wstecz je przywraca', () => {
   Element.prototype.scrollIntoView = vi.fn();
   const { panel } = setup();
-  const heading = panel.root.querySelector<HTMLElement>(
-    '.missions-panel__heading',
+  const heading = [...panel.root.querySelectorAll('h3')].find(
+    (node) => node.textContent === text.missions.threat.heading,
   )!;
   const list = panel.root.querySelector<HTMLElement>(
     '.missions-panel__levels',

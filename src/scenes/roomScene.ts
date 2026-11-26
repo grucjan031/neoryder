@@ -459,6 +459,7 @@ export class RoomScene implements Scene {
       this.layout.arena?.water,
       weatherDefinitions.get(this.layout.weather ?? '')?.lighting
         ?.panoramaEnabled === false,
+      this.layout.panoramaDropM,
     );
     three.add(this.root);
     this.root.add(this.lights);
@@ -736,6 +737,7 @@ export class RoomScene implements Scene {
 
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
+        sectorId: 'sectorId' in this.run ? this.run.sectorId : undefined,
         playerId,
         threats: () => {
           const sources: Enemy[] = [];

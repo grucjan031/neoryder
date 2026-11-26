@@ -1,5 +1,13 @@
 {
   "missions": {
+    "district": {
+      "label": "Dzielnica",
+      "kurogane": "Kurogane",
+      "bulwar": "Bulwar",
+      "locked": "Ukończ misję Nocny dyżur",
+      "title": "Bulwar · Helixa Dynamics",
+      "description": "Na estakadach nad Niecką ochroniarze w sterylnych maskach patrolują nocne targi i bezpłatne przychodnie Helixy. Walki są tu trudniejsze, ale za zwycięstwo dostajesz więcej Kredytów."
+    },
     "firstClear": {
       "reward": "Nagroda za pierwsze ukończenie: +{data} Danych",
       "claimed": "Nagroda za pierwsze ukończenie odebrana",

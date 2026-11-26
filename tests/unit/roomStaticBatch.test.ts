@@ -170,9 +170,7 @@ it.each([
         'weather',
       ]) {
         const part = Reflect.get(dressing, source) as
-          | { root: Object3D }
-          | { root: Object3D }[]
-          | undefined;
+          { root: Object3D } | { root: Object3D }[] | undefined;
         const parts = Array.isArray(part) ? part : part ? [part] : [];
         const count = counts(parts.map((item) => item.root));
         rows.push({ source, before: count, after: count });

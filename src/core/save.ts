@@ -625,6 +625,7 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
 }
 
 export interface Settings {
+  lastDistrict?: 'kurogane' | 'bulwar';
   /** Brak w starym zapisie = normal. */
   difficulty?: DifficultyId;
   mouseSensitivity: number;
@@ -695,6 +696,7 @@ const gamepadSettingsSchema = z
   .catch(defaultGamepadSettings);
 
 const settingsSchema = z.object({
+  lastDistrict: z.enum(['kurogane', 'bulwar']).optional().catch(undefined),
   difficulty: difficultyIdSchema.optional().catch(undefined),
   mouseSensitivity: clampedSetting(SETTINGS_RANGES.mouseSensitivity, 1),
   fov: clampedSetting(SETTINGS_RANGES.fov, 90),

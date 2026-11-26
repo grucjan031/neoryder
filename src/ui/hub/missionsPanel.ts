@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { loadSettings, saveSettings } from '../../core/save';
+import { bulwarUnlocked } from '../../world/sectors';
 import type { ModeId } from '../../world/modeSchema';
 import modeText from '../../data/ui/modes.pl.json';
 import { missionDefinitions } from '../../world/missions';
@@ -134,11 +136,43 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     text.sector.description,
   );
   sector.append(sectorName, sectorDescription, firstClear);
+  const districtText = textData.missions.district;
+  const districtLabel = el('section', 'missions-panel__seed');
+  const districtGrid = el('div', 'missions-panel__districts');
+  districtGrid.setAttribute('role', 'group');
+  districtGrid.setAttribute('aria-label', districtText.label);
+  districtLabel.append(
+    el('h3', 'missions-panel__heading ui-heading', districtText.label),
+    districtGrid,
+  );
+  let selectedDistrict: 'kurogane' | 'bulwar' = 'kurogane';
+  const lock = el('small', 'missions-panel__lock-note', districtText.locked);
+  const districtButtons = (['kurogane', 'bulwar'] as const).map((id) => {
+    const button = el(
+      'button',
+      'missions-panel__level ui-interactive',
+      districtText[id],
+    );
+    button.type = 'button';
+    if (id === 'bulwar') button.append(lock);
+    button.addEventListener('click', () => {
+      saveSettings({ ...loadSettings(), lastDistrict: id });
+      refresh();
+    });
+    bindUiFeedback(button, false);
+    districtGrid.append(button);
+    return { id, button };
+  });
   const describe = (mission?: MissionDefinition) => {
     // Misje liniowe mają własnych towarzyszy z danych poziomu.
     squadPicker.root.hidden = !!mission?.level;
-    sectorName.textContent = mission?.title ?? text.sector.name;
-    sectorDescription.textContent = mission?.summary ?? text.sector.description;
+    districtLabel.hidden = !!mission;
+    const onBulwar = selectedDistrict === 'bulwar';
+    sectorName.textContent =
+      mission?.title ?? (onBulwar ? districtText.title : text.sector.name);
+    sectorDescription.textContent =
+      mission?.summary ??
+      (onBulwar ? districtText.description : text.sector.description);
     firstClear.hidden = !mission?.level;
     firstClear.textContent = !mission?.level
       ? ''
@@ -152,7 +186,11 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
             : '');
   };
 
-  const heading = el('h3', 'missions-panel__heading ui-heading', text.threat.heading);
+  const heading = el(
+    'h3',
+    'missions-panel__heading ui-heading',
+    text.threat.heading,
+  );
   const list = el('div', 'missions-panel__levels');
   list.setAttribute('role', 'group');
   list.setAttribute('aria-label', text.threat.heading);
@@ -370,6 +408,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       disposeDialogue();
       briefing.hidden = true;
       selectedMode = mode.id;
+      districtLabel.hidden = true;
       selectedMission = undefined;
       sectorName.textContent = mode.title;
       sectorDescription.textContent = mode.description;
@@ -382,7 +421,13 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     modeGrid.append(parts.button);
   }
   for (const title of modeText.soon) {
-    const parts = card(`soon:${title}`, title, 'assault', text.types.mode, () => {});
+    const parts = card(
+      `soon:${title}`,
+      title,
+      'assault',
+      text.types.mode,
+      () => {},
+    );
     parts.button.setAttribute('aria-disabled', 'true');
     parts.state.textContent = missionText.soon;
     modeGrid.append(parts.button);
@@ -453,6 +498,8 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       params.set('seed', seed || defaultRunSeed());
       if (selectedMission) params.set('mission', selectedMission.id);
       if (selectedMode) params.set('mode', selectedMode);
+      if (!selectedMission && !selectedMode && selectedDistrict === 'bulwar')
+        params.set('district', 'bulwar');
       const squad = squadPicker.selected();
       if (!selectedMission?.level && squad.length > 0)
         params.set('squad', squadParam(squad));
@@ -469,6 +516,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
 
   side.append(
     sector,
+    districtLabel,
     heading,
     list,
     caption,
@@ -481,7 +529,22 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   root.append(mainCol, side);
 
   function refresh(): void {
-    if (selectedMission) describe(selectedMission);
+    const unlocked = bulwarUnlocked(manager.state.campaign.completed);
+    selectedDistrict = unlocked
+      ? (loadSettings().lastDistrict ?? 'kurogane')
+      : 'kurogane';
+    lock.hidden = unlocked;
+    for (const { id, button } of districtButtons) {
+      button.disabled = id === 'bulwar' && !unlocked;
+      const selected = id === selectedDistrict;
+      button.setAttribute('aria-pressed', String(selected));
+      button.dataset.state = button.disabled
+        ? 'locked'
+        : selected
+          ? 'selected'
+          : 'available';
+    }
+    if (!selectedMode) describe(selectedMission);
     squadPicker.refresh();
     const completed = manager.state.campaign.completed;
     const { max, selected } = manager.state.threat;
@@ -527,7 +590,8 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
         : level.level === max && max > 0
           ? text.threat.recommended
           : '';
-      if (note.textContent) button.title = `${level.name} · ${note.textContent}`;
+      if (note.textContent)
+        button.title = `${level.name} · ${note.textContent}`;
       else button.title = level.name;
     }
     const current = threatLevels[selected];

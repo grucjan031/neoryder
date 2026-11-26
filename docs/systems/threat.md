@@ -15,7 +15,7 @@ Kolejność losowań z `fork('room:<nodeId>')` (zmiana kolejności zmienia wynik
    (próg = `next() × suma wag affordable`; wagi sumowane w kolejności wpisów puli w JSON,
    wybierany pierwszy wpis, przy którym suma przekroczy próg, domyślnie ostatni).
    Wybrani wrogowie trafiają do `Map` grupy w kolejności pierwszego wystąpienia (gwarantowany
-   Egzekutor jest pierwszy w ostatniej fali), a liczba w grupie rośnie przy kolejnych trafieniach.
+   wróg jest pierwszy w ostatniej fali), a liczba w grupie rośnie przy kolejnych trafieniach.
    Sama funkcja nie ma innych losowań (kolejność i punkty spawnu losuje później `WaveDirector`, patrz niżej).
 
 ## Budżet i losowanie
@@ -34,16 +34,17 @@ Liczba fal jest losowana z przedziału `waveCount[type]`. Dodatnie, niemalejące
 z [1, 1.3, 1.6] otrzymujemy [1, 1.6]), następnie dzielone przez sumę.
 Dla jednej fali cały budżet trafia do niej. Przydział fali `i` (poza ostatnią) to
 `min(pozostały budżet, reszta z poprzedniej fali + (budżet do podziału × waga[i] / suma wag))`,
-gdzie budżet do podziału to budżet minus koszt gwarantowanego Egzekutora. Niewydana reszta
+gdzie budżet do podziału w elicie to budżet minus koszt gwarantowanego wroga. Niewydana reszta
 przechodzi do następnej fali; ostatnia otrzymuje cały pozostały budżet. Wrogowie są
 losowani proporcjonalnie do wag puli, wyłącznie spośród odblokowanych
 i mieszczących się w bieżącym przydziale. Wynik grupuje identyczne id.
 
-Każda elita rezerwuje dokładnie jednego gwarantowanego Egzekutora w ostatniej
-fali, niezależnie od unlockLayer i obecności w puli. Koszt jest odejmowany
-przed podziałem budżetu. Po odblokowaniu losowanie może dodać kolejnych
-Egzekutorów z puli. Jeśli budżet jest mniejszy niż koszt gwarancji, plan
-zawiera wyłącznie tego jednego Egzekutora; to jedyny wyjątek od sufitu budżetu.
+W ostatniej fali elity planer rezerwuje jednego wroga wskazanego przez opcjonalne
+pole sektora `eliteGuarantee` (domyślnie `executor`). Ładowanie sektora odrzuca
+nieznane ID. Gwarancja działa niezależnie od `unlockLayer` i obecności w puli.
+Planer odejmuje `threatCost` tej jednostki przed podziałem budżetu. Losowanie
+może dodać kolejne jednostki tego typu, jeśli są odblokowane w puli.
+Jeśli budżet jest mniejszy niż koszt gwarancji, plan zawiera tylko gwarantowaną jednostkę.
 
 Puste fale są usuwane: `wavesSchema` wymaga niepustych grup, a pustej fali
 `WaveDirector` nie mógłby zakończyć przez zabójstwo. Liczba wynikowych fal może

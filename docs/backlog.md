@@ -80,6 +80,8 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 ## Audio, UI i dostępność
 
+- Odsłuch wnętrz (bryły odsłuchu, wyciszenie ulicy w klinice bulwar1) — P1, projekt [`docs/maps/bulwar1.md` §2](maps/bulwar1.md#2-fundamenty-właściwe-dla-bulwaru).
+
 | Pomysł                                                        | Dlaczego odłożone                            |
 | ------------------------------------------------------------- | -------------------------------------------- |
 | Muzyka reaktywna | F7 — **zaimplementowane, czeka na playtest (PR #34, `src/audio/musicDirector.ts`)** |
@@ -127,3 +129,4 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | Mapy misji i aren za duże na liczbę wrogów: wskaźnik położenia ostatnich wrogów (znacznik / kierunek na HUD) i audyt wszystkich map (które się nadają, które poprawić) | Bierze Gracjan |
 | Drzewko wyboru ścieżki w runie: punkty (węzły) za małe, trudno trafić i odczytać | Interfejs: uzgodnić z Gracjanem (audyt UI) |
 | Skok przy obiektach blokuje gracza „od góry” (dziwne zatrzymanie, jakby uderzenie w sufit) | Fizyka ruchu, sprawdzić z Gracjanem (jego obszar) |
+| Boss Helixy dla Bulwaru (R7) | Obecnego bossa określa pokój, a jego przywołania określają fazy bossa. |

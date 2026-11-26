@@ -176,6 +176,14 @@
     "subject": "Fictional corporation logo: geometric angular emblem beside exact text KUROGANE ARMS. Royal blue and warm white luminous lines. No other text."
   },
   {
+    "id": "holo_helixa",
+    "category": "holo",
+    "width": 1024,
+    "height": 512,
+    "description": "Podwójna spirala w okręgu i znak HELIXA DYNAMICS",
+    "subject": "Double helix inside a circle beside HELIXA DYNAMICS, warm white and green on keyed black."
+  },
+  {
     "id": "holo_noodles",
     "category": "holo",
     "width": 1024,

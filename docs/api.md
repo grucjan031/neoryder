@@ -1210,6 +1210,9 @@ oraz `roomPlanner: RoomPlanner`. Planer przyjmuje główny RNG runu i sam tworzy
 `fork('room:<nodeId>')`. Obsługuje combat/elite; błędna konfiguracja powoduje błąd.
 Sekcja threat dodaje opcjonalne `waveWeights` (domyślnie [1, 1.3, 1.6]) oraz
 `pacing[type]` (domyślnie firstBreakS=2, breakS=4, spawnIntervalS=0.8).
+Opcjonalne pole sektora `eliteGuarantee` wskazuje ID wroga gwarantowanego w ostatniej
+fali węzła `elite` (domyślnie `executor`). Ładowanie sektora odrzuca nieznane ID.
+Planer odejmuje `threatCost` tej jednostki przed podziałem budżetu na fale.
 Szczegóły: `docs/systems/threat.md`.
 
 ### Boss (F3-16) — `src/enemies/boss.ts`
@@ -1411,6 +1414,7 @@ export function loadSector(data: unknown): SectorDefinition;
 // typeWeights (przedziały warstw { fromLayer, toLayer, weights }), guarantees ({ type, min, fromLayer, toLayer }[]),
 // limits ({ maxPerLayer, maxElitesPerPath }), expectedDurationS (Record<NodeType, number>).
 // Opcjonalne sekcje: threat, rewardWeights, economy, roomPools.
+// eliteGuarantee?: string — ID wroga rezerwowanego w ostatniej fali elity (domyślnie executor).
 
 // src/world/roomSchema.ts
 export const roomSchema: z.ZodType<RoomDefinition>;

@@ -174,6 +174,35 @@ describe('budżet zagrożenia', () => {
     expect(wavesSchema.safeParse(plan).success).toBe(true);
   });
 
+  it('rezerwuje koszt ochroniarza Helixy i umieszcza go w ostatniej fali', () => {
+    const custom = loadSector({
+      ...sectorRaw,
+      eliteGuarantee: 'helixGuard',
+      threat: {
+        ...sectorRaw.threat,
+        base: { elite: 7.5 },
+        pools: { elite: { assaulter: 1 } },
+        waveCount: { elite: { min: 2, max: 2 } },
+        waveWeights: [1, 1],
+      },
+    });
+    const plan = planWaves(room, custom, node('elite'), new Rng('bulwar'));
+    expect(plan.waves.map((wave) => wave.groups)).toEqual([
+      [{ enemy: 'assaulter', count: 3 }],
+      [
+        { enemy: 'helixGuard', count: 1 },
+        { enemy: 'assaulter', count: 3 },
+      ],
+    ]);
+    expect(total(plan)).toBe(7.5);
+  });
+
+  it('odrzuca nieznane ID gwarantowanej elity przy ładowaniu sektora', () => {
+    expect(() =>
+      loadSector({ ...sectorRaw, eliteGuarantee: 'brakWroga' }),
+    ).toThrow(/brakWroga/);
+  });
+
   it('używa parametrów pokoju, pacing i rosnących wag fal', () => {
     const custom = loadSector({
       ...sectorRaw,

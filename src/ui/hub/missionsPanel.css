@@ -148,6 +148,30 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: var(--sp-1);
 }
+.missions-panel__districts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-1);
+}
+.missions-panel__districts button {
+  text-transform: uppercase;
+  padding: var(--sp-1);
+}
+.missions-panel__lock-note {
+  font: 500 var(--fs-12) / 1.25 var(--font-display);
+  text-transform: none;
+}
+.missions-panel__lock-note::before {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.25em;
+  vertical-align: -0.1em;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3' y='7' width='10' height='8' rx='1'/%3E%3Cpath d='M5 7V5a3 3 0 0 1 6 0v2' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
 .missions-panel__level {
   display: grid;
   place-items: center;
@@ -161,6 +185,15 @@
 .missions-panel__level[data-state='selected'] {
   border-color: var(--c-accent);
   background: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+.missions-panel__level.ui-interactive[data-state='selected']:is(
+    :hover,
+    :focus-visible,
+    :focus-within
+  ) {
+  border-color: var(--c-accent-strong);
+  background: var(--c-accent-strong);
   color: var(--c-accent-ink);
 }
 .missions-panel__level[data-state='locked'] {

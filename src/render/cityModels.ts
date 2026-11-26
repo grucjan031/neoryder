@@ -15,6 +15,7 @@ export const CITY_MODEL_PREFIXES = [
   'roof_',
   'dock_',
   'wh_',
+  'bw_',
   'mall_',
   'lab_',
 ] as const;

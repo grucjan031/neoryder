@@ -220,6 +220,16 @@
     "bytes": 32680
   },
   {
+    "id": "holo_helixa",
+    "category": "holo",
+    "path": "holo/holo_helixa.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#fffffd",
+    "description": "Podwójna spirala w okręgu i znak HELIXA DYNAMICS",
+    "bytes": 18494
+  },
+  {
     "id": "holo_noodles",
     "category": "holo",
     "path": "holo/holo_noodles.webp",

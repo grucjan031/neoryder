@@ -38,7 +38,8 @@ function hasMeasuredFit(model: string | undefined): model is string {
     !!model &&
     (STRETCH.has(model) ||
       model.startsWith('city_') ||
-      model.startsWith('mall_'))
+      model.startsWith('mall_') ||
+      model.startsWith('bw_'))
   );
 }
 

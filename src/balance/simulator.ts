@@ -24,8 +24,56 @@ import { Boss } from '../enemies/boss';
 import { enemySchema } from '../enemies/enemySchema';
 import type { BossPattern, EnemyDefinition } from '../enemies/enemySchema';
 import { loadoutDefinitions } from '../progression/loadout';
+import { planWaves } from '../world/threat';
+import { roomDefinitions } from '../world/rooms';
+import type { SectorDefinition } from '../world/sectorSchema';
+import type { NodeType } from '../core/runTypes';
 
 export const MAX_TIME_S = 120;
+
+/** Koszt rzeczywiście zaplanowanych wrogów na zadanej trasie, bez przywołań bossa. */
+export function simulateSectorPath(
+  sector: SectorDefinition,
+  path: readonly NodeType[],
+  seed: string,
+  threatLevel = 0,
+) {
+  const rng = new Rng(seed);
+  let pressure = 0;
+  let kills = 0;
+  let elapsedS = 0;
+  for (const [index, type] of path.entries()) {
+    elapsedS += sector.expectedDurationS[type]!;
+    if (type !== 'combat' && type !== 'elite') continue;
+    const node = {
+      type,
+      layer: index + 1,
+      index: 0,
+      id: `L${index + 1}N1`,
+      next: [],
+    };
+    const id = rng
+      .fork(`room-layout:${node.id}`)
+      .pick([...sector.roomPools![type]!].sort());
+    const plan = planWaves(
+      roomDefinitions.get(id)!,
+      sector,
+      node,
+      rng,
+      threatLevel,
+    );
+    for (const wave of plan.waves) {
+      for (const group of wave.groups) {
+        kills += group.count;
+        const cost = enemyDefinitions.get(group.enemy)?.threatCost;
+        if (cost === undefined)
+          throw new Error(`Brak kosztu zagrożenia: ${group.enemy}`);
+        pressure += cost * group.count;
+      }
+    }
+  }
+  return { elapsedS, pressure, kills };
+}
 /** Miara bramki: czas zabicia tylu wrogów danego typu po kolei. */
 export const PACK_SIZE = 5;
 // Te same bazy co Arena.playerStats; bez implantów i synergii.

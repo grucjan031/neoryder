@@ -8,6 +8,7 @@ import {
   type ThreatTelegraph,
 } from './threatIndicator';
 import text from '../data/ui/hud.pl.json';
+import { districtName } from './districtName';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import type { CoolingPhase } from '../combat/weapons/weapon';
@@ -19,6 +20,7 @@ import { synergyDefinitions } from '../progression/synergies';
 type HudLoadout = Pick<Loadout, 'weapons' | 'powers'>;
 
 interface HudOptions {
+  sectorId?: string;
   threats?: () => readonly ThreatSource[];
   threatOrigin?: () => Vec3;
   deathScreen?: boolean;
@@ -384,7 +386,14 @@ export class Hud {
     this.wave.setAttribute('role', 'status');
     this.wave.hidden = true;
     this.wave.append(
-      element('span', 'hud__micro', text.microWave),
+      element(
+        'span',
+        'hud__micro',
+        text.microWave.replace(
+          '{sector}',
+          districtName(opts.sectorId).toUpperCase(),
+        ),
+      ),
       this.waveLabel,
       this.waveLeft,
     );
