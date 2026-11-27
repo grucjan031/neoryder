@@ -13,8 +13,9 @@ burzy. Nie ma zdarzeń rozgrywki, sił fizycznych ani wpływu pogody na AI lub o
 | smog        | Bez opadu, miękkie billboardy pyłu           | 0,65 m/s         | Gęsta mgła do wysokości 9 m         |
 | drizzleWind | Krótkie, cienkie smugi mżawki                | 10 m/s + porywy  | Umiarkowana mgła i mokrość          |
 | clearNight  | Bez opadu i pyłu                             | 0,5 m/s          | Lekka mgiełka i mokre plamy         |
-| snow        | Wolne, niebieskawobiałe płatki, gęstość 0,38 | 1,1 m/s + porywy | Chłodna mgła 24–170 m, matowy śnieg |
-| ashfall     | Szare i ciepłoszare płatki, gęstość 0,28     | 1,6 m/s + porywy | Ciepła mgła 24–145 m, sucho         |
+| snow                | Wolne, niebieskawobiałe płatki, gęstość 0,38          | 1,1 m/s + porywy  | Chłodna mgła 24–170 m, matowy śnieg         |
+| ashfall             | Szare i ciepłoszare płatki, gęstość 0,28              | 1,6 m/s + porywy  | Ciepła mgła 24–145 m, sucho                 |
+| kuroganeOfficeTower | Deszcz za szybą (gęstość 0,42; wnętrze w `rainShelters`) | 0,85 m/s + porywy | Zerowa mgła we wnętrzu, połysk 0,65, panorama |
 
 Przypisanie do aren (pole `weather` w `src/data/rooms/*.json`): `arenaContainerPort`
 = storm, `arenaFloodedDocks` = rain, `arenaOverpass` = smog, `arenaRooftops` =
@@ -36,7 +37,8 @@ dla profili bez opadu i dla płatków są wymagane przez schemat, ale nieużywan
 | drizzleWind | drizzle, 0,4, 8, `#8294b0`, 0,19                 | 0,014 / 0,009          | (−0,6; 0,8), 10, 0,7, 4                                      |
 | clearNight  | none, 0, 18, `#8294b0`, 0,26                     | 0,025 / 0,013          | (1; 0), 0,5, 0, 8                                            |
 | snow        | snow, 0,38, 1,2, `#c8d3eb`, 0,55                 | (nieużywane)           | (1; 0,4), 1,1, 0,3, 9                                        |
-| ashfall     | ash, 0,28, 0,55, `#a29e94`, 0,42                 | (nieużywane)           | (1; 0,4), 1,6, 0,3, 9                                        |
+| ashfall             | ash, 0,28, 0,55, `#a29e94`, 0,42                 | (nieużywane)           | (1; 0,4), 1,6, 0,3, 9                                        |
+| kuroganeOfficeTower | rain, 0,42, 18, `#889bb8`, 0,28                  | 0,025 / 0,013          | (1; −0,35), 0,85, 0,25, 7                                    |
 
 | Profil      | Mgła: kolor, `density`, `heightM`, `strength`, `nearM`, `farM` | Nawierzchnia: `gloss`, `reflections`, `puddles`    |
 | ----------- | -------------------------------------------------------------- | -------------------------------------------------- |
@@ -46,7 +48,8 @@ dla profili bez opadu i dla płatków są wymagane przez schemat, ale nieużywan
 | drizzleWind | `#2b1f3d`, 0,035, 3, 0,6, 15, 130                              | 0,5, 0,65, 0,65                                    |
 | clearNight  | `#2b1f3d`, 0,005, 2, 0,25, 45, 200                             | 0,05, 0,25, 0,25                                   |
 | snow        | `#303d59`, 0,014, 12, 0,65, 24, 170                            | 0, 0, 0; `snowCoverage` 0,6, `snowColor` `#9aa6bf` |
-| ashfall     | `#504535`, 0,022, 12, 0,65, 24, 145                            | 0, 0, 0 (`snowCoverage` 0)                         |
+| ashfall             | `#504535`, 0,022, 12, 0,65, 24, 145                            | 0, 0, 0 (`snowCoverage` 0)                         |
+| kuroganeOfficeTower | `#0b101d`, 0, 20, 0, 90, 240                                   | 0,65, 0,82, 0,15 (`lighting`: hemi 4,4, key 1,55, panorama) |
 
 | Profil      | Wyładowania: włączone, odstęp min–max s, jasność, zanik s | Pył: gęstość, rozmiar m, życie s | `sky.horizonColor` | Audio (`kind` gain)      |
 | ----------- | --------------------------------------------------------- | -------------------------------- | ------------------ | ------------------------ |
@@ -56,7 +59,8 @@ dla profili bez opadu i dla płatków są wymagane przez schemat, ale nieużywan
 | drizzleWind | nie                                                       | 0                                | —                  | rain 0,2; wind 0,7       |
 | clearNight  | nie                                                       | 0                                | —                  | wind 0,08                |
 | snow        | nie (45–90, 0,15)                                         | 0                                | `#344363`          | wind 0,12                |
-| ashfall     | nie (45–90, 0,15)                                         | 0                                | `#715632`          | wind 0,09; generator 0,3 |
+| ashfall             | nie (45–90, 0,15)                                         | 0                                | `#715632`          | wind 0,09; generator 0,3 |
+| kuroganeOfficeTower | nie (25–55, 0,18, jasność 0)                              | 0                                | `#2b1f3d`          | generator 0,08; wind 0,1 |
 
 Zakresy schematu: gęstość, alfa, `gloss`, `reflections`, `puddles`, `strength` mgły,
 `gustStrength` i `gain` to 0..1; prędkość, `exposureS`, `widthM`, `heightM`, okresy
@@ -296,3 +300,6 @@ Testy: `arenaWeather.test.ts` (schemat, profile, seed wyładowań, przywracanie
 stanu), istniejące `cityFx`/`rainShelters` (regresja starego deszczu).
 `tests/e2e/arenaWeather.spec.ts` sprawdza start portu i przełączanie siedmiu profili
 bez błędów konsoli. GLSL, wygląd i odsłuch wymagają oceny w przeglądarce.
+Dla profilu `kuroganeOfficeTower` z wysokim `panoramaDropM` (180 m) otwórz
+`?scene=horizonTest&profile=kuroganeOfficeTower&debug=1` (przycisk profilu dostępny
+także w pasku `?scene=weatherTest&debug=1` i `?scene=horizonTest&debug=1`).

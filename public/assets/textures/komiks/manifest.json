@@ -230,6 +230,36 @@
     "bytes": 52718
   },
   {
+    "id": "komiks_off_carpet_tile",
+    "category": "surfaces",
+    "path": "surfaces/komiks_off_carpet_tile.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#888888",
+    "description": "Komiksowa wykładzina z kreskowanym splotem włókien.",
+    "bytes": 326014
+  },
+  {
+    "id": "komiks_off_polished_granite",
+    "category": "surfaces",
+    "path": "surfaces/komiks_off_polished_granite.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#1c1c1c",
+    "description": "Komiksowy granit o tuszowych żyłkach i stalowych szwach między płytami.",
+    "bytes": 219246
+  },
+  {
+    "id": "komiks_off_wood_slat_wall",
+    "category": "surfaces",
+    "path": "surfaces/komiks_off_wood_slat_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#585858",
+    "description": "Komiksowe lamele orzechowe na filcu z kreskowanymi słojami.",
+    "bytes": 160988
+  },
+  {
     "id": "komiks_med_resin_floor",
     "category": "surfaces",
     "path": "surfaces/komiks_med_resin_floor.webp",

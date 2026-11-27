@@ -1,4 +1,9 @@
 import {
+  platformSkinM,
+  supportingPlatform,
+  type MovingPlatform,
+} from '../physics/platformMotion';
+import {
   Capsule,
   ColliderDesc,
   QueryFilterFlags,
@@ -75,6 +80,7 @@ export class PlayerController {
       mouseSensitivity: 1,
     },
     statBases: Partial<Record<StatId, number>> = {},
+    private readonly platformFloors?: readonly MovingPlatform[],
   ) {
     const t = ctx.tuning.player;
     this.stats = new Stats({
@@ -244,18 +250,28 @@ export class PlayerController {
     if (s.grounded && s.velocity.y <= 0)
       this.controller.enableSnapToGround(t.snapToGroundDistance);
     else this.controller.disableSnapToGround();
+    const platform = supportingPlatform(
+      this.platformFloors,
+      s.position,
+      s.height,
+      t.controllerOffset,
+      s.velocity.y,
+    );
+    if (platform) this.controller.disableSnapToGround();
     this.controller.computeColliderMovement(
       this.collider,
       {
         x: s.velocity.x * dt,
-        y:
-          (s.grounded
-            ? Math.min(s.velocity.y, -t.groundStickSpeed)
-            : s.velocity.y) * dt,
+        y: platform
+          ? 0
+          : (s.grounded
+              ? Math.min(s.velocity.y, -t.groundStickSpeed)
+              : s.velocity.y) * dt,
         z: s.velocity.z * dt,
       },
       QueryFilterFlags.EXCLUDE_SENSORS,
       this.groups,
+      platform ? (c) => c.handle !== platform.floorHandle : undefined,
     );
     const movement = this.controller.computedMovement();
     this.resolveContacts(dt, movement);
@@ -275,7 +291,10 @@ export class PlayerController {
     const position = this.body.translation();
     s.position = {
       x: position.x + movement.x,
-      y: position.y + movement.y,
+      y:
+        (platform
+          ? platform.state.y + s.height / 2 + t.controllerOffset + platformSkinM
+          : position.y) + movement.y,
       z: position.z + movement.z,
     };
     if (this.dashEnded) {
@@ -285,7 +304,8 @@ export class PlayerController {
       s.velocity.z = s.dashDir.z * exit;
       this.dashEnded = false;
     }
-    s.grounded = s.velocity.y <= 0 && this.controller.computedGrounded();
+    s.grounded =
+      s.velocity.y <= 0 && (!!platform || this.controller.computedGrounded());
     if (s.grounded) {
       s.velocity.y = 0;
       s.coyoteMs = t.coyoteTimeMs;

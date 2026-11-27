@@ -1,3 +1,8 @@
+import {
+  elevatorSchema,
+  validateElevators,
+  type ElevatorDefinition,
+} from './elevatorSchema';
 import { z } from 'zod';
 import { length, scale, sub } from '../core/math';
 import { tuning } from '../core/tuning';
@@ -199,6 +204,7 @@ export const roomSchema = z
     panoramaDropM: nonnegative.optional(),
     arena: arenaSchema.optional(),
     blocks: z.array(roomBlockSchema),
+    elevators: z.array(elevatorSchema).optional(),
     spawnPoints: z.array(roomSpawnPointSchema),
     doors: z.array(roomDoorSchema),
     director: directorConfigSchema.optional(),
@@ -431,9 +437,12 @@ export function validateLayout(
     blocks: z.infer<typeof roomBlockSchema>[];
     spawnPoints: z.infer<typeof roomSpawnPointSchema>[];
     hazards?: Hazard[];
+    elevators?: ElevatorDefinition[];
   },
   ctx: z.RefinementCtx,
 ): void {
+  if (room.elevators?.length)
+    validateElevators(room.elevators, room.blocks, ctx);
   const groundY = room.playerSpawn.y;
   const floors = room.blocks
     .filter(

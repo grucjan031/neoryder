@@ -1,5 +1,44 @@
 {
   "sounds": {
+    "elevatorBell": {
+      "volume": 0.38,
+      "pitch": [1, 1],
+      "variants": [
+        [
+          { "wave": "sine", "freq": 740, "durationS": 0.52, "gain": 0.5 },
+          {
+            "wave": "sine",
+            "freq": 988,
+            "delayS": 0.12,
+            "durationS": 0.58,
+            "gain": 0.35
+          }
+        ]
+      ]
+    },
+    "elevatorMotor": {
+      "volume": 0.24,
+      "pitch": [1, 1],
+      "variants": [
+        [
+          {
+            "wave": "noise",
+            "durationS": 2,
+            "attackS": 0.26,
+            "gain": 0.38,
+            "filter": { "type": "lowpass", "freq": 280 }
+          },
+          {
+            "wave": "sine",
+            "freq": 52,
+            "freqEnd": 72,
+            "durationS": 1.8,
+            "attackS": 0.25,
+            "gain": 0.3
+          }
+        ]
+      ]
+    },
     "bagHit": {
       "variants": [
         [
@@ -947,6 +986,8 @@
     }
   },
   "rules": [
+    { "event": "elevatorArrived", "sound": "elevatorBell" },
+    { "event": "elevatorDeparted", "sound": "elevatorMotor" },
     {
       "event": "enemy_telegraph",
       "when": {

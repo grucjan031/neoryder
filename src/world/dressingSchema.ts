@@ -103,6 +103,9 @@ export const BLOCK_MATERIALS = [
   'mall_stone_floor',
   'mall_terrazzo_inlay',
   'mall_acoustic_ceiling',
+  'off_carpet_tile',
+  'off_polished_granite',
+  'off_wood_slat_wall',
 ] as const;
 export const blockMaterialSchema = z.enum(BLOCK_MATERIALS);
 export type BlockMaterial = z.infer<typeof blockMaterialSchema>;

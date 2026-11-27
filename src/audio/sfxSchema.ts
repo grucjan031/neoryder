@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 /** Zdarzenia, które moduł audio umie obsłużyć (podzbiór GameEvents). */
 export const SFX_EVENTS = [
+  'elevatorArrived',
+  'elevatorDeparted',
   'hub_prop_used',
   'hub_fauna_sound',
   'execute_performed',

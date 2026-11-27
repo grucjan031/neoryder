@@ -188,6 +188,46 @@ const layerDepthShader = /* glsl */ `
   }
 `;
 
+/**
+ * Poprawka na płaszczyznę: o ile względnie zmienia się głębia (z_s / z_c - 1) w innym piksełu, jeśli
+ * obie próbki leżą na płaszczyźnie o normalnej `n` (przestrzeń widoku) przechodzącej przez piksel
+ * środkowy. Promień widoku r = (u, v, -1), z = d / (n · r). Bez tego posadzka widziana pod bardzo
+ * małym kątem (oko tuż nad jej poziomem) ma duży względny skok głębi między pikselami i cały pas
+ * przy horyzoncie dostaje kontur. Zwraca 0, gdy płaszczyzny nie da się przewidzieć.
+ */
+export function planeDepthDelta(
+  normal: readonly [number, number, number],
+  rayCenter: readonly [number, number, number],
+  raySample: readonly [number, number, number],
+  limit: number,
+): number {
+  const center =
+    normal[0] * rayCenter[0] +
+    normal[1] * rayCenter[1] +
+    normal[2] * rayCenter[2];
+  const sample =
+    normal[0] * raySample[0] +
+    normal[1] * raySample[1] +
+    normal[2] * raySample[2];
+  if (center * sample <= 1e-8) return 0;
+  return Math.min(Math.max(center / sample - 1, -limit), limit);
+}
+
+const planeShader = /* glsl */ `
+  uniform mat4 inverseProjection;
+  uniform float planeDeltaLimit;
+  vec3 viewRayAt(vec2 uv) {
+    return vec3((uv * 2.0 - 1.0) * vec2(inverseProjection[0][0], inverseProjection[1][1]), -1.0);
+  }
+  // Lustro planeDepthDelta (TS, testy).
+  float planeDepthDelta(vec3 n, vec3 rayCenter, vec2 uv) {
+    float center = dot(n, rayCenter);
+    float sampleCos = dot(n, viewRayAt(uv));
+    if (center * sampleCos <= 1e-8) return 0.0;
+    return clamp(center / sampleCos - 1.0, -planeDeltaLimit, planeDeltaLimit);
+  }
+`;
+
 const fragmentShader = /* glsl */ `
   #include <packing>
   ${inkShader}
@@ -206,7 +246,6 @@ const fragmentShader = /* glsl */ `
   uniform vec3 outlineColor;
   uniform sampler2D bloomMap;
   uniform float bloomStrength;
-  uniform mat4 inverseProjection;
   uniform mat3 cameraRotation;
   uniform float fogStrength;
   uniform float skyFlash;
@@ -244,6 +283,7 @@ const fragmentShader = /* glsl */ `
   vec3 normalAt(vec2 uv) {
     return texture2D(normalMap, uv).xyz * 2.0 - 1.0;
   }
+  ${planeShader}
 
   // Głębia źródła maski, nie tła, ogranicza grubość dylatacji dalekiej sylwetki.
   vec2 inkSample(vec2 uv, float distancePx) {
@@ -276,6 +316,11 @@ const fragmentShader = /* glsl */ `
     vec3 nx = vec3(0.0);
     vec3 ny = vec3(0.0);
     float nearest = centerDepth;
+    // Najbliższa próbka po odjęciu płaszczyzny środka (względem środka, <= 0).
+    float closest = 0.0;
+    bool planar = perspective && rawDepth >= 0.0 && rawDepth < 1.0;
+    vec3 centerNormal = planar ? normalAt(vUv) : vec3(0.0);
+    vec3 centerRay = viewRayAt(vUv);
     bool viewmodelInk = rawDepth < 0.0;
     bool viewmodelColor = viewmodelColorAt(vUv);
     bool layerEdge = false;
@@ -291,6 +336,9 @@ const fragmentShader = /* glsl */ `
         float sampleDepth = metricDepth(sampleRawDepth);
         nearest = min(nearest, sampleDepth);
         float depth = (sampleDepth - centerDepth) / centerDepth;
+        if (planar && sampleRawDepth >= 0.0 && sampleRawDepth < 1.0)
+          depth -= planeDepthDelta(centerNormal, centerRay, uv);
+        closest = min(closest, depth);
         dx += depth * wx;
         dy += depth * wy;
         nx += normalAt(uv) * wx;
@@ -300,6 +348,10 @@ const fragmentShader = /* glsl */ `
           vec2 probe = vUv + vec2(float(x), float(y)) * texelSize * inkReach;
           float probeDepth = layerDepth(probe);
           nearest = min(nearest, metricDepth(probeDepth));
+          float probeRel = (metricDepth(probeDepth) - centerDepth) / centerDepth;
+          if (planar && probeDepth >= 0.0 && probeDepth < 1.0)
+            probeRel -= planeDepthDelta(centerNormal, centerRay, probe);
+          closest = min(closest, probeRel);
           viewmodelInk = viewmodelInk || probeDepth < 0.0 || sampleRawDepth < 0.0;
         }
       }
@@ -309,7 +361,7 @@ const fragmentShader = /* glsl */ `
     // Z odległością linie wewnątrz bryły (normalne) gasną, a obrys sylwetki (głębia) przechodzi
     // na stronę tła: cienkie kończyny dalekich wrogów zostają w swoim kolorze zamiast w kolorze linii.
     float far = smoothstep(outlineFadeNear, max(outlineFadeFar, outlineFadeNear + 1e-3), centerDepth);
-    float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
+    float behind = step(depthThreshold, -closest);
     float depthLine = layerEdge ? 1.0 : step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
     float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
     float edge = max(depthLine, normalLine);
@@ -499,12 +551,17 @@ const edgeFragmentShader = /* glsl */ `
   uniform float outlineFarOuter;
   varying vec2 vUv;
   vec3 normalAt(vec2 uv) { return texture2D(normalMap, uv).xyz * 2.0 - 1.0; }
+  ${planeShader}
   void main() {
     float rawDepth = layerDepth(vUv);
     float centerDepth = max(metricDepth(rawDepth), 1e-4);
     float dx = 0.0; float dy = 0.0;
     vec3 nx = vec3(0.0); vec3 ny = vec3(0.0);
     float nearest = centerDepth;
+    float closest = 0.0;
+    bool planar = perspective && rawDepth >= 0.0 && rawDepth < 1.0;
+    vec3 centerNormal = planar ? normalAt(vUv) : vec3(0.0);
+    vec3 centerRay = viewRayAt(vUv);
     bool layerEdge = false;
     bool suppressed = inkSuppressedAt(vUv);
     for (int y = -1; y <= 1; y++) {
@@ -517,6 +574,9 @@ const edgeFragmentShader = /* glsl */ `
         float sampleDepth = metricDepth(sampleRawDepth);
         nearest = min(nearest, sampleDepth);
         float depth = (sampleDepth - centerDepth) / centerDepth;
+        if (planar && sampleRawDepth >= 0.0 && sampleRawDepth < 1.0)
+          depth -= planeDepthDelta(centerNormal, centerRay, uv);
+        closest = min(closest, depth);
         dx += depth * wx; dy += depth * wy;
         nx += normalAt(uv) * wx; ny += normalAt(uv) * wy;
       }
@@ -524,7 +584,7 @@ const edgeFragmentShader = /* glsl */ `
     float depthEdge = length(vec2(dx, dy)) / 8.0;
     float normalEdge = sqrt(dot(nx, nx) + dot(ny, ny)) / 8.0;
     float far = smoothstep(outlineFadeNear, max(outlineFadeFar, outlineFadeNear + 1e-3), centerDepth);
-    float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
+    float behind = step(depthThreshold, -closest);
     float depthLine = layerEdge ? 1.0 : step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
     float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
     // R/G: sylwetka i detal osobno; B: dawny tusz FPP; A: metryczna głębia źródła.
@@ -660,6 +720,7 @@ export class StylePipeline {
     skyTop: { value: new Color() },
     skyHorizon: { value: new Color() },
     inverseProjection: { value: new Matrix4() },
+    planeDeltaLimit: { value: 0 },
     cameraRotation: { value: new Matrix3() },
     fogStrength: { value: 0 },
     skyFlash: { value: 0 },
@@ -863,6 +924,7 @@ export class StylePipeline {
     uniforms.skyTop.value.set(t.skyTop);
     uniforms.skyHorizon.value.set(t.skyHorizon);
     uniforms.inverseProjection.value.copy(camera.projectionMatrixInverse);
+    uniforms.planeDeltaLimit.value = t.outlinePlaneDeltaLimit;
     uniforms.cameraRotation.value.setFromMatrix4(camera.matrixWorld);
     uniforms.cameraWorld.value.copy(camera.matrixWorld);
     uniforms.eyePosition.value.setFromMatrixPosition(camera.matrixWorld);

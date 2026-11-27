@@ -37,13 +37,24 @@ export class SceneAtmosphere {
     if (!deferSync) this.sync(0);
   }
   horizon() {
-    return (
-      this.envelope &&
-      horizonParameters(this.envelope, {
-        nearM: tuning.render.fogNear,
-        farM: tuning.render.fogFar,
-      })
-    );
+    if (!this.envelope) return undefined;
+    const base = horizonParameters(this.envelope, {
+      nearM: tuning.render.fogNear,
+      farM: tuning.render.fogFar,
+    });
+    const h = tuning.horizon;
+    if (this.panoramaDropM < h.elevated.minDropM) return base;
+    // Wysoko położona mapa (np. 60. piętro): dalekie pierścienie leżą głęboko w kanionie,
+    // więc płaszczyzna `far` i kopuła muszą objąć pełną przekątną 3D aż do dna miasta.
+    const dropReach =
+      Math.hypot(
+        base.ringsM[3]! + h.domeClearanceM,
+        this.panoramaDropM + h.elevated.crownMaxY,
+      ) + base.radiusM;
+    const domeRadiusM = Math.max(base.domeRadiusM, dropReach);
+    const far = Math.max(base.far, domeRadiusM + h.clipClearanceM);
+    const near = Math.max(base.near, far / h.nearRatio);
+    return { ...base, domeRadiusM, far, near };
   }
   sync(dt: number): void {
     if (this.disposed) return;
@@ -58,7 +69,9 @@ export class SceneAtmosphere {
       this.camera.updateProjectionMatrix();
     }
     this.scene.userData.horizon = horizon?.expanded ? horizon : undefined;
-    if (horizon?.expanded) {
+    const elevated = this.panoramaDropM >= tuning.horizon.elevated.minDropM;
+    const showGround = !!(horizon && (horizon.expanded || elevated));
+    if (showGround) {
       if (!this.ground) {
         this.ground = new Mesh(
           new PlaneGeometry(2, 2),
@@ -70,12 +83,14 @@ export class SceneAtmosphere {
       }
       this.ground.position.set(
         horizon.center.x,
-        this.envelope!.bounds.min.y - tuning.horizon.groundOffsetM,
+        this.envelope!.bounds.min.y -
+          (elevated ? this.panoramaDropM : 0) -
+          tuning.horizon.groundOffsetM,
         horizon.center.z,
       );
       this.ground.scale.setScalar(horizon.far + horizon.radiusM);
       this.ground.material.color.set(tuning.horizon.groundColor);
-      if (this.water) {
+      if (horizon.expanded && this.water) {
         if (!this.waterPlane) {
           this.waterPlane = new Mesh(
             new PlaneGeometry(1, 1),
@@ -93,17 +108,19 @@ export class SceneAtmosphere {
         );
         this.waterPlane.scale.set(2 * extent, extent, 1);
       }
-      (this.scene.background as Color).set(tuning.render.fogColor);
+      if (horizon.expanded)
+        (this.scene.background as Color).set(tuning.render.fogColor);
     } else if (this.ground) {
       (this.scene.background as Color).set(tuning.render.world);
     }
-    if (this.ground) this.ground.visible = !!horizon?.expanded;
+    if (this.ground) this.ground.visible = showGround;
     if (this.waterPlane) this.waterPlane.visible = !!horizon?.expanded;
     if (!this.panorama && tuning.render.panoramaEnabled > 0) {
       this.panorama = new Panorama(
         this.seed,
         this.floorY - this.panoramaDropM,
         this.panoramaExclusion,
+        this.panoramaDropM,
       );
       this.scene.add(this.panorama);
     }

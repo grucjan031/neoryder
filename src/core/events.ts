@@ -17,6 +17,10 @@ export interface InputDevice {
 type ConquestPointId = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface GameEvents {
+  elevatorCalled: { id: string; stop: number };
+  elevatorArrived: { id: string; stop: number };
+  elevatorDeparted: { id: string; from: number; to: number };
+  elevatorDoors: { id: string; stop: number; opening: boolean };
   'input:deviceChanged': InputDevice;
   /** Zmiana właściciela punktu (także na neutralnego); `owners` to migawka wszystkich punktów po zmianie. */
   conquest_captured: {
