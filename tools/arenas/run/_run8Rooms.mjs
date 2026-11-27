@@ -9,6 +9,7 @@
 import {
   MAT_CONCRETE,
   MAT_SHIELD,
+  PI,
   Q,
   R,
   Y_G1,
@@ -110,15 +111,65 @@ function buildRoomR2(k, p) {
   p.prop('fus_junction_box', 6.6, -1.8, Y_L0, -1);
   p.prop('fus_junction_box', 6.6, 1.8, Y_L0, -1);
 
-  // 3. Pierścień osłon wokół Tokamaka na Poziomie Głównym L0 (y = 0.00 m):
-  // 6 Jednostek Kriopomp Helowych `fus_cryopump_unit` (2.8 × 2.6 × 1.8 m) w kwadrantach NW, NE, SW, SE
-  // — poza spawnami #1 (-8,0,14), #2 (8,0,14), #5 (-8,0,-13), #6 (8,0,-13).
-  p.prop('fus_cryopump_unit', -10.5, -10.5, Y_L0, 0);
-  p.prop('fus_cryopump_unit', 10.5, -10.5, Y_L0, 0);
-  p.prop('fus_cryopump_unit', -10.5, 10.5, Y_L0, 2);
-  p.prop('fus_cryopump_unit', 10.5, 10.5, Y_L0, 2);
+  // 3. 8 tematycznych skupisk osłon na posadzce głównej L0 (y = 0.00 m) między wejściami a Tokamakiem:
+  // --- Skupiska #1 (SW) i #2 (SE) przed portalami z R1/R5/R6 (poza spawnami #1 (-8,0,14) i #2 (8,0,14)): ---
+  p.prop('fus_cryopump_unit', -10.8, 10.5, Y_L0, 2);
+  p.prop('fus_cryopump_unit', 10.8, 10.5, Y_L0, 2);
+  p.prop('fus_catwalk_railing', -10.8, 12.2, Y_L0, 0);
+  p.prop('fus_catwalk_railing', 10.8, 12.2, Y_L0, 0);
   p.prop('fus_cryopump_unit', -14.8, 14.8, Y_L0, 2);
   p.prop('fus_cryopump_unit', 14.8, 14.8, Y_L0, 2);
+  p.prop('fus_tritium_cask_pallet', -18.0, 12.2, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', 18.0, 12.2, Y_L0, 0);
+  p.prop('fus_neutral_beam_injector', -4.6, 14.2, Y_L0, -1);
+  p.prop('fus_neutral_beam_injector', 4.6, 14.2, Y_L0, 1);
+  p.prop('fus_junction_box', -10.2, 16.2, Y_L0, 0);
+  p.prop('fus_junction_box', 10.2, 16.2, Y_L0, 0);
+  p.prop('res_instrument_trolley', -12.4, 16.4, Y_L0, 0);
+  p.prop('res_instrument_trolley', 12.4, 16.4, Y_L0, 0);
+
+  // --- Skupiska #3 (W-S) i #5 (E-S) między bocznymi wejściami z R5/R6 a cokołem (poza spawnami #3 (-13,0,2) i #4 (13,0,2)): ---
+  p.prop('fus_capacitor_bank', -15.8, 6.5, Y_L0, 1);
+  p.prop('fus_capacitor_bank', 15.8, 6.5, Y_L0, -1);
+  p.prop('fus_catwalk_railing', -13.8, 6.5, Y_L0, 1);
+  p.prop('fus_catwalk_railing', 13.8, 6.5, Y_L0, -1);
+  p.prop('fus_junction_box', -15.8, 9.2, Y_L0, 0);
+  p.prop('fus_junction_box', 15.8, 9.2, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', -11.4, 5.2, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', 11.4, 5.2, Y_L0, 0);
+  p.prop('fus_pulse_transformer', -19.5, 7.2, Y_L0, 1);
+  p.prop('fus_pulse_transformer', 19.5, 7.2, Y_L0, -1);
+
+  // --- Skupiska #4 (W-N) i #6 (E-N) przed naukowcami C1 (-10.5,0,0) i C2 (10.5,0,0) oraz oknami R4/R7: ---
+  p.prop('fus_capacitor_bank', -15.8, -4.0, Y_L0, 1);
+  p.prop('fus_capacitor_bank', 15.8, -4.0, Y_L0, -1);
+  p.prop('fus_catwalk_railing', -13.8, -3.8, Y_L0, 1);
+  p.prop('fus_catwalk_railing', 13.8, -3.8, Y_L0, -1);
+  p.prop('fus_diagnostic_console', -12.0, -0.8, Y_L0, 1);
+  p.prop('fus_diagnostic_console', 12.0, -0.8, Y_L0, -1);
+  p.prop('fus_junction_box', -12.1, -3.5, Y_L0, 1);
+  p.prop('fus_junction_box', 12.1, -3.5, Y_L0, -1);
+  p.prop('res_instrument_trolley', -9.2, -3.5, Y_L0, 0);
+  p.prop('res_instrument_trolley', 9.2, -3.5, Y_L0, 0);
+  p.prop('fus_diagnostic_console', 0.0, -11.5, Y_L0, 0);
+  p.prop('fus_diagnostic_console', 0.0, 11.5, Y_L0, 2);
+
+  // --- Skupiska #7 (NW) i #8 (NE) przed Rampami #3/#4 i portalami do R4/R7 (poza spawnami #5 (-8,0,-13) i #6 (8,0,-13)): ---
+  p.prop('fus_cryopump_unit', -10.8, -10.2, Y_L0, 0);
+  p.prop('fus_cryopump_unit', 10.8, -10.2, Y_L0, 0);
+  p.prop('fus_neutral_beam_injector', -4.2, -13.2, Y_L0, 1);
+  p.prop('fus_neutral_beam_injector', 4.2, -13.2, Y_L0, -1);
+  p.prop('fus_junction_box', -12.2, -15.0, Y_L0, 2);
+  p.prop('fus_junction_box', 12.2, -15.0, Y_L0, 2);
+  p.prop('fus_catwalk_railing', -11.2, -16.2, Y_L0, 0);
+  p.prop('fus_catwalk_railing', 11.2, -16.2, Y_L0, 0);
+  p.prop('fus_capacitor_bank', -8.5, -20.2, Y_L0, 0);
+  p.prop('fus_capacitor_bank', 8.5, -20.2, Y_L0, 0);
+  p.prop('fus_pulse_transformer', 0.0, -20.0, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', -19.5, -19.2, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', 19.5, -19.2, Y_L0, 0);
+  p.prop('fus_junction_box', -19.8, -11.5, Y_L0, 1);
+  p.prop('fus_junction_box', 19.8, -11.5, Y_L0, -1);
 
   // 6 Wysokich Łuków Rurociągów Chłodziwa `fus_coolant_pipe_arch` (1.6 × 4.4 × 4.8 m, prześwit 3.4 m >= 2.2 m)
   // łączących kriopompy i banki kondensatorów z cokołem reaktora.
@@ -128,44 +179,6 @@ function buildRoomR2(k, p) {
   coolantPipeArch(k, p, 8.2, Y_L0, 6.5, 0);
   coolantPipeArch(k, p, -14.8, Y_L0, 11.8, 1);
   coolantPipeArch(k, p, 14.8, Y_L0, 11.8, 1);
-
-  // 4 Inżektory Wiązki Neutralnej `fus_neutral_beam_injector` (4.8 × 1.85 × 1.6 m) wycelowane radialnie w reaktor!
-  p.prop('fus_neutral_beam_injector', -4.2, -13.2, Y_L0, 1);
-  p.prop('fus_neutral_beam_injector', 4.2, -13.2, Y_L0, -1);
-  p.prop('fus_neutral_beam_injector', -4.4, 14.2, Y_L0, -1);
-  p.prop('fus_neutral_beam_injector', 4.4, 14.2, Y_L0, 1);
-
-  // 4 Pulpity Diagnostyki Polowej `fus_diagnostic_console` (2.6 × 1.25 × 1.1 m) na osiach kardynalnych:
-  // Zachodni (-12.0, 0, -0.8) i Wschodni (+12.0, 0, -0.8) stoją tuż przed naukowcami C1 (-10.5, 0, 0) i C2 (10.5, 0, 0)
-  // oraz poza spawnami #3 (-13, 0, 2) i #4 (13, 0, 2)!
-  p.prop('fus_diagnostic_console', -12.0, -0.8, Y_L0, 1);
-  p.prop('fus_diagnostic_console', 12.0, -0.8, Y_L0, -1);
-  p.prop('fus_diagnostic_console', 0.0, -11.5, Y_L0, 0);
-  p.prop('fus_diagnostic_console', 0.0, 11.5, Y_L0, 2);
-
-  // 6 Banków Kondensatorów Impulsowych `fus_capacitor_bank` (3.6 × 2.8 × 1.6 m) przy filarach podgaleryjnych
-  // (w tym zachodni przy Hazardzie #1 `reactor-west-capacitor-arc` na (-16.0, 1.0, -3.0)).
-  p.prop('fus_capacitor_bank', -15.8, -4.2, Y_L0, 1);
-  p.prop('fus_capacitor_bank', -15.8, 6.5, Y_L0, 1);
-  p.prop('fus_capacitor_bank', 15.8, -4.2, Y_L0, -1);
-  p.prop('fus_capacitor_bank', 15.8, 6.5, Y_L0, -1);
-  p.prop('fus_capacitor_bank', -8.5, -20.2, Y_L0, 0);
-  p.prop('fus_capacitor_bank', 8.5, -20.2, Y_L0, 0);
-
-  // 3 Transformatory Impulsowe `fus_pulse_transformer` (2.4 × 2.2 × 2.0 m) w niszach SW, SE i N pod galeriami
-  // (osłaniające kryjówki naukowców HS-02 (-19.5, 0, 10.5) i HS-04 (19.5, 0, 10.5))
-  // oraz 2 osłony w narożnikach NW i NE przed kryjówkami HS-01 (-19.5, 0, -16.5) i HS-03 (19.5, 0, -16.5).
-  p.prop('fus_pulse_transformer', -19.5, 7.2, Y_L0, 1);
-  p.prop('fus_pulse_transformer', 19.5, 7.2, Y_L0, -1);
-  p.prop('fus_pulse_transformer', 0.0, -20.0, Y_L0, 0);
-  p.prop('fus_tritium_cask_pallet', -19.5, -19.2, Y_L0, 0);
-  p.prop('fus_tritium_cask_pallet', 19.5, -19.2, Y_L0, 0);
-
-  // Dodatkowe skrzynie rozdzielcze na posadzce głównej R2 (z zachowaniem przejść >= 1.6 m):
-  p.prop('fus_junction_box', -11.2, 15.8, Y_L0, 0);
-  p.prop('fus_junction_box', 11.2, 15.8, Y_L0, 0);
-  p.prop('fus_junction_box', -12.2, -15.2, Y_L0, 2);
-  p.prop('fus_junction_box', 12.2, -15.2, Y_L0, 2);
 
   // 4. Ścienne płyty ekranowania `fus_shield_wall_panel` (4.0 × 4.8 × 0.35 m),
   // kolektory rur `fus_wall_pipe_manifold` (4.0 × 3.6 × 0.55 m) i szynoprzewody `fus_wall_power_busbar` (4.0 × 4.2 × 0.45 m)
@@ -211,96 +224,144 @@ function buildRoomR2(k, p) {
   p.prop('fus_diagnostic_console', -7.5, -18.75, Y_G1, 2);
   p.prop('fus_junction_box', 6.0, -18.6, Y_G1, 2);
 
-  // Podwieszane koryta kablowe `fus_overhead_cable_tray` (6.0 × 0.85 × 1.2 m) pod płytą Galerii G1 (spód y = 4.40 m -> y = 3.55 m)
-  // oraz pod płytą Galerii G2 (spód y = 9.20 m -> y = 8.35 m).
-  for (const x of [-7.5, 0.0, 7.5]) {
-    overheadCableTray(k, x, 4.4, -20.0, 0);
+  // Podwieszane koryta kablowe `fus_overhead_cable_tray` (6.0 × 0.85 × 1.2 m) oraz oprawy liniowe `fus_highbay_light_strip`
+  // pod płytą Galerii G1 (spód y = 4.40 m) i pod płytą Galerii G2 (spód y = 9.20 m), rozświetlające cały obwód hali R2.
+  for (const x of [-13.5, -6.5, 0.0, 6.5, 13.5]) {
+    overheadCableTray(k, x, 4.4, -20.6, 0);
+  }
+  for (const x of [-11.5, -4.0, 4.0, 11.5]) {
+    highbayLightStrip(k, x, 4.4, -18.8, 0);
   }
   for (const z of [-13.5, -6.0, 1.5]) {
-    overheadCableTray(k, -20.0, 4.4, z, Q);
-    overheadCableTray(k, 20.0, 4.4, z, Q);
+    overheadCableTray(k, -20.6, 4.4, z, Q);
+    overheadCableTray(k, 20.6, 4.4, z, Q);
   }
-  overheadCableTray(k, -7.5, 9.2, -20.4, 0);
-  overheadCableTray(k, 7.5, 9.2, -20.4, 0);
-  for (const z of [-13.5, -4.5]) {
-    overheadCableTray(k, -20.4, 9.2, z, Q);
-    overheadCableTray(k, 20.4, 9.2, z, Q);
+  for (const z of [-15.2, -9.5, -3.5, 2.5]) {
+    highbayLightStrip(k, -18.8, 4.4, z, Q);
+    highbayLightStrip(k, 18.8, 4.4, z, Q);
+  }
+  highbayLightStrip(k, -19.0, 4.4, 17.5, 0);
+  highbayLightStrip(k, 19.0, 4.4, 17.5, 0);
+
+  for (const x of [-13.0, -5.0, 5.0, 13.0]) {
+    overheadCableTray(k, x, 9.2, -20.8, 0);
+  }
+  for (const x of [-11.5, -3.5, 3.5, 11.5]) {
+    highbayLightStrip(k, x, 9.2, -19.4, 0);
+  }
+  for (const z of [-13.5, -5.0, 2.0]) {
+    overheadCableTray(k, -20.8, 9.2, z, Q);
+    overheadCableTray(k, 20.8, 9.2, z, Q);
+  }
+  for (const z of [-14.0, -7.5, -1.0]) {
+    highbayLightStrip(k, -19.4, 9.2, z, Q);
+    highbayLightStrip(k, 19.4, 9.2, z, Q);
   }
 
-  // Gęsta siatka opraw przemysłowych `fus_highbay_light_strip` pod sklepieniem Hali Reaktora (y = 19.20 m) oraz listwy pod galeriami.
+  // Gęsta siatka opraw przemysłowych `fus_highbay_light_strip` pod sklepieniem Hali Reaktora (y = 19.20 m)
+  // oraz ciągłe pasy `light_panel` pod zewnętrzną i wewnętrzną krawędzią galerii G1/G2.
   for (const x of [-15.0, -5.0, 5.0, 15.0]) {
     for (const z of [-15.0, -5.0, 5.0, 15.0]) {
       highbayLightStrip(k, x, Y_HALL_CEIL, z, 0);
     }
   }
-  ceilingCovePanel(k, 0, 4.4, -18.2, 34.0, 0.35);
-  ceilingCovePanel(k, -18.2, 4.4, -6.0, 0.35, 22.0);
-  ceilingCovePanel(k, 18.2, 4.4, -6.0, 0.35, 22.0);
-  ceilingCovePanel(k, 0, 9.2, -19.0, 36.0, 0.35);
-  ceilingCovePanel(k, -19.0, 9.2, -6.0, 0.35, 22.0);
-  ceilingCovePanel(k, 19.0, 9.2, -6.0, 0.35, 22.0);
+  ceilingCovePanel(k, 0, 4.4, -18.2, 35.0, 0.38);
+  ceilingCovePanel(k, 0, 4.4, -21.4, 35.0, 0.38);
+  ceilingCovePanel(k, -18.2, 4.4, -6.0, 0.38, 23.0);
+  ceilingCovePanel(k, -21.4, 4.4, -6.0, 0.38, 23.0);
+  ceilingCovePanel(k, 18.2, 4.4, -6.0, 0.38, 23.0);
+  ceilingCovePanel(k, 21.4, 4.4, -6.0, 0.38, 23.0);
+  ceilingCovePanel(k, -19.0, 4.4, 21.4, 5.2, 0.38);
+  ceilingCovePanel(k, 19.0, 4.4, 21.4, 5.2, 0.38);
+  ceilingCovePanel(k, 0, 9.2, -19.0, 36.0, 0.38);
+  ceilingCovePanel(k, 0, 9.2, -21.5, 36.0, 0.38);
+  ceilingCovePanel(k, -19.0, 9.2, -6.0, 0.38, 23.0);
+  ceilingCovePanel(k, -21.5, 9.2, -6.0, 0.38, 23.0);
+  ceilingCovePanel(k, 19.0, 9.2, -6.0, 0.38, 23.0);
+  ceilingCovePanel(k, 21.5, 9.2, -6.0, 0.38, 23.0);
 }
 
 /** R3 — Sterownia Główna Reaktora „Mostek Helios-IV” (G1, X ∈ [-22, 6], Z ∈ [-36, -22], y = +4.80 m). */
 function buildRoomR3(k, p) {
   // 2 amfiteatralne rzędy Konsol Sterowania Reaktorem `fus_main_control_desk` (3.8 × 1.25 × 1.4 m × 4)
-  // przed 15-metrowym oknem obserwacyjnym na Tokamak (Z = -22, X ∈ [-15, 0]):
+  // zwrócone ku 15-metrowemu oknu obserwacyjnemu na Tokamak (Z = -22, X ∈ [-15, 0], turn = 2 -> operatorzy patrzą w +Z na reaktor!):
   // - Rząd pierwszy (Z = -24.8): przy konsolach pracują naukowcy C5 (-11, 4.8, -26.5) i C6 (-3, 4.8, -26.5),
   //   a między konsolami i parapetem okna leżą kryjówki HS-06 (-13.5, 4.8, -23.2) i HS-07 (-2.5, 4.8, -23.2).
-  p.prop('fus_main_control_desk', -11.0, -24.8, Y_G1, 0);
-  p.prop('fus_diagnostic_console', -7.5, -24.8, Y_G1, 0);
-  p.prop('fus_main_control_desk', -4.0, -24.8, Y_G1, 0);
-  // - Rząd drugi (Z = -32.2): za spawnami #13 (-14, 4.8, -30) i #14 (-2, 4.8, -30) oraz punktem C (-8, 4.8, -29).
-  p.prop('fus_main_control_desk', -14.0, -32.2, Y_G1, 0);
-  p.prop('fus_main_control_desk', -2.0, -32.2, Y_G1, 0);
+  p.prop('fus_main_control_desk', -11.0, -24.8, Y_G1, 2);
+  p.prop('fus_diagnostic_console', -7.5, -24.8, Y_G1, 2);
+  p.prop('fus_main_control_desk', -4.0, -24.8, Y_G1, 2);
+  // - Rząd drugi (Z = -32.2) oraz centralny stół holograficzny (Z = -31.8):
+  //   za spawnami #13 (-14, 4.8, -30) i #14 (-2, 4.8, -30) oraz punktem C (-8, 4.8, -29).
+  p.prop('fus_main_control_desk', -14.0, -32.2, Y_G1, 2);
+  p.prop('lab_briefing_holotable', -8.0, -31.8, Y_G1, 0);
+  p.prop('fus_main_control_desk', -2.0, -32.2, Y_G1, 2);
 
-  // Boczne szafy telemetrii `fus_quantum_server_rack` (2.8 × 2.4 × 1.1 m), szynoprzewód i skrzynie rozdzielcze
+  // Boczne szafy telemetrii `fus_quantum_server_rack`, konsole bezpieczeństwa, szafy chłodzące, szynoprzewody i kolektory
   // osłaniające kryjówki HS-05 (-20.5, 4.8, -34.5) w narożniku NW oraz HS-08 (4.5, 4.8, -34.5) w narożniku NE.
   p.prop('fus_quantum_server_rack', -20.8, -31.2, Y_G1, 1);
+  p.prop('res_security_console', -20.5, -26.4, Y_G1, 1);
+  p.prop('lab_cryo_server_rack', -21.0, -23.4, Y_G1, 1);
   p.prop('fus_quantum_server_rack', 3.6, -32.2, Y_G1, 0);
-  p.prop('fus_junction_box', -16.5, -34.8, Y_G1, 0);
-  p.prop('fus_junction_box', -1.5, -34.8, Y_G1, 0);
-  p.prop('fus_wall_power_busbar', 5.52, -33.2, Y_G1, -1);
+  p.prop('off_office_server_rack', 0.8, -34.8, Y_G1, 0);
+  p.prop('fus_junction_box', -16.0, -34.6, Y_G1, 0);
+  p.prop('fus_junction_box', -1.8, -34.8, Y_G1, 0);
+  p.prop('fus_wall_power_busbar', 5.52, -33.6, Y_G1, -1);
+  p.prop('fus_wall_pipe_manifold', -19.5, -35.48, Y_G1, 0);
 
-  // Wielka Ściana Telemetrii i Schematu Cewki `fus_telemetry_screen_wall` (4.8 × 2.6 × 0.28 m)
-  // na ścianie północnej (Z = -35.66, X = -15.5, na zachód od śluzy exit X ∈ [-10, -6]).
-  deco(k, 'fus_telemetry_screen_wall', -15.5, Y_G1 + 1.1, -35.66, 0);
+  // Wielkie Ściany Telemetrii i Schematu Cewki `fus_telemetry_screen_wall` (4.8 × 2.6 × 0.28 m)
+  // na ścianie północnej (Z = -35.66) oraz monitor CCTV i rurociągi na ścianach bocznych.
+  deco(k, 'fus_telemetry_screen_wall', -14.5, Y_G1 + 1.1, -35.66, 0);
   deco(k, 'fus_telemetry_screen_wall', -1.0, Y_G1 + 1.1, -35.66, 0);
+  deco(k, 'res_cctv_monitor_wall', -21.75, Y_G1 + 1.1, -26.5, Q);
+  deco(k, 'wh_wall_terminal', 5.75, Y_G1 + 1.25, -22.8, -Q);
+  deco(k, 'city_pipe_run', -12.0, Y_G1, -35.78, 0);
+  deco(k, 'city_pipe_run', -4.0, Y_G1, -35.78, 0);
 
-  // Oprawy sufitowe pod stropem Sterowni R3 (y = 9.60 m).
+  // Koryta kablowe, oprawy sufitowe i ciepłobiałe pasy pod stropem Sterowni R3 (y = 9.60 m).
+  overheadCableTray(k, -14.0, Y_G1_CEIL, -28.5, 0);
+  overheadCableTray(k, -2.0, Y_G1_CEIL, -28.5, 0);
   for (const x of [-16.0, -8.0, 0.0]) {
-    highbayLightStrip(k, x, Y_G1_CEIL, -25.5, 0);
-    highbayLightStrip(k, x, Y_G1_CEIL, -32.5, 0);
+    highbayLightStrip(k, x, Y_G1_CEIL, -25.2, 0);
+    highbayLightStrip(k, x, Y_G1_CEIL, -32.8, 0);
   }
   ceilingCovePanel(k, -8.0, Y_G1_CEIL, -34.8, 24.0, 0.45);
+  ceilingCovePanel(k, -8.0, Y_G1_CEIL, -23.2, 24.0, 0.45);
 }
 
 /** R4 — Laboratorium Fizyki Plazmy i Wiązek (L0, X ∈ [-38, -22], Z ∈ [-22, 0], y = 0.0 m). */
 function buildRoomR4(k, p) {
   // 2 długie Ławy Inżektora Wiązki Neutralnej `fus_neutral_beam_injector` (4.8 × 1.85 × 1.6 m) w osi pokoju
   // — poza naukowcem C3 (-29, 0, -15) i spawnem #7 (-28, 0, -11).
-  p.prop('fus_neutral_beam_injector', -29.0, -17.5, Y_L0, 0);
-  p.prop('fus_neutral_beam_injector', -28.5, -7.5, Y_L0, 0);
+  p.prop('fus_neutral_beam_injector', -31.2, -17.8, Y_L0, 0);
+  p.prop('fus_neutral_beam_injector', -31.2, -7.5, Y_L0, 0);
 
-  // 3 Komory Próżniowe Próbników Plazmy `fus_plasma_test_chamber` (2.4 × 2.3 × 1.4 m) przy ścianie zachodniej i północnej,
+  // 3 Komory Próżniowe Próbników Plazmy `fus_plasma_test_chamber` (2.4 × 2.3 × 1.4 m) oraz Komora Anomalii `lab_anomaly_containment_pod`
+  // przy ścianie zachodniej, północnej i wschodniej (wprost w kadrze 06-corner-nw!),
   // dające osłonę dla kryjówek HS-09 (-36.5, 0, -20.5), HS-11 (-36.5, 0, -2.0) oraz HS-12 (-23.5, 0, -20.5).
-  p.prop('fus_plasma_test_chamber', -35.2, -17.5, Y_L0, 1);
-  p.prop('fus_plasma_test_chamber', -35.2, -4.2, Y_L0, 1);
-  p.prop('fus_plasma_test_chamber', -25.8, -20.6, Y_L0, 0);
+  p.prop('fus_plasma_test_chamber', -35.4, -17.5, Y_L0, 1);
+  p.prop('fus_plasma_test_chamber', -35.4, -3.8, Y_L0, 1);
+  p.prop('fus_plasma_test_chamber', -26.2, -20.5, Y_L0, 0);
+  p.prop('lab_anomaly_containment_pod', -24.6, -10.4, Y_L0, 0);
 
-  // Stół laboratoryjny z oscyloskopami `lab_centrifuge_bench` (3.2 × 1.45 × 1.1 m) osłaniający kryjówkę HS-10 (-36.5, 0, -11.0),
-  // pulpit diagnostyczny `fus_diagnostic_console`, konsola `lab_mainframe_console` i dygestorium `lab_chem_fume_hood`.
-  p.prop('lab_centrifuge_bench', -34.8, -11.0, Y_L0, 1);
-  p.prop('fus_diagnostic_console', -25.0, -18.4, Y_L0, 0);
+  // Stoły laboratoryjne z oscyloskopami `lab_centrifuge_bench`, analizator `bw_lab_analyzer_bench`, wózek `res_instrument_trolley`,
+  // szafa krio-serwerów `lab_cryo_server_rack`, pulpit `fus_diagnostic_console`, konsola `lab_mainframe_console` i dygestorium `lab_chem_fume_hood`.
+  p.prop('lab_centrifuge_bench', -35.0, -11.0, Y_L0, 1);
+  p.prop('lab_centrifuge_bench', -26.2, -16.8, Y_L0, 0);
+  p.prop('bw_lab_analyzer_bench', -28.0, -13.2, Y_L0, 0);
+  p.prop('res_instrument_trolley', -24.8, -13.0, Y_L0, 1);
+  p.prop('lab_cryo_server_rack', -36.9, -7.2, Y_L0, 1);
+  p.prop('fus_diagnostic_console', -28.0, -4.4, Y_L0, 0);
   p.prop('lab_mainframe_console', -25.2, -2.0, Y_L0, 2);
   p.prop('lab_chem_fume_hood', -34.2, -0.95, Y_L0, 2);
-  p.prop('fus_junction_box', -23.2, -11.0, Y_L0, -1);
 
-  // Instalacje ścienne w Laboratorium R4 (w tym na ścianie północno-wschodniej widocznej w ujęciu 06-corner-nw!):
+  // Instalacje ścienne, rurociągi i terminale w Laboratorium R4 (w tym na ścianie NE widocznej w ujęciu 06-corner-nw!):
   p.prop('fus_wall_power_busbar', -22.45, -18.8, Y_L0, -1);
   p.prop('fus_wall_pipe_manifold', -33.5, -21.48, Y_L0, 0);
   p.prop('fus_wall_pipe_manifold', -25.0, -0.48, Y_L0, 2);
   p.prop('fus_shield_wall_panel', -37.58, -11.0, Y_L0, 1);
+  deco(k, 'city_pipe_run', -22.22, Y_L0, -11.2, -Q);
+  deco(k, 'city_pipe_run', -28.8, Y_L0, -21.78, 0);
+  deco(k, 'wh_wall_terminal', -22.25, Y_L0 + 1.25, -16.6, -Q);
 
   // Podświetlana Tablica z Równaniami Magnetohydrodynamiki `fus_whiteboard_equations` (3.2 × 1.75 × 0.18 m)
   // na ścianie zachodniej (X = -37.71, Z = -6.0 — tuż przy naukowcu C4 (-34, 0, -6)) oraz na ścianie północnej.
@@ -310,8 +371,8 @@ function buildRoomR4(k, p) {
   // Koryta kablowe i oprawy sufitowe pod stropem Laboratorium R4 (y = 5.60 m).
   for (const z of [-17.5, -11.0, -4.5]) {
     overheadCableTray(k, -30.0, Y_R4_CEIL, z, 0);
-    highbayLightStrip(k, -33.5, Y_R4_CEIL, z, 0);
-    highbayLightStrip(k, -26.5, Y_R4_CEIL, z, 0);
+    highbayLightStrip(k, -34.2, Y_R4_CEIL, z, 0);
+    highbayLightStrip(k, -25.8, Y_R4_CEIL, z, 0);
   }
   ceilingCovePanel(k, -36.8, Y_R4_CEIL, -11.0, 0.45, 18.0);
   ceilingCovePanel(k, -23.2, Y_R4_CEIL, -11.0, 0.45, 18.0);
@@ -325,26 +386,36 @@ function buildRoomR5(k, p) {
 
   // 4 Palety Beczek Izotopowych Deuter / Tryt `fus_tritium_cask_pallet` (2.2 × 1.45 × 2.2 m)
   // — poza spawnem #8 (-28, 0, 16) oraz wiązką lasera `fuel-vault-isotope-laser` (Z = 11.0, X ∈ [-36.5, -29.5]).
-  p.prop('fus_tritium_cask_pallet', -34.0, 6.0, Y_L0, 0);
-  p.prop('fus_tritium_cask_pallet', -26.5, 8.5, Y_L0, 0);
-  p.prop('fus_tritium_cask_pallet', -34.0, 14.8, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', -34.2, 6.0, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', -26.5, 8.2, Y_L0, 0);
+  p.prop('fus_tritium_cask_pallet', -34.8, 14.8, Y_L0, 0);
   p.prop('fus_tritium_cask_pallet', -25.5, 19.2, Y_L0, 0);
 
   // 2 wysokie Kriogeniczne Zbiorniki Deuteru `fus_deuterium_cryo_tank` (2.8 × 3.6 × 2.8 m) z parą `steam`.
-  p.prop('fus_deuterium_cryo_tank', -34.5, 19.0, Y_L0, 0);
+  p.prop('fus_deuterium_cryo_tank', -34.8, 19.0, Y_L0, 0);
   p.prop('fus_deuterium_cryo_tank', -35.0, 2.5, Y_L0, 0);
-  k.fx('steam', -34.5, Y_L0 + 1.2, 19.0, 0.7);
+  k.fx('steam', -34.8, Y_L0 + 1.2, 19.0, 0.7);
   k.fx('steam', -35.0, Y_L0 + 1.2, 2.5, 0.7);
 
-  // Dodatkowa aparatura kriogeniczna, transformator, pulpit diagnostyczny, kolektory ścienne i szynoprzewód.
-  p.prop('fus_cryopump_unit', -25.5, 2.2, Y_L0, 0);
-  p.prop('fus_pulse_transformer', -29.8, 20.2, Y_L0, 2);
-  p.prop('fus_diagnostic_console', -25.8, 11.5, Y_L0, -1);
+  // Regał magazynowy `wh_pallet_rack`, wózek widłowy `wh_forklift`, agregat `city_generator`, skrzynie, kriopompa, transformator i pulpit.
+  p.prop('wh_pallet_rack', -25.2, 0.9, Y_L0, 0);
+  p.prop('fus_cryopump_unit', -30.2, 6.2, Y_L0, 0);
+  p.prop('wh_forklift', -31.2, 15.8, Y_L0, 0);
+  p.prop('city_generator', -34.2, 9.0, Y_L0, 0);
+  p.prop('wh_weapon_case_stack', -26.2, 11.8, Y_L0, 0);
+  p.prop('city_crates', -32.2, 20.2, Y_L0, 0);
+  p.prop('fus_pulse_transformer', -29.5, 20.2, Y_L0, 2);
+  p.prop('fus_diagnostic_console', -25.8, 4.2, Y_L0, 0);
   p.prop('fus_junction_box', -23.0, 10.0, Y_L0, -1);
+
+  // Kolektory ścienne, szynoprzewód, rury i terminal na ścianach R5.
   p.prop('fus_wall_pipe_manifold', -37.48, 15.0, Y_L0, 1);
   p.prop('fus_wall_pipe_manifold', -25.5, 21.48, Y_L0, 2);
   p.prop('fus_wall_power_busbar', -22.48, 19.5, Y_L0, -1);
   p.prop('fus_shield_wall_panel', -37.58, 8.5, Y_L0, 1);
+  deco(k, 'city_pipe_run', -37.78, Y_L0, 3.2, Q);
+  deco(k, 'city_pipe_run', -22.22, Y_L0, 10.0, -Q);
+  deco(k, 'wh_wall_terminal', -22.25, Y_L0 + 1.25, 1.8, -Q);
 
   // Pylony emitera bramki laserowej Hazard #2 `fuel-vault-isotope-laser` (Z = 11.0, X: -36.5 -> -29.5).
   for (const x of [-36.75, -29.25]) {
@@ -358,10 +429,11 @@ function buildRoomR5(k, p) {
   }
 
   overheadCableTray(k, -30.0, Y_R5_CEIL, 2.5, 0);
+  overheadCableTray(k, -30.0, Y_R5_CEIL, 11.5, 0);
   overheadCableTray(k, -30.0, Y_R5_CEIL, 19.5, 0);
-  for (const z of [4.0, 11.5, 18.5]) {
-    highbayLightStrip(k, -33.5, Y_R5_CEIL, z, 0);
-    highbayLightStrip(k, -26.5, Y_R5_CEIL, z, 0);
+  for (const z of [3.5, 9.5, 14.0, 19.5]) {
+    highbayLightStrip(k, -34.0, Y_R5_CEIL, z, 0);
+    highbayLightStrip(k, -26.0, Y_R5_CEIL, z, 0);
   }
   ceilingCovePanel(k, -36.8, Y_R5_CEIL, 11.0, 0.45, 18.0);
   ceilingCovePanel(k, -23.2, Y_R5_CEIL, 11.0, 0.45, 18.0);
@@ -372,37 +444,48 @@ function buildRoomR6(k, p) {
   // 2 monumentalne Turbozespoły Parowo-MHD `fus_steam_turbine_generator` (3.8 × 2.8 × 7.2 m)
   // wzdłuż osi N–S, rozdzielone wybuchową beczką chłodziwa Hazard #4 na (29.5, 0.0, 9.0)
   // i odsunięte od spawnu #9 (26, 0, 15).
-  p.prop('fus_steam_turbine_generator', 29.5, 3.2, Y_L0, 0);
-  p.prop('fus_steam_turbine_generator', 30.5, 15.2, Y_L0, 0);
+  p.prop('fus_steam_turbine_generator', 29.8, 3.2, Y_L0, 0);
+  p.prop('fus_steam_turbine_generator', 31.2, 15.2, Y_L0, 0);
 
   // 3 pionowe Wymienniki Ciepła Obiegu Pierwotnego `fus_heat_exchanger_tower` (2.4 × 4.6 × 2.4 m) przy ścianie E.
   p.prop('fus_heat_exchanger_tower', 35.8, 1.5, Y_L0, -1);
   p.prop('fus_heat_exchanger_tower', 35.8, 9.0, Y_L0, -1);
   p.prop('fus_heat_exchanger_tower', 35.8, 16.5, Y_L0, -1);
 
-  // Aparatura i osłony wypełniające zachodnią oraz północno-wschodnią część Hali Turbin (widoczną w 07-corner-se!):
-  p.prop('fus_pulse_transformer', 25.2, 20.0, Y_L0, 2);
+  // Bogata aparatura energetyczna, kriopompy, bank kondensatorów, agregat, konsole i palety wypełniające Halę Turbin
+  // (w tym zachodni i południowo-zachodni kadr 07-corner-se wokół spawnu #9 (26, 0, 15)!):
+  p.prop('fus_pulse_transformer', 25.4, 20.0, Y_L0, 2);
+  p.prop('city_generator', 28.0, 17.6, Y_L0, 2);
+  p.prop('fus_cryopump_unit', 24.2, 11.2, Y_L0, 1);
   p.prop('fus_cryopump_unit', 34.5, -1.8, Y_L0, 0);
-  p.prop('fus_diagnostic_console', 25.6, 10.2, Y_L0, 1);
-  p.prop('fus_junction_box', 23.0, 19.5, Y_L0, 1);
-  p.prop('fus_junction_box', 34.8, 20.4, Y_L0, 2);
+  p.prop('fus_capacitor_bank', 25.2, -2.2, Y_L0, 0);
+  p.prop('lab_mainframe_console', 24.8, 7.8, Y_L0, 1);
+  p.prop('fus_diagnostic_console', 27.4, 10.6, Y_L0, 2);
+  p.prop('fus_tritium_cask_pallet', 35.2, 20.2, Y_L0, 0);
+  p.prop('fus_junction_box', 28.2, 20.8, Y_L0, 2);
+  p.prop('res_instrument_trolley', 23.6, 18.0, Y_L0, 1);
 
-  // Szynoprzewód i kolektory rurowe na ścianie zachodniej, południowej i wschodniej R6.
+  // Szynoprzewody, kolektory rurowe, piony rur i terminale na ścianie zachodniej, południowej i wschodniej R6.
+  p.prop('fus_wall_pipe_manifold', 22.48, 19.5, Y_L0, 1);
   p.prop('fus_wall_power_busbar', 22.45, 9.0, Y_L0, 1);
   p.prop('fus_wall_pipe_manifold', 22.48, -1.5, Y_L0, 1);
   p.prop('fus_wall_pipe_manifold', 37.48, 5.2, Y_L0, -1);
-  p.prop('fus_wall_pipe_manifold', 30.0, 21.48, Y_L0, 2);
+  p.prop('fus_wall_pipe_manifold', 31.2, 21.48, Y_L0, 2);
   p.prop('fus_shield_wall_panel', 37.58, -1.5, Y_L0, -1);
   p.prop('fus_shield_wall_panel', 37.58, 19.5, Y_L0, -1);
+  deco(k, 'city_pipe_run', 22.22, Y_L0, 12.2, Q);
+  deco(k, 'city_pipe_run', 26.8, Y_L0, 21.78, PI);
+  deco(k, 'wh_wall_terminal', 22.25, Y_L0 + 1.25, 6.2, Q);
 
   k.fx('steam', 35.8, Y_L0 + 1.5, 9.0, 0.85);
-  k.fx('steam', 29.5, Y_L0 + 1.5, 3.2, 0.65);
+  k.fx('steam', 29.8, Y_L0 + 1.5, 3.2, 0.65);
 
   overheadCableTray(k, 26.0, Y_R6_CEIL, 3.0, Q);
   overheadCableTray(k, 26.0, Y_R6_CEIL, 15.0, Q);
-  for (const z of [1.0, 9.0, 17.0]) {
-    highbayLightStrip(k, 26.0, Y_R6_CEIL, z, 0);
-    highbayLightStrip(k, 33.0, Y_R6_CEIL, z, 0);
+  overheadCableTray(k, 33.0, Y_R6_CEIL, 9.0, Q);
+  for (const z of [-1.0, 4.5, 10.0, 15.5, 20.0]) {
+    highbayLightStrip(k, 25.5, Y_R6_CEIL, z, 0);
+    highbayLightStrip(k, 33.2, Y_R6_CEIL, z, 0);
   }
   ceilingCovePanel(k, 36.8, Y_R6_CEIL, 9.0, 0.45, 22.0);
   ceilingCovePanel(k, 23.2, Y_R6_CEIL, 9.0, 0.45, 22.0);
@@ -420,16 +503,26 @@ function buildRoomR7(k, p) {
   p.prop('fus_quantum_server_rack', 27.2, -8.5, Y_L0, 2);
   p.prop('fus_quantum_server_rack', 33.2, -8.5, Y_L0, 2);
 
-  // Agregaty chłodzenia cieczowego (`lab_cryo_server_rack`), pulpit diagnostyczny, skrzynia rozdzielcza i szynoprzewody.
+  // Agregaty chłodzenia cieczowego (`lab_cryo_server_rack`), dodatkowe szafy `wh_server_rack`, konsola `lab_mainframe_console`,
+  // dok dronów diagnostycznych `res_drone_charging_dock`, pulpit diagnostyczny, skrzynie rozdzielcze i szynoprzewody.
   p.prop('lab_cryo_server_rack', 35.0, -17.5, Y_L0, -1);
   p.prop('lab_cryo_server_rack', 35.2, -7.2, Y_L0, -1);
+  p.prop('wh_server_rack', 24.2, -17.5, Y_L0, 1);
+  p.prop('wh_server_rack', 24.2, -10.5, Y_L0, 1);
+  p.prop('lab_mainframe_console', 30.2, -11.0, Y_L0, 0);
+  p.prop('res_drone_charging_dock', 34.4, -5.6, Y_L0, 2);
   p.prop('fus_diagnostic_console', 24.8, -6.2, Y_L0, 2);
-  p.prop('fus_junction_box', 23.0, -18.2, Y_L0, 1);
+  p.prop('fus_junction_box', 23.0, -18.8, Y_L0, 1);
+  p.prop('fus_junction_box', 35.2, -14.4, Y_L0, -1);
   p.prop('fus_wall_power_busbar', 30.0, -21.52, Y_L0, 0);
+  p.prop('fus_wall_power_busbar', 37.52, -10.2, Y_L0, -1);
   p.prop('fus_wall_pipe_manifold', 35.0, -4.48, Y_L0, 2);
   p.prop('fus_shield_wall_panel', 25.5, -21.58, Y_L0, 0);
   deco(k, 'fus_telemetry_screen_wall', 37.66, Y_L0 + 1.1, -14.5, -Q);
   deco(k, 'fus_telemetry_screen_wall', 25.0, Y_L0 + 1.1, -4.34, Math.PI);
+  deco(k, 'city_pipe_run', 22.22, Y_L0, -19.5, Q);
+  deco(k, 'city_pipe_run', 34.8, Y_L0, -21.78, 0);
+  deco(k, 'wh_wall_terminal', 22.25, Y_L0 + 1.25, -11.5, Q);
 
   // Pylony emitera bramki laserowej Hazard #3 `server-coil-control-laser` (Z = -13.0, X: 24.0 -> 30.0).
   for (const x of [23.75, 30.25]) {
@@ -442,10 +535,11 @@ function buildRoomR7(k, p) {
     });
   }
 
-  overheadCableTray(k, 30.0, Y_R7_CEIL, -11.5, 0);
-  for (const z of [-18.0, -8.5]) {
-    highbayLightStrip(k, 26.5, Y_R7_CEIL, z, 0);
-    highbayLightStrip(k, 33.5, Y_R7_CEIL, z, 0);
+  overheadCableTray(k, 30.0, Y_R7_CEIL, -16.5, 0);
+  overheadCableTray(k, 30.0, Y_R7_CEIL, -11.0, 0);
+  for (const z of [-19.0, -13.0, -7.0]) {
+    highbayLightStrip(k, 26.2, Y_R7_CEIL, z, 0);
+    highbayLightStrip(k, 33.8, Y_R7_CEIL, z, 0);
   }
   ceilingCovePanel(k, 36.8, Y_R7_CEIL, -13.0, 0.45, 14.0);
   ceilingCovePanel(k, 23.2, Y_R7_CEIL, -13.0, 0.45, 14.0);
@@ -454,41 +548,55 @@ function buildRoomR7(k, p) {
 /** R8 — Biuro Kierownika Naukowego Projektu „Helios” — Dr Haruto Mori (G1, X ∈ [6, 22], Z ∈ [-36, -22], y = +4.80 m). */
 function buildRoomR8(k, p) {
   // 1. Reprezentacyjne Biurko Kierownika Naukowego `fus_director_desk` (2.8 × 1.15 × 1.3 m)
-  // na (14.0, 4.8, -29.5) — przed nim stoi dr Haruto Mori C8 (14.0, 4.8, -28.0),
+  // na (14.0, 4.8, -29.5) wraz z fotelem `off_office_chair` — przed biurkiem stoi dr Haruto Mori C8 (14.0, 4.8, -28.0),
   // a bezpośrednio za nim znajduje się kryjówka HS-17 (14.0, 4.8, -31.2)!
   p.prop('fus_director_desk', 14.0, -29.5, Y_G1, 0);
+  p.prop('off_office_chair', 15.1, -30.7, Y_G1, 0);
 
   // 2. Komora Próżniowa z prototypem sztucznego implantu Rezonansu `fus_plasma_test_chamber` (2.4 × 2.3 × 1.4 m)
   // (Easter Egg #11) na (17.5, 4.8, -34.2) oraz pulpit diagnostyczny `fus_diagnostic_console` przy ścianie N.
   p.prop('fus_plasma_test_chamber', 17.5, -34.2, Y_G1, 0);
   p.prop('fus_diagnostic_console', 14.5, -34.4, Y_G1, 0);
 
-  // 3. Regał archiwalny (`res_bookshelf_wall`), szafa pancerna (`lab_classified_cabinet`),
-  // globus holograficzny (`res_holo_globe_stand`), skrzynia rozdzielcza i strefa wypoczynkowa
-  // (`off_lounge_sofa`, `res_coffee_table_marble`, `res_ficus_planter`) osłaniające kryjówki HS-18, HS-19 i HS-20
-  // i zostawiające pełny promień wokół spawnu #15 (11, 4.8, -26).
-  p.prop('res_bookshelf_wall', 11.5, -35.2, Y_G1, 0);
+  // 3. Regały archiwalne (`res_bookshelf_wall`, `res_decor_shelf`), szafa pancerna (`lab_classified_cabinet`),
+  // globus holograficzny (`res_holo_globe_stand`), gablota implantów (`bw_implant_showcase`), skrzynia rozdzielcza,
+  // szynoprzewód oraz strefa wypoczynkowa (`off_lounge_sofa`, `res_lounge_armchair`, `res_coffee_table_marble`, `res_ficus_planter`)
+  // osłaniające kryjówki HS-18, HS-19 i HS-20 i zostawiające pełny promień wokół spawnu #15 (11, 4.8, -26).
+  p.prop('res_bookshelf_wall', 11.2, -35.2, Y_G1, 0);
+  p.prop('res_decor_shelf', 8.5, -35.3, Y_G1, 0);
   p.prop('lab_classified_cabinet', 8.2, -32.2, Y_G1, 0);
   p.prop('res_holo_globe_stand', 10.5, -32.2, Y_G1, 0);
-  p.prop('fus_junction_box', 6.85, -34.0, Y_G1, 1);
-  p.prop('off_lounge_sofa', 20.0, -26.2, Y_G1, -1);
-  p.prop('res_coffee_table_marble', 17.8, -26.2, Y_G1, 1);
+  p.prop('bw_implant_showcase', 7.3, -26.2, Y_G1, 1);
+  p.prop('fus_junction_box', 6.85, -33.6, Y_G1, 1);
+  p.prop('off_lounge_sofa', 20.2, -25.8, Y_G1, -1);
+  p.prop('res_lounge_armchair', 20.2, -28.2, Y_G1, -1);
+  p.prop('res_coffee_table_marble', 18.0, -25.8, Y_G1, 1);
   p.prop('res_ficus_planter', 7.4, -23.5, Y_G1, 0);
+  p.prop('fus_wall_power_busbar', 21.52, -33.0, Y_G1, -1);
 
   // 4. Tablica Schematu Zasilania Sztucznych Implantów Rezonansu `fus_whiteboard_equations` (3.2 × 1.75 × 0.18 m)
-  // na ścianie wschodniej (X = +21.71, Y = 4.8 + 1.05 = 5.85, Z = -29.5) oraz ekran telemetrii na ścianie północnej.
+  // na ścianie wschodniej (X = +21.71, Y = 4.8 + 1.05 = 5.85, Z = -29.5), ekran telemetrii na ścianie północnej oraz rury.
   deco(k, 'fus_whiteboard_equations', 21.71, Y_G1 + 1.05, -29.5, -Q);
   deco(k, 'fus_telemetry_screen_wall', 14.5, Y_G1 + 1.1, -35.66, 0);
+  deco(k, 'city_pipe_run', 6.22, Y_G1, -33.5, Q);
+  deco(k, 'wh_wall_terminal', 20.2, Y_G1 + 1.25, -35.75, 0);
+  // Dedykowane oprawy `light_panel` oświetlające tablicę `fus_whiteboard_equations` oraz biurko dyrektora dr. Moriego:
   box(k, 21.72, Y_G1 + 2.95, -29.5, 0.18, 0.08, 3.4, 'light_panel', {
     walkable: false,
   });
+  box(k, 21.72, Y_G1 + 0.96, -29.5, 0.14, 0.05, 3.4, 'light_panel', {
+    walkable: false,
+  });
 
-  // Oprawy sufitowe pod stropem Biura R8 (y = 9.60 m).
+  // Koryto kablowe i oprawy sufitowe pod stropem Biura R8 (y = 9.60 m).
+  overheadCableTray(k, 14.0, Y_G1_CEIL, -33.0, 0);
   for (const x of [10.5, 17.5]) {
-    highbayLightStrip(k, x, Y_G1_CEIL, -26.0, 0);
-    highbayLightStrip(k, x, Y_G1_CEIL, -32.5, 0);
+    highbayLightStrip(k, x, Y_G1_CEIL, -25.8, 0);
+    highbayLightStrip(k, x, Y_G1_CEIL, -29.5, 0);
+    highbayLightStrip(k, x, Y_G1_CEIL, -33.2, 0);
   }
   ceilingCovePanel(k, 14.0, Y_G1_CEIL, -34.8, 13.0, 0.45);
+  ceilingCovePanel(k, 20.8, Y_G1_CEIL, -29.0, 0.45, 11.5);
 }
 
 export function buildRooms(k, placer) {

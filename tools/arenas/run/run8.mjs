@@ -101,7 +101,15 @@ function structure(k, placer) {
     false,
   );
   cofferedCeilingSlab(k, ROOMS.R2, Y_HALL_CEIL, MAT_CEIL);
-  cofferedCeilingSlab(k, ROOMS.R3, Y_G1_CEIL, MAT_CEIL, SLAB, Y_G1 - 0.5);
+  cofferedCeilingSlab(
+    k,
+    ROOMS.R3,
+    Y_G1_CEIL,
+    MAT_CEIL,
+    SLAB,
+    Y_G1 - 0.5,
+    false,
+  );
   cofferedCeilingSlab(
     k,
     R(-10.4, -5.6, -37.2, -36),
@@ -111,11 +119,19 @@ function structure(k, placer) {
     Y_G1 - 0.5,
     false,
   );
-  cofferedCeilingSlab(k, ROOMS.R4, Y_R4_CEIL, MAT_CEIL);
-  cofferedCeilingSlab(k, ROOMS.R5, Y_R5_CEIL, MAT_CEIL);
-  cofferedCeilingSlab(k, ROOMS.R6, Y_R6_CEIL, MAT_CEIL);
-  cofferedCeilingSlab(k, ROOMS.R7, Y_R7_CEIL, MAT_CEIL);
-  cofferedCeilingSlab(k, ROOMS.R8, Y_G1_CEIL, MAT_CEIL, SLAB, Y_G1 - 0.5);
+  cofferedCeilingSlab(k, ROOMS.R4, Y_R4_CEIL, MAT_CEIL, SLAB, Y_L0 - 0.5, false);
+  cofferedCeilingSlab(k, ROOMS.R5, Y_R5_CEIL, MAT_CEIL, SLAB, Y_L0 - 0.5, false);
+  cofferedCeilingSlab(k, ROOMS.R6, Y_R6_CEIL, MAT_CEIL, SLAB, Y_L0 - 0.5, false);
+  cofferedCeilingSlab(k, ROOMS.R7, Y_R7_CEIL, MAT_CEIL, SLAB, Y_L0 - 0.5, false);
+  cofferedCeilingSlab(
+    k,
+    ROOMS.R8,
+    Y_G1_CEIL,
+    MAT_CEIL,
+    SLAB,
+    Y_G1 - 0.5,
+    false,
+  );
 
   // 5. Ściany zewnętrzne i działowe (§3.2–3.5 docs/maps/run8.md):
   // --- R1 Szatnia i Śluza Dekontaminacyjna (X ∈ [-12, 12], Z ∈ [22, 36], y = 0..4.8 m) ---

@@ -213,8 +213,8 @@ function crates(k, p) {
     // R2, R4, R5, R6, R7
     [-13.5, Y_L0, -9.5],
     [13.5, Y_L0, -9.5],
-    [-32.5, Y_L0, -11.0],
-    [-30.5, Y_L0, 4.0],
+    [-33.0, Y_L0, -11.0],
+    [-30.5, Y_L0, 3.5],
     [33.5, Y_L0, 9.0],
     [33.5, Y_L0, -11.5],
   ];
@@ -612,62 +612,57 @@ function signage(k) {
  * - każde z jawnym `floorY` (`0.0`, `4.8` lub `9.6 m`).
  */
 function lights(k) {
-  // --- GŁÓWNA HALA REAKTORA (R2, 12 źródeł: jaśniejsze światło ogólne high-bay + poświata wokół Tokamaka) ---
+  // --- GŁÓWNA HALA REAKTORA (R2, 12 źródeł: jaśniejsze światło ogólne high-bay + poświata wokół Tokamaka i obwodu pod galeriami) ---
   // 4 główne źródła wokół Tokamaka (floorY: 0.0)
-  k.light(0.0, 5.8, -8.5, C.warm, 46, 22, { floorY: Y_L0 });
-  k.light(0.0, 5.8, 8.5, C.amber, 46, 22, { floorY: Y_L0 });
-  k.light(-8.5, 5.8, 0.0, C.violet, 42, 21, { floorY: Y_L0 });
-  k.light(8.5, 5.8, 0.0, C.amber, 42, 21, { floorY: Y_L0 });
-  // 4 źródła strefowe posadzki hali (SW, SE, NW, NE — floorY: 0.0)
-  k.light(-14.5, 5.2, -11.0, C.warm, 38, 19, { floorY: Y_L0 });
-  k.light(14.5, 5.2, -11.0, C.amber, 38, 19, { floorY: Y_L0 });
-  k.light(-14.5, 5.2, 11.5, C.amber, 40, 20, { floorY: Y_L0 });
-  k.light(14.5, 5.2, 11.5, C.warm, 40, 20, { floorY: Y_L0 });
+  k.light(0.0, 5.8, -8.5, C.warm, 48, 23, { floorY: Y_L0 });
+  k.light(0.0, 5.8, 8.5, C.amber, 48, 23, { floorY: Y_L0 });
+  k.light(-8.5, 5.8, 0.0, C.violet, 44, 22, { floorY: Y_L0 });
+  k.light(8.5, 5.8, 0.0, C.amber, 44, 22, { floorY: Y_L0 });
+  // 4 źródła strefowe posadzki hali i podcieni galerii (SW, SE, NW, NE — floorY: 0.0)
+  k.light(-15.5, 4.2, -10.5, C.warm, 42, 21, { floorY: Y_L0 });
+  k.light(15.5, 4.2, -10.5, C.amber, 42, 21, { floorY: Y_L0 });
+  k.light(-15.5, 4.2, 11.5, C.amber, 44, 21, { floorY: Y_L0 });
+  k.light(15.5, 4.2, 11.5, C.warm, 44, 21, { floorY: Y_L0 });
   // 2 źródła na poziomie Galerii G1 (floorY: 4.8)
-  k.light(-20.0, 8.5, -2.0, C.amber, 32, 16, { floorY: Y_G1 });
-  k.light(20.0, 8.5, -2.0, C.amber, 32, 16, { floorY: Y_G1 });
+  k.light(-20.0, 8.5, -2.0, C.amber, 36, 17, { floorY: Y_G1 });
+  k.light(20.0, 8.5, -2.0, C.amber, 36, 17, { floorY: Y_G1 });
   // 2 źródła high-bay pod stropem i na poziomie Galerii Górnej G2 (floorY: 9.6 / 0.0)
-  k.light(0.0, 13.8, -20.4, C.warm, 34, 17, { floorY: Y_G2 });
-  k.light(0.0, 15.5, 0.0, C.warm, 48, 26, { floorY: Y_L0 });
+  k.light(0.0, 13.8, -20.4, C.warm, 38, 18, { floorY: Y_G2 });
+  k.light(0.0, 15.5, 0.0, C.warm, 50, 26, { floorY: Y_L0 });
 
-  // --- SZATNIA I ŚLUZA DEKONTAMINACYJNA (R1, 2 źródła: stonowane ciepłobiałe i bursztynowe zamiast zielonej plamy, floorY: 0.0) ---
+  // --- SZATNIA I ŚLUZA DEKONTAMINACYJNA (R1, 2 źródła: stonowane ciepłobiałe i bursztynowe, floorY: 0.0) ---
   k.light(0.0, 4.3, 29.5, C.warm, 26, 14, {
     floorY: Y_L0,
     groundGlow: false,
   });
   k.light(0.0, 4.3, 23.5, C.amber, 28, 14, { floorY: Y_L0 });
 
-  // --- STEROWNIA GŁÓWNA REAKTORA (R3, 3 źródła, floorY: 4.8) ---
-  k.light(-13.0, 9.1, -28.0, C.blue, 32, 15, { floorY: Y_G1 });
-  k.light(-3.0, 9.1, -28.0, C.warm, 32, 15, { floorY: Y_G1 });
-  k.light(-8.0, 8.5, -35.0, C.green, 30, 13, { floorY: Y_G1 });
+  // --- STEROWNIA GŁÓWNA REAKTORA (R3, 2 główne światła: ciepłobiałe sufitowe + akcent zielony/bursztynowy, floorY: 4.8) ---
+  k.light(-11.0, 9.1, -27.5, C.warm, 42, 18, { floorY: Y_G1 });
+  k.light(-3.5, 9.1, -29.0, C.amber, 38, 17, { floorY: Y_G1 });
+  k.light(-8.0, 8.5, -35.0, C.green, 32, 14, { floorY: Y_G1 });
 
-  // --- LABORATORIUM FIZYKI PLAZMY (R4, 4 źródła, floorY: 0.0) ---
-  k.light(-30.0, 5.1, -15.5, C.violet, 34, 15, { floorY: Y_L0 });
-  k.light(-25.5, 5.1, -18.5, C.warm, 34, 15, { floorY: Y_L0 });
-  k.light(-30.0, 5.1, -6.5, C.blue, 32, 14, { floorY: Y_L0 });
-  k.light(-26.0, 5.1, -2.5, C.amber, 30, 14, { floorY: Y_L0 });
+  // --- LABORATORIUM FIZYKI PLAZMY (R4, 2 mocne światła sufitowe ciepłobiałe + akcent fioletowy plazmy, floorY: 0.0) ---
+  k.light(-27.5, 5.1, -16.5, C.warm, 44, 18, { floorY: Y_L0 });
+  k.light(-31.0, 5.1, -12.5, C.violet, 40, 17, { floorY: Y_L0 });
+  k.light(-28.0, 5.1, -4.5, C.warm, 38, 16, { floorY: Y_L0 });
 
-  // --- MAGAZYN PALIWA — DEUTER/TRYT (R5, 3 źródła, floorY: 0.0) ---
-  k.light(-30.0, 6.4, 5.0, C.green, 30, 15, { floorY: Y_L0 });
-  k.light(-26.5, 6.4, 11.5, C.warm, 34, 16, { floorY: Y_L0 });
-  k.light(-30.0, 6.4, 17.5, C.amber, 34, 16, { floorY: Y_L0 });
+  // --- MAGAZYN PALIWA — DEUTER/TRYT (R5, 2 mocne światła: sufitowe ciepłobiałe + akcent zielony/bursztynowy, floorY: 0.0) ---
+  k.light(-29.0, 6.4, 6.0, C.green, 38, 17, { floorY: Y_L0 });
+  k.light(-29.0, 6.4, 15.5, C.warm, 44, 18, { floorY: Y_L0 });
 
-  // --- HALA TURBIN I WYMIENNIKÓW CIEPŁA (R6, 4 źródła, floorY: 0.0) ---
-  k.light(30.0, 7.2, 2.5, C.amber, 36, 16, { floorY: Y_L0 });
-  k.light(25.5, 7.2, 10.0, C.warm, 38, 17, { floorY: Y_L0 });
-  k.light(31.0, 7.2, 15.5, C.amber, 36, 16, { floorY: Y_L0 });
-  k.light(26.5, 7.2, 19.0, C.warm, 34, 15, { floorY: Y_L0 });
+  // --- HALA TURBIN I WYMIENNIKÓW CIEPŁA (R6, 2 mocne światła sufitowe ciepłobiałe + akcent bursztynowy, floorY: 0.0) ---
+  k.light(28.5, 7.2, 3.5, C.amber, 42, 18, { floorY: Y_L0 });
+  k.light(27.0, 7.2, 15.5, C.warm, 46, 19, { floorY: Y_L0 });
+  k.light(29.0, 7.2, 19.2, C.amber, 40, 16, { floorY: Y_L0 });
 
-  // --- SERWEROWNIA DIAGNOSTYCZNA (R7, 3 źródła, floorY: 0.0) ---
-  k.light(27.0, 5.1, -18.0, C.warm, 32, 14, { floorY: Y_L0 });
-  k.light(31.0, 5.1, -13.0, C.blue, 32, 15, { floorY: Y_L0 });
-  k.light(30.0, 5.1, -7.5, C.green, 30, 14, { floorY: Y_L0 });
+  // --- SERWEROWNIA DIAGNOSTYCZNA (R7, 2 mocne światła: sufitowe ciepłobiałe + akcent zielony, floorY: 0.0) ---
+  k.light(29.0, 5.1, -16.5, C.warm, 42, 17, { floorY: Y_L0 });
+  k.light(30.5, 5.1, -9.0, C.green, 38, 16, { floorY: Y_L0 });
 
-  // --- BIURO KIEROWNIKA NAUKOWEGO (R8, 3 źródła, floorY: 4.8) ---
-  k.light(10.5, 9.1, -27.5, C.warm, 30, 14, { floorY: Y_G1 });
-  k.light(14.5, 9.1, -30.0, C.warm, 32, 14, { floorY: Y_G1 });
-  k.light(19.5, 8.8, -29.0, C.amber, 28, 12, { floorY: Y_G1 });
+  // --- BIURO KIEROWNIKA NAUKOWEGO (R8, 2 mocne światła: ciepłobiałe nad biurkiem + bursztynowy akcent na tablicę Rezonansu, floorY: 4.8) ---
+  k.light(13.5, 9.1, -28.5, C.warm, 42, 17, { floorY: Y_G1 });
+  k.light(19.2, 8.8, -29.5, C.amber, 38, 15, { floorY: Y_G1 });
 }
 
 export function dress(k, placer) {

@@ -34,10 +34,10 @@ export const WALL_T = 0.4;
  *   MAT_SHIELD = 'fus_shield_panel'
  *   MAT_TILE = 'fus_control_tile'
  */
-export const MAT_FLOOR = 'lab_epoxy_floor';
-export const MAT_CONCRETE = 'lab_bunker_concrete';
-export const MAT_SHIELD = 'lab_cleanroom_wall';
-export const MAT_TILE = 'off_polished_granite';
+export const MAT_FLOOR = 'paving';
+export const MAT_CONCRETE = 'concrete';
+export const MAT_SHIELD = 'plaster';
+export const MAT_TILE = 'mall_stone_floor';
 export const MAT_GLASS = 'glass_clear';
 export const MAT_GRATING = 'steel_grating';
 export const MAT_CEIL = MAT_CONCRETE;
@@ -193,7 +193,7 @@ export function ceilingCoffers(k, rect, yBottom, material = MAT_CONCRETE) {
       material,
       opts,
     );
-    // Ciepłe pasy obwodowe `light_panel` rozświetlające strop bez smug bloomu.
+    // Ciepłe pasy obwodowe `light_panel` na wszystkich 4 bokach rozświetlające strop i górne partie ścian bez smug bloomu.
     box(
       k,
       (rect.minX + rect.maxX) / 2,
@@ -201,7 +201,18 @@ export function ceilingCoffers(k, rect, yBottom, material = MAT_CONCRETE) {
       side < 0 ? rect.minZ + 0.65 : rect.maxZ - 0.65,
       w - 1.6,
       0.05,
-      0.22,
+      0.26,
+      'light_panel',
+      opts,
+    );
+    box(
+      k,
+      side < 0 ? rect.minX + 0.65 : rect.maxX - 0.65,
+      yBottom - 0.03,
+      (rect.minZ + rect.maxZ) / 2,
+      0.26,
+      0.05,
+      d - 1.6,
       'light_panel',
       opts,
     );
