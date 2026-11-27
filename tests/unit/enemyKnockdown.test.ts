@@ -13,6 +13,7 @@ import {
   knockdownFrame,
   knockdownPose,
   knockdownTiming,
+  stunDuration,
 } from '../../src/enemies/enemyKnockdown';
 import { EnemyManager } from '../../src/enemies/manager';
 import { enemyDefinitions } from '../../src/enemies/registry';
@@ -32,6 +33,7 @@ afterEach(() => {
 });
 
 const k = tuning.vfx.enemyKnockdown;
+const duration = tuning.enemies.knockdownStunS;
 const HUMANOIDS = ['assaulter', 'gunner', 'sniper', 'shielder', 'executor'];
 const NOT_HUMANOID = ['drone', 'hacker', 'turret', 'securityChief'];
 
@@ -104,28 +106,28 @@ function setup(kind: string) {
       dir: { x: 0, y: 0, z: -1 },
       knockback,
     });
-  return { enemy, steps, hit, settings };
+  return { enemy, steps, hit, settings, world, hurtboxes, bus, damage, player };
 }
 
-describe('przewrócenie i kip-up wroga (tylko widok)', () => {
+describe('przewrócenie i kip-up wroga (symulacja i widok)', () => {
   it.each(HUMANOIDS)(
-    '%s: cała sekwencja mieści się w stunOnHeavyS i kończy w pionie',
+    '%s: cała sekwencja mieści się w czasie przewrócenia i kończy w pionie',
     (kind) => {
       const def = enemyDefinitions.get(kind)!;
       expect(canKnockDown(def)).toBe(true);
-      const timing = knockdownTiming(def.stunOnHeavyS, k);
-      expect(timing.totalS).toBeLessThanOrEqual(def.stunOnHeavyS + 1e-9);
+      const timing = knockdownTiming(duration, k);
+      expect(timing.totalS).toBeLessThanOrEqual(duration + 1e-9);
       expect(timing.landAtS).toBeLessThan(timing.totalS);
-      const fallen = knockdownPose(timing.fallS, def.stunOnHeavyS, k);
+      const fallen = knockdownPose(timing.fallS, duration, k);
       expect(fallen.tiltDeg).toBeCloseTo(k.lieTiltDeg);
-      const end = knockdownPose(def.stunOnHeavyS, def.stunOnHeavyS, k);
+      const end = knockdownPose(duration, duration, k);
       expect(end.tiltDeg).toBeCloseTo(0);
       expect(end.liftM).toBeCloseTo(0);
       expect(end.squash).toBeCloseTo(1);
       // Kip-up wyskakuje ponad ziemię.
       const mid = knockdownPose(
         timing.fallS + timing.lieS + timing.kipS * ((k.tuckAt + k.landAt) / 2),
-        def.stunOnHeavyS,
+        duration,
         k,
       );
       expect(mid.liftM).toBeGreaterThan(k.jumpM * 0.5);
@@ -138,11 +140,105 @@ describe('przewrócenie i kip-up wroga (tylko widok)', () => {
     expect(timing.lieS).toBeCloseTo(0);
   });
 
+  it('ciągłość co 1 ms, zatrzymanie na łopatkach i opadająca parabola do kontaktu', () => {
+    const timing = knockdownTiming(duration, k);
+    const at = (v: number) =>
+      knockdownPose(timing.fallS + timing.lieS + v * timing.kipS, duration, k);
+    expect(at(k.holdAt)).toEqual(at((k.holdAt + k.tuckAt) / 2));
+    expect(at(k.tuckAt).hipFlexDeg).toBeCloseTo(k.tuckHipDeg);
+    let previous = knockdownPose(0, duration, k);
+    let minKnee = 0;
+    let peak = 0,
+      peakTime = 0;
+    for (let ms = 1; ms <= Math.round(duration * 1000); ms++) {
+      const pose = knockdownPose(ms / 1000, duration, k);
+      for (const key of [
+        'tiltDeg',
+        'hipFlexDeg',
+        'kneeFlexDeg',
+        'spineArchDeg',
+        'shoulderDeg',
+        'elbowDeg',
+        'armSpreadDeg',
+      ] as const)
+        expect(Math.abs(pose[key] - previous[key])).toBeLessThan(3);
+      expect(Math.abs(pose.liftM - previous.liftM)).toBeLessThan(0.02);
+      if (pose.liftM > peak) {
+        peak = pose.liftM;
+        peakTime = ms / 1000;
+      }
+      minKnee = Math.min(minKnee, pose.kneeFlexDeg);
+      previous = pose;
+    }
+    const peakPhase = (peakTime - timing.fallS - timing.lieS) / timing.kipS;
+    expect(minKnee).toBeCloseTo(-k.landKneeDeg * k.standOvershoot, 2);
+    expect(peakPhase).toBeGreaterThan(k.tuckAt);
+    expect(peakPhase).toBeLessThan(k.kickAt);
+    expect(peak).toBeCloseTo(k.jumpM, 4);
+    const before = knockdownPose(timing.landAtS - 0.001, duration, k);
+    expect(before.landedAgoS).toBeNull();
+    expect(before.liftM).toBeGreaterThan(0.001);
+    expect(at(k.landAt).landedAgoS).toBeCloseTo(0);
+    expect(at(k.landAt).liftM).toBe(0);
+    expect(at(k.landAt).kneeFlexDeg).toBeCloseTo(k.landKneeDeg);
+  });
+
+  it('ogłuszenie ciężkim ciosem bez odrzutu zachowuje czas definicji', () => {
+    const f = setup('assaulter');
+    f.damage.deal(f.enemy.id, {
+      source: f.player,
+      amount: 1,
+      tags: ['#heavy'],
+    });
+    expect(f.enemy.current.knockdown).toBeUndefined();
+    f.steps(Math.round(f.enemy.definition.stunOnHeavyS / SIM_DT) - 1);
+    expect(f.enemy.current.state).toBe('stunned');
+    f.steps(1);
+    expect(f.enemy.current.state).not.toBe('stunned');
+  });
+
+  it('tarcza pozostaje opuszczona, a dolne krawędzie sensorów nad podłogą przez cały cykl', () => {
+    const f = setup('shielder');
+    f.hit(f.settings.enemies.stunKnockback + 2);
+    let samples = 0;
+    while (samples < Math.ceil(duration / SIM_DT) - 1) {
+      f.steps(1);
+      expect(f.enemy.current.knockdown).toBeDefined();
+      expect(f.enemy.current.shieldUp).toBe(false);
+      let sensors = 0;
+      f.world.forEachCollider((c) => {
+        const box = f.hurtboxes.get(c.handle);
+        if (box?.entity !== f.enemy.id) return;
+        const q = c.rotation();
+        const vertical = Math.abs(1 - 2 * (q.x * q.x + q.z * q.z));
+        const bottom =
+          c.translation().y -
+          c.radius() -
+          (box.headshot ? 0 : c.halfHeight() * vertical);
+        expect(bottom).toBeGreaterThanOrEqual(-1e-5);
+        sensors++;
+      });
+      expect(sensors).toBe(2);
+      samples++;
+    }
+    f.steps(2);
+    expect(f.enemy.current.knockdown).toBeUndefined();
+    f.world.forEachCollider((c) => {
+      const box = f.hurtboxes.get(c.handle);
+      if (box?.entity === f.enemy.id && box.headshot) {
+        expect(c.translation().y - f.enemy.current.position.y).toBeCloseTo(
+          f.enemy.definition.body!.headY,
+          2,
+        );
+      }
+    });
+  });
+
   it.each(NOT_HUMANOID)('%s nie przewraca się', (kind) => {
     expect(canKnockDown(enemyDefinitions.get(kind)!)).toBe(false);
   });
 
-  it('mocny odrzut przewraca w kierunku odrzutu, czas ogłuszenia bez zmian; lekkie trafienie nie', () => {
+  it('mocny odrzut przewraca w kierunku odrzutu, ogłuszenie trwa do końca kip-upu; lekkie trafienie nie', () => {
     const light = setup('assaulter');
     light.hit(light.settings.enemies.stunKnockback - 1);
     expect(light.enemy.current.knockdown).toBeUndefined();
@@ -151,8 +247,10 @@ describe('przewrócenie i kip-up wroga (tylko widok)', () => {
     heavy.hit(heavy.settings.enemies.stunKnockback + 2);
     expect(heavy.enemy.current.state).toBe('stunned');
     expect(heavy.enemy.current.knockdown).toEqual({ x: 0, z: -1 });
-    const def = heavy.enemy.definition;
-    heavy.steps(Math.round(def.stunOnHeavyS / SIM_DT) - 1);
+    expect(stunDuration(heavy.enemy.definition, heavy.enemy.current)).toBe(
+      duration,
+    );
+    heavy.steps(Math.round(duration / SIM_DT) - 1);
     expect(heavy.enemy.current.state).toBe('stunned');
     heavy.steps(2);
     expect(heavy.enemy.current.state).not.toBe('stunned');
@@ -193,7 +291,7 @@ describe('przewrócenie i kip-up wroga (tylko widok)', () => {
       ['gunner', 'Pistol_Idle_Loop'],
     ] as const) {
       const def = enemyDefinitions.get(kind)!;
-      const timing = knockdownTiming(def.stunOnHeavyS, k);
+      const timing = knockdownTiming(duration, k);
       const base = {
         position: { x: 0, y: 0, z: 0 },
         yaw: 0,
@@ -204,7 +302,7 @@ describe('przewrócenie i kip-up wroga (tylko widok)', () => {
       };
       expect(
         selectEnemyAnimation(def, { ...base, stateTimeS: timing.fallS }).clip,
-      ).toBe('Hit_Chest');
+      ).toBe(kind === 'gunner' ? 'Pistol_Idle_Loop' : 'Idle_Loop');
       expect(
         selectEnemyAnimation(def, {
           ...base,

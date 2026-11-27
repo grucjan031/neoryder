@@ -17,7 +17,7 @@ import { CollisionGroup, interactionGroups } from '../physics';
 import type { EnemyDefinition } from './enemySchema';
 import { EnemyBody } from './enemyBody';
 import { resolveWallSlam } from './enemyWallImpact';
-import { knockdownFrame } from './enemyKnockdown';
+import { canKnockDown, knockdownFrame, stunDuration } from './enemyKnockdown';
 import { clearWorld, playerThreatens } from './tactics';
 import type {
   Enemy,
@@ -165,12 +165,15 @@ export class Assaulter implements Enemy {
           );
         const heavy = event.knockback >= ctx.tuning.enemies.stunKnockback;
         if (event.tags.includes(PIERCE_BLOCK_TAG) || heavy) {
-          this.stunS = definition.stunOnHeavyS;
           this.transition('stunned');
-          // Przewrócenie (tylko widok): kierunek odrzutu, czas i balans ogłuszenia bez zmian.
           const length = dir ? Math.hypot(dir.x, dir.z) : 0;
-          if (heavy && dir && length > 1e-6)
+          if (heavy && dir && length > 1e-6 && canKnockDown(definition))
             this.current.knockdown = { x: dir.x / length, z: dir.z / length };
+          this.stunS = stunDuration(
+            definition,
+            this.current,
+            ctx.tuning.enemies.knockdownStunS,
+          );
           ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
         }
       }),
@@ -639,7 +642,12 @@ export class Assaulter implements Enemy {
     const knockdownTuning = this.ctx.tuning.vfx.enemyKnockdown;
     this.body.updateKnockdown(
       s,
-      knockdownFrame(d, s, knockdownTuning),
+      knockdownFrame(
+        d,
+        s,
+        knockdownTuning,
+        this.ctx.tuning.enemies.knockdownStunS,
+      ),
       knockdownTuning,
     );
     if (movement.wallSlam) {
