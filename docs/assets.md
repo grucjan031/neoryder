@@ -359,9 +359,9 @@ Kontrola ręczna na mapie `run3`: obejrzeć figury przez szkło z 10–15 m i po
 
 Do etapu C materiały `lab_epoxy_floor`, `lab_bunker_concrete` i `lab_cleanroom_wall` pobierają odpowiednio tekstury `mall_stone_floor`, `concrete_raw_cast` i `tiles_wall`. Pulpit ma przygotowane pola UV na nadruk kubka i biomonitor. Do czasu dostarczenia grafiki pod biomonitorem widać ekran stanu.
 
-## Przychodnia Helixy na Bulwarze (bulwar1)
+## Przychodnia Helixy na Bulwarze (run5)
 
-Siedem modeli własnych `bw_*` ma początek na środku podstawy, przód w +Z i wymiary w metrach. Generator zapisuje GLB w `public/assets/models/city/` i trzy podglądy każdego modelu w `tools/blender/previews/bulwar/<id>-{front,side,top}.png`.
+Zestaw obejmuje siedem pierwotnych modeli i osiemnaście modeli wyposażenia run5. Modele mają początek na środku podstawy, przód w +Z i wymiary w metrach. Generator zapisuje GLB w `public/assets/models/city/` i trzy podglądy każdego modelu w `tools/blender/previews/bulwar/<id>-{front,side,top}.png`.
 
 ```bash
 "C:/Program Files/Blender Foundation/Blender 5.1/blender.exe" -b --factory-startup --python-exit-code 1 -P tools/blender/sets/bulwar_clinic.py
@@ -369,6 +369,29 @@ node tools/levels/mapModelBounds.mjs
 ```
 
 Opcje po `--` to `--only bw_treatment_screen,bw_sample_fridge` (wybór modeli) i `--no-preview` (sam eksport). Ladę, ławę, panel boksu, leżankę i chłodnię montuj jako pełne bryły według pomiarów w `src/data/render/mapModelBounds.json`. Panel blokuje ruch i strzały na całe 1,55 m, choć powyżej cokołu na 0,85 m widać przez szybę. Skaner i portal windy montuj jako dekoracje z osobnymi koliderami obu słupów i nadproża. Zachowaj otwór 3 × 3 m w skanerze i 4 × 3 m w windzie. Drzwi wyjściowe są osobnym blokiem. Znak rejestracji korzysta z tekstury `holo_helixa` (1024 × 512, przezroczystość z luminancji w shaderze hologramu).
+
+Wymiary poniżej pochodzą z obwiedni gotowych GLB, a liczby trójkątów z ich siatek po eksporcie.
+
+| Model | X × Y × Z [m] | Trójkąty | Opis |
+|---|---|---:|---|
+| `bw_door_portal` | 4,6 × 3,7 × 0,6 | 616 | Ościeża mieszczą mleczne skrzydła po bokach przejścia 4,0 × 3,4 m. |
+| `bw_curtain_wall_frame` | 4 × 5 × 0,3 | 528 | Moduł stalowej fasady łączy dwa słupki trzema ryglami. |
+| `bw_glass_balustrade` | 4 × 1,1 × 0,12 | 708 | Szklana tafla stoi w czterech stopkach pod okrągłym pochwytem. |
+| `bw_ceiling_panel` | 2,4 × 0,3 × 1,2 | 2208 | Cztery krótkie zawiesia podtrzymują oprawę z dwoma dyfuzorami. |
+| `bw_operating_table` | 0,9 × 0,9994 × 2,1974 | 1316 | Kolumna teleskopowa podpiera cztery segmenty blatu i boczne szyny. |
+| `bw_surgical_robot` | 2,4 × 2,8984 × 1,6108 | 4072 | Cztery ramiona narzędziowe i oddzielna lampa są skierowane do stołu po stronie +Z. |
+| `bw_resonance_scanner` | 2,8 × 2,5 × 3,4 | 2994 | Wysuwany stół wchodzi w otwór gantry o średnicy 1,1 m. |
+| `bw_regen_pod` | 1,3 × 2,5 × 1,3 | 4402 | Zielone obręcze oświetlają krawędzie szklanej kapsuły z pionowym leżem. |
+| `bw_regen_pod_open` | 1,3 × 2,5 × 1,6 | 4586 | Odsunięta szyba odsłania rozpięte pasy, a obręcze są wygaszone. |
+| `bw_calibration_chair` | 1,106 × 2,2 × 1,9828 | 2112 | Fotel ma otwarte obejmy nadgarstków i fioletową obręcz nad zagłówkiem. |
+| `bw_kamerton_cradle` | 2,6 × 3,3 × 2,6 | 5028 | Trzy pylony otaczają puste leże, z przodu stoi ramka tabliczki 0,5 × 0,25 m. |
+| `bw_pharmacy_dispenser` | 2,4 × 2,4 × 0,9 | 2542 | Za szybą widać podajnik i półki dawek, a pod nimi trzy szuflady. |
+| `bw_implant_showcase` | 1 × 2,1 × 1 | 2560 | Proteza dłoni i przedramienia stoi pod kloszem nad podświetlanym cokołem. |
+| `bw_lab_analyzer_bench` | 2,4 × 1,4996 × 0,8 | 2328 | Na blacie stoją karuzela próbek pod pokrywą, mikroskop i stojak fiolek. |
+| `bw_med_cart` | 0,6 × 0,9991 × 0,8992 | 1128 | Wózek ma trzy szuflady, uchwyt i statyw z workiem kroplówki. |
+| `bw_info_totem` | 0,8 × 2,2 × 0,3 | 352 | Płyta na stalowym cokole mieści ekran, czytnik i linię statusu. |
+| `bw_planter_bio` | 2,4 × 1,9049 × 2,4 | 4324 | Segmenty siedziska otaczają misę z paprociami i krzewem. |
+| `bw_helix_sculpture` | 3 × 8 × 3 | 11656 | Dwie stalowe wstęgi wykonują po dwa skręty wokół masztu, spięte szesnastoma szczeblami. |
 
 ## Port kontenerowy (arena Przejęcie)
 

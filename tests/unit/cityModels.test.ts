@@ -831,6 +831,54 @@ async function loadSet(name: string): Promise<Object3D> {
   return gltf.scene;
 }
 
+describe('przychodnia Helixy w run5', () => {
+  const budgets = {
+    bw_door_portal: 6000,
+    bw_curtain_wall_frame: 6000,
+    bw_glass_balustrade: 6000,
+    bw_ceiling_panel: 6000,
+    bw_operating_table: 6000,
+    bw_surgical_robot: 12000,
+    bw_resonance_scanner: 12000,
+    bw_regen_pod: 6000,
+    bw_regen_pod_open: 6000,
+    bw_calibration_chair: 6000,
+    bw_kamerton_cradle: 12000,
+    bw_pharmacy_dispenser: 6000,
+    bw_implant_showcase: 6000,
+    bw_lab_analyzer_bench: 6000,
+    bw_med_cart: 6000,
+    bw_info_totem: 6000,
+    bw_planter_bio: 6000,
+    bw_helix_sculpture: 12000,
+  };
+
+  it.each(Object.entries(budgets))(
+    '%s zachowuje budżet geometrii i paletę kliniki',
+    async (id, budget) => {
+      const scene = await loadSet(id);
+      let triangles = 0;
+      scene.traverse((node) => {
+        if (!(node instanceof Mesh)) return;
+        const geometry = node.geometry;
+        triangles +=
+          (geometry.index?.count ?? geometry.getAttribute('position').count) /
+          3;
+        for (const mat of [node.material].flat()) {
+          expect(reserved(mat.color)).toBe(false);
+          if (mat.emissive.getHex() === 0) continue;
+          expect(mat.name).toMatch(
+            /^mat_(light_panel|neon_(green|blue|violet|amber))$/,
+          );
+          expect(reserved(mat.emissive)).toBe(false);
+        }
+      });
+      expect(triangles).toBeGreaterThan(0);
+      expect(triangles).toBeLessThanOrEqual(budget);
+    },
+  );
+});
+
 describe('magazyn Kurogane', () => {
   const sizes = {
     wh_pallet_rack: [4, 6, 1.2],

@@ -14,6 +14,24 @@ const sizes = {
   bw_treatment_bed: [0.85, 1.05, 2],
   bw_sample_fridge: [1.2, 2.15, 0.95],
   bw_freight_lift_frame: [5, 4.2, 1.1],
+  bw_door_portal: [4.6, 3.7, 0.6],
+  bw_curtain_wall_frame: [4, 5, 0.3],
+  bw_glass_balustrade: [4, 1.1, 0.12],
+  bw_ceiling_panel: [2.4, 0.3, 1.2],
+  bw_operating_table: [0.9, 1, 2.2],
+  bw_surgical_robot: [2.4, 2.9, 1.6],
+  bw_resonance_scanner: [2.8, 2.5, 3.4],
+  bw_regen_pod: [1.3, 2.5, 1.3],
+  bw_regen_pod_open: [1.3, 2.5, 1.6],
+  bw_calibration_chair: [1.1, 2.2, 2],
+  bw_kamerton_cradle: [2.6, 3.3, 2.6],
+  bw_pharmacy_dispenser: [2.4, 2.4, 0.9],
+  bw_implant_showcase: [1, 2.1, 1],
+  bw_lab_analyzer_bench: [2.4, 1.5, 0.8],
+  bw_med_cart: [0.6, 1, 0.9],
+  bw_info_totem: [0.8, 2.2, 0.3],
+  bw_planter_bio: [2.4, 1.9, 2.4],
+  bw_helix_sculpture: [3, 8, 3],
 } as const;
 
 it.each(Object.keys(sizes) as (keyof typeof sizes)[])(
@@ -51,20 +69,40 @@ it.each(Object.keys(sizes) as (keyof typeof sizes)[])(
     });
     expect(names.has('mat_world')).toBe(false);
     expect([...names].sort()).toEqual(bounds[id].materials);
-    if (id === 'bw_treatment_screen' || id === 'bw_sample_fridge')
+    if (
+      [
+        'bw_treatment_screen',
+        'bw_sample_fridge',
+        'bw_door_portal',
+        'bw_glass_balustrade',
+        'bw_regen_pod',
+        'bw_regen_pod_open',
+        'bw_implant_showcase',
+        'bw_pharmacy_dispenser',
+        'bw_lab_analyzer_bench',
+        'bw_med_cart',
+      ].includes(id)
+    )
       expect(names.has('mat_clinic_glass')).toBe(true);
-    if (id === 'bw_entry_scanner' || id === 'bw_freight_lift_frame') {
+    if (id === 'bw_regen_pod' || id === 'bw_regen_pod_open')
+      expect(names.has('mat_neon_green')).toBe(id === 'bw_regen_pod');
+    if (
+      id === 'bw_entry_scanner' ||
+      id === 'bw_freight_lift_frame' ||
+      id === 'bw_door_portal'
+    ) {
       const half = id === 'bw_entry_scanner' ? 1.5 : 2;
+      const height = id === 'bw_door_portal' ? 3.4 : 3;
       const hit = (x: number, y: number) =>
         new Raycaster(
           new Vector3(x, y, 2),
           new Vector3(0, 0, -1),
         ).intersectObject(scene).length;
       for (const x of [0, half - 0.001, -half + 0.001])
-        for (const y of [0.002, 1.5, 2.999]) expect(hit(x, y)).toBe(0);
+        for (const y of [0.002, 1.5, height - 0.001]) expect(hit(x, y)).toBe(0);
       for (const x of [half + 0.12, -half - 0.12])
         expect(hit(x, 1.5)).toBeGreaterThan(0);
-      expect(hit(0, 3.05)).toBeGreaterThan(0);
+      expect(hit(0, height + 0.05)).toBeGreaterThan(0);
     }
   },
 );
