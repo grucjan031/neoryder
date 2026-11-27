@@ -50,12 +50,12 @@ it('generuje powtarzalną mapę Bulwaru ze sklepem i elitami', () => {
 });
 
 it('rozwiązuje pule i mierzy większą presję przy tym samym czasie trasy', () => {
-  expect(bulwarSector.roomPools?.combat).toEqual(['run5']);
-  expect(bulwarSector.roomPools?.elite).toEqual(['run5']);
+  expect(bulwarSector.roomPools?.combat).toEqual(['run5', 'run6']);
+  expect(bulwarSector.roomPools?.elite).toEqual(['run5', 'run6']);
   for (const [type, ids] of Object.entries(bulwarSector.roomPools!))
     for (const id of ids!)
       expect(roomDefinitions.get(id)?.type).toBe(
-        type === 'elite' && id === 'run5' ? 'combat' : type,
+        type === 'elite' ? 'combat' : type,
       );
   for (const pool of Object.values(bulwarSector.threat!.pools))
     for (const id of Object.keys(pool!))
