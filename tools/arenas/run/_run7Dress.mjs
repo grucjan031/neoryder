@@ -1,7 +1,7 @@
-// Oprawa wizualna Rezydencji Pułkownika Kurogane Arms — Willa Kuroyama (run6):
+// Oprawa wizualna Rezydencji Pułkownika Kurogane Arms — Willa Kuroyama (run7):
 // tekstury, Tablica Śledcza „Iskra”, 12 Easter Eggów, 5 zagrożeń środowiskowych,
 // szyldy, 32 źródła światła i 20 punktów spawnu na 3 kondygnacjach.
-import { COLOR, PI, Q, R, Y_B, Y_L0, Y_L1, box, vec } from './_run6Kit.mjs';
+import { COLOR, PI, Q, R, Y_B, Y_L0, Y_L1, box, vec } from './_run7Kit.mjs';
 
 const C = COLOR;
 
@@ -31,7 +31,7 @@ function mark(
 }
 
 /**
- * 20 punktów spawnu wrogów (§5.1 docs/maps/run6.md):
+ * 20 punktów spawnu wrogów (§5.1 docs/maps/run7.md):
  * - 10 na Parterze (`y = 0.0 m`: R2..R7),
  * - 6 na Piętrze i Antresoli Salonu (`y = 4.8 m`: R2-M, R8..R12),
  * - 4 w Piwnicy (`y = -4.8 m`: R13..R15).
@@ -62,7 +62,7 @@ export const SPAWNS = [
   [19, Y_B, 29], // 20: R15 Podziemny Bunkier Ochrony — przed śluzą exit
 ];
 
-/** 5 zagrożeń środowiskowych (§5.2 docs/maps/run6.md) na Parterze, Piętrze i w Piwnicy. */
+/** 5 zagrożeń środowiskowych (§5.2 docs/maps/run7.md) na Parterze, Piętrze i w Piwnicy. */
 function hazards(k, p) {
   k.hazards.push(
     // 1. Ogniwo paliwowe w R6 Garażu Pancernym (y = 0.0 m)
@@ -109,7 +109,7 @@ function hazards(k, p) {
   k.fx('sparks', 23.5, Y_B + 0.8, 25.0, 1.2);
 }
 
-/** Tablica Śledcza „Operacja Iskra”, 12 Easter Eggów i naklejki rezydencji (§4.2 docs/maps/run6.md). */
+/** Tablica Śledcza „Operacja Iskra”, 12 Easter Eggów i naklejki rezydencji (§4.2 docs/maps/run7.md). */
 function decalsAndEasterEggs(k) {
   // Monogramy podłogowe `res_kurogane_villa_crest` w Holu R1, Salonie R2, Biurze R8 i Winiarni R14.
   for (const [x, y, z, size] of [
@@ -383,7 +383,7 @@ function signage(k) {
 }
 
 /**
- * 26 źródeł bazowych i 6 lokalnych świateł stref meblowych (§5.3 docs/maps/run6.md).
+ * 26 źródeł bazowych i 6 lokalnych świateł stref meblowych (§5.3 docs/maps/run7.md).
  * - 100% bez `cone: true` (0 smug wolumetrycznych!).
  */
 function lights(k) {

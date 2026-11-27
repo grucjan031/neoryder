@@ -8,7 +8,7 @@ import { tuning } from '../../src/core/tuning';
 import measuredBounds from '../../src/data/render/mapModelBounds.json';
 import { Box3, Euler, Matrix4, Ray, Vector3 } from 'three';
 
-const room = roomDefinitions.get('run6')!;
+const room = roomDefinitions.get('run7')!;
 const nav = new ArenaNavigation(room);
 const surfaceNav = new ArenaSurfaceNavigation(room);
 const stairsNav = new ArenaNavigation({ ...room, elevators: [] });
@@ -52,7 +52,7 @@ const targets = [
 ];
 
 it.each(targets)(
-  'run6: $id jest osiągalne ze startu i z powrotem bez windy',
+  'run7: $id jest osiągalne ze startu i z powrotem bez windy',
   (goal) => {
     reach(room.playerSpawn, goal);
     reach(goal, room.playerSpawn);
@@ -75,7 +75,7 @@ const stairEnds = [
 ];
 
 it.each(stairEnds)(
-  'run6: próg schodów x=$x y=$y z=$aisle łączy się ze spocznikiem',
+  'run7: próg schodów x=$x y=$y z=$aisle łączy się ze spocznikiem',
   (end) => {
     const aisle = { x: end.x, y: end.y, z: end.aisle };
     const ramp = { x: end.x, y: end.y + end.rise, z: end.ramp };
@@ -97,7 +97,7 @@ it.each(stairEnds)(
   },
 );
 
-it('run6: winda piwniczna ma podparte progi i trasy w obie strony, schody pozostają alternatywą', () => {
+it('run7: winda piwniczna ma podparte progi i trasy w obie strony, schody pozostają alternatywą', () => {
   expect(room.elevators).toHaveLength(1);
   const lift = room.elevators![0]!;
   expect(lift).toMatchObject({
@@ -137,7 +137,7 @@ it('run6: winda piwniczna ma podparte progi i trasy w obie strony, schody pozost
   }
 });
 
-it('run6: wszystkie 20 spawnów i wyjście są osiągalne po schodach', () => {
+it('run7: wszystkie 20 spawnów i wyjście są osiągalne po schodach', () => {
   expect(room.spawnPoints).toHaveLength(20);
   for (const p of room.spawnPoints)
     reach(room.playerSpawn, { ...p, y: p.y ?? 0 });
@@ -145,7 +145,7 @@ it('run6: wszystkie 20 spawnów i wyjście są osiągalne po schodach', () => {
   reach(room.playerSpawn, { ...exit.position, y: -4.8 });
 });
 
-it('run6: kapsuła mieści się na starcie i we wszystkich 20 punktach spawnu', () => {
+it('run7: kapsuła mieści się na starcie i we wszystkich 20 punktach spawnu', () => {
   const { capsuleHeight, capsuleRadius } = tuning.player;
   for (const p of [room.playerSpawn, ...room.spawnPoints]) {
     const y = p.y ?? 0;
@@ -170,7 +170,7 @@ it('run6: kapsuła mieści się na starcie i we wszystkich 20 punktach spawnu', 
   }
 });
 
-it('run6: osłony w salonie nie zostawiają pustego kwadratu większego niż 8 m', () => {
+it('run7: osłony w salonie nie zostawiają pustego kwadratu większego niż 8 m', () => {
   const covers = room.blocks.filter(
     (b) =>
       b.visible !== false &&
@@ -210,18 +210,18 @@ it('run6: osłony w salonie nie zostawiają pustego kwadratu większego niż 8 m
   expect(largest * step).toBeLessThanOrEqual(8);
 });
 
-it('run6: mapa jest w puli walk i elit sektora Kurogane', () => {
+it('run7: mapa jest w puli walk i elit sektora Kurogane', () => {
   expect(sector.roomPools.combat).toEqual([
     'run1',
     'run2',
     'run3',
     'run4',
-    'run6',
+    'run7',
   ]);
   expect(sector.roomPools.elite).toEqual(sector.roomPools.combat);
 });
 
-it('run6: wszystkie 31 modeli drugiej partii jest użyte, a obce meble i skrzynie usunięte', () => {
+it('run7: wszystkie 31 modeli drugiej partii jest użyte, a obce meble i skrzynie usunięte', () => {
   const models = new Set([
     ...room.blocks.map((b) => b.model),
     ...(room.decor ?? []).map((d) => d.model),
@@ -338,7 +338,7 @@ it.each([
     end: [7, 6.45, 8],
   },
   { id: 'Sypialnia', eye: [-14, 6.45, -39], end: [-14, 6.45, -45] },
-])('run6: $id ma wolny widok na zewnątrz na wysokości oczu', ({ eye, end }) => {
+])('run7: $id ma wolny widok na zewnątrz na wysokości oczu', ({ eye, end }) => {
   const origin = new Vector3().fromArray(eye);
   const destination = new Vector3().fromArray(end);
   const distance = origin.distanceTo(destination);

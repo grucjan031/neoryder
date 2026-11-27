@@ -1,5 +1,5 @@
 // Wyposażenie tematyczne wszystkich 15 pomieszczeń (R1..R15) i Antresoli Salonu (R2-M)
-// Rezydencji Pułkownika Kurogane Arms — Willa Kuroyama (run6):
+// Rezydencji Pułkownika Kurogane Arms — Willa Kuroyama (run7):
 // Parter L0 (y = 0.0 m): R1 (Hol Wejściowy), R2 (Wielki Dwukondygnacyjny Salon), R3 (Jadalnia),
 //   R4 (Kuchnia), R5 (Kryty Basen i Ogród Zimowy), R6 (Garaż Pancerny), R7 (Pokój Ochrony Parteru).
 // Piętro L1 (y = +4.8 m): R2-M (Antresola Salonu), R8 (Biuro Pułkownika z Tablicą „Iskra”),
@@ -30,7 +30,7 @@ import {
   rug,
   solid,
   waistDivider,
-} from './_run6Kit.mjs';
+} from './_run7Kit.mjs';
 
 /** R1 — Hol Wejściowy i Foyer z Szatnią (L0, X ∈ [-10, 10], Z ∈ [4, 16], y = 0.0 m). */
 function buildRoomR1(k, p) {

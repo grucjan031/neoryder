@@ -1,13 +1,13 @@
-# Dokument projektowy mapy `run6` — REZYDENCJA PUŁKOWNIKA KUROGANE ARMS („WILLA KUROYAMA // ENKLAWA LEŚNA”)
+# Dokument projektowy mapy `run7` — REZYDENCJA PUŁKOWNIKA KUROGANE ARMS („WILLA KUROYAMA // ENKLAWA LEŚNA”)
 
 Status: **Projekt referencyjny jakości (wzorzec 8+/10) + specyfikacja modułu tła leśnego, 15 pomieszczeń na 3 kondygnacjach, tablicy śledczej „Iskra”, modeli `res_*`, tekstur i generatora**  
-Docelowy plik danych mapy: `src/data/rooms/run6.json` (generator: `tools/arenas/run/run6.mjs` + moduły pomocnicze `_run6Kit.mjs`, `_run6Rooms.mjs`, `_run6Dress.mjs`)  
+Docelowy plik danych mapy: `src/data/rooms/run7.json` (generator: `tools/arenas/run/run7.mjs` + moduły pomocnicze `_run7Kit.mjs`, `_run7Rooms.mjs`, `_run7Dress.mjs`)  
 Kierunek artystyczny: **Neon Noir** (`AGENTS.md`, `docs/adr/0006-neon-noir.md`)
 
 **Wersja r2.** Rezydencja należy do puli walk i elit Kurogane. Sufity części
 mieszkalnej mają beton architektoniczny, a oba biegi schodów salonowych —
 bursztynowe listwy LED. W scenie
-`?scene=map-walk&map=run6` spod wejścia do salonu widać korony przez górne
+`?scene=map-walk&map=run7` spod wejścia do salonu widać korony przez górne
 przeszklenia. Oba biegi schodów prowadzą na antresolę, a za biurkiem w R8
 można podejść do podświetlonej tablicy Iskry. Od strony holu winda zjeżdża
 do winiarni. Ocena wizualna r2 wymaga sprawdzenia tych kadrów w grze.
@@ -38,7 +38,7 @@ pozostaje poniżej piwnicy wewnątrz obrysu budynku. Mgła jest rzadsza,
 księżyc podkreśla krawędzie koron, a pełne moduły okien mają jedną szybę.
 Panorama lasu wyłącza płaskie podłoże panoramy miejskiej.
 
-Testy `run6Navigation.test.ts` obejmują także prześwit kapsuły na 20 spawnach
+Testy `run7Navigation.test.ts` obejmują także prześwit kapsuły na 20 spawnach
 i gęstość osłon salonu. `forestLayout.test.ts` sprawdza relief, odsłonięcie
 piwnicy i zmianę podłoża przy przełączaniu panoramy. Odbiór wizualny r2
 i pomiar wywołań renderu pozostają do wykonania na nowych zrzutach.
@@ -47,13 +47,13 @@ i pomiar wywołań renderu pozostają do wykonania na nowych zrzutach.
 
 ## 1. Analiza silnika i nauczki z `run1`–`run4` oraz `bulwar1`
 
-### 1.1. Co już działa w silniku i jak `run6` z tego korzysta
+### 1.1. Co już działa w silniku i jak `run7` z tego korzysta
 
 Po wdrożeniu magazynu `run1` ([docs/maps/run1.md](run1.md)), galerii handlowej `run2` ([docs/maps/run2.md](run2.md)), tajnego laboratorium `run3` ([docs/maps/run3.md](run3.md)), biurowca `run4` ([docs/maps/run4.md](run4.md)) oraz przychodni `bulwar1` ([docs/maps/bulwar1.md](bulwar1.md)) silnik posiada kompletny zestaw mechanik do budowy trzykondygnacyjnej, luksusowej rezydencji otoczonej nocnym lasem:
 
-| Obszar silnika | Stan obecny w kodzie | Jak wykorzystuje to `run6` | Odwołania do plików |
+| Obszar silnika | Stan obecny w kodzie | Jak wykorzystuje to `run7` | Odwołania do plików |
 |---|---|---|---|
-| **Format pokoju i katalogi testowe** | Pokój `src/data/rooms/run6.json` (`type: "combat"`, z blokiem `arena` i `spawnRing`) ładuje się automatycznie przez `import.meta.glob` do `roomDefinitions`, menu „Testy map” (`?maps=1` → `?scene=map-walk&map=run6`), sceny walki `?scene=room-test&room=run6&debug=1` oraz audytu CLI `node tools/levels/mapAudit.mjs run6` i `node tools/screens/mapAudit.mjs run6`. | `run6` jest pokojem runu (`rooms`), bez sztucznej misji kampanii. Po odbiorze wizualnym (ocena Opusa `≥ 7/10`) zostaje dopisany do `roomPools.combat` i `roomPools.elite` w `src/data/sectors/kurogane.json` obok `run1`–`run4`. | `src/world/rooms.ts`, `src/world/mapCatalog.ts`, `tools/levels/mapAuditCatalog.ts`, `tools/arenas/run/_runKit.mjs` |
+| **Format pokoju i katalogi testowe** | Pokój `src/data/rooms/run7.json` (`type: "combat"`, z blokiem `arena` i `spawnRing`) ładuje się automatycznie przez `import.meta.glob` do `roomDefinitions`, menu „Testy map” (`?maps=1` → `?scene=map-walk&map=run7`), sceny walki `?scene=room-test&room=run7&debug=1` oraz audytu CLI `node tools/levels/mapAudit.mjs run7` i `node tools/screens/mapAudit.mjs run7`. | `run7` jest pokojem runu (`rooms`), bez sztucznej misji kampanii. Po odbiorze wizualnym (ocena Opusa `≥ 7/10`) zostaje dopisany do `roomPools.combat` i `roomPools.elite` w `src/data/sectors/kurogane.json` obok `run1`–`run4`. | `src/world/rooms.ts`, `src/world/mapCatalog.ts`, `tools/levels/mapAuditCatalog.ts`, `tools/arenas/run/_runKit.mjs` |
 | **Nawigacja 3D (`ArenaSurfaceNavigation`)** | `RoomScene.init()` buduje graf komórek `0.5 × 0.5 m` na blokach `walkable: true` połączonych rampami osiowymi (`rotation.x` lub `rotation.z`), z kontrolą prześwitu `navigationHeadroomM = 2.2 m` i promienia kapsuły `navigationClearanceM = 0.4 m`. | Spina trzy kondygnacje rezydencji: **Piwnicę (`B`, `y = -4.80 m`)**, **Parter (`L0`, `y = 0.00 m`)** oraz **Piętro (`L1`, `y = +4.80 m`)** przez spoczniki pośrednie (`y = -2.40 m` i `y = +2.40 m`) czterema dwubiegowymi klatkami schodowymi o czystym obrocie `rotation.x`, kącie **`25.64° ≤ 26.6°`** i szerokości **`3.20 m ≥ 2.0 m`**, a równolegle przez **działającą prywatną windę pancerną** (`elevators[0]`) łączącą Parter z Piwnicą. | `src/world/arenaNavigation.ts`, `src/world/arenaSurfaceNavigation.ts:119–274` |
 | **Działająca winda pokojowa (`elevators[]`)** | Moduł `Elevator` (`src/world/elevator.ts`, `docs/systems/elevator.md`) obsługuje kinematyczną kabinę Rapiera, drzwi szybowe i kabinowe, przyciski wezwania/kierunku (`E`) oraz pełną integrację z grafem tras AI (`ElevatorRoutes`, `ElevatorPassengers`). | W osi między Holem Wejściowym `R1` (`y = 0.00 m`) a Winiarnią `R14` i Salą Tortur `R13` w Piwnicy (`y = -4.80 m`) kursuje **Prywatna Winda Piwniczna Pułkownika** (`id: "cellar-interrogation-lift"`, `width: 2.6, depth: 2.6`, `model: "res_elevator_cab"`), którą zarówno gracz, jak i Egzekutorzy mogą zjeżdżać do podziemnego kompleksu przesłuchań. | `docs/systems/elevator.md`, `src/world/elevatorSchema.ts`, `src/world/elevator.ts`, `src/render/elevatorView.ts` |
 | **Spawny i hazardy na wielu kondygnacjach (`spawnPoints[].y`, `hazards[]`)** | `roomSpawnPointSchema` i `wavesSchema` obsługują współrzędną `y`, a `validateLayout` weryfikuje podparcie spawnów oraz zagrożeń (`electric_field`, `laser_gate`, `explosive_barrel`) na poziomych blokach `walkable: true` dowolnej kondygnacji (`y = -4.80, 0.00, +4.80 m`). | **20 punktów spawnu** rozłożonych na trzech kondygnacjach: **4 w Piwnicy (`y = -4.80 m`)**, **10 na Parterze (`y = 0.00 m`)** i **6 na Piętrze oraz Antresoli Salonu (`y = +4.80 m`)** oraz **5 zagrożeń środowiskowych** na poziomach `-4.80 m`, `0.00 m` i `+4.80 m`. | `src/world/roomSchema.ts:146–151, 406–588`, `src/scenes/roomScene.ts:610, 1612` |
@@ -61,11 +61,11 @@ Po wdrożeniu magazynu `run1` ([docs/maps/run1.md](run1.md)), galerii handlowej 
 | **Strefy bez opadu (`rainShelters`) przy ulewnym deszczu w lesie** | `Weather` (`src/vfx/weather.ts:104–108`) wycina w shaderze smugi deszczu wewnątrz każdego AABB z tablicy `rainShelters`, zostawiając pełny opad poza obrysem budynków (`run4`, `bulwar1`). | Całe wnętrze trzech kondygnacji willi pokrywają szczelne bryły `rainShelters` (wewnątrz `0` kropli i `0` rozbryzgów), natomiast tuż za wielkimi taflami `mat_glass_clear` Salonu, Basenu, Jadalni, Biura i Sypialni zacina nocny deszcz pomiędzy pniami sosen i świerków. | `src/world/dressingSchema.ts:200–205`, `src/render/city/dressing.ts:168–177` |
 | **Ukrywanie stropów w ujęciach audytu z góry (`ceiling: true`)** | Bloki z `ceiling: true` trafiają do grupy `room-ceilings`, ukrywanej w `MapAuditScene.render()` dla kamer `top`, `high-west` i `high-east`. | Wszystkie niegrywalne dachy i stropy nad Piwnicą (`y = 0.00..0.40 m` w strefie tarasu południowego), Parterem (`y = 4.80..5.20 m`), Dwukondygnacyjnym Salonem (`y = 9.60..10.00 m`) oraz Piętrem (`y = 9.60..10.00 m`) mają `ceiling: true`. | `src/scenes/roomScene.ts:1129`, `src/scenes/mapAuditScene.ts:140, 163–166` |
 
-### 1.2. Kluczowe nauczki z `run1`–`run4` zastosowane w `run6`
+### 1.2. Kluczowe nauczki z `run1`–`run4` zastosowane w `run7`
 
 1. **Widoczność wszystkich 3 kondygnacji (w tym Piwnicy `y = -4.80 m`) na zrzutach `10-top.png`, `08-high-west.png` i `09-high-east.png` (nauczka z `run3` i `run4`):**
    - W `src/scenes/mapAuditScene.ts:163–166` kamery zewnętrzne `top`, `high-west` i `high-east` ukrywają wyłącznie grupę `room-ceilings` (bloki z `ceiling: true`). Płyty podłogowe Parteru (`L0: y = 0.00 m`) oraz Piętra (`L1: y = +4.80 m`) muszą mieć `walkable: true` i **nie mogą** mieć `ceiling: true`. Gdyby Piwnica (`y = -4.80 m`) leżała bezpośrednio pod posadzką Parteru, a Piętro (`y = +4.80 m`) bezpośrednio nad całym Parterem, górne posadzki zasłoniłyby niższe kondygnacje na zrzutach audytu.
-   - **Rozwiązanie architektoniczne w `run6` (kaskadowa willa na leśnej skarpie z 3 strefami rzutów XZ i dwukondygnacyjnym Salonem):**
+   - **Rozwiązanie architektoniczne w `run7` (kaskadowa willa na leśnej skarpie z 3 strefami rzutów XZ i dwukondygnacyjnym Salonem):**
      1. **Południowe Skrzydło Piwniczne w skarpie (`Z ∈ [+16, +32], X ∈ [-28, +28]`, posadzka `y = -4.80 m`):** mieści **Salę Tortur i Przesłuchań (`R13`)**, **Prywatną Winiarnię (`R14`)** oraz **Podziemny Bunkier Ochrony i Serwerownię (`R15`)**. Nad całym tym pasem (`Z ∈ [+16, +32]`) nie ma grywalnych pokoi Parteru ani Piętra — przykrywa go wyłącznie betonowo-szklana płyta tarasu dziedziniec-świetlik na `y = 0.00..0.40 m` oznaczona `ceiling: true`. W grze FPP piwnica jest zamkniętym, mrocznym podziemiem z pancernymi świetlikami sufitowymi, natomiast w ujęciach `10-top`, `08-high-west` i `09-high-east` płyta `ceiling: true` znika, odsłaniając **100% wnętrza wszystkich 3 pomieszczeń Piwnicy (`R13`, `R14`, `R15`), oba biegi schodów `L0 ↔ B` oraz dolny przystanek windy**!
      2. **Środkowy Korpus Parteru z Dwukondygnacyjnym Salonem (`Z ∈ [-18, +16], X ∈ [-30, +30]`, posadzka `y = 0.00 m`):** w geometrycznym sercu willi leży jedyne duże pomieszczenie mapy — **Wielki Dwukondygnacyjny Salon (`R2`, `X ∈ [-16, +16], Z ∈ [-18, +4]`, `32 × 22 m = 704 m²`, wysokość `H = 9.60 m`)** z pustką przez dwie kondygnacje i obwodową **Antresolą/Galerią (`R2-M`, szer. `3.2 m` na `y = +4.80 m`)**. Otaczające Salon pomieszczenia Parteru — **Hol Wejściowy (`R1`)**, **Jadalnia (`R3`)**, **Kuchnia (`R4`)**, **Kryty Basen i Ogród Zimowy (`R5`)**, **Garaż Pancerny (`R6`)** oraz **Pokój Ochrony (`R7`)** — są przykryte wyłącznie własnymi stropami na `y = +4.80..5.20 m` z `ceiling: true` (brak nad nimi pokoi Piętra `L1`), dzięki czemu na zrzutach z góry widać kompletnie cały Parter!
      3. **Północna Korona Piętra nad leśnym zboczem (`Z ∈ [-42, -18], X ∈ [-30, +30]`, posadzka `y = +4.80 m`):** wysunięta na północ nad opadający stok lasu kondygnacja `L1` mieści **Biuro Pułkownika (`R8`)**, **Bibliotekę (`R9`)**, **Salę Trofeów (`R10`)**, **Sypialnię Pułkownika z Garderobą (`R11`)** oraz **Prywatne Spa i Łazienkę (`R12`)**, przykryte dachem `y = +9.60..10.00 m` z `ceiling: true`.
@@ -85,7 +85,7 @@ Po wdrożeniu magazynu `run1` ([docs/maps/run1.md](run1.md)), galerii handlowej 
 
 ## 2. Lista braków („fundamenty”) z priorytetem P0 / P1
 
-### 2.1. Priorytet P0 — MUSI BYĆ PRZED `run6`
+### 2.1. Priorytet P0 — MUSI BYĆ PRZED `run7`
 
 #### A. Uogólnienie modułu tła (`SceneAtmosphere` / `Panorama`) na tło leśne i rejestracja `res_*` (Etap A)
 
@@ -117,7 +117,7 @@ Aby zastąpić miasto za oknami **prawdziwym, żywym, deszczowym lasem nocą**, 
 
 ---
 
-## 3. Projekt architektoniczny mapy `run6` — 15 pomieszczeń na 3 kondygnacjach (`Piwnica B`, `Parter L0`, `Piętro L1`)
+## 3. Projekt architektoniczny mapy `run7` — 15 pomieszczeń na 3 kondygnacjach (`Piwnica B`, `Parter L0`, `Piętro L1`)
 
 ### 3.1. Lore miejsca: Pułkownik Kenji Vane i jego leśna forteca „Willa Kuroyama”
 
@@ -302,7 +302,7 @@ Z=+4                   +------------+.......................................+---
 
 Winda znajduje się na styku Holu Wejściowego `R1` (`y = 0.00 m`) i Winiarni `R14` w Piwnicy (`y = -4.80 m`) w punkcie `(X = 0.0, Z = +15.0)`. Ponieważ na poziomie Parteru drzwi otwierają się na północ (`doorSide: "n"`, `Z = +13.7` — wprost na posadzkę Holu `R1`), a na poziomie Piwnicy otwierają się na południe (`doorSide: "s"`, `Z = +16.3` — wprost na posadzkę Winiarni `R14`), płyta Parteru (`Z ≤ +16`) nie zachodzi nad płytę Piwnicy (`Z ≥ +16`).
 
-Konfiguracja obiektu w polu `elevators` w `src/data/rooms/run6.json` (zgodnie z `docs/systems/elevator.md` i `src/world/elevatorSchema.ts`):
+Konfiguracja obiektu w polu `elevators` w `src/data/rooms/run7.json` (zgodnie z `docs/systems/elevator.md` i `src/world/elevatorSchema.ts`):
 
 ```json
 "elevators": [
@@ -559,7 +559,7 @@ Wszystkie 32 tekstury są w języku polskim i przechodzą automatyczny walidator
 | 28 | `screens/screen_iskra_board.webp` | `512×512` RGB | `R8` Biuro Pułkownika (UV w `res_investigation_board_iskra`) | Cyfrowy podkład mapy stacji metra **Kamienna** i schematu komórki **„Iskra”**. |
 | 29–32 | `surfaces/res_arch_concrete.webp`, `res_dark_walnut.webp`, `res_nero_marble.webp`, `res_plush_carpet.webp` (+ 4 `komiks_res_*.webp`) | `1024×1024` RGB (×8 plików) | Podłogi, ściany i dywany całej rezydencji | 4 tekstury kafelkowalne opisane w **F-03** (`§2.1.B`). |
 
-### 4.3. Zasoby istniejące do ponownego użycia oraz zasoby zakazane na mapie `run6`
+### 4.3. Zasoby istniejące do ponownego użycia oraz zasoby zakazane na mapie `run7`
 
 #### A. Dozwolone istniejące modele i materiały (spójne z rezydencją Pułkownika Kurogane Arms)
 - **Z zestawów `off_*`, `lab_*`, `mall_*`, `wh_*`, `city_*`:**
@@ -571,17 +571,17 @@ Wszystkie 32 tekstury są w języku polskim i przechodzą automatyczny walidator
   - `crate` (`1.0 × 1.0 × 1.0 m`, zniszczalna) oraz `crate_small` (`0.5 × 0.5 × 0.5 m`, dynamiczna do Chwytu Rezonansem).
 - **Istniejące materiały powierzchniowe:** `glass_clear`, `light_panel`, `off_polished_granite`, `off_wood_slat_wall`, `off_carpet_tile`, `mall_stone_floor`, `mall_terrazzo_inlay`, `lab_bunker_concrete`, `steel_grating`, `tread_plate`, `lacquer`, `metal`, `trim`, `wood`, `fabric`.
 
-#### B. Zasoby ZAKAZANE w `run6`
+#### B. Zasoby ZAKAZANE w `run7`
 1. **Zakaz modeli przemysłowo-portowych, ulicznych i sklepowych:** zakaz `wh_pallet_rack`, `wh_forklift`, `wh_overhead_crane`, `port_container_*`, `city_dumpster`, `city_trash_bags`, `city_stall`, `mall_mannequin`, `mall_shoe_wall`, `mall_escalator`, `lab_cocoon_*`.
 2. **Zakaz modeli generujących automatyczne stożki wolumetryczne:** bezwzględny zakaz `city_street_lamp` oraz `city_lantern_string` (`src/render/city/lamps.ts`).
 
 ---
 
-## 5. Konfiguracja walki, spawny, hazardy, oświetlenie i plan generatora `run6.mjs`
+## 5. Konfiguracja walki, spawny, hazardy, oświetlenie i plan generatora `run7.mjs`
 
 ### 5.1. Blok `arena`, dyrektor walki i 20 punktów spawnu wrogów (`spawnPoints` na 3 kondygnacjach)
 
-Pokój `run6.json` ma `"type": "combat"`, `"weather": "kuroganeForestResidence"` oraz blok `arena`:
+Pokój `run7.json` ma `"type": "combat"`, `"weather": "kuroganeForestResidence"` oraz blok `arena`:
 - `"navigationCellM": 0.5`, `"navigationClearanceM": 0.4`, `"navigationMaxRiseM": 0.55`, `"navigationHeadroomM": 2.2`, `"batchCellM": 24`,
 - `"spawnRing": { "minM": 10, "maxM": 28 }`, `"maxAlive": 10`, `"minSpawnDistance": 10`,
 - Punkty kontrolne wymagane przez `capturePointsSchema`: `A: (0, 0.0, -6.0)` (Wielki Salon `R2` na Parterze), `B: (0, 4.8, -24.0)` (Biuro Pułkownika `R8` przy Tablicy Śledczej „Iskra” na Piętrze), `C: (0, -4.8, +24.0)` (Winiarnia `R14` przed Salą Tortur i Bunkrem w Piwnicy).
@@ -645,16 +645,16 @@ Zgodnie z limitem `CityLights` (`8` aktywnych `PointLight` na `high`, `4` na `me
      - `R14 Prywatna Winiarnia (2)`: nad stołem degustacyjnym `(0, -0.45, +24.5, "#ffae1a", intensity: 28, range: 13)` oraz przed przystankiem #0 windy `(0, -0.45, +18.0, "#fff1d6", intensity: 22, range: 11)`.
      - `R15 Podziemny Bunkier Ochrony (2)`: przy ścianie monitorów CCTV `(+20, -0.45, +22.0, "#3d7bff", intensity: 26, range: 12)` oraz zielony portal nad śluzą ewakuacyjną `exit` `(+19, -1.2, +31.0, "#6dff4a", intensity: 32, range: 13)`.
 
-### 5.4. Plan generatora `tools/arenas/run/run6.mjs` i modułów pomocniczych `_run6*.mjs`
+### 5.4. Plan generatora `tools/arenas/run/run7.mjs` i modułów pomocniczych `_run7*.mjs`
 
 Wzorem `run4.mjs` kod generatora zostanie podzielony na 4 czyste, deterministyczne moduły ES w `tools/arenas/run/`:
 
 | Plik | Odpowiedzialność i zawartość |
 |---|---|
-| `tools/arenas/run/_run6Kit.mjs` | - Stałe rzędnych wysokości: `Y_B = -4.8`, `Y_MB0 = -2.4`, `Y_L0 = 0`, `Y_M01 = 2.4`, `Y_L1 = 4.8` oraz wysokości stropów `Y_B_CEIL = 0.0`, `Y_L0_CEIL = 4.8`, `Y_L1_CEIL = 9.6`, `Y_SALON_CEIL = 9.6`;<br>- Słownik prostokątów wszystkich 15 pomieszczeń `ROOMS` (`R1..R15` oraz `R2_MEZZ`) i materiałów (`MAT_CONCRETE = 'res_arch_concrete'`, `MAT_WALNUT = 'res_dark_walnut'`, `MAT_MARBLE = 'res_nero_marble'`, `MAT_CARPET = 'res_plush_carpet'`, `MAT_GLASS = 'glass_clear'`);<br>- Pomocniki konstrukcyjne: `deck()`, `ceilingSlab()` (automatycznie dodaje płytę `ceiling: true` oraz dopasowaną bryłę `rainShelters`), `segmentedWall()`, `forestGlassFacade()` (stawia moduły `res_forest_glass_facade` co `4.0 m` + kolider `glass_clear`), `interiorDoorFrame()`, `glassBalustrade()`, `stairFlightWithRails()` oraz `createPlacer()` pilnujący braku kolizji rekwizytów na każdym poziomie wysokości. |
-| `tools/arenas/run/_run6Rooms.mjs` | - 15 dedykowanych funkcji wyposażenia tematycznego: `buildRoomR1()` (Hol Wejściowy i Winda L0), `buildRoomR2()` (Wielki Dwukondygnacyjny Salon, kominek, sofy, fortepian holo, antresola), `buildRoomR3()` (Jadalnia), `buildRoomR4()` (Kuchnia z EE-08), `buildRoomR5()` (Kryty Basen i Ogród Zimowy), `buildRoomR6()` (Garaż Pancerny z cyber-limuzyną i EE-01), `buildRoomR7()` (Pokój Ochrony Parteru), `buildRoomR8()` (Biuro Pułkownika z Tablicą Śledczą „Iskra”, EE-04 i EE-12), `buildRoomR9()` (Biblioteka z EE-09), `buildRoomR10()` (Sala Trofeów z EE-03 i EE-10), `buildRoomR11()` (Sypialnia i Garderoba z EE-02), `buildRoomR12()` (Prywatne Spa i Sauna), `buildRoomR13()` (Sala Tortur i Przesłuchań z fotelem, lampą, odpływem, kratą, nagraniami i EE-05), `buildRoomR14()` (Winiarnia z EE-07 i przystankiem windy B), `buildRoomR15()` (Podziemny Bunkier Ochrony z EE-06 i śluzą `exit`). |
-| `tools/arenas/run/_run6Dress.mjs` | - Słownik 32 tekstur `RESIDENCE_TEXTURES` (`signs`, `decals`), tablica 20 punktów `SPAWNS` na 3 kondygnacjach, rozmieszczenie skrzyń `crate` i `crate_small`, 5 zagrożeń `hazards()`, ekspozycja Tablicy Śledczej „Iskra” i 12 easter eggów `decalsAndEasterEggs()`, szyldy neonowe i obrazy `signage()` oraz 26 źródeł `lights()` bez `cone: true`. |
-| `tools/arenas/run/run6.mjs` | - Punkt wejścia generatora: inicjalizuje `createRunRoom({ id: 'run6', name: 'Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama', weather: 'kuroganeForestResidence', bounds: R(-30, 30, -43, 33), startX: -4, exitX: 19 })`;<br>- Buduje płyty 3 kondygnacji (`y = -4.8, 0.0, +4.8 m`), stropy `ceiling: true` z `rainShelters`, szklane fasady na las, 4 dwubiegowe klatki schodowe (`25.64°`), balustrady `res_glass_balustrade`, wpisuje definicję działającej windy `elevators: [{ id: 'cellar-interrogation-lift', ... }]`, `playerSpawn: (-4, 0, 12)` i drzwi `entry` `(-4, 1.5, 16.5)` / `exit` `(19, -3.3, 32.5)` oraz zapisuje wynik do `src/data/rooms/run6.json`. |
+| `tools/arenas/run/_run7Kit.mjs` | - Stałe rzędnych wysokości: `Y_B = -4.8`, `Y_MB0 = -2.4`, `Y_L0 = 0`, `Y_M01 = 2.4`, `Y_L1 = 4.8` oraz wysokości stropów `Y_B_CEIL = 0.0`, `Y_L0_CEIL = 4.8`, `Y_L1_CEIL = 9.6`, `Y_SALON_CEIL = 9.6`;<br>- Słownik prostokątów wszystkich 15 pomieszczeń `ROOMS` (`R1..R15` oraz `R2_MEZZ`) i materiałów (`MAT_CONCRETE = 'res_arch_concrete'`, `MAT_WALNUT = 'res_dark_walnut'`, `MAT_MARBLE = 'res_nero_marble'`, `MAT_CARPET = 'res_plush_carpet'`, `MAT_GLASS = 'glass_clear'`);<br>- Pomocniki konstrukcyjne: `deck()`, `ceilingSlab()` (automatycznie dodaje płytę `ceiling: true` oraz dopasowaną bryłę `rainShelters`), `segmentedWall()`, `forestGlassFacade()` (stawia moduły `res_forest_glass_facade` co `4.0 m` + kolider `glass_clear`), `interiorDoorFrame()`, `glassBalustrade()`, `stairFlightWithRails()` oraz `createPlacer()` pilnujący braku kolizji rekwizytów na każdym poziomie wysokości. |
+| `tools/arenas/run/_run7Rooms.mjs` | - 15 dedykowanych funkcji wyposażenia tematycznego: `buildRoomR1()` (Hol Wejściowy i Winda L0), `buildRoomR2()` (Wielki Dwukondygnacyjny Salon, kominek, sofy, fortepian holo, antresola), `buildRoomR3()` (Jadalnia), `buildRoomR4()` (Kuchnia z EE-08), `buildRoomR5()` (Kryty Basen i Ogród Zimowy), `buildRoomR6()` (Garaż Pancerny z cyber-limuzyną i EE-01), `buildRoomR7()` (Pokój Ochrony Parteru), `buildRoomR8()` (Biuro Pułkownika z Tablicą Śledczą „Iskra”, EE-04 i EE-12), `buildRoomR9()` (Biblioteka z EE-09), `buildRoomR10()` (Sala Trofeów z EE-03 i EE-10), `buildRoomR11()` (Sypialnia i Garderoba z EE-02), `buildRoomR12()` (Prywatne Spa i Sauna), `buildRoomR13()` (Sala Tortur i Przesłuchań z fotelem, lampą, odpływem, kratą, nagraniami i EE-05), `buildRoomR14()` (Winiarnia z EE-07 i przystankiem windy B), `buildRoomR15()` (Podziemny Bunkier Ochrony z EE-06 i śluzą `exit`). |
+| `tools/arenas/run/_run7Dress.mjs` | - Słownik 32 tekstur `RESIDENCE_TEXTURES` (`signs`, `decals`), tablica 20 punktów `SPAWNS` na 3 kondygnacjach, rozmieszczenie skrzyń `crate` i `crate_small`, 5 zagrożeń `hazards()`, ekspozycja Tablicy Śledczej „Iskra” i 12 easter eggów `decalsAndEasterEggs()`, szyldy neonowe i obrazy `signage()` oraz 26 źródeł `lights()` bez `cone: true`. |
+| `tools/arenas/run/run7.mjs` | - Punkt wejścia generatora: inicjalizuje `createRunRoom({ id: 'run7', name: 'Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama', weather: 'kuroganeForestResidence', bounds: R(-30, 30, -43, 33), startX: -4, exitX: 19 })`;<br>- Buduje płyty 3 kondygnacji (`y = -4.8, 0.0, +4.8 m`), stropy `ceiling: true` z `rainShelters`, szklane fasady na las, 4 dwubiegowe klatki schodowe (`25.64°`), balustrady `res_glass_balustrade`, wpisuje definicję działającej windy `elevators: [{ id: 'cellar-interrogation-lift', ... }]`, `playerSpawn: (-4, 0, 12)` i drzwi `entry` `(-4, 1.5, 16.5)` / `exit` `(19, -3.3, 32.5)` oraz zapisuje wynik do `src/data/rooms/run7.json`. |
 
 ---
 
@@ -664,10 +664,10 @@ Wzorem `run4.mjs` kod generatora zostanie podzielony na 4 czyste, deterministycz
 
 #### A. Kryteria automatyczne (CLI i testy jednostkowe)
 1. **Zero błędów i zero ostrzeżeń w `mapAudit`:**
-   - Polecenie `node tools/levels/mapAudit.mjs run6` zwraca wynik: **`run6: 0 error, 0 warn`** (`"run6": 0` w `tests/unit/mapAudit.baseline.json`).
+   - Polecenie `node tools/levels/mapAudit.mjs run7` zwraca wynik: **`run7: 0 error, 0 warn`** (`"run7": 0` w `tests/unit/mapAudit.baseline.json`).
    - Szczegółowo: `0` `noCollisionLargeProp`, `0` `floatingObject`, `0` `outOfBounds`, `0` `overlap`, `0` `forbiddenColor`, `0` `emptyRoom`.
    - `node tools/levels/mapAudit.mjs --all` przechodzi bez regresji na wszystkich mapach.
-2. **Testy nawigacji 3D, 15 pomieszczeń i windy (`tests/unit/run6Navigation.test.ts`):**
+2. **Testy nawigacji 3D, 15 pomieszczeń i windy (`tests/unit/run7Navigation.test.ts`):**
    - Test jednostkowy weryfikuje w `ArenaNavigation(room)`:
      1. Pełną osiągalność ścieżki od `playerSpawn (-4, 0, 12)` w Holu `R1` na Parterze (`y = 0.00 m`) przez Piętro `L1` (`y = +4.80 m`, Biuro Pułkownika `R8`) oraz zejście schodami i przejazd windą `elevators[0]` do Piwnicy (`y = -4.80 m`) aż do drzwi `exit (19, -4.8, 32.5)` w Bunkrze Ochrony `R15`,
      2. Dojście do wszystkich **20 punktów spawnu** na 3 kondygnacjach (`y = -4.8 m`, `y = 0.0 m`, `y = +4.8 m`),
@@ -676,11 +676,11 @@ Wzorem `run4.mjs` kod generatora zostanie podzielony na 4 czyste, deterministycz
 3. **Pełny zestaw testów projektu (`npm run check`):**
    - `tsc --noEmit`, `eslint` i `vitest` przechodzą bez błędów, w tym `tests/unit/rooms.test.ts`, `tests/unit/roomBlockModelFit.test.ts` (zgodność wymiarów bloków z AABB 38 modeli `res_*.glb` w tolerancji `±5%`), `tests/unit/forestLayout.test.ts` (testy warstw drzew, pagórków, wykluczenia `panoramaExclusion`, lądowiska i przelotów dronów) oraz test budżetu trójkątów i palety modeli `res_*`.
 4. **Deterministyczna generacja i budżet wydajności:**
-   - Dwukrotne uruchomienie `node tools/arenas/run/run6.mjs` generuje identyczny plik `src/data/rooms/run6.json` (stały SHA-256).
+   - Dwukrotne uruchomienie `node tools/arenas/run/run7.mjs` generuje identyczny plik `src/data/rooms/run7.json` (stały SHA-256).
    - Na profilu `medium` (1920×1080) liczba wywołań rysowania w każdym z 10 widoków audytu (włącznie z włączonym modułem lasu `ForestPanorama`, 3 kondygnacjami i przeszklonymi ścianami!) spełnia **`renderInfo.calls <= 800`**.
 
-#### B. Kryteria wizualne na zrzutach audytu (`node tools/screens/mapAudit.mjs run6`) i w spacerze `?scene=map-walk&map=run6`
-1. **Ocena Opusa `≥ 7/10` na komplecie zrzutów `node tools/screens/mapAudit.mjs run6`.**
+#### B. Kryteria wizualne na zrzutach audytu (`node tools/screens/mapAudit.mjs run7`) i w spacerze `?scene=map-walk&map=run7`
+1. **Ocena Opusa `≥ 7/10` na komplecie zrzutów `node tools/screens/mapAudit.mjs run7`.**
 2. **Czytelność wszystkich 3 kondygnacji (w tym Piwnicy!) na `10-top.png`, `08-high-west.png` i `09-high-east.png`:**
    - Dzięki tarasowo-kaskadowemu rozłożeniu strefy Piwnicy (`Z ∈ [+16, +32]`), strefy Parteru z Dwukondygnacyjnym Salonem (`Z ∈ [-18, +16]`) oraz strefy Piętra (`Z ∈ [-42, -18]`) i automatycznemu ukryciu grupy `room-ceilings` (`ceiling: true`), zrzuty `10-top.png`, `08-high-west.png` i `09-high-east.png` pokazują jednocześnie wszystkie **15 pomieszczeń (`R1`..`R15`)**: Salę Tortur `R13`, Winiarnię `R14` i Bunkier `R15` w Piwnicy (`y = -4.80 m`), 7 pokoi Parteru z Wielkim Salonem `R2` (`y = 0.00 m`) oraz 5 pokoi Piętra z Biurem Pułkownika `R8` (`y = +4.80 m`).
 3. **Kadr startowy `01-spawn.png` i monumentalny Salon `R2`:**
@@ -700,5 +700,5 @@ Wzorem `run4.mjs` kod generatora zostanie podzielony na 4 czyste, deterministycz
 | **Etap A — Fundamenty kodu: moduł tła leśnego `ForestPanorama`, materiały `res_*` i profil pogody** | 1. Uogólnienie `SceneAtmosphere` i `weatherSchema` o `panoramaKind: 'city' \| 'forest'` oraz implementacja `forestPanorama.ts`, `forestLayout.ts` i `forestMaterials.ts` (warstwy drzew iglastych i liściastych na `InstancedMesh`, pagórki, mgła między pniami, księżyc, ogrodzenie z bursztynowymi światłami, lądowisko `H-06`, drony i oczy fauny — **F-01**).<br>2. Dopisanie prefiksu `'res_'` w `cityModels.ts` oraz list `WALL_FIXTURES`, `PASSAGE_FIXTURES` i `CEILING_FIXTURES` w `mapAudit.ts` (**F-02**).<br>3. Rejestracja 4 materiałów `res_arch_concrete`, `res_dark_walnut`, `res_nero_marble`, `res_plush_carpet` (**F-03**) i utworzenie profilu pogody `src/data/weather/kuroganeForestResidence.json` (**F-04**). | Zmiany w `src/render/`, `src/world/`, `src/data/render/arenaMaterials.json`, `src/data/weather/kuroganeForestResidence.json` + testy w `tests/unit/forestLayout.test.ts` | `npm run check` zielone |
 | **Etap B — Modele 3D w Blenderze (`38` modeli `res_*.glb`)** | 1. Napisanie generatora `tools/blender/sets/kurogane_residence.py` budującego 38 modeli `res_*.glb` z Tabel 1–4 (`§4.1`), z użyciem `mat_light_panel` na oprawach i `mat_glass_clear` na fasadach, balustradach i gablotach.<br>2. Eksport plików `.glb` do `public/assets/models/city/` i render podglądów PNG do `artifacts/models/res/`.<br>3. Aktualizacja `src/data/render/mapModelBounds.json` skryptem `node tools/levels/mapModelBounds.mjs` oraz dopisanie sekcji w `docs/assets.md`. | 38 plików `public/assets/models/city/res_*.glb`, podglądy `artifacts/models/res/*.png`, zaktualizowany `mapModelBounds.json` | Ogląd podglądów PNG + test jednostkowy modeli (AABB, materiały, budżet trójkątów, brak zakazanych barw) |
 | **Etap C — Tekstury (`32` tekstury: tablica „Iskry”, 12 easter eggów, obrazy, szyldy, ekrany i powierzchnie)** | 1. Wygenerowanie i walidacja 4 tekstur powierzchni `res_*` (+ 4 wersji `komiks_res_*`).<br>2. Wygenerowanie Tablicy Śledczej `res_iskra_investigation_board.webp`, 12 tekstur easter eggów (`EE-01`..`EE-12`), 10 szyldów/obrazów `signs/res_*` oraz 3 ekranów `screens/screen_res_*` z `§4.2`.<br>3. Rejestracja w `tools/textures/catalog.json`, `tools/textures/komiks/catalog.json` i manifestach w `public/assets/textures/`. | Pliki `.webp` w `public/assets/textures/{surfaces,komiks/surfaces,signs,screens,decals,labels}/` | Walidator tekstur (wymiary, bezszwowość powierzchni, 0 pikseli w zakazanych pasmach HSV czerwieni/cyanu/magenty) |
-| **Etap D — Generator mapy `run6` (15 pomieszczeń na 3 kondygnacjach)** | 1. Implementacja `tools/arenas/run/run6.mjs` oraz modułów `_run6Kit.mjs`, `_run6Rooms.mjs`, `_run6Dress.mjs` według współrzędnych z `§3` i `§5`.<br>2. Wygenerowanie `src/data/rooms/run6.json` i dopisanie `"run6": 0` w `tests/unit/mapAudit.baseline.json`.<br>3. Napisanie testu `tests/unit/run6Navigation.test.ts` (osiągalność 20 spawnów, 15 pomieszczeń, 2 przystanków windy, wyjścia w piwnicy i gęstości osłon). | `tools/arenas/run/run6.mjs`, `_run6*.mjs`, `src/data/rooms/run6.json`, `tests/unit/run6Navigation.test.ts` | `node tools/levels/mapAudit.mjs run6` → `0 error, 0 warn`; `npx vitest run tests/unit/run6Navigation.test.ts`; `npm run check` |
-| **Etap E — Zrzuty ekranu, audyt wizualny i szlif do oceny Opusa `≥ 7/10`** | 1. Wygenerowanie 10 zrzutów `node tools/screens/mapAudit.mjs run6 --out artifacts/maps/run6/r1 --tag after` oraz kadrów FPP z Wielkiego Salonu (widok na las), Sali Tortur w Piwnicy, Biura Pułkownika (Tablica „Iskra”), Krytego Basenu, Winiarni i Sali Trofeów.<br>2. Przegląd wizualny (widoczność wszystkich 3 kondygnacji wraz z Piwnicą na `10-top`, `08-high-west`, `09-high-east`, prawdziwy las za szybą, brak smug światła, jasność `#2a3344–#56627a`, `renderInfo.calls <= 800`) i korekty do oceny Opusa `≥ 7/10`. | Zrzuty `artifacts/maps/run6/r1/*.png`, raport oceny wizualnej | Ocena Opusa `≥ 7/10`, `mapAudit` `0/0`, `npm run check` zielone |
+| **Etap D — Generator mapy `run7` (15 pomieszczeń na 3 kondygnacjach)** | 1. Implementacja `tools/arenas/run/run7.mjs` oraz modułów `_run7Kit.mjs`, `_run7Rooms.mjs`, `_run7Dress.mjs` według współrzędnych z `§3` i `§5`.<br>2. Wygenerowanie `src/data/rooms/run7.json` i dopisanie `"run7": 0` w `tests/unit/mapAudit.baseline.json`.<br>3. Napisanie testu `tests/unit/run7Navigation.test.ts` (osiągalność 20 spawnów, 15 pomieszczeń, 2 przystanków windy, wyjścia w piwnicy i gęstości osłon). | `tools/arenas/run/run7.mjs`, `_run7*.mjs`, `src/data/rooms/run7.json`, `tests/unit/run7Navigation.test.ts` | `node tools/levels/mapAudit.mjs run7` → `0 error, 0 warn`; `npx vitest run tests/unit/run7Navigation.test.ts`; `npm run check` |
+| **Etap E — Zrzuty ekranu, audyt wizualny i szlif do oceny Opusa `≥ 7/10`** | 1. Wygenerowanie 10 zrzutów `node tools/screens/mapAudit.mjs run7 --out artifacts/maps/run7/r1 --tag after` oraz kadrów FPP z Wielkiego Salonu (widok na las), Sali Tortur w Piwnicy, Biura Pułkownika (Tablica „Iskra”), Krytego Basenu, Winiarni i Sali Trofeów.<br>2. Przegląd wizualny (widoczność wszystkich 3 kondygnacji wraz z Piwnicą na `10-top`, `08-high-west`, `09-high-east`, prawdziwy las za szybą, brak smug światła, jasność `#2a3344–#56627a`, `renderInfo.calls <= 800`) i korekty do oceny Opusa `≥ 7/10`. | Zrzuty `artifacts/maps/run7/r1/*.png`, raport oceny wizualnej | Ocena Opusa `≥ 7/10`, `mapAudit` `0/0`, `npm run check` zielone |

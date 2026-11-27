@@ -1,6 +1,6 @@
 # API między modułami (kontrakty)
 
-## Tło leśne rezydencji — run6 F-01–F-04
+## Tło leśne rezydencji — run7 F-01–F-04
 
 - `WeatherProfile.lighting.panoramaKind?: 'city' | 'forest'` wybiera tło; brak oznacza `city`.
   Schemat motywu również uzupełnia `render.panoramaKind` domyślnym `city`.

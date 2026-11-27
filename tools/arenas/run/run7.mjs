@@ -1,12 +1,12 @@
-// Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama (run6):
+// Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama (run7):
 // 15 pomieszczeń na 3 kondygnacjach (Piwnica B y = -4.8 m, Parter L0 y = 0.0 m, Piętro L1 y = +4.8 m)
 // z Wielkim Dwukondygnacyjnym Salonem (H = 9.6 m), działającą windą piwniczną `elevators[0]`,
 // 4 dwubiegowymi klatkami schodowymi, Tablicą Śledczą „Iskra”, Salą Tortur i panoramą nocnego lasu.
-// Projekt: docs/maps/run6.md. Generator jest w pełni deterministyczny.
+// Projekt: docs/maps/run7.md. Generator jest w pełni deterministyczny.
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRunRoom } from './_runKit.mjs';
-import { buildRooms } from './_run6Rooms.mjs';
-import { SPAWNS, dress } from './_run6Dress.mjs';
+import { buildRooms } from './_run7Rooms.mjs';
+import { SPAWNS, dress } from './_run7Dress.mjs';
 import {
   MAT_BUNKER,
   MAT_CEIL,
@@ -36,7 +36,7 @@ import {
   solid,
   stairFlightWithRails,
   vec,
-} from './_run6Kit.mjs';
+} from './_run7Kit.mjs';
 
 // --- Konstrukcja: płyty 3 kondygnacji, podpory pod L1, stropy (ceiling: true + rainShelters), fasady i ściany ---
 
@@ -439,7 +439,7 @@ function rails(k) {
 
 export default function generate() {
   const k = createRunRoom({
-    id: 'run6',
+    id: 'run7',
     name: 'Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama',
     weather: 'kuroganeForestResidence',
     theme: 'kuroganeResidence',
@@ -533,6 +533,6 @@ export default function generate() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
   generate().write(
     fileURLToPath(
-      new URL('../../../src/data/rooms/run6.json', import.meta.url),
+      new URL('../../../src/data/rooms/run7.json', import.meta.url),
     ),
   );

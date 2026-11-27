@@ -250,8 +250,8 @@ it('raportuje osobno brakujące warstwy oprawy', () => {
 it('każda mapa ma próg błędów', () => {
   expect([...auditMaps.keys()].sort()).toEqual(Object.keys(baseline).sort());
 });
-it('run6 przechodzi audyt także bez ostrzeżeń', () => {
-  expect(auditMap(auditMaps.get('run6')!, { mapId: 'run6' })).toEqual([]);
+it('run7 przechodzi audyt także bez ostrzeżeń', () => {
+  expect(auditMap(auditMaps.get('run7')!, { mapId: 'run7' })).toEqual([]);
 });
 it.each(Object.entries(baseline))(
   '%s mieści się w bazowej liczbie error (%i)',

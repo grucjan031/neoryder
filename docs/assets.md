@@ -1264,9 +1264,9 @@ oraz dłoń podpierającą: pomiar dla wszystkich broni jest w `docs/systems/han
 
 `public/assets/splash/*.webp` to zoptymalizowane kopie ilustracji Gracjana z `docs/fabula/splash` (oryginały zostają nietknięte; max 1600 px szerokości, WebP jakość ~78, budżet ≤ 180 KB na plik). Wygeneruj je ponownie: `python tools/splash/optimize.py` (wymaga Pillow). Lista tytułów i przypisań do motywów/pokoi: `src/data/ui/splash.json`.
 
-## Rezydencja Kurogane Arms (run6, etap B)
+## Rezydencja Kurogane Arms (run7, etap B)
 
-Zestaw 38 własnych, proceduralnych modeli z tabel 1–4 w §4.1 `docs/maps/run6.md`.
+Zestaw 38 własnych, proceduralnych modeli z tabel 1–4 w §4.1 `docs/maps/run7.md`.
 Generator `tools/blender/sets/kurogane_residence.py` korzysta z prymitywów, scalania
 siatek, eksportera GLB i studia Cycles zestawów run3/run4. Każdy link poniżej otwiera
 obejrzany podgląd PNG 720 × 720. Modele nie zawierają obrazów, świateł ani kamer.
@@ -1368,7 +1368,7 @@ przezierność gablot i fasady oraz brak nakładania kabiny na proceduralne czę
 
 ### Rezydencja — druga partia wyposażenia (31 modeli)
 
-21 modeli z §3.5 `docs/maps/run6.md` i listy `PENDING_MODELS` oraz 10 dodatków:
+21 modeli z §3.5 `docs/maps/run7.md` i listy `PENDING_MODELS` oraz 10 dodatków:
 stolik boczny, lampa łukowa, lampa stołowa, szafka nocna, stołek barowy, ściana TV,
 fikus, rzeźba, puf i otwarty regał dekoracyjny. Łącznie katalog zawiera 69 modeli.
 Pierwsze 38 GLB pozostaje identyczne bajtowo; walidator sprawdza zapisane SHA-256.

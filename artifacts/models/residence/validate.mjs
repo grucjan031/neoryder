@@ -1,4 +1,4 @@
-// Niezależny pomiar GLB: §4.1 run6 (partia 1) i batch2-specs.json (partia 2).
+// Niezależny pomiar GLB: §4.1 run7 (partia 1) i batch2-specs.json (partia 2).
 // node artifacts/models/residence/validate.mjs [--write-bounds]
 import assert from 'node:assert/strict';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
@@ -8,7 +8,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const directory = 'public/assets/models/city';
 const output = 'artifacts/models/residence';
-const source = await readFile('docs/maps/run6.md', 'utf8');
+const source = await readFile('docs/maps/run7.md', 'utf8');
 const specs = [...source.matchAll(/\| \d+ \| `(res_\w+)` \| `([\d.]+) × ([\d.]+) × ([\d.]+)`[^\n]+?≤ (\d+) \|/g)]
   .map((match) => ({ model: match[1], size: match.slice(2, 5).map(Number), budget: Number(match[5]) }));
 assert.equal(specs.length, 38);

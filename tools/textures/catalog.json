@@ -1765,7 +1765,7 @@
     "description": "Główna tablica śledcza Operacja Iskra: mapa stacji Kamienna, list gończy z sylwetką, fotografie i notatki o Doktor Wolan, Mirze, Szronie i Bajcie, bursztynowe i ciepłobiałe nici.",
     "subject": "board texture with exact Polish title OPERACJA ISKRA and wanted notice POSZUKIWANY: KURIER (REZONANT), generic faceless silhouette, map KAMIENNA; amber and warm white strings, no red.",
     "prompt": "Use case: stylized-concept. board texture with exact Polish title OPERACJA ISKRA and wanted notice POSZUKIWANY: KURIER (REZONANT), generic faceless silhouette, map KAMIENNA; amber and warm white strings, no red. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1776,7 +1776,7 @@
     "description": "Raport powypadkowy z magazynu K-09 o intruzie rzucającym skrzyniami w wózki AGV i koszcie naprawy suwnicy 420 000 KR.",
     "subject": "framed Polish accident report, exact text MAGAZYN K-09 (RUN-1): KTO POZWOLIŁ INTRUZOWI RZUCAĆ SKRZYNIAMI W WÓZKI WIDŁOWE AGV?! KOSZT NAPRAWY SUWNICY: 420 000 KR.",
     "prompt": "Use case: stylized-concept. framed Polish accident report, exact text MAGAZYN K-09 (RUN-1): KTO POZWOLIŁ INTRUZOWI RZUCAĆ SKRZYNIAMI W WÓZKI WIDŁOWE AGV?! KOSZT NAPRAWY SUWNICY: 420 000 KR. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1787,7 +1787,7 @@
     "description": "Certyfikat VIP salonu Atrium Nova o zegarku pułkownika odebranym przed nocną masakrą manekinów.",
     "subject": "Polish VIP certificate, exact copy ATRIUM NOVA // SALON AUREA & VERVE — ZEGAREK PUŁKOWNIKA ODEBRANY 15 MIN PRZED NOCNĄ MASAKRĄ MANEKINÓW.",
     "prompt": "Use case: stylized-concept. Polish VIP certificate, exact copy ATRIUM NOVA // SALON AUREA & VERVE — ZEGAREK PUŁKOWNIKA ODEBRANY 15 MIN PRZED NOCNĄ MASAKRĄ MANEKINÓW. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1798,7 +1798,7 @@
     "description": "Tabliczka eksponatu Projekt Chimera z ostrzeżeniem o sześciopalczastym obiekcie w wentylacji.",
     "subject": "Polish exhibit plaque with exact copy SEKTOR X-51 // PROJEKT CHIMERA — ODŁAMEK SZKŁA ZE ZBIORNIKA NR 04. UWAGA: SZEŚCIO-PALCZASTY OBIEKT NADAL W WENTYLACJI! six-finger hand silhouette.",
     "prompt": "Use case: stylized-concept. Polish exhibit plaque with exact copy SEKTOR X-51 // PROJEKT CHIMERA — ODŁAMEK SZKŁA ZE ZBIORNIKA NR 04. UWAGA: SZEŚCIO-PALCZASTY OBIEKT NADAL W WENTYLACJI! six-finger hand silhouette. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1809,7 +1809,7 @@
     "description": "Faktura za szybę panoramiczną i drukarkę z dopiskiem o ukryciu akt w leśnej willi.",
     "subject": "Polish invoice with exact copy PIĘTRO 62 // KOSZT WYMIANY SZYBY PANORAMICZNEJ I DRUKARKI NR 4. DOPISEK: VANE, UKRYJ AKTA W LEŚNEJ WILLI, TAM NAS NIE ZNAJDZIE!",
     "prompt": "Use case: stylized-concept. Polish invoice with exact copy PIĘTRO 62 // KOSZT WYMIANY SZYBY PANORAMICZNEJ I DRUKARKI NR 4. DOPISEK: VANE, UKRYJ AKTA W LEŚNEJ WILLI, TAM NAS NIE ZNAJDZIE! No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1820,7 +1820,7 @@
     "description": "Teczka medyczna Helixa Dynamics o dostawie kamertonów Akord do przesłuchań i rozliczeniu szczepień.",
     "subject": "Polish clinical dossier with exact copy HELIXA DYNAMICS // PRZYCHODNIA BULWAR — DOSTAWA KAMERTONÓW „AKORD” DO PRZESŁUCHAŃ. ROZLICZENIE: DARMOWE SZCZEPIENIA W NIECCE.",
     "prompt": "Use case: stylized-concept. Polish clinical dossier with exact copy HELIXA DYNAMICS // PRZYCHODNIA BULWAR — DOSTAWA KAMERTONÓW „AKORD” DO PRZESŁUCHAŃ. ROZLICZENIE: DARMOWE SZCZEPIENIA W NIECCE. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1831,7 +1831,7 @@
     "description": "Wydruk alertu Orbis Grid o hakerze Bajcie i podmienionej muzyce w windach Koalicji.",
     "subject": "Polish IT incident alert with exact copy ORBIS GRID // ALARM SIECI: HAKER „BAJT” ZNÓW PODMIENIŁ MUZYKĘ W WINDACH KOALICJI NA SYNTHWAVE. NIE DOTYKAĆ ROUTERA!",
     "prompt": "Use case: stylized-concept. Polish IT incident alert with exact copy ORBIS GRID // ALARM SIECI: HAKER „BAJT” ZNÓW PODMIENIŁ MUZYKĘ W WINDACH KOALICJI NA SYNTHWAVE. NIE DOTYKAĆ ROUTERA! No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1842,7 +1842,7 @@
     "description": "Karta degustacyjna Château Kurogane 2048 o smaku czystego monopolu i śladowej ilości synt-siarki.",
     "subject": "Polish wine tasting card with exact copy CHÂTEAU KUROGANE 2048 — SMAK CZYSTEGO MONOPOLU (ZAWIERA ŚLADOWE ILOŚCI SYNT-SIARKI Z ODLEWNI I ŁEZ AKCJONARIUSZY).",
     "prompt": "Use case: stylized-concept. Polish wine tasting card with exact copy CHÂTEAU KUROGANE 2048 — SMAK CZYSTEGO MONOPOLU (ZAWIERA ŚLADOWE ILOŚCI SYNT-SIARKI Z ODLEWNI I ŁEZ AKCJONARIUSZY). No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1853,7 +1853,7 @@
     "description": "Bursztynowa lista zakupów na lodówce z kodem do winiarni 0451.",
     "subject": "Polish refrigerator note with exact copy 1. SYNT-KOFEINA Z 61. PIĘTRA; 2. NAKARMIĆ KARPIE KOI; 3. KOD DO WINIARNI: 0451 (PRZESTAŃCIE NAKLEJAĆ GO NA LODÓWCE!).",
     "prompt": "Use case: stylized-concept. Polish refrigerator note with exact copy 1. SYNT-KOFEINA Z 61. PIĘTRA; 2. NAKARMIĆ KARPIE KOI; 3. KOD DO WINIARNI: 0451 (PRZESTAŃCIE NAKLEJAĆ GO NA LODÓWCE!). No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1864,7 +1864,7 @@
     "description": "Okładki książek o parowaniu ostrza plazmowego i etyce korporacyjnej.",
     "subject": "two Polish book covers with exact titles „101 SPOSOBÓW NA PAROWANIE OSTRZA PLAZMOWEGO (ROZDZ. 1: DLACZEGO NASI SZTURMOWCY ZAWSZE PUDŁUJĄ)” and „ETYKA KORPORACYJNA (1 STRONA, PUSTA)”.",
     "prompt": "Use case: stylized-concept. two Polish book covers with exact titles „101 SPOSOBÓW NA PAROWANIE OSTRZA PLAZMOWEGO (ROZDZ. 1: DLACZEGO NASI SZTURMOWCY ZAWSZE PUDŁUJĄ)” and „ETYKA KORPORACYJNA (1 STRONA, PUSTA)”. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1875,7 +1875,7 @@
     "description": "Mosiężna tabliczka trofeum z grawerem Miry z warsztatu na stacji Kamienna.",
     "subject": "Polish brass trophy plaque with exact copy TROFEUM #09: RĘKOJEŚĆ OSTRZA Z WARSZTATU NA STACJI KAMIENNA — GRAWER: „JAK ZARYSUJESZ NA TARCZY, SAM BĘDZIESZ POLEROWAŁ — M.”.",
     "prompt": "Use case: stylized-concept. Polish brass trophy plaque with exact copy TROFEUM #09: RĘKOJEŚĆ OSTRZA Z WARSZTATU NA STACJI KAMIENNA — GRAWER: „JAK ZARYSUJESZ NA TARCZY, SAM BĘDZIESZ POLEROWAŁ — M.”. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1886,7 +1886,7 @@
     "description": "Mosiężna tabliczka obrazu Cisza po pacyfikacji sektora 4.",
     "subject": "Polish brass plaque with exact copy „CISZA PO PACYFIKACJI SEKTORA 4” — DAR ZARZĄDU KUROGANE DLA PUŁKOWNIKA VANE’A ZA 99,8% SKUTECZNOŚCI PRZESŁUCHAŃ.",
     "prompt": "Use case: stylized-concept. Polish brass plaque with exact copy „CISZA PO PACYFIKACJI SEKTORA 4” — DAR ZARZĄDU KUROGANE DLA PUŁKOWNIKA VANE’A ZA 99,8% SKUTECZNOŚCI PRZESŁUCHAŃ. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1897,7 +1897,7 @@
     "description": "Nadruk UV na kubek szefa bezpieczeństwa roku.",
     "subject": "Polish UV mug print, exact text SZEF BEZPIECZEŃSTWA ROKU // NAJPIERW STRZELAM, POTEM SPRAWDZAM PRZEPUSTKĘ.",
     "prompt": "Use case: stylized-concept. Polish UV mug print, exact text SZEF BEZPIECZEŃSTWA ROKU // NAJPIERW STRZELAM, POTEM SPRAWDZAM PRZEPUSTKĘ. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1908,7 +1908,7 @@
     "description": "Mosiężno-bursztynowy monogram podłogowy Willi Kuroyama.",
     "subject": "floor crest with exact inscription WILLA KUROYAMA // REZYDENCJA PUŁKOWNIKA KUROGANE ARMS, amber brass and warm white.",
     "prompt": "Use case: stylized-concept. floor crest with exact inscription WILLA KUROYAMA // REZYDENCJA PUŁKOWNIKA KUROGANE ARMS, amber brass and warm white. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1919,7 +1919,7 @@
     "description": "Ciemna mokra plama i rysy wokół kraty odpływowej w chłodnym graficie i bursztynie.",
     "subject": "top-down damp graphite floor stain and scratches around metal drain grate, restrained amber, no blood, no red.",
     "prompt": "Use case: stylized-concept. top-down damp graphite floor stain and scratches around metal drain grate, restrained amber, no blood, no red. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1930,7 +1930,7 @@
     "description": "Szyld Willa Kuroyama — Enklawa Leśna Kurogane.",
     "subject": "isolated amber and warm-white Polish neon sign, exact text WILLA KUROYAMA // ENKLAWA LEŚNA KUROGANE, black background.",
     "prompt": "Use case: stylized-concept. isolated amber and warm-white Polish neon sign, exact text WILLA KUROYAMA // ENKLAWA LEŚNA KUROGANE, black background. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1941,7 +1941,7 @@
     "description": "Podświetlany obraz złoto-błękitnego lasu nocą.",
     "subject": "framed night forest wall art with amber, royal blue, warm white and pure black background, no text.",
     "prompt": "Use case: stylized-concept. framed night forest wall art with amber, royal blue, warm white and pure black background, no text. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1952,7 +1952,7 @@
     "description": "Szyld Pawilon Deszczu — Basen & Ogród Zimowy.",
     "subject": "isolated blue and green Polish neon sign, exact text PAWILON DESZCZU // BASEN & OGRÓD ZIMOWY, pure black background.",
     "prompt": "Use case: stylized-concept. isolated blue and green Polish neon sign, exact text PAWILON DESZCZU // BASEN & OGRÓD ZIMOWY, pure black background. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1963,7 +1963,7 @@
     "description": "Szyld Garaż Pancerny — Flota Specjalna.",
     "subject": "isolated amber and royal-blue Polish sign, exact text GARAŻ PANCERNY // FLOTA SPECJALNA, pure black background.",
     "prompt": "Use case: stylized-concept. isolated amber and royal-blue Polish sign, exact text GARAŻ PANCERNY // FLOTA SPECJALNA, pure black background. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1974,7 +1974,7 @@
     "description": "Szyld Dyżurka Straży — Monitoring Obwodowy.",
     "subject": "isolated amber and green Polish sign, exact text DYŻURKA STRAŻY // MONITORING OBWODOWY, pure black background.",
     "prompt": "Use case: stylized-concept. isolated amber and green Polish sign, exact text DYŻURKA STRAŻY // MONITORING OBWODOWY, pure black background. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1985,7 +1985,7 @@
     "description": "Szyld Gabinet Pułkownika — Dostęp Wyłącznie: K. Vane.",
     "subject": "isolated amber and warm white Polish sign, exact text GABINET PUŁKOWNIKA // DOSTĘP WYŁĄCZNIE: K. VANE, pure black background.",
     "prompt": "Use case: stylized-concept. isolated amber and warm white Polish sign, exact text GABINET PUŁKOWNIKA // DOSTĘP WYŁĄCZNIE: K. VANE, pure black background. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -1996,7 +1996,7 @@
     "description": "Szyld Sanktuarium Kurogane — Kolekcja Broni & Trofeów.",
     "subject": "isolated violet and amber Polish sign, exact text SANKTUARIUM KUROGANE // KOLEKCJA BRONI & TROFEÓW, black background, no magenta.",
     "prompt": "Use case: stylized-concept. isolated violet and amber Polish sign, exact text SANKTUARIUM KUROGANE // KOLEKCJA BRONI & TROFEÓW, black background, no magenta. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -2007,7 +2007,7 @@
     "description": "Szyld Krypta Roczników — Winiarnia Prywatna.",
     "subject": "isolated amber and violet Polish sign, exact text KRYPTA ROCZNIKÓW // WINIARNIA PRYWATNA, black background, no magenta.",
     "prompt": "Use case: stylized-concept. isolated amber and violet Polish sign, exact text KRYPTA ROCZNIKÓW // WINIARNIA PRYWATNA, black background, no magenta. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -2018,7 +2018,7 @@
     "description": "Tablica Sekcja Przesłuchań — Strefa Wyciszona Akustycznie.",
     "subject": "isolated amber and warm white Polish warning sign, exact text SEKCJA PRZESŁUCHAŃ // STREFA WYCISZONA AKUSTYCZNIE, black background.",
     "prompt": "Use case: stylized-concept. isolated amber and warm white Polish warning sign, exact text SEKCJA PRZESŁUCHAŃ // STREFA WYCISZONA AKUSTYCZNIE, black background. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -2029,7 +2029,7 @@
     "description": "Szyld Bunkier Bastion — Tunel Ewakuacyjny.",
     "subject": "isolated green and royal blue Polish exit sign, exact text BUNKIER BASTION // TUNEL EWAKUACYJNY, black background.",
     "prompt": "Use case: stylized-concept. isolated green and royal blue Polish exit sign, exact text BUNKIER BASTION // TUNEL EWAKUACYJNY, black background. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -2040,7 +2040,7 @@
     "description": "Zielono-bursztynowy radar perymetru leśnego i drona H-06.",
     "subject": "security radar screen, exact Polish heading PERYMETR LEŚNY: SEKTOR CZYSTY // DRON H-06 W POWIETRZU; green and amber only.",
     "prompt": "Use case: stylized-concept. security radar screen, exact Polish heading PERYMETR LEŚNY: SEKTOR CZYSTY // DRON H-06 W POWIETRZU; green and amber only. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -2051,7 +2051,7 @@
     "description": "Oscyloskop zapisu audio nr 44 ze stacji Kamienna.",
     "subject": "audio waveform screen, exact Polish heading ZAPIS AUDIO #44 — ANALIZA STRESU GŁOSU (STACJA KAMIENNA), green and amber only.",
     "prompt": "Use case: stylized-concept. audio waveform screen, exact Polish heading ZAPIS AUDIO #44 — ANALIZA STRESU GŁOSU (STACJA KAMIENNA), green and amber only. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -2062,7 +2062,7 @@
     "description": "Cyfrowy podkład mapy stacji Kamienna i schematu komórki Iskra.",
     "subject": "digital map interface of metro Kamienna and Iskra cell, Polish labels, green amber warm white only.",
     "prompt": "Use case: stylized-concept. digital map interface of metro Kamienna and Iskra cell, Polish labels, green amber warm white only. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": true
   },
   {
@@ -2073,7 +2073,7 @@
     "description": "Gładki beton architektoniczny z rysunkiem szalunku i otworami po ściągach.",
     "subject": "seamless architectural concrete, fine formwork marks and tie-rod holes, cool charcoal blue-gray.",
     "prompt": "Use case: stylized-concept. seamless architectural concrete, fine formwork marks and tie-rod holes, cool charcoal blue-gray. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": false
   },
   {
@@ -2084,7 +2084,7 @@
     "description": "Wielkoformatowy fornir i parkiet z ciemnego wędzonego orzecha.",
     "subject": "seamless smoked dark American walnut veneer and parquet with black micro-gaps.",
     "prompt": "Use case: stylized-concept. seamless smoked dark American walnut veneer and parquet with black micro-gaps. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": false
   },
   {
@@ -2095,7 +2095,7 @@
     "description": "Polerowany czarny marmur Nero Marquina ze złotym i białym żyłkowaniem.",
     "subject": "seamless polished black Nero Marquina marble with fine amber and warm-white veins.",
     "prompt": "Use case: stylized-concept. seamless polished black Nero Marquina marble with fine amber and warm-white veins. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": false
   },
   {
@@ -2106,7 +2106,7 @@
     "description": "Gęsty miękki dywan wełniano-jedwabny z geometrycznym obrysem.",
     "subject": "seamless dense plush wool-silk carpet, deep graphite and subtle woven geometric border.",
     "prompt": "Use case: stylized-concept. seamless dense plush wool-silk carpet, deep graphite and subtle woven geometric border. No red, cyan, magenta, watermark or real brands.",
-    "set": "run6",
+    "set": "run7",
     "lossless": false
   }
 ]

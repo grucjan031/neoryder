@@ -1,4 +1,4 @@
-// Wspólne stałe i pomocniki mapy run6 (Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama).
+// Wspólne stałe i pomocniki mapy run7 (Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama).
 // Plik z prefiksem `_` nie jest generatorem; `build.mjs --run` go pomija.
 import { readFileSync } from 'node:fs';
 import { COLOR, R, vec } from './_runKit.mjs';
@@ -37,7 +37,7 @@ export const MAT_CEIL = MAT_CONCRETE;
 export const MAT_INLAY = 'mall_terrazzo_inlay';
 export const MAT_GRATING = 'steel_grating';
 
-/** Prostokąty wszystkich 15 pomieszczeń (`R1..R15`) oraz Antresoli Salonu (`R2_MEZZ`) zgodnie z §3.2 docs/maps/run6.md. */
+/** Prostokąty wszystkich 15 pomieszczeń (`R1..R15`) oraz Antresoli Salonu (`R2_MEZZ`) zgodnie z §3.2 docs/maps/run7.md. */
 export const ROOMS = {
   R1: R(-10, 10, 4, 16), // Hol Wejściowy i Foyer z Szatnią (L0)
   R2: R(-16, 16, -18, 4), // Wielki Dwukondygnacyjny Salon z Antresolą i Panoramą Lasu (L0 + L1)

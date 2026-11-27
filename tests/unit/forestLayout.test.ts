@@ -25,8 +25,8 @@ const t = tuning.forest;
 
 describe('tło lasu rezydencji', () => {
   it('izoluje seed, zachowuje determinizm i budżety trzech warstw', () => {
-    const a = buildForestLayout('run6', options);
-    expect(a).toEqual(buildForestLayout('run6', options));
+    const a = buildForestLayout('run7', options);
+    expect(a).toEqual(buildForestLayout('run7', options));
     expect(a.conifers).not.toEqual(
       buildForestLayout('other-run', options).conifers,
     );
@@ -171,7 +171,7 @@ describe('tło lasu rezydencji', () => {
   });
 
   it('ściółka ma relief i nie zasłania piwnicy, a rośliny wyrastają z terenu', () => {
-    const layout = buildForestLayout('run6', options);
+    const layout = buildForestLayout('run7', options);
     for (const tree of [
       ...layout.conifers,
       ...layout.deciduous,
@@ -182,7 +182,7 @@ describe('tło lasu rezydencji', () => {
     const previous = tuning.render.panoramaEnabled;
     tuning.render.panoramaEnabled = 1;
     const panorama = new ForestPanorama(
-      'run6',
+      'run7',
       0,
       new Box3(new Vector3(-30, -5.4, -43), new Vector3(30, 10, 33)),
     );
@@ -214,7 +214,7 @@ describe('tło lasu rezydencji', () => {
     const atmosphere = new SceneAtmosphere(
       scene,
       room.theme,
-      'run6',
+      'run7',
       0,
       undefined,
       worldEnvelope(
@@ -227,7 +227,7 @@ describe('tło lasu rezydencji', () => {
       {},
       resolveTheme(room.theme),
       0,
-      'run6',
+      'run7',
     );
     try {
       dressing.setWeather('kuroganeOfficeTower');

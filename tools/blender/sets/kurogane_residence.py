@@ -1,4 +1,4 @@
-"""Willa Kuroyama: 38 modeli §4.1 run6 i 31 modeli partii 2. Metry glTF, Y-up, front +Z.
+"""Willa Kuroyama: 38 modeli §4.1 run7 i 31 modeli partii 2. Metry glTF, Y-up, front +Z.
 
 Budowa i kontrola budżetów: Blender -b --factory-startup -P ten_plik -- --no-preview.
 Bez --no-preview powstają również studyjne PNG, jak w zestawach run3/run4.

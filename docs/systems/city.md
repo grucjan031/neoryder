@@ -1,6 +1,6 @@
 # Oprawa miasta — Neon Noir
 
-## Tło leśne rezydencji (run6, etap A)
+## Tło leśne rezydencji (run7, etap A)
 
 `lighting.panoramaKind: "forest"` w profilu pogody wybiera `ForestPanorama`.
 Brak pola zachowuje miejską `Panorama`; przełączanie pogody zwalnia stare tło.
@@ -18,13 +18,13 @@ Lokalna mgła i poświata są liczone w shaderach lasu, bez mgły we wnętrzu.
 Parametry i budżety są w folderze `forest` panelu lil-gui; zmiana przebudowuje pule.
 
 Loader obsługuje prefiks `res_`; audyt zna ścienne, przejściowe i sufitowe fixtures
-z §2.1 mapy run6. Materiały `res_arch_concrete`, `res_dark_walnut`, `res_nero_marble`
+z §2.1 mapy run7. Materiały `res_arch_concrete`, `res_dark_walnut`, `res_nero_marble`
 i `res_plush_carpet` działają na blokach i przez `mat_res_*` w GLB. Do etapu C
 korzystają odpowiednio z `concrete_raw_cast`, `off_wood_slat_wall`,
 `off_polished_granite`, `off_carpet_tile`. Docelowe pliki `res_*.webp` mają
 pierwszeństwo po dodaniu; parametry materiałów są już docelowe.
 
-Sprawdzenie w 30 s: `?scene=horizonTest&profile=kuroganeForestResidence&debug=1&seed=run6`.
+Sprawdzenie w 30 s: `?scene=horizonTest&profile=kuroganeForestResidence&debug=1&seed=run7`.
 Start za 22-metrową szybą, próbki czterech materiałów i szczelne `rainShelters`.
 Przycisk profilu jest w pasku sceny. `fly` włącza wolną kamerę. Porównaj z
 `?scene=horizonTest&profile=kuroganeOfficeTower&debug=1`: miejska panorama powinna

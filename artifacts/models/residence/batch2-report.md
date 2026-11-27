@@ -1,4 +1,4 @@
-# Rezydencja run6 — druga partia modeli
+# Rezydencja run7 — druga partia modeli
 
 Dodano 31 modeli: 21 wymaganych i 10 dodatków. Pierwsze 38 GLB nie zmieniło się
 (walidacja SHA-256). Każdy nowy model ma PNG 720 × 720 oraz wpis AABB i materiałów

@@ -11,8 +11,8 @@ interface ManifestEntry {
 }
 
 it('wiąże katalogi tekstur rezydencji z manifestami i plikami WebP', () => {
-  const regular = catalog.filter((item) => item.set === 'run6');
-  const comic = comicCatalog.filter((item) => item.set === 'run6');
+  const regular = catalog.filter((item) => item.set === 'run7');
+  const comic = comicCatalog.filter((item) => item.set === 'run7');
   expect(regular).toHaveLength(32);
   expect(comic).toHaveLength(4);
 
