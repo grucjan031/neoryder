@@ -4,6 +4,7 @@ import {
   BufferAttribute,
   BufferGeometry,
   CatmullRomCurve3,
+  CircleGeometry,
   Color,
   CylinderGeometry,
   DoubleSide,
@@ -32,13 +33,17 @@ const TAU = Math.PI * 2;
 const vertex = /* glsl */ `
   varying vec2 vUv;
   varying vec3 vLocal;
+  varying vec3 vViewNormal;
   void main() {
     vUv = uv;
     vLocal = position;
     vec4 p = vec4(position, 1.0);
+    vec3 n = normal;
     #ifdef USE_INSTANCING
       p = instanceMatrix * p;
+      n = mat3(instanceMatrix) * n;
     #endif
+    vViewNormal = normalize(normalMatrix * n);
     gl_Position = projectionMatrix * modelViewMatrix * p;
   }
 `;
@@ -47,6 +52,7 @@ const plasmaFragment = /* glsl */ `
   uniform vec3 amber, warmWhite, violet, blue;
   varying vec2 vUv;
   varying vec3 vLocal;
+  varying vec3 vViewNormal;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
   float noise(vec2 p) {
     vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
@@ -57,23 +63,63 @@ const plasmaFragment = /* glsl */ `
     float angle = vUv.x * 6.2831853;
     // Periodic coordinates keep the torus seam closed as the turbulence flows.
     vec2 p = vec2(cos(angle-timeS*flowSpeed), sin(angle-timeS*flowSpeed));
-    float n = noise(p*8.0 + vec2(vUv.y*9.0, timeS*0.35));
-    float filament = pow(0.5+0.5*sin(vUv.y*62.83185+n*5.0-timeS*4.0), 6.0);
-    vec3 base = mix(amber, warmWhite, smoothstep(0.25,0.85,n));
-    vec3 rim = mix(violet, blue, n);
-    base = mix(base, rim, (1.0-filament)*0.16);
-    gl_FragColor = vec4(base * brightness * pulse * (0.5+n*0.6+filament), 1.0);
+    float n = noise(p*7.0 + vec2(vUv.y*8.0, timeS*0.45));
+    float n2 = noise(p*14.0 - vec2(vUv.y*12.0, timeS*0.8));
+    float turb = 0.65*n + 0.35*n2;
+    float filament = pow(0.5+0.5*sin(vUv.y*50.26548+turb*5.5-timeS*4.2), 4.0);
+    float facing = clamp(abs(vViewNormal.z), 0.0, 1.0);
+    float core = clamp(pow(facing, 1.15)*0.82 + filament*0.26 + (turb-0.5)*0.22, 0.0, 1.0);
+    vec3 edgeCol = mix(violet, blue, (1.0-turb)*0.22);
+    vec3 mantleCol = mix(edgeCol, amber, smoothstep(0.22, 0.56, core));
+    vec3 col = mix(mantleCol, warmWhite, smoothstep(0.54, 0.86, core + filament*0.25));
+    gl_FragColor = vec4(col * brightness * pulse * (0.78 + turb*0.45 + filament*0.55), 1.0);
     #include <colorspace_fragment>
   }
 `;
 const bandFragment = /* glsl */ `
   uniform float timeS, brightness, pulse;
-  uniform vec3 amber, warmWhite;
+  uniform vec3 amber, warmWhite, violet;
   varying vec2 vUv;
   varying vec3 vLocal;
   void main() {
-    float band = 0.65 + 0.35*sin(vLocal.y*2.0-timeS*2.0+vUv.x*6.2831853);
-    gl_FragColor = vec4(mix(amber,warmWhite,band)*brightness*pulse,1.0);
+    float wave = 0.5 + 0.5*sin(vLocal.y*2.2 - timeS*2.4 + vUv.x*6.2831853);
+    vec3 col = mix(violet, amber, smoothstep(0.15, 0.72, wave));
+    col = mix(col, warmWhite, smoothstep(0.76, 1.0, wave)*0.65);
+    gl_FragColor = vec4(col * brightness * pulse, 1.0);
+    #include <colorspace_fragment>
+  }
+`;
+const floorGlowFragment = /* glsl */ `
+  uniform float timeS, brightness, pulse;
+  uniform vec3 amber, warmWhite, violet;
+  varying vec2 vUv;
+  varying vec3 vLocal;
+  void main() {
+    float r = length(vLocal.xy);
+    float u = clamp(r / 12.4, 0.0, 1.0);
+    float angle = atan(vLocal.y, vLocal.x);
+    float spokes = 0.72 + 0.28*cos(angle*12.0 + sin(u*10.0 - timeS*1.8)*0.6);
+    float ripple = 0.75 + 0.25*sin(u*22.0 - timeS*2.8);
+    float innerRing = smoothstep(0.24, 0.46, u) * smoothstep(0.84, 0.52, u);
+    float outerHalo = smoothstep(0.36, 0.64, u) * smoothstep(1.0, 0.62, u);
+    vec3 innerCol = mix(amber, warmWhite, innerRing*0.45) * innerRing * spokes;
+    vec3 outerCol = violet * outerHalo * ripple * 1.15;
+    float alpha = clamp((innerRing*0.55 + outerHalo*0.48) * smoothstep(1.0, 0.72, u), 0.0, 1.0);
+    gl_FragColor = vec4((innerCol + outerCol) * brightness * pulse * 0.52, alpha);
+    #include <colorspace_fragment>
+  }
+`;
+const plumeFragment = /* glsl */ `
+  uniform float timeS, brightness, pulse;
+  uniform vec3 amber, warmWhite, violet;
+  varying vec2 vUv;
+  void main() {
+    float angle = vUv.x * 6.2831853;
+    float vert = smoothstep(0.0, 0.16, vUv.y) * pow(max(0.0, 1.0 - vUv.y), 1.35);
+    float stream = 0.68 + 0.32*sin(angle*6.0 + timeS*2.2 - vUv.y*9.0);
+    vec3 col = mix(warmWhite, amber, smoothstep(0.05, 0.42, vUv.y));
+    col = mix(col, violet, smoothstep(0.35, 0.88, vUv.y));
+    gl_FragColor = vec4(col * brightness * pulse * vert * stream * 0.62, vert * 0.65);
     #include <colorspace_fragment>
   }
 `;
@@ -115,12 +161,14 @@ export class FusionReactor {
   };
   private readonly warning = new MeshBasicMaterial({ toneMapped: false });
   private readonly arcMaterial = new LineBasicMaterial({
+    vertexColors: true,
     transparent: true,
     depthWrite: false,
     toneMapped: false,
     blending: AdditiveBlending,
   });
   private readonly arcPositions: BufferAttribute;
+  private readonly arcColors: BufferAttribute;
   private readonly arcs: LineSegments;
   private readonly steam: ShaderMaterial;
   private arcBucket = NaN;
@@ -140,7 +188,7 @@ export class FusionReactor {
     this.root.rotation.y = def.yaw ?? 0;
     this.root.scale.setScalar(def.scale ?? 1);
     this.root.add(this.body);
-    this.coilCount = Math.max(12, Math.min(18, Math.floor(t.coilCount)));
+    this.coilCount = Math.max(8, Math.min(18, Math.floor(t.coilCount)));
     this.arcCount = Math.max(1, Math.floor(t.arcCount));
     this.arcSegments = Math.max(2, Math.floor(t.arcSegments));
     const metal = this.material(
@@ -153,12 +201,16 @@ export class FusionReactor {
       new MeshBasicMaterial({ color: t.amberColor, toneMapped: false }),
     );
     amber.userData.bloom = true;
+    const violet = this.material(
+      new MeshBasicMaterial({ color: t.violetColor, toneMapped: false }),
+    );
+    violet.userData.bloom = true;
     const glass = this.material(
       new MeshToonMaterial({
-        color: t.blueColor,
+        color: t.violetColor,
         gradientMap,
         transparent: true,
-        opacity: 0.12,
+        opacity: 0.09,
         depthWrite: false,
         side: DoubleSide,
       }),
@@ -185,6 +237,31 @@ export class FusionReactor {
       }),
     );
     bands.userData.bloom = true;
+    const floorGlow = this.material(
+      new ShaderMaterial({
+        vertexShader: vertex,
+        fragmentShader: floorGlowFragment,
+        uniforms: this.uniforms,
+        transparent: true,
+        depthWrite: false,
+        toneMapped: false,
+        blending: AdditiveBlending,
+      }),
+    );
+    floorGlow.userData.bloom = true;
+    const plume = this.material(
+      new ShaderMaterial({
+        vertexShader: vertex,
+        fragmentShader: plumeFragment,
+        uniforms: this.uniforms,
+        transparent: true,
+        depthWrite: false,
+        toneMapped: false,
+        blending: AdditiveBlending,
+        side: DoubleSide,
+      }),
+    );
+    plume.userData.bloom = true;
 
     this.mesh(
       new CylinderGeometry(
@@ -200,15 +277,27 @@ export class FusionReactor {
     );
     this.torus(t.foundationRadiusM - 0.3, 0.22, metal, t.foundationHeightM);
     this.torus(
-      t.foundationRadiusM - 0.6,
-      0.06,
+      t.foundationRadiusM - 0.55,
+      0.075,
       amber,
       t.foundationHeightM + 0.1,
     );
+    this.torus(t.foundationRadiusM + 0.15, 0.065, violet, 0.14);
+
+    const floorDisc = this.mesh(
+      new CircleGeometry(t.foundationRadiusM + 3.2, 64).rotateX(-Math.PI / 2),
+      floorGlow,
+      0,
+      0.04,
+      0,
+    );
+    floorDisc.userData.noOutline = true;
+    floorDisc.renderOrder = 1;
+
     this.mesh(
       new CylinderGeometry(
-        1.5,
-        1.9,
+        1.55,
+        1.95,
         t.solenoidHeightM - t.foundationHeightM,
         32,
       ),
@@ -218,13 +307,23 @@ export class FusionReactor {
       0,
     );
     this.batch(
-      new TorusGeometry(1.52, 0.065, 6, 48).rotateX(Math.PI / 2),
+      new TorusGeometry(1.58, 0.075, 6, 48).rotateX(Math.PI / 2),
       bands,
       24,
       (i, d) =>
         d.position.set(0, 1.25 + (i * (t.solenoidHeightM - 1.6)) / 24, 0),
     );
-    this.torus(1.65, 0.22, winding, t.solenoidHeightM - 0.25);
+    this.torus(1.72, 0.24, bands, t.solenoidHeightM - 0.18);
+
+    const plumeMesh = this.mesh(
+      new CylinderGeometry(1.15, 2.2, 5.6, 32, 1, true),
+      plume,
+      0,
+      t.solenoidHeightM + 2.0,
+      0,
+    );
+    plumeMesh.userData.noOutline = true;
+    plumeMesh.renderOrder = 1;
 
     const core = this.torus(
       t.majorRadiusM,
@@ -244,15 +343,15 @@ export class FusionReactor {
       t.majorRadiusM,
       t.chamberRadiusM + 0.06,
       12,
-      8,
-      (TAU / this.coilCount) * 0.35,
+      6,
+      (TAU / this.coilCount) * 0.14,
     ).rotateX(Math.PI / 2);
     this.batch(armor, metal, this.coilCount, (i, d) => {
       d.position.y = t.chamberHeightM;
-      d.rotation.y = (i * TAU) / this.coilCount;
+      d.rotation.y = (i * TAU) / this.coilCount - (TAU / this.coilCount) * 0.07;
     });
 
-    // Straight inner leg and rounded outer leg form a D in each radial plane.
+    // Straight inner leg and rounded outer leg form a monumental graphite D-coil in each radial plane.
     const r = t.coilRadiusM,
       h = t.coilHeightM;
     const points = [
@@ -264,7 +363,7 @@ export class FusionReactor {
       new Vector3(r * 0.35, -h, 0),
     ];
     const curve = new CatmullRomCurve3(points, true, 'centripetal');
-    const coilGeometry = new TubeGeometry(curve, 64, t.coilThicknessM, 8, true);
+    const coilGeometry = new TubeGeometry(curve, 64, t.coilThicknessM, 6, true);
     this.batch(coilGeometry, winding, this.coilCount, (i, d) => {
       const a = (i * TAU) / this.coilCount;
       d.position.set(
@@ -274,8 +373,51 @@ export class FusionReactor {
       );
       d.rotation.y = a;
     });
+
+    // Emissive amber/violet strip hugging the outer edge of each D-coil.
+    const stripOffset = t.coilThicknessM * 0.86;
+    const stripCurve = new CatmullRomCurve3(
+      [
+        new Vector3(r * 0.35, -h - stripOffset * 0.5, 0),
+        new Vector3(r + stripOffset, -h * 0.55, 0),
+        new Vector3(r + stripOffset, 0, 0),
+        new Vector3(r + stripOffset, h * 0.55, 0),
+        new Vector3(r * 0.35, h + stripOffset * 0.5, 0),
+      ],
+      false,
+      'centripetal',
+    );
+    const coilStripGeometry = new TubeGeometry(stripCurve, 40, 0.085, 6, false);
+    this.batch(coilStripGeometry, bands, this.coilCount, (i, d) => {
+      const a = (i * TAU) / this.coilCount;
+      d.position.set(
+        t.majorRadiusM * Math.cos(a),
+        t.chamberHeightM,
+        -t.majorRadiusM * Math.sin(a),
+      );
+      d.rotation.y = a;
+    });
+
+    // Violet emissive diagnostic ribs on upper and lower outer shoulders of each D-coil.
     this.batch(
-      new BoxGeometry(0.7, 1.8, 0.9),
+      new BoxGeometry(0.86, 0.16, 0.88),
+      violet,
+      this.coilCount * 2,
+      (i, d) => {
+        const coil = Math.floor(i / 2);
+        const sign = i % 2 === 0 ? 1 : -1;
+        const a = (coil * TAU) / this.coilCount;
+        d.position.set(
+          (t.majorRadiusM + r) * Math.cos(a),
+          t.chamberHeightM + sign * h * 0.34,
+          -(t.majorRadiusM + r) * Math.sin(a),
+        );
+        d.rotation.y = a;
+      },
+    );
+
+    this.batch(
+      new BoxGeometry(0.85, 1.8, 1.05),
       metal,
       this.coilCount,
       (i, d) => {
@@ -289,15 +431,15 @@ export class FusionReactor {
       },
     );
     this.batch(
-      new BoxGeometry(0.4, 0.13, 0.5),
+      new BoxGeometry(0.84, 0.18, 0.88),
       this.warning,
       this.coilCount,
       (i, d) => {
         const a = (i * TAU) / this.coilCount;
         d.position.set(
-          (t.majorRadiusM + r) * Math.cos(a),
-          t.chamberHeightM + h * 0.52,
-          -(t.majorRadiusM + r) * Math.sin(a),
+          (t.majorRadiusM + r * 0.92) * Math.cos(a),
+          t.chamberHeightM + h * 0.62,
+          -(t.majorRadiusM + r * 0.92) * Math.sin(a),
         );
         d.rotation.y = a;
       },
@@ -312,11 +454,11 @@ export class FusionReactor {
       ring.position.y = t.chamberHeightM + (i - 1) * (h - 0.25);
       this.body.add(ring);
       this.rings.push(ring);
-      const radius = t.majorRadiusM + r + 0.5;
-      this.torus(radius, 0.16, winding, 0, ring);
-      this.torus(radius, 0.035, amber, 0.19, ring);
+      const radius = t.majorRadiusM + r + 0.55;
+      this.torus(radius, 0.15, metal, 0, ring);
+      this.torus(radius, 0.055, i === 1 ? violet : amber, 0.18, ring);
       this.batch(
-        new BoxGeometry(0.7, 0.48, 1.1),
+        new BoxGeometry(0.72, 0.46, 1.05),
         metal,
         8,
         (j, d) => {
@@ -328,45 +470,30 @@ export class FusionReactor {
       );
     }
 
-    const pipe = new TubeGeometry(
-      new CatmullRomCurve3([
-        new Vector3(t.majorRadiusM + r, t.chamberHeightM, 0),
-        new Vector3(t.majorRadiusM + r + 0.6, 2.2, 0),
-        new Vector3(t.foundationRadiusM + 0.5, 0.85, 0),
-      ]),
-      20,
-      0.13,
-      6,
-      false,
-    );
-    this.batch(pipe, winding, this.coilCount * 3, (i, d) => {
-      d.rotation.y =
-        (Math.floor(i / 3) * TAU) / this.coilCount + ((i % 3) - 1) * 0.035;
-    });
     this.batch(
-      new CylinderGeometry(0.65, 0.65, 3.1, 16),
-      winding,
+      new CylinderGeometry(0.52, 0.58, 1.8, 16),
+      metal,
       6,
       (i, d) => {
         const a = (i * TAU) / 6;
         d.position.set(
-          (t.foundationRadiusM + 1.4) * Math.cos(a),
-          2.1,
-          (t.foundationRadiusM + 1.4) * Math.sin(a),
+          (t.foundationRadiusM + 1.1) * Math.cos(a),
+          1.1,
+          (t.foundationRadiusM + 1.1) * Math.sin(a),
         );
       },
     );
-    for (const y of [0.7, 3.5])
+    for (const y of [0.45, 1.75])
       this.batch(
-        new TorusGeometry(0.66, 0.1, 6, 16).rotateX(Math.PI / 2),
-        metal,
+        new TorusGeometry(0.56, 0.09, 6, 16).rotateX(Math.PI / 2),
+        winding,
         6,
         (i, d) => {
           const a = (i * TAU) / 6;
           d.position.set(
-            (t.foundationRadiusM + 1.4) * Math.cos(a),
+            (t.foundationRadiusM + 1.1) * Math.cos(a),
             y,
-            (t.foundationRadiusM + 1.4) * Math.sin(a),
+            (t.foundationRadiusM + 1.1) * Math.sin(a),
           );
         },
       );
@@ -377,7 +504,13 @@ export class FusionReactor {
       3,
     );
     this.arcPositions.setUsage(DynamicDrawUsage);
+    this.arcColors = new BufferAttribute(
+      new Float32Array(this.arcCount * this.arcSegments * 6),
+      3,
+    );
+    this.arcColors.setUsage(DynamicDrawUsage);
     arcGeometry.setAttribute('position', this.arcPositions);
+    arcGeometry.setAttribute('color', this.arcColors);
     this.arcs = new LineSegments(arcGeometry, this.arcMaterial);
     this.arcs.frustumCulled = false;
     this.arcs.userData.noOutline = true;
@@ -388,10 +521,14 @@ export class FusionReactor {
     const positions = new Float32Array(count * 3);
     const seeds = new Float32Array(count);
     for (let i = 0; i < count; i++) {
-      const a = TAU * hash(i + 1);
-      positions[i * 3] = (t.foundationRadiusM + hash(i + 90)) * Math.cos(a);
-      positions[i * 3 + 1] = t.foundationHeightM;
-      positions[i * 3 + 2] = (t.foundationRadiusM + hash(i + 90)) * Math.sin(a);
+      const nozzle = i % 12;
+      const a =
+        (nozzle * TAU) / 12 + (hash(i + 1) - 0.5) * (TAU / 12) * 0.75;
+      const radial =
+        t.majorRadiusM - 0.4 + hash(i + 90) * (t.foundationRadiusM - t.majorRadiusM + 1.2);
+      positions[i * 3] = radial * Math.cos(a);
+      positions[i * 3 + 1] = 0.25 + hash(i + 45) * (t.foundationHeightM + 0.15);
+      positions[i * 3 + 2] = radial * Math.sin(a);
       seeds[i] = hash(i + 200);
     }
     steamGeometry.setAttribute('position', new BufferAttribute(positions, 3));
@@ -405,28 +542,33 @@ export class FusionReactor {
           size: { value: t.steamSizeM },
           opacity: { value: t.steamOpacity },
           tint: this.uniforms.warmWhite,
+          violet: this.uniforms.violet,
         },
         vertexShader: /* glsl */ `
         uniform float timeS, lifetime, rise, size;
         attribute float seed;
         varying float fade;
+        varying float vAge;
         void main() {
           float age = fract(timeS / lifetime + seed);
-          vec3 p = position + vec3(sin(seed*60.0+age*3.0)*age, age*rise, cos(seed*80.0+age*2.0)*age);
+          vAge = age;
+          vec3 p = position + vec3(sin(seed*60.0+age*3.5)*(0.35+age*1.1), age*rise, cos(seed*80.0+age*2.5)*(0.35+age*1.1));
           vec4 view = modelViewMatrix * vec4(p,1.0);
           gl_Position = projectionMatrix * view;
           float worldScale = length(modelMatrix[0].xyz);
-          gl_PointSize = clamp(size*worldScale*(0.5+age)*300.0/max(1.0,-view.z),1.0,96.0);
+          gl_PointSize = clamp(size*worldScale*(0.65+age*1.15)*420.0/max(1.0,-view.z),4.0,128.0);
           fade = sin(age*3.14159265);
         }
       `,
         fragmentShader: /* glsl */ `
         uniform float opacity;
-        uniform vec3 tint;
+        uniform vec3 tint, violet;
         varying float fade;
+        varying float vAge;
         void main() {
           float d = length(gl_PointCoord-0.5)*2.0;
-          gl_FragColor = vec4(tint, (1.0-smoothstep(0.1,1.0,d))*fade*opacity);
+          vec3 col = mix(tint, violet, vAge*0.28);
+          gl_FragColor = vec4(col, (1.0-smoothstep(0.08,1.0,d))*fade*opacity);
           #include <colorspace_fragment>
         }
       `,
@@ -491,7 +633,7 @@ export class FusionReactor {
     parent = this.body,
   ): Mesh {
     return this.mesh(
-      new TorusGeometry(radius, tube, 12, 96).rotateX(Math.PI / 2),
+      new TorusGeometry(radius, tube, 16, 96).rotateX(Math.PI / 2),
       material,
       0,
       y,
@@ -539,14 +681,17 @@ export class FusionReactor {
     if (this.amberColor !== t.amberColor) {
       this.amberColor = t.amberColor;
       this.uniforms.amber.value.set(t.amberColor);
+      this.arcBucket = NaN;
     }
     if (this.whiteColor !== t.whiteColor) {
       this.whiteColor = t.whiteColor;
       this.uniforms.warmWhite.value.set(t.whiteColor);
+      this.arcBucket = NaN;
     }
     if (this.violetColor !== t.violetColor) {
       this.violetColor = t.violetColor;
       this.uniforms.violet.value.set(t.violetColor);
+      this.arcBucket = NaN;
     }
     if (this.blueColor !== t.blueColor) {
       this.blueColor = t.blueColor;
@@ -579,11 +724,9 @@ export class FusionReactor {
     const bucket = Math.floor(phase);
     this.arcs.visible =
       flashes && t.arcFrequencyHz > 0 && phase - bucket < t.arcDuty;
-    this.arcMaterial.color
-      .copy(this.uniforms.blue.value)
-      .multiplyScalar(t.brightness);
+    this.arcMaterial.color.setRGB(1, 1, 1).multiplyScalar(t.brightness * 1.85);
     this.arcMaterial.opacity = this.arcs.visible
-      ? 1 - (phase - bucket) / Math.max(0.01, t.arcDuty)
+      ? 0.55 + 0.45 * (1 - (phase - bucket) / Math.max(0.01, t.arcDuty))
       : 0;
     if (bucket !== this.arcBucket) {
       this.arcBucket = bucket;
@@ -597,32 +740,55 @@ export class FusionReactor {
 
   private writeArcs(bucket: number): void {
     const t = tuning.render.fusionReactor;
+    const white = this.uniforms.warmWhite.value;
+    const violet = this.uniforms.violet.value;
     for (let arc = 0; arc < this.arcCount; arc++) {
-      const coil = Math.floor(hash(bucket * 13 + arc * 71) * this.coilCount);
-      const from = (coil * TAU) / this.coilCount;
-      const to = ((coil + 1) * TAU) / this.coilCount;
-      const radius = t.majorRadiusM + t.coilRadiusM;
-      const y =
-        t.chamberHeightM + (hash(bucket + arc * 19) - 0.5) * t.coilHeightM;
+      const pair = Math.floor(arc / 2);
+      const isCore = arc % 2 === 0;
+      const col = isCore ? white : violet;
+      const coil =
+        (pair + Math.floor(hash(bucket * 13 + pair * 71) * this.coilCount)) %
+        this.coilCount;
+      const fromA = (coil * TAU) / this.coilCount;
+      const crownArc = pair % 3 === 2;
+      const toA = crownArc
+        ? fromA + (hash(bucket * 29 + pair * 17) - 0.5) * 0.35
+        : ((coil + 1) * TAU) / this.coilCount;
+      const rFrom = crownArc ? 1.75 : t.majorRadiusM + t.coilRadiusM * 0.94;
+      const rTo = crownArc
+        ? t.majorRadiusM + t.coilRadiusM * 0.45
+        : t.majorRadiusM + t.coilRadiusM * 0.94;
+      const yFrom = crownArc
+        ? t.solenoidHeightM - 0.25
+        : t.chamberHeightM + (hash(bucket + pair * 19) - 0.5) * t.coilHeightM * 1.1;
+      const yTo = crownArc
+        ? t.chamberHeightM + t.coilHeightM * 0.85
+        : yFrom + (hash(bucket * 7 + pair * 31) - 0.5) * 1.1;
+      const x0 = rFrom * Math.cos(fromA),
+        z0 = -rFrom * Math.sin(fromA);
+      const x1 = rTo * Math.cos(toA),
+        z1 = -rTo * Math.sin(toA);
+      const jitterScale = isCore ? 1.0 : 1.38;
       for (let j = 0; j < this.arcSegments; j++) {
         for (let end = 0; end < 2; end++) {
           const step = j + end;
           const f = step / this.arcSegments;
-          const envelope = Math.sin(f * Math.PI) * t.arcJitterM;
-          const seed = bucket * 101 + arc * 37 + step * 7;
+          const envelope = Math.sin(f * Math.PI) * t.arcJitterM * jitterScale;
+          const seed =
+            bucket * 101 + pair * 37 + step * 7 + (isCore ? 0 : 503);
           const offset = (arc * this.arcSegments + j) * 2 + end;
           this.arcPositions.setXYZ(
             offset,
-            radius * ((1 - f) * Math.cos(from) + f * Math.cos(to)) +
-              (hash(seed) - 0.5) * envelope,
-            y + (hash(seed + 1) - 0.5) * envelope,
-            -radius * ((1 - f) * Math.sin(from) + f * Math.sin(to)) +
-              (hash(seed + 2) - 0.5) * envelope,
+            (1 - f) * x0 + f * x1 + (hash(seed) - 0.5) * envelope,
+            (1 - f) * yFrom + f * yTo + (hash(seed + 1) - 0.5) * envelope,
+            (1 - f) * z0 + f * z1 + (hash(seed + 2) - 0.5) * envelope,
           );
+          this.arcColors.setXYZ(offset, col.r, col.g, col.b);
         }
       }
     }
     this.arcPositions.needsUpdate = true;
+    this.arcColors.needsUpdate = true;
   }
 
   dispose(): void {

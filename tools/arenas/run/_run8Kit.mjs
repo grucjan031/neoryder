@@ -561,11 +561,11 @@ export function rampFlightWithRails(
       });
       box(
         k,
-        x - side * 0.02,
-        midY + ny * 0.23,
-        midAlong + nz * 0.23,
-        0.16,
-        0.05,
+        x - side * 0.015,
+        midY + ny * 0.22,
+        midAlong + nz * 0.22,
+        0.08,
+        0.03,
         len,
         ledMat,
         {
@@ -600,12 +600,12 @@ export function rampFlightWithRails(
       });
       box(
         k,
-        midAlong + nx * 0.23,
-        midY + ny * 0.23,
-        z - side * 0.02,
+        midAlong + nx * 0.22,
+        midY + ny * 0.22,
+        z - side * 0.015,
         len,
-        0.05,
-        0.16,
+        0.03,
+        0.08,
         ledMat,
         {
           rotation: vec(0, 0, rz),

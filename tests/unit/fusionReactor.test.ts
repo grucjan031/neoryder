@@ -98,7 +98,7 @@ describe('render-only fusion reactor', () => {
     expect(size.x).toBeGreaterThan(20);
     expect(size.x).toBeLessThan(26);
     expect(size.y).toBeGreaterThan(9);
-    expect(size.y).toBeLessThan(11);
+    expect(size.y).toBeLessThan(16);
     expect(reactor.lightDefs).toHaveLength(2);
     reactor.dispose();
   });

@@ -53,14 +53,14 @@ import {
 
 function structure(k, placer) {
   // 1. Posadzki Poziomu Głównego (L0, y = 0.00 m, płyta -0.60..0.00 m) — dokładnie 1 blok na pokój (nauczka #1 z run7):
-  deck(k, ROOMS.R1, Y_L0, MAT_TILE, 0.6);
+  deck(k, ROOMS.R1, Y_L0, MAT_FLOOR, 0.6);
   deck(k, ROOMS.R2, Y_L0, MAT_FLOOR, 0.6);
   deck(k, ROOMS.R4, Y_L0, MAT_FLOOR, 0.6);
   deck(k, ROOMS.R5, Y_L0, MAT_FLOOR, 0.6);
   deck(k, ROOMS.R6, Y_L0, MAT_CONCRETE, 0.6);
   deck(k, ROOMS.R7, Y_L0, MAT_TILE, 0.6);
   // Próg wnęki drzwi wejściowych entry (południe R1: X ∈ [-2, 2], Z ∈ [36, 37]).
-  deck(k, R(-2, 2, 36, 37), Y_L0, MAT_TILE, 0.6);
+  deck(k, R(-2, 2, 36, 37), Y_L0, MAT_FLOOR, 0.6);
 
   // 2. Posadzki Poziomu Galerii 1 (G1, y = +4.80 m, płyta +4.40..+4.80 m):
   // Pomieszczenia na poziomie G1 — dokładnie 1 monolityczny blok posadzki na pokój (R3 i R8):
@@ -312,7 +312,7 @@ function circulation(k, placer) {
     -8.0,
     Y_G1,
     -18.0,
-    'neon_blue',
+    'neon_amber',
     [-1, 1],
   );
   placer.reserve(R(-17.8, -14.6, -18.2, -7.8), Y_L0);
@@ -328,7 +328,7 @@ function circulation(k, placer) {
     -8.0,
     Y_G1,
     -18.0,
-    'neon_blue',
+    'neon_amber',
     [-1, 1],
   );
   placer.reserve(R(14.6, 17.8, -18.2, -7.8), Y_L0);

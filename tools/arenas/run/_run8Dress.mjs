@@ -284,18 +284,19 @@ function hazards(k, p) {
  * Dywan w R8 oraz maty dielektryczne w R3 są płaskimi `decals` (`surface: "floor"`), więc żaden spawn nie jest w bloku (nauczka #5).
  */
 function decalsAndEasterEggs(k) {
-  // 1. Płaskie maty dielektryczne w Sterowni Głównej R3 i dywan gabinetowy w Biurze Kierownika R8 (`surface: "floor"`).
+  // 1. Płaskie maty dielektryczne w Sterowni Głównej R3 i dywan gabinetowy w Biurze Kierownika R8 (`surface: "floor"`),
+  // oraz mniejsze logo Kurogane Arms na ścianie wschodniej Szatni R1 (`surface: "wall"`, 0.03 m od ściany X = +11.8).
   mark(
     k,
     FUSION_TEXTURES.fus_dielectric_floor_mat,
     -8.0,
     Y_G1 + 0.012,
     -28.5,
-    3.2,
-    3.2,
+    2.4,
+    2.4,
     0,
     '#ffffff',
-    0.88,
+    0.72,
   );
   mark(
     k,
@@ -303,26 +304,43 @@ function decalsAndEasterEggs(k) {
     14.0,
     Y_G1 + 0.012,
     -26.5,
-    3.0,
-    3.0,
+    2.2,
+    2.2,
     0,
     '#ffffff',
-    0.9,
+    0.75,
   );
   mark(
     k,
     FUSION_TEXTURES.fus_dielectric_floor_mat,
-    0.0,
-    Y_L0 + 0.012,
+    11.77,
+    Y_L0 + 1.65,
     29.0,
-    2.6,
-    2.6,
-    0,
+    1.35,
+    1.35,
+    -Q,
     '#ffffff',
-    0.88,
+    0.9,
+    'wall',
   );
 
-  // 2. Oznakowanie posadzkowe strefy silnego pola magnetycznego 16 T wokół Tokamaka w R2 oraz w R4 i R5.
+  // 2. Żółto-czarne pasy ostrzegawcze wokół podstawy Tokamaka (R = 9.7 m oraz R = 15.5 m) w Hali Reaktora R2 oraz w R4, R5 i R6.
+  for (let i = 0; i < 8; i++) {
+    const a = (i * PI) / 4;
+    const r = 9.75;
+    mark(
+      k,
+      FUSION_TEXTURES.fus_floor_magnetic_hazard,
+      Math.round(r * Math.sin(a) * 100) / 100,
+      Y_L0 + 0.012,
+      Math.round(r * Math.cos(a) * 100) / 100,
+      4.6,
+      0.78,
+      a,
+      C.amber,
+      0.92,
+    );
+  }
   for (const [x, z, yaw] of [
     [0, 15.5, 0],
     [0, -15.5, PI],
@@ -330,6 +348,7 @@ function decalsAndEasterEggs(k) {
     [15.5, 0, -Q],
     [-30.0, -11.0, 0],
     [-30.0, 11.0, 0],
+    [26.5, 9.0, Q],
   ]) {
     mark(
       k,
@@ -337,11 +356,11 @@ function decalsAndEasterEggs(k) {
       x,
       Y_L0 + 0.012,
       z,
-      3.6,
+      3.8,
       0.85,
       yaw,
       C.amber,
-      0.8,
+      0.86,
     );
   }
 
@@ -588,54 +607,67 @@ function signage(k) {
 }
 
 /**
- * 24 źródła światła `lights[]` (§7.3 docs/maps/run8.md):
+ * Źródła światła `lights[]` (§7.3 docs/maps/run8.md):
  * - 100% bez `cone: true` (0 smug wolumetrycznych!),
  * - każde z jawnym `floorY` (`0.0`, `4.8` lub `9.6 m`).
  */
 function lights(k) {
-  // --- GŁÓWNA HALA REAKTORA (R2, 10 źródeł) ---
+  // --- GŁÓWNA HALA REAKTORA (R2, 12 źródeł: jaśniejsze światło ogólne high-bay + poświata wokół Tokamaka) ---
   // 4 główne źródła wokół Tokamaka (floorY: 0.0)
-  k.light(0.0, 5.5, -8.5, C.warm, 36, 18, { floorY: Y_L0 });
-  k.light(0.0, 5.5, 8.5, C.amber, 36, 18, { floorY: Y_L0 });
-  k.light(-8.5, 5.5, 0.0, C.violet, 32, 17, { floorY: Y_L0 });
-  k.light(8.5, 5.5, 0.0, C.amber, 32, 17, { floorY: Y_L0 });
-  // 2 źródła narożne na poziomie głównym (floorY: 0.0)
-  k.light(-15.5, 4.0, -3.0, C.violet, 24, 13, { floorY: Y_L0 });
-  k.light(15.5, 4.0, 6.0, C.blue, 24, 13, { floorY: Y_L0 });
+  k.light(0.0, 5.8, -8.5, C.warm, 46, 22, { floorY: Y_L0 });
+  k.light(0.0, 5.8, 8.5, C.amber, 46, 22, { floorY: Y_L0 });
+  k.light(-8.5, 5.8, 0.0, C.violet, 42, 21, { floorY: Y_L0 });
+  k.light(8.5, 5.8, 0.0, C.amber, 42, 21, { floorY: Y_L0 });
+  // 4 źródła strefowe posadzki hali (SW, SE, NW, NE — floorY: 0.0)
+  k.light(-14.5, 5.2, -11.0, C.warm, 38, 19, { floorY: Y_L0 });
+  k.light(14.5, 5.2, -11.0, C.amber, 38, 19, { floorY: Y_L0 });
+  k.light(-14.5, 5.2, 11.5, C.amber, 40, 20, { floorY: Y_L0 });
+  k.light(14.5, 5.2, 11.5, C.warm, 40, 20, { floorY: Y_L0 });
   // 2 źródła na poziomie Galerii G1 (floorY: 4.8)
-  k.light(-20.0, 8.5, 0.0, C.amber, 24, 13, { floorY: Y_G1 });
-  k.light(20.0, 8.5, 0.0, C.amber, 24, 13, { floorY: Y_G1 });
-  // 2 źródła na poziomie Galerii Górnej G2 i korony suwnicy (floorY: 9.6 / 0.0)
-  k.light(0.0, 13.8, -20.4, C.warm, 26, 14, { floorY: Y_G2 });
-  k.light(0.0, 15.0, 0.0, C.amber, 30, 18, { floorY: Y_L0 });
+  k.light(-20.0, 8.5, -2.0, C.amber, 32, 16, { floorY: Y_G1 });
+  k.light(20.0, 8.5, -2.0, C.amber, 32, 16, { floorY: Y_G1 });
+  // 2 źródła high-bay pod stropem i na poziomie Galerii Górnej G2 (floorY: 9.6 / 0.0)
+  k.light(0.0, 13.8, -20.4, C.warm, 34, 17, { floorY: Y_G2 });
+  k.light(0.0, 15.5, 0.0, C.warm, 48, 26, { floorY: Y_L0 });
 
-  // --- SZATNIA I ŚLUZA DEKONTAMINACYJNA (R1, 2 źródła, floorY: 0.0) ---
-  k.light(0.0, 4.3, 29.0, C.green, 26, 13, { floorY: Y_L0 });
-  k.light(0.0, 4.3, 23.5, C.amber, 28, 13, { floorY: Y_L0 });
+  // --- SZATNIA I ŚLUZA DEKONTAMINACYJNA (R1, 2 źródła: stonowane ciepłobiałe i bursztynowe zamiast zielonej plamy, floorY: 0.0) ---
+  k.light(0.0, 4.3, 29.5, C.warm, 26, 14, {
+    floorY: Y_L0,
+    groundGlow: false,
+  });
+  k.light(0.0, 4.3, 23.5, C.amber, 28, 14, { floorY: Y_L0 });
 
   // --- STEROWNIA GŁÓWNA REAKTORA (R3, 3 źródła, floorY: 4.8) ---
-  k.light(-13.0, 9.1, -28.0, C.blue, 28, 14, { floorY: Y_G1 });
-  k.light(-3.0, 9.1, -28.0, C.warm, 28, 14, { floorY: Y_G1 });
-  k.light(-8.0, 8.5, -35.0, C.green, 30, 12, { floorY: Y_G1 });
+  k.light(-13.0, 9.1, -28.0, C.blue, 32, 15, { floorY: Y_G1 });
+  k.light(-3.0, 9.1, -28.0, C.warm, 32, 15, { floorY: Y_G1 });
+  k.light(-8.0, 8.5, -35.0, C.green, 30, 13, { floorY: Y_G1 });
 
-  // --- LABORATORIUM FIZYKI PLAZMY (R4, 2 źródła, floorY: 0.0) ---
-  k.light(-30.0, 5.1, -15.0, C.violet, 28, 14, { floorY: Y_L0 });
-  k.light(-30.0, 5.1, -6.0, C.blue, 26, 13, { floorY: Y_L0 });
+  // --- LABORATORIUM FIZYKI PLAZMY (R4, 4 źródła, floorY: 0.0) ---
+  k.light(-30.0, 5.1, -15.5, C.violet, 34, 15, { floorY: Y_L0 });
+  k.light(-25.5, 5.1, -18.5, C.warm, 34, 15, { floorY: Y_L0 });
+  k.light(-30.0, 5.1, -6.5, C.blue, 32, 14, { floorY: Y_L0 });
+  k.light(-26.0, 5.1, -2.5, C.amber, 30, 14, { floorY: Y_L0 });
 
-  // --- MAGAZYN PALIWA — DEUTER/TRYT (R5, 2 źródła, floorY: 0.0) ---
-  k.light(-30.0, 6.4, 6.0, C.green, 26, 14, { floorY: Y_L0 });
-  k.light(-30.0, 6.4, 16.0, C.amber, 28, 14, { floorY: Y_L0 });
+  // --- MAGAZYN PALIWA — DEUTER/TRYT (R5, 3 źródła, floorY: 0.0) ---
+  k.light(-30.0, 6.4, 5.0, C.green, 30, 15, { floorY: Y_L0 });
+  k.light(-26.5, 6.4, 11.5, C.warm, 34, 16, { floorY: Y_L0 });
+  k.light(-30.0, 6.4, 17.5, C.amber, 34, 16, { floorY: Y_L0 });
 
-  // --- HALA TURBIN I WYMIENNIKÓW CIEPŁA (R6, 2 źródła, floorY: 0.0) ---
-  k.light(30.0, 7.2, 3.0, C.amber, 30, 15, { floorY: Y_L0 });
-  k.light(30.0, 7.2, 15.0, C.warm, 28, 15, { floorY: Y_L0 });
+  // --- HALA TURBIN I WYMIENNIKÓW CIEPŁA (R6, 4 źródła, floorY: 0.0) ---
+  k.light(30.0, 7.2, 2.5, C.amber, 36, 16, { floorY: Y_L0 });
+  k.light(25.5, 7.2, 10.0, C.warm, 38, 17, { floorY: Y_L0 });
+  k.light(31.0, 7.2, 15.5, C.amber, 36, 16, { floorY: Y_L0 });
+  k.light(26.5, 7.2, 19.0, C.warm, 34, 15, { floorY: Y_L0 });
 
-  // --- SERWEROWNIA DIAGNOSTYCZNA (R7, 1 źródło, floorY: 0.0) ---
-  k.light(30.0, 5.1, -13.0, C.blue, 28, 14, { floorY: Y_L0 });
+  // --- SERWEROWNIA DIAGNOSTYCZNA (R7, 3 źródła, floorY: 0.0) ---
+  k.light(27.0, 5.1, -18.0, C.warm, 32, 14, { floorY: Y_L0 });
+  k.light(31.0, 5.1, -13.0, C.blue, 32, 15, { floorY: Y_L0 });
+  k.light(30.0, 5.1, -7.5, C.green, 30, 14, { floorY: Y_L0 });
 
-  // --- BIURO KIEROWNIKA NAUKOWEGO (R8, 2 źródła, floorY: 4.8) ---
-  k.light(14.0, 9.1, -29.0, C.warm, 28, 13, { floorY: Y_G1 });
-  k.light(19.5, 8.8, -29.0, C.amber, 24, 11, { floorY: Y_G1 });
+  // --- BIURO KIEROWNIKA NAUKOWEGO (R8, 3 źródła, floorY: 4.8) ---
+  k.light(10.5, 9.1, -27.5, C.warm, 30, 14, { floorY: Y_G1 });
+  k.light(14.5, 9.1, -30.0, C.warm, 32, 14, { floorY: Y_G1 });
+  k.light(19.5, 8.8, -29.0, C.amber, 28, 12, { floorY: Y_G1 });
 }
 
 export function dress(k, placer) {
