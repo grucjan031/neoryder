@@ -99,37 +99,12 @@ export function solid(k, rect, y0, y1, material, opts = {}) {
 
 /** Płyta chodzenia z wierzchem na `y` (domyślnie grubość SLAB = 0.4 m). */
 export function deck(k, rect, y, material, thickness = SLAB, opts = {}) {
-  if (![MAT_WALNUT, MAT_MARBLE].includes(material))
-    return k.solid(rect, y - thickness, y, material, {
-      walkable: true,
-      ...opts,
-    });
-  // Jedna płaszczyzna nawigacji pod podziałem wizualnym posadzki.
-  k.solid(rect, y - thickness, y, material, {
+  // Jedna płaszczyzna posadzki: słoje i fugi daje tekstura, nie podział na bloki
+  // (podział rysował kontur przerywanych czarnych linii).
+  return k.solid(rect, y - thickness, y, material, {
     walkable: true,
-    visible: false,
     ...opts,
   });
-  k.solid(rect, y - thickness, y - 0.004, 'trim', { walkable: true, ...opts });
-  const tiles = (lo, hi, pitch) => {
-    const out = [];
-    let cursor = lo;
-    for (let edge = lo + pitch; edge < hi - 0.08; edge += pitch) {
-      out.push([cursor, edge - 0.006]);
-      cursor = edge + 0.006;
-    }
-    out.push([cursor, hi]);
-    return out;
-  };
-  const wood = material === MAT_WALNUT;
-  for (const [x0, x1] of tiles(rect.minX, rect.maxX, wood ? 1.2 : 2.8)) {
-    for (const [z0, z1] of tiles(rect.minZ, rect.maxZ, wood ? 4.2 : 2.8)) {
-      k.solid(R(x0, x1, z0, z1), y - 0.012, y, material, {
-        walkable: true,
-        ...opts,
-      });
-    }
-  }
 }
 
 /** Cienki dywan z orzechową bordiurą, bez stopnia na trasie ruchu. */
@@ -185,10 +160,79 @@ export function ceilingSlab(
   shelterBottom = Y_L0 - 0.5,
 ) {
   addRainShelter(k, rect, shelterBottom, yBottom + thickness + 0.2);
-  return k.solid(rect, yBottom, yBottom + thickness, material, {
+  const slab = k.solid(rect, yBottom, yBottom + thickness, material, {
     ceiling: true,
     walkable: false,
   });
+  ceilingCoffers(
+    k,
+    rect,
+    yBottom,
+    yBottom > Y_B_CEIL ? MAT_WALNUT : MAT_CONCRETE,
+  );
+  return slab;
+}
+
+/** Kasetony z orzecha pod stropem: belki co ~3.2 m i obwodowy pas, żeby strop nie był czarną płaszczyzną. */
+function ceilingCoffers(k, rect, yBottom, material) {
+  const w = rect.maxX - rect.minX;
+  const d = rect.maxZ - rect.minZ;
+  if (w < 4 || d < 4) return;
+  const depth = 0.32;
+  const y = yBottom - depth / 2;
+  const opts = { ceiling: true, walkable: false };
+  const beams = (lo, span) => {
+    const n = Math.max(1, Math.round(span / 3.2));
+    return Array.from({ length: n - 1 }, (_, i) => lo + ((i + 1) * span) / n);
+  };
+  for (const x of beams(rect.minX, w))
+    box(
+      k,
+      x,
+      y,
+      (rect.minZ + rect.maxZ) / 2,
+      0.22,
+      depth,
+      d - 0.4,
+      material,
+      opts,
+    );
+  for (const z of beams(rect.minZ, d))
+    box(
+      k,
+      (rect.minX + rect.maxX) / 2,
+      y,
+      z,
+      w - 0.4,
+      depth,
+      0.22,
+      material,
+      opts,
+    );
+  for (const side of [-1, 1]) {
+    box(
+      k,
+      (rect.minX + rect.maxX) / 2,
+      y,
+      side < 0 ? rect.minZ + 0.2 : rect.maxZ - 0.2,
+      w,
+      depth,
+      0.4,
+      material,
+      opts,
+    );
+    box(
+      k,
+      side < 0 ? rect.minX + 0.2 : rect.maxX - 0.2,
+      y,
+      (rect.minZ + rect.maxZ) / 2,
+      0.4,
+      depth,
+      d - 0.8,
+      material,
+      opts,
+    );
+  }
 }
 
 /**

@@ -442,6 +442,7 @@ export default function generate() {
     id: 'run6',
     name: 'Rezydencja Pułkownika Kurogane Arms — Willa Kuroyama',
     weather: 'kuroganeForestResidence',
+    theme: 'kuroganeResidence',
     bounds: R(-30, 30, -43, 33),
     startX: -4,
     exitX: 19,

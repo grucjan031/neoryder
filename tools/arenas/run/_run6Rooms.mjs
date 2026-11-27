@@ -669,6 +669,10 @@ function buildRoomR15(k, p) {
   p.prop('res_tactical_gun_cabinet', 13.5, 16.8, Y_B, 0);
   p.prop('res_tactical_gun_cabinet', 11.2, 24.0, Y_B, 1);
 
+  // Stół taktyczny z hologramem sektora i dok dronów patrolowych — bunkier nie może mieć pustej posadzki.
+  p.prop('res_holo_globe_stand', 13.8, 20.6, Y_B, 0);
+  p.prop('res_drone_charging_dock', 12.4, 27.6, Y_B, 1);
+  p.prop('res_coat_closet', 26.6, 26.6, Y_B, -1);
   deco(k, 'city_ac_unit', 24.0, Y_B + 3.2, 16.25, 0);
   deco(k, 'city_pipe_run', 27.7, Y_B, 29.0, -Q);
   deco(k, 'wh_wall_terminal', 10.22, Y_B + 1.2, 24.0, Q);
