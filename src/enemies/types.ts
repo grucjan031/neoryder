@@ -26,6 +26,8 @@ export type EnemyState =
 export interface EnemySnapshot {
   position: Vec3;
   yaw: number;
+  chimeraMode?: 'stalk' | 'sprint' | 'lost';
+  claw?: 'L' | 'R' | 'B';
   bodyYaw?: number;
   lean?: number;
   speed: number;

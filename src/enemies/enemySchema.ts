@@ -215,6 +215,19 @@ export const enemySchema = z
     grabbable: z.boolean().optional(),
     /** Wróg tylko do misji fabularnych — nie musi występować w falach areny. */
     missionOnly: z.boolean().optional(),
+    chimera: z
+      .object({
+        stalkMinS: positive,
+        stalkExtraS: nonnegative,
+        sprintS: positive,
+        sprintSpeed: positive,
+        lostChance: nonnegative.max(1),
+        lostS: positive,
+        turncoatChance: nonnegative.max(1),
+        preyRangeM: positive,
+        preyIds: z.array(z.string()).min(1),
+      })
+      .optional(),
     stationary: z.boolean().optional(),
     damageTakenScale: z
       .object({
@@ -385,6 +398,15 @@ export const enemySchema = z
         code: 'custom',
         path: ['flankDistanceM'],
         message: 'Promień krążenia musi być większy niż zasięg ataku.',
+      });
+    if (
+      definition.kind === 'chimera' &&
+      (!definition.chimera || !definition.body)
+    )
+      ctx.addIssue({
+        code: 'custom',
+        path: ['chimera'],
+        message: 'Chimera wymaga danych zachowania i ciała.',
       });
     if (!RANGED_KINDS.includes(definition.kind)) return;
     const result = gunnerFields.safeParse(definition);

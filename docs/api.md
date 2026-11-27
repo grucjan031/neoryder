@@ -2678,3 +2678,7 @@ EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `ele
 `skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.
 
 `ownedSkins(meta, weaponId)` zwraca pasujące, posiadane definicje. `skinSource(skinId)` wskazuje ofertę sklepu, naszywkę albo brak źródła. `equipSkin(meta, weaponId, skinId | null)` zwraca nowy `LoadoutChoice` do przekazania do `MetaManager.setLoadout`. Przymiarka w warsztacie korzysta bezpośrednio z renderera i nie zapisuje zmiany wyposażenia.
+
+## Chimera
+
+Snapshot wroga udostępnia widokowi tryb ruchu `chimeraMode` (skradanie, sprint, dezorientacja) i wariant ciosu `claw`. AI wybiera pobliskie cele z `getNeighbors()` według listy typów Kurogane z danych. Dostęp do sojuszniczych hurtboksów i tag `#friendly_fire` dotyczą wyłącznie zamachu na wybraną jednostkę.

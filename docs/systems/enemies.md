@@ -852,3 +852,9 @@ Mgła ma promień 2,6 m i trwa 4,5 s. Przy stopach gracza odświeża pojedynczy 
 Płyty pancerza Helixy mają materiał `mat_helix_shell`. Ten rodzaj stylu ma kolor `tuning.render.helixShell` (sterylna, brudna biel) i słabszą czerwoną poświatę krawędzi wroga. Kombinezon pod płytami to zwykły `mat_enemy_dark`.
 
 Do zrzutów włącz `god`. Komenda `helix freeze` zatrzymuje lub wznawia AI. Na zatrzymanej scenie `helix spawn guard` ustawia ochroniarza 4 m przed kamerą. `helix spawn medic` dodaje sanitariusza w odległości 13 m, a `helix freeze throw` zatrzymuje AI podczas zamachu. `helix fog` wymusza lądowanie pod graczem. `helix stats` wypisuje HP i stan każdego wroga, liczbę stref, status gracza i jego prędkość bazową oraz wynikową.
+
+## Chimera
+
+Okaz z kriokokonu run3 ma bazowo 220 HP. Kroczy z prędkością 1,55 m/s, po 1,5–4,3 s rusza sprintem do 6,9 m/s. Przed ciosem sygnalizuje zamach lewą, prawą lub obiema łapami. Po wymachu ma 38% szans na dezorientację. Po regeneracji przez 1,85 s rozgląda się i nie podejmuje pościgu. Początek sprintu daje 7% szans na wybór pobliskiej jednostki Kurogane. Własny gatunek jest wykluczony. Walka i animacje korzystają z tego samego wariantu zamachu.
+
+Chimera występuje w puli sektora Kurogane i w czwartej fali areny. W scenie `?scene=chimera-test` dwie chimery zaczynają obok szturmowca.

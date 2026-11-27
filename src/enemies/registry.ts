@@ -104,7 +104,7 @@ for (const [kind, EnemyClass] of [
     if (!definition) throw new Error(`Nieznany wróg: ${id}`);
     return new EnemyClass(ctx, deps, definition, position);
   });
-for (const kind of ['shielder', 'executor'])
+for (const kind of ['shielder', 'executor', 'chimera'])
   factories.set(kind, (ctx, deps, id, position) => {
     const definition = definitionFor(id, deps);
     if (!definition) throw new Error(`Nieznany wróg: ${id}`);

@@ -4,6 +4,9 @@ import { canKnockDown, knockdownTiming, stunDuration } from './enemyKnockdown';
 import type { EnemySnapshot } from './types';
 
 export type EnemyClip =
+  | 'Lost'
+  | `Ready${'L' | 'R' | 'B'}`
+  | `Claw${'L' | 'R' | 'B'}`
   | 'Idle_Loop'
   | 'Pistol_Idle_Loop'
   | 'Walk_Loop'
@@ -87,6 +90,29 @@ export function selectEnemyAnimation(
     return result('Hit_Chest', true, definition.stunOnHeavyS);
   }
   if (snapshot.controlled) return result('Hit_Head', true);
+  if (definition.chimera) {
+    const claw = snapshot.claw ?? 'R';
+    if (snapshot.state === 'telegraph')
+      return result(`Ready${claw}`, true, definition.telegraphS);
+    if (snapshot.state === 'swing' || snapshot.state === 'recovery') {
+      const total = definition.swingActiveS + definition.recoveryS;
+      const impact = definition.swingActiveS / total;
+      const recovery = snapshot.state === 'recovery';
+      return {
+        clip: `Claw${claw}`,
+        once: true,
+        moving: false,
+        continues: recovery,
+        segment: {
+          from: recovery ? impact : 0,
+          to: recovery ? 1 : impact,
+          spanS: recovery ? definition.recoveryS : definition.swingActiveS,
+        },
+      };
+    }
+    if (snapshot.chimeraMode === 'lost' && snapshot.state !== 'dead')
+      return result('Lost');
+  }
   const attack = bossAttack(definition, snapshot);
   if (attack) return attack;
   switch (snapshot.state) {

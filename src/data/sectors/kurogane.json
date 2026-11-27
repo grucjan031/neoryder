@@ -78,6 +78,7 @@
     "pools": {
       "combat": {
         "assaulter": 4,
+        "chimera": 1,
         "gunner": 3,
         "drone": 2,
         "shielder": 1,
@@ -87,6 +88,7 @@
       },
       "elite": {
         "assaulter": 3,
+        "chimera": 1,
         "gunner": 2,
         "drone": 1,
         "shielder": 3,
