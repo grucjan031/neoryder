@@ -258,5 +258,35 @@
     "dominantColor": "#585858",
     "description": "Komiksowe lamele orzechowe na filcu z kreskowanymi słojami.",
     "bytes": 160988
+  },
+  {
+    "id": "komiks_med_resin_floor",
+    "category": "surfaces",
+    "path": "surfaces/komiks_med_resin_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#656565",
+    "description": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami — wersja komiksowa",
+    "bytes": 44150
+  },
+  {
+    "id": "komiks_med_wall_panel",
+    "category": "surfaces",
+    "path": "surfaces/komiks_med_wall_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#636363",
+    "description": "Lakierowane panele ścienne ze stalową listwą — wersja komiksowa",
+    "bytes": 25648
+  },
+  {
+    "id": "komiks_med_atrium_terrazzo",
+    "category": "surfaces",
+    "path": "surfaces/komiks_med_atrium_terrazzo.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#414141",
+    "description": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
+    "bytes": 84060
   }
 ]

@@ -6,7 +6,7 @@ import { buildSkyline } from '../../src/render/skyline';
 import { resolveTheme } from '../../src/render/themes';
 import { roomDefinitions } from '../../src/world/rooms';
 
-const room = roomDefinitions.get('bulwar1')!;
+const room = roomDefinitions.get('run5')!;
 
 function buildings(drop?: number) {
   const scene = new Scene();
@@ -43,7 +43,7 @@ it('pominięcie pola odpowiada zeru, a obniżenie przesuwa tylko wysokość inst
   }
 });
 
-it('dachy pierwszego pierścienia mieszczą się pod oczami, dalsze wieże wystają ponad balkon', () => {
+it('z posadzki atrium i z antresoli widać pierwszy pierścień pod linią wzroku i dalsze wieże nad nią', () => {
   const theme = resolveTheme(room.theme).render;
   const h = horizonParameters(worldEnvelope(room.blocks, room.playerSpawn), {
     nearM: theme.fogNear,
@@ -59,6 +59,9 @@ it('dachy pierwszego pierścienia mieszczą się pod oczami, dalsze wieże wysta
   });
   const tops = (layer: number) =>
     buildings.filter((b) => b.layer === layer).map((b) => b.baseY + b.height);
-  expect(Math.max(...tops(0))).toBeLessThan(1.7);
-  expect(Math.max(...tops(3))).toBeGreaterThan(4.9);
+  expect(room.panoramaDropM).toBe(61);
+  for (const eyes of [1.65, 4.4 + 1.65]) {
+    expect(Math.max(...tops(0))).toBeLessThan(eyes);
+    expect(Math.max(...tops(3))).toBeGreaterThan(eyes);
+  }
 });

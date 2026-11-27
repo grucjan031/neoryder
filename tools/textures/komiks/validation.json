@@ -1,7 +1,7 @@
 {
-  "totalBytes": 2096255,
+  "totalBytes": 2251080,
   "budgetBytes": 6000000,
-  "fileCount": 23,
+  "fileCount": 26,
   "edgeLimit255": 6.0,
   "paletteRule": "HSV: S>=0.25, V>=0.12, delta>=10/255, alpha>=16; red [0,20)/[345,360), cyan [165,200], magenta [290,345)",
   "files": [
@@ -481,6 +481,69 @@
       "edgeDifference255": [
         3.6771,
         2.6631
+      ]
+    },
+    {
+      "id": "komiks_med_resin_floor",
+      "category": "surfaces",
+      "path": "surfaces/komiks_med_resin_floor.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#656565",
+      "description": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami — wersja komiksowa",
+      "bytes": 44150,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        3.984,
+        4.0837
+      ]
+    },
+    {
+      "id": "komiks_med_wall_panel",
+      "category": "surfaces",
+      "path": "surfaces/komiks_med_wall_panel.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#636363",
+      "description": "Lakierowane panele ścienne ze stalową listwą — wersja komiksowa",
+      "bytes": 25648,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        3.277,
+        3.083
+      ]
+    },
+    {
+      "id": "komiks_med_atrium_terrazzo",
+      "category": "surfaces",
+      "path": "surfaces/komiks_med_atrium_terrazzo.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#414141",
+      "description": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
+      "bytes": 84060,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        2.0508,
+        2.4938
       ]
     }
   ],

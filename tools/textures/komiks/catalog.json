@@ -241,5 +241,32 @@
     "prompt": "Single square seamless tileable material albedo, fills frame edge-to-edge, uniform lighting, completely orthographic. Opposite edges must tile. No text, border, shadow gradient or vignette. Monochrome ink graphic novel wall material. Twelve straight vertical architectural walnut slats on black felt, delicate drawn woodgrain, inked edges, hatched dark grays, restrained engraved pale highlight lines. Continuous slats full image height. No red, cyan, magenta, watermark or scene.",
     "set": "office",
     "lossless": false
+  },
+  {
+    "id": "komiks_med_resin_floor",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami — wersja komiksowa",
+    "subject": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami — wersja komiksowa",
+    "set": "med"
+  },
+  {
+    "id": "komiks_med_wall_panel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Lakierowane panele ścienne ze stalową listwą — wersja komiksowa",
+    "subject": "Lakierowane panele ścienne ze stalową listwą — wersja komiksowa",
+    "set": "med"
+  },
+  {
+    "id": "komiks_med_atrium_terrazzo",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
+    "subject": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
+    "set": "med"
   }
 ]
