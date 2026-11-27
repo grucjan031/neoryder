@@ -49,6 +49,7 @@ export const themeSchema = z.object({
       heightFogDensity: unit,
       heightFogFalloff: nonnegative,
       panoramaEnabled: unit,
+      panoramaKind: z.enum(['city', 'forest']).default('city'),
       panoramaDensity: unit,
       panoramaHeight: nonnegative,
       panoramaWindowWarm: color,

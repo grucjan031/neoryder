@@ -280,5 +280,41 @@
     "metalness": 0.1,
     "bump": 0.5,
     "wetness": 0.05
+  },
+  "res_arch_concrete": {
+    "scale": 0.35,
+    "roughness": 0.42,
+    "metalness": 0.08,
+    "bump": 0.38,
+    "wetness": 0.25,
+    "tint": "#343e4f",
+    "texture": "res_arch_concrete"
+  },
+  "res_dark_walnut": {
+    "scale": 0.45,
+    "roughness": 0.36,
+    "metalness": 0.1,
+    "bump": 0.4,
+    "wetness": 0.35,
+    "tint": "#46382e",
+    "texture": "res_dark_walnut"
+  },
+  "res_nero_marble": {
+    "scale": 0.38,
+    "roughness": 0.16,
+    "metalness": 0.18,
+    "bump": 0.22,
+    "wetness": 0.78,
+    "tint": "#262f3f",
+    "texture": "res_nero_marble"
+  },
+  "res_plush_carpet": {
+    "scale": 0.55,
+    "roughness": 0.86,
+    "metalness": 0.03,
+    "bump": 0.45,
+    "wetness": 0.04,
+    "tint": "#2e3648",
+    "texture": "res_plush_carpet"
   }
 }

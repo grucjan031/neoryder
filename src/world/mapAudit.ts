@@ -22,6 +22,19 @@ const ANCHOR = 0.32;
 // Odsunięcia instalacji na elewacjach z _runKit.face() sięgają 0,6 m.
 const WALL_MOUNT = 0.65;
 const WALL_FIXTURES = new Set([
+  'res_forest_glass_facade',
+  'res_interior_door_frame',
+  'res_elevator_shaft_door',
+  'res_elevator_call_panel',
+  'res_investigation_board_iskra',
+  'res_cctv_monitor_wall',
+  'res_wine_rack_wall',
+  'res_bookshelf_wall',
+  'res_garage_tool_wall',
+  'res_wall_art_triptych',
+  'res_oneway_mirror',
+  'res_holding_cage_bars',
+
   'city_ac_unit',
   'city_awning',
   'city_fire_escape',
@@ -54,6 +67,11 @@ const WALL_FIXTURES = new Set([
 ]);
 // Ramy grodzi i bramki skanerów stoją na podłodze, ale w środku podstawy mają celowy otwór przejścia.
 const PASSAGE_FIXTURES = new Set([
+  'res_interior_door_frame',
+  'res_elevator_shaft_door',
+  'res_holding_cage_bars',
+  'res_biometric_arch',
+
   'lab_blast_door_frame',
   'lab_bio_scanner_gate',
   'off_glass_partition_door',
@@ -61,6 +79,10 @@ const PASSAGE_FIXTURES = new Set([
   'off_security_turnstile',
 ]);
 const CEILING_FIXTURES = new Set([
+  'res_chandelier_linear',
+  'res_interrogation_lamp',
+  'res_recessed_led_strip',
+
   'wh_ceiling_lamp',
   'mall_ceiling_panel',
   'mall_skylight',

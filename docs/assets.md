@@ -1263,3 +1263,107 @@ oraz dłoń podpierającą: pomiar dla wszystkich broni jest w `docs/systems/han
 ## Splasharty ekranów ładowania
 
 `public/assets/splash/*.webp` to zoptymalizowane kopie ilustracji Gracjana z `docs/fabula/splash` (oryginały zostają nietknięte; max 1600 px szerokości, WebP jakość ~78, budżet ≤ 180 KB na plik). Wygeneruj je ponownie: `python tools/splash/optimize.py` (wymaga Pillow). Lista tytułów i przypisań do motywów/pokoi: `src/data/ui/splash.json`.
+
+## Rezydencja Kurogane Arms (run6, etap B)
+
+Zestaw 38 własnych, proceduralnych modeli z tabel 1–4 w §4.1 `docs/maps/run6.md`.
+Generator `tools/blender/sets/kurogane_residence.py` korzysta z prymitywów, scalania
+siatek, eksportera GLB i studia Cycles zestawów run3/run4. Każdy link poniżej otwiera
+obejrzany podgląd PNG 720 × 720. Modele nie zawierają obrazów, świateł ani kamer.
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python-exit-code 1 -P tools/blender/sets/kurogane_residence.py
+node artifacts/models/residence/validate.mjs --write-bounds
+node artifacts/models/residence/validate.mjs
+npx vitest run tests/unit/cityModels.test.ts tests/unit/cityModelLoader.test.ts tests/unit/roomModels.test.ts tests/unit/roomBlockModelFit.test.ts tests/unit/cityDecalBounds.test.ts
+npm run typecheck
+```
+
+`-- --only res_luxury_sofa_l res_colonel_desk` ogranicza eksport; `-- --no-preview`
+pomija renderowanie. Walidator mierzy GLB przez Three.js i porównuje z tabelami
+projektu: AABB, budżety, paletę, materiały, UV, batching, PNG oraz prześwity.
+`--write-bounds` aktualizuje wyłącznie wpisy `res_*` w `mapModelBounds.json`.
+Pomiary i rozmiary plików: `artifacts/models/residence/manifest.json`.
+Przegląd zestawu: `contact-1.jpg`–`contact-4.jpg` w tym samym katalogu.
+
+### Montaż i materiały
+
+Jednostka to metr. Wszystkie AABB mają spód Y = 0 i środek XZ w początku.
+Modele ścienne mają tył Z = −głębokość/2, przód +Z; oprawy sufitowe dochodzą
+wieszakami do górnego AABB. Limuzyna ma oś podłużną X i przód +X, zgodnie
+z proporcjami 5,40 × 1,65 × 2,30 m.
+
+Szkło to dwustronny `mat_glass_clear` o kryciu 0,22. Duże dyfuzory używają
+`mat_light_panel`; akcenty wyłącznie bursztynu, zieleni, błękitu królewskiego i fioletu.
+Orzech, tapicerka, marmur, metal i beton korzystają z istniejących nazw materiałów
+`mat_wood`, `mat_fabric`, `mat_lacquer`, `mat_metal`, `mat_concrete`.
+Geometria jest płasko cieniowana i scalona do jednej siatki na materiał w każdej grupie.
+
+Kabina windy 2,60 × 3,00 × 2,60 m ma otwarte wejścia od ±Z i panel skierowany
+do wnętrza na wschodnim słupku. Portal szybowy zawiera ruchome grupy `door_left`
+i `door_right`, ze środkami X = −0,55 i +0,55 m. Każde skrzydło ma szerokość
+1,10 m; przejście po otwarciu ma 2,20 × 2,80 m. Wyświetlacz pokazuje `B1`.
+Skrzydło kraty celi jest otwarte o 180° na lewą część kraty, pozostawiając
+przejście około 1,25 m. Powiązanie drzwi z ruchem windy należy do integracji mapy.
+
+Materiały z UV `mat_screen_res_radar`, `mat_screen_res_audio_wave`,
+`mat_screen_iskra_board` i `mat_label_residence_mug` są przygotowane pod etap C.
+Do czasu dostarczenia tekstur nowe ekrany mają ciemny podkład z fizycznymi
+wskaźnikami, a środek tablicy używa istniejącego `mat_screen_map` jako podkładu.
+Na tablicy są wymodelowane portrety-sylwetki, napisy ISKRA / KURIER / WOLAN /
+MIRA / SZRON / BAJT, pinezki i przestrzenne nitki. Finalna mapa Kamiennej,
+fotografie i treść dokumentów należą do etapu C.
+
+Regał winiarni zawiera 126 widocznych denek poziomo ułożonych butelek i dwie beczki;
+korpusy zasłonięte regałem pominięto w budżecie geometrii. Modele piwnicy używają
+wyłącznie rekwizytów i aparatury, bez postaci, krwi ani dosłownej makabry.
+
+### Katalog i odbiór wizualny
+
+Po przeglądzie poprawiono wypukłość poduch, żyłki marmuru, ryflowanie postumentu,
+sylwetkę denek butelek, detale eksponatów, podpisy tablicy oraz zawiasy otwartej kraty.
+Ręcznie sprawdź: sylwetki i detale z odległości FPP, przejścia przez portale,
+przezierność gablot i fasady oraz brak nakładania kabiny na proceduralne części windy.
+
+| Model i podgląd | X × Y × Z [m] | Trójkąty GLB | Budżet | Bajty GLB |
+| --- | --- | ---: | ---: | ---: |
+| [`res_forest_glass_facade`](../artifacts/models/residence/res_forest_glass_facade.png) | 4.00 × 4.80 × 0.36 | 224 | 380 | 19428 |
+| [`res_interior_door_frame`](../artifacts/models/residence/res_interior_door_frame.png) | 4.00 × 3.60 × 0.28 | 142 | 420 | 12776 |
+| [`res_glass_balustrade`](../artifacts/models/residence/res_glass_balustrade.png) | 4.00 × 1.10 × 0.16 | 130 | 260 | 11424 |
+| [`res_elevator_cab`](../artifacts/models/residence/res_elevator_cab.png) | 2.60 × 3.00 × 2.60 | 348 | 860 | 28924 |
+| [`res_elevator_shaft_door`](../artifacts/models/residence/res_elevator_shaft_door.png) | 3.20 × 3.20 × 0.34 | 240 | 480 | 21404 |
+| [`res_elevator_call_panel`](../artifacts/models/residence/res_elevator_call_panel.png) | 0.42 × 1.40 × 0.20 | 152 | 320 | 15900 |
+| [`res_fireplace_column`](../artifacts/models/residence/res_fireplace_column.png) | 2.80 × 9.60 × 1.80 | 442 | 940 | 29568 |
+| [`res_chandelier_linear`](../artifacts/models/residence/res_chandelier_linear.png) | 3.60 × 0.45 × 0.90 | 264 | 380 | 13436 |
+| [`res_recessed_led_strip`](../artifacts/models/residence/res_recessed_led_strip.png) | 3.00 × 0.25 × 0.40 | 66 | 180 | 7200 |
+| [`res_indoor_pool_basin`](../artifacts/models/residence/res_indoor_pool_basin.png) | 6.00 × 0.45 × 14.00 | 218 | 680 | 16840 |
+| [`res_pool_lounger`](../artifacts/models/residence/res_pool_lounger.png) | 0.95 × 0.85 × 2.10 | 200 | 420 | 13628 |
+| [`res_winter_garden_planter`](../artifacts/models/residence/res_winter_garden_planter.png) | 2.60 × 1.65 × 1.00 | 310 | 760 | 22188 |
+| [`res_biometric_arch`](../artifacts/models/residence/res_biometric_arch.png) | 3.40 × 2.70 × 1.20 | 178 | 520 | 15128 |
+| [`res_bonsai_pedestal`](../artifacts/models/residence/res_bonsai_pedestal.png) | 1.60 × 1.75 × 1.60 | 368 | 820 | 22932 |
+| [`res_luxury_sofa_l`](../artifacts/models/residence/res_luxury_sofa_l.png) | 3.80 × 0.95 × 2.40 | 604 | 780 | 34676 |
+| [`res_coffee_table_marble`](../artifacts/models/residence/res_coffee_table_marble.png) | 2.20 × 0.55 × 1.20 | 300 | 360 | 22376 |
+| [`res_grand_piano_holo`](../artifacts/models/residence/res_grand_piano_holo.png) | 2.20 × 1.45 × 2.60 | 568 | 980 | 37868 |
+| [`res_wall_art_triptych`](../artifacts/models/residence/res_wall_art_triptych.png) | 3.60 × 1.80 × 0.16 | 173 | 340 | 14196 |
+| [`res_dining_table_long`](../artifacts/models/residence/res_dining_table_long.png) | 2.00 × 1.05 × 5.20 | 752 | 1120 | 42744 |
+| [`res_kitchen_island`](../artifacts/models/residence/res_kitchen_island.png) | 3.80 × 1.15 × 1.60 | 498 | 860 | 30300 |
+| [`res_smart_fridge`](../artifacts/models/residence/res_smart_fridge.png) | 1.60 × 2.20 × 0.95 | 460 | 620 | 35720 |
+| [`res_armored_limo`](../artifacts/models/residence/res_armored_limo.png) | 5.40 × 1.65 × 2.30 | 778 | 1240 | 46748 |
+| [`res_garage_tool_wall`](../artifacts/models/residence/res_garage_tool_wall.png) | 3.40 × 2.20 × 0.45 | 626 | 680 | 41944 |
+| [`res_investigation_board_iskra`](../artifacts/models/residence/res_investigation_board_iskra.png) | 3.20 × 1.80 × 0.22 | 587 | 740 | 37516 |
+| [`res_colonel_desk`](../artifacts/models/residence/res_colonel_desk.png) | 3.00 × 1.15 × 1.35 | 368 | 880 | 29544 |
+| [`res_bookshelf_wall`](../artifacts/models/residence/res_bookshelf_wall.png) | 3.20 × 2.80 × 0.75 | 576 | 760 | 36308 |
+| [`res_holo_globe_stand`](../artifacts/models/residence/res_holo_globe_stand.png) | 1.40 × 1.60 × 1.40 | 404 | 640 | 19680 |
+| [`res_trophy_case_tall`](../artifacts/models/residence/res_trophy_case_tall.png) | 2.40 × 2.40 × 0.85 | 485 | 840 | 32276 |
+| [`res_armor_display_stand`](../artifacts/models/residence/res_armor_display_stand.png) | 1.60 × 2.35 × 1.20 | 368 | 960 | 23948 |
+| [`res_master_bed_king`](../artifacts/models/residence/res_master_bed_king.png) | 2.80 × 1.25 × 2.60 | 534 | 680 | 34652 |
+| [`res_wardrobe_glass`](../artifacts/models/residence/res_wardrobe_glass.png) | 3.20 × 2.40 × 0.85 | 497 | 740 | 31480 |
+| [`res_sauna_cabin`](../artifacts/models/residence/res_sauna_cabin.png) | 2.80 × 2.40 × 2.20 | 528 | 820 | 34620 |
+| [`res_interrogation_chair`](../artifacts/models/residence/res_interrogation_chair.png) | 1.25 × 1.45 × 1.35 | 508 | 960 | 36008 |
+| [`res_instrument_trolley`](../artifacts/models/residence/res_instrument_trolley.png) | 1.40 × 1.05 × 0.75 | 450 | 720 | 31532 |
+| [`res_holding_cage_bars`](../artifacts/models/residence/res_holding_cage_bars.png) | 4.00 × 3.40 × 0.22 | 418 | 540 | 27152 |
+| [`res_recording_console`](../artifacts/models/residence/res_recording_console.png) | 2.40 × 1.25 × 0.90 | 426 | 780 | 29852 |
+| [`res_wine_rack_wall`](../artifacts/models/residence/res_wine_rack_wall.png) | 3.20 × 2.80 × 0.65 | 780 | 880 | 40928 |
+| [`res_cctv_monitor_wall`](../artifacts/models/residence/res_cctv_monitor_wall.png) | 4.00 × 2.40 × 0.25 | 372 | 440 | 25328 |
+
+Łącznie: **15342 trójkątów**, **1028172 bajtów GLB**. Wszystkie modele mieszczą się w indywidualnych budżetach.

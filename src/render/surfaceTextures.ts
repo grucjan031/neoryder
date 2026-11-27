@@ -2,6 +2,10 @@ import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 import { resolveTextureKey } from './comicSurfaces';
 
 export type SurfaceTexture =
+  | 'res_arch_concrete'
+  | 'res_dark_walnut'
+  | 'res_nero_marble'
+  | 'res_plush_carpet'
   | 'off_carpet_tile'
   | 'off_polished_granite'
   | 'off_wood_slat_wall'
@@ -147,5 +151,17 @@ export function assetTexture(
 }
 
 export function surfaceTexture(name: SurfaceTexture): TextureEntry {
-  return assetTexture('surfaces', name);
+  // Temporary substitutes until stage C supplies the residence textures.
+  const fallback: Partial<Record<SurfaceTexture, SurfaceTexture>> = {
+    res_arch_concrete: 'concrete_raw_cast',
+    res_dark_walnut: 'off_wood_slat_wall',
+    res_nero_marble: 'off_polished_granite',
+    res_plush_carpet: 'off_carpet_tile',
+  };
+  const resolved = available.has(
+    `/assets/textures/${resolveTextureKey('surfaces', name)}.webp`,
+  )
+    ? name
+    : (fallback[name] ?? name);
+  return assetTexture('surfaces', resolved);
 }

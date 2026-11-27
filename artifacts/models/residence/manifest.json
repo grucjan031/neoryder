@@ -1,0 +1,458 @@
+[
+  {
+    "model": "res_forest_glass_facade",
+    "size": [
+      4,
+      4.8,
+      0.36
+    ],
+    "budget": 380,
+    "triangles": 224,
+    "bytes": 19428,
+    "meshes": 8
+  },
+  {
+    "model": "res_interior_door_frame",
+    "size": [
+      4,
+      3.6,
+      0.28
+    ],
+    "budget": 420,
+    "triangles": 142,
+    "bytes": 12776,
+    "meshes": 6
+  },
+  {
+    "model": "res_glass_balustrade",
+    "size": [
+      4,
+      1.1,
+      0.16
+    ],
+    "budget": 260,
+    "triangles": 130,
+    "bytes": 11424,
+    "meshes": 5
+  },
+  {
+    "model": "res_elevator_cab",
+    "size": [
+      2.6,
+      3,
+      2.6
+    ],
+    "budget": 860,
+    "triangles": 348,
+    "bytes": 28924,
+    "meshes": 11
+  },
+  {
+    "model": "res_elevator_shaft_door",
+    "size": [
+      3.2,
+      3.2,
+      0.34
+    ],
+    "budget": 480,
+    "triangles": 240,
+    "bytes": 21404,
+    "meshes": 11
+  },
+  {
+    "model": "res_elevator_call_panel",
+    "size": [
+      0.42,
+      1.4,
+      0.2
+    ],
+    "budget": 320,
+    "triangles": 152,
+    "bytes": 15900,
+    "meshes": 9
+  },
+  {
+    "model": "res_fireplace_column",
+    "size": [
+      2.8,
+      9.6,
+      1.8
+    ],
+    "budget": 940,
+    "triangles": 442,
+    "bytes": 29568,
+    "meshes": 7
+  },
+  {
+    "model": "res_chandelier_linear",
+    "size": [
+      3.6,
+      0.45,
+      0.9
+    ],
+    "budget": 380,
+    "triangles": 264,
+    "bytes": 13436,
+    "meshes": 5
+  },
+  {
+    "model": "res_recessed_led_strip",
+    "size": [
+      3,
+      0.25,
+      0.4
+    ],
+    "budget": 180,
+    "triangles": 66,
+    "bytes": 7200,
+    "meshes": 4
+  },
+  {
+    "model": "res_indoor_pool_basin",
+    "size": [
+      6,
+      0.45,
+      14
+    ],
+    "budget": 680,
+    "triangles": 218,
+    "bytes": 16840,
+    "meshes": 6
+  },
+  {
+    "model": "res_pool_lounger",
+    "size": [
+      0.95,
+      0.85,
+      2.1
+    ],
+    "budget": 420,
+    "triangles": 200,
+    "bytes": 13628,
+    "meshes": 4
+  },
+  {
+    "model": "res_winter_garden_planter",
+    "size": [
+      2.6,
+      1.65,
+      1
+    ],
+    "budget": 760,
+    "triangles": 310,
+    "bytes": 22188,
+    "meshes": 7
+  },
+  {
+    "model": "res_biometric_arch",
+    "size": [
+      3.4,
+      2.7,
+      1.2
+    ],
+    "budget": 520,
+    "triangles": 178,
+    "bytes": 15128,
+    "meshes": 7
+  },
+  {
+    "model": "res_bonsai_pedestal",
+    "size": [
+      1.6,
+      1.75,
+      1.6
+    ],
+    "budget": 820,
+    "triangles": 368,
+    "bytes": 22932,
+    "meshes": 5
+  },
+  {
+    "model": "res_luxury_sofa_l",
+    "size": [
+      3.8,
+      0.95,
+      2.4
+    ],
+    "budget": 780,
+    "triangles": 604,
+    "bytes": 34676,
+    "meshes": 5
+  },
+  {
+    "model": "res_coffee_table_marble",
+    "size": [
+      2.2,
+      0.55,
+      1.2
+    ],
+    "budget": 360,
+    "triangles": 300,
+    "bytes": 22376,
+    "meshes": 8
+  },
+  {
+    "model": "res_grand_piano_holo",
+    "size": [
+      2.2,
+      1.45,
+      2.6
+    ],
+    "budget": 980,
+    "triangles": 568,
+    "bytes": 37868,
+    "meshes": 9
+  },
+  {
+    "model": "res_wall_art_triptych",
+    "size": [
+      3.6,
+      1.8,
+      0.16
+    ],
+    "budget": 340,
+    "triangles": 173,
+    "bytes": 14196,
+    "meshes": 7
+  },
+  {
+    "model": "res_dining_table_long",
+    "size": [
+      2,
+      1.05,
+      5.2
+    ],
+    "budget": 1120,
+    "triangles": 752,
+    "bytes": 42744,
+    "meshes": 7
+  },
+  {
+    "model": "res_kitchen_island",
+    "size": [
+      3.8,
+      1.15,
+      1.6
+    ],
+    "budget": 860,
+    "triangles": 498,
+    "bytes": 30300,
+    "meshes": 7
+  },
+  {
+    "model": "res_smart_fridge",
+    "size": [
+      1.6,
+      2.2,
+      0.95
+    ],
+    "budget": 620,
+    "triangles": 460,
+    "bytes": 35720,
+    "meshes": 13
+  },
+  {
+    "model": "res_armored_limo",
+    "size": [
+      5.4,
+      1.65,
+      2.3
+    ],
+    "budget": 1240,
+    "triangles": 778,
+    "bytes": 46748,
+    "meshes": 8
+  },
+  {
+    "model": "res_garage_tool_wall",
+    "size": [
+      3.4,
+      2.2,
+      0.45
+    ],
+    "budget": 680,
+    "triangles": 626,
+    "bytes": 41944,
+    "meshes": 10
+  },
+  {
+    "model": "res_investigation_board_iskra",
+    "size": [
+      3.2,
+      1.8,
+      0.22
+    ],
+    "budget": 740,
+    "triangles": 587,
+    "bytes": 37516,
+    "meshes": 11
+  },
+  {
+    "model": "res_colonel_desk",
+    "size": [
+      3,
+      1.15,
+      1.35
+    ],
+    "budget": 880,
+    "triangles": 368,
+    "bytes": 29544,
+    "meshes": 12
+  },
+  {
+    "model": "res_bookshelf_wall",
+    "size": [
+      3.2,
+      2.8,
+      0.75
+    ],
+    "budget": 760,
+    "triangles": 576,
+    "bytes": 36308,
+    "meshes": 6
+  },
+  {
+    "model": "res_holo_globe_stand",
+    "size": [
+      1.4,
+      1.6,
+      1.4
+    ],
+    "budget": 640,
+    "triangles": 404,
+    "bytes": 19680,
+    "meshes": 4
+  },
+  {
+    "model": "res_trophy_case_tall",
+    "size": [
+      2.4,
+      2.4,
+      0.85
+    ],
+    "budget": 840,
+    "triangles": 485,
+    "bytes": 32276,
+    "meshes": 9
+  },
+  {
+    "model": "res_armor_display_stand",
+    "size": [
+      1.6,
+      2.35,
+      1.2
+    ],
+    "budget": 960,
+    "triangles": 368,
+    "bytes": 23948,
+    "meshes": 6
+  },
+  {
+    "model": "res_master_bed_king",
+    "size": [
+      2.8,
+      1.25,
+      2.6
+    ],
+    "budget": 680,
+    "triangles": 534,
+    "bytes": 34652,
+    "meshes": 9
+  },
+  {
+    "model": "res_wardrobe_glass",
+    "size": [
+      3.2,
+      2.4,
+      0.85
+    ],
+    "budget": 740,
+    "triangles": 497,
+    "bytes": 31480,
+    "meshes": 7
+  },
+  {
+    "model": "res_sauna_cabin",
+    "size": [
+      2.8,
+      2.4,
+      2.2
+    ],
+    "budget": 820,
+    "triangles": 528,
+    "bytes": 34620,
+    "meshes": 7
+  },
+  {
+    "model": "res_interrogation_chair",
+    "size": [
+      1.25,
+      1.45,
+      1.35
+    ],
+    "budget": 960,
+    "triangles": 508,
+    "bytes": 36008,
+    "meshes": 11
+  },
+  {
+    "model": "res_instrument_trolley",
+    "size": [
+      1.4,
+      1.05,
+      0.75
+    ],
+    "budget": 720,
+    "triangles": 450,
+    "bytes": 31532,
+    "meshes": 9
+  },
+  {
+    "model": "res_holding_cage_bars",
+    "size": [
+      4,
+      3.4,
+      0.22
+    ],
+    "budget": 540,
+    "triangles": 418,
+    "bytes": 27152,
+    "meshes": 5
+  },
+  {
+    "model": "res_recording_console",
+    "size": [
+      2.4,
+      1.25,
+      0.9
+    ],
+    "budget": 780,
+    "triangles": 426,
+    "bytes": 29852,
+    "meshes": 10
+  },
+  {
+    "model": "res_wine_rack_wall",
+    "size": [
+      3.2,
+      2.8,
+      0.65
+    ],
+    "budget": 880,
+    "triangles": 780,
+    "bytes": 40928,
+    "meshes": 7
+  },
+  {
+    "model": "res_cctv_monitor_wall",
+    "size": [
+      4,
+      2.4,
+      0.25
+    ],
+    "budget": 440,
+    "triangles": 372,
+    "bytes": 25328,
+    "meshes": 7
+  }
+]

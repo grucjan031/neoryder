@@ -1,5 +1,37 @@
 # Oprawa miasta — Neon Noir
 
+## Tło leśne rezydencji (run6, etap A)
+
+`lighting.panoramaKind: "forest"` w profilu pogody wybiera `ForestPanorama`.
+Brak pola zachowuje miejską `Panorama`; przełączanie pogody zwalnia stare tło.
+Generator `forestLayout.ts` jest czystym TS i używa osobnego `Rng(seed).fork('forest')`.
+Uwzględnia światowe AABB budynku, także przesuniętego, z marginesem 3 m oraz
+pełnym promieniem korony i zapasem kołysania. Drzewa stoją na powierzchni pagórków.
+
+Domyślne pule: 480 iglaków w trzech warstwach, 200 liściastych, 240 kęp podszytu,
+28 pagórków, 24 wstęgi mgły, 64 słupy ogrodzenia, 6 dronów, 2 bliskie przeloty,
+8 par oczu. Pnie i gałęzie, warstwowe korony, wielobryłowe korony liściaste i paprocie
+mają osobne partie `InstancedMesh`. Całe tło to 14 partii (limit 20), bez fizyki
+i bez świateł punktowych. Pozostałe elementy to podłoże, ogrodzenie z bursztynowymi
+lampami, maszt, lądowisko H-06 z pierścieniem lamp oraz kopuła z księżycem.
+Lokalna mgła i poświata są liczone w shaderach lasu, bez mgły we wnętrzu.
+Parametry i budżety są w folderze `forest` panelu lil-gui; zmiana przebudowuje pule.
+
+Loader obsługuje prefiks `res_`; audyt zna ścienne, przejściowe i sufitowe fixtures
+z §2.1 mapy run6. Materiały `res_arch_concrete`, `res_dark_walnut`, `res_nero_marble`
+i `res_plush_carpet` działają na blokach i przez `mat_res_*` w GLB. Do etapu C
+korzystają odpowiednio z `concrete_raw_cast`, `off_wood_slat_wall`,
+`off_polished_granite`, `off_carpet_tile`. Docelowe pliki `res_*.webp` mają
+pierwszeństwo po dodaniu; parametry materiałów są już docelowe.
+
+Sprawdzenie w 30 s: `?scene=horizonTest&profile=kuroganeForestResidence&debug=1&seed=run6`.
+Start za 22-metrową szybą, próbki czterech materiałów i szczelne `rainShelters`.
+Przycisk profilu jest w pasku sceny. `fly` włącza wolną kamerę. Porównaj z
+`?scene=horizonTest&profile=kuroganeOfficeTower&debug=1`: miejska panorama powinna
+zachować wygląd. Testy: `forestLayout.test.ts`, `arenaWeather.test.ts`, `skyline.test.ts`.
+Ocena naturalności sylwetek, deszczu za szybą i rzeczywistego kosztu całej sceny
+wymaga przeglądu w przeglądarce; limit partii dotyczy samego tła.
+
 ## Koszt struktury pokoju po scalaniu Z19
 
 Poniżej `meshe przed → po (unikalne materiały przed = po)`, zmierzone na

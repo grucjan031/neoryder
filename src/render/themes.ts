@@ -40,6 +40,7 @@ export function resolveTheme(
 
 export function applyTheme(theme: Theme): () => void {
   const previous = { ...tuning.render };
+  tuning.render.panoramaKind = 'city';
   Object.assign(tuning.render, theme.render);
   // Próbka stylu (?look=) ma pierwszeństwo przed konturem motywu.
   reapplyLook();

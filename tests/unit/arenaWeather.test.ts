@@ -97,6 +97,7 @@ describe('pogoda z danych', () => {
       'clearNight',
       'drizzleWind',
       'indoorIndustrial',
+      'kuroganeForestResidence',
       'kuroganeOfficeTower',
       'kuroganeSecretLab',
       'kuroganeWarehouse',

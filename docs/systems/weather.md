@@ -303,3 +303,21 @@ bez błędów konsoli. GLSL, wygląd i odsłuch wymagają oceny w przeglądarce.
 Dla profilu `kuroganeOfficeTower` z wysokim `panoramaDropM` (180 m) otwórz
 `?scene=horizonTest&profile=kuroganeOfficeTower&debug=1` (przycisk profilu dostępny
 także w pasku `?scene=weatherTest&debug=1` i `?scene=horizonTest&debug=1`).
+
+Profil `kuroganeForestResidence` wybiera `lighting.panoramaKind: "forest"`;
+brak tego pola we wszystkich dotychczasowych profilach wybiera `city`.
+`CityDressing` zapisuje i przywraca rodzaj panoramy razem z oświetleniem.
+`SceneAtmosphere` przy zmianie rodzaju usuwa poprzednie siatki i zwalnia zasoby.
+Motyw nowej sceny zaczyna od `city`, więc profil lasu nie przenika do innych map.
+
+Profil rezydencji ma deszcz 0,52 przy prędkości 18,5 m/s, wiatr 0,9 z kierunku
+(0,85; -0,52), oświetlenie hemi/key 4,3/1,5 i wyłączone błyskawice oraz pył.
+Mgła wnętrza ma density/strength 0, zakres 80–220 m; lokalną mgłę między pniami
+rysuje wyłącznie `ForestPanorama` poza obrysem budynku. Całe wnętrze nadal wymaga
+`rainShelters`. Audio: deszcz 0,11, wiatr 0,10, generator 0,06.
+
+Podgląd: `?scene=horizonTest&profile=kuroganeForestResidence&debug=1`.
+Przełącz pogodę na `kuroganeOfficeTower` i z powrotem: tło powinno zmieniać się
+miasto/las bez przebudowy pokoju. Test `forestLayout.test.ts` sprawdza walidację,
+przełączanie i przywracanie rodzaju panoramy; `arenaWeather.test.ts` nadal
+sprawdza wszystkie profile i zakazane barwy.

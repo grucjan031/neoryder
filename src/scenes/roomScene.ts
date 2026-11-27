@@ -459,7 +459,10 @@ export class RoomScene implements Scene {
     this.atmosphere = new SceneAtmosphere(
       three,
       this.layout.theme,
-      this.layout.id,
+      weatherDefinitions.get(this.layout.weather ?? '')?.lighting
+        ?.panoramaKind === 'forest'
+        ? `${'seed' in this.run ? this.run.seed : 'level'}:${this.layout.id}`
+        : this.layout.id,
       this.layout.playerSpawn.y,
       envelope.bounds,
       envelope,
