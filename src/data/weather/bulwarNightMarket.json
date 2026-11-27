@@ -1,0 +1,53 @@
+{
+  "id": "bulwarNightMarket",
+  "title": "Nocny targ na Bulwarze",
+  "precipitation": {
+    "kind": "rain",
+    "density": 0.36,
+    "speed": 14,
+    "color": "#8294b0",
+    "opacity": 0.22,
+    "exposureS": 0.025,
+    "widthM": 0.013
+  },
+  "wind": {
+    "direction": { "x": 1, "z": 0 },
+    "strength": 0.6,
+    "gustStrength": 0,
+    "gustPeriodS": 8
+  },
+  "fog": {
+    "color": "#141a26",
+    "density": 0.004,
+    "heightM": 6,
+    "strength": 0.1,
+    "nearM": 60,
+    "farM": 160
+  },
+  "surface": { "gloss": 0.1, "reflections": 0.7, "puddles": 0.45 },
+  "lighting": {
+    "hemiIntensity": 4,
+    "keyIntensity": 1.6,
+    "panoramaEnabled": true
+  },
+  "sky": { "horizonColor": "#2b1f3d" },
+  "lightning": {
+    "enabled": false,
+    "minIntervalS": 25,
+    "maxIntervalS": 55,
+    "brightness": 0,
+    "color": "#fff1d6",
+    "decayS": 0.18
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.12,
+    "opacity": 0,
+    "color": "#8991a0",
+    "lifeS": 8
+  },
+  "ambience": [
+    { "kind": "rain", "gain": 0.3, "radiusM": 100 },
+    { "kind": "crowd", "gain": 0.06, "radiusM": 100 }
+  ]
+}

@@ -268,5 +268,32 @@
     "description": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
     "subject": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
     "set": "med"
+  },
+  {
+    "id": "komiks_targ_wet_pavers",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Mokry bruk z płyt i kostki — wersja komiksowa",
+    "subject": "Mokry bruk z płyt i kostki — wersja komiksowa",
+    "set": "targ"
+  },
+  {
+    "id": "komiks_targ_wood_planks",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Podłoga herbaciarni z desek — wersja komiksowa",
+    "subject": "Podłoga herbaciarni z desek — wersja komiksowa",
+    "set": "targ"
+  },
+  {
+    "id": "komiks_targ_fish_tiles",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Kafle hali rybnej z kratką odpływu — wersja komiksowa",
+    "subject": "Kafle hali rybnej z kratką odpływu — wersja komiksowa",
+    "set": "targ"
   }
 ]

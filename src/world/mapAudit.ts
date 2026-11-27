@@ -22,6 +22,8 @@ const ANCHOR = 0.32;
 // Odsunięcia instalacji na elewacjach z _runKit.face() sięgają 0,6 m.
 const WALL_MOUNT = 0.65;
 const WALL_FIXTURES = new Set([
+  'bw_targ_cold_door',
+  'bw_targ_drawer_wall',
   'bw_door_portal',
   'bw_curtain_wall_frame',
   'bw_pharmacy_dispenser',
@@ -57,6 +59,7 @@ const WALL_FIXTURES = new Set([
 ]);
 // Ramy grodzi i bramki skanerów stoją na podłodze, ale w środku podstawy mają celowy otwór przejścia.
 const PASSAGE_FIXTURES = new Set([
+  'bw_targ_gate',
   'bw_door_portal',
   'bw_entry_scanner',
   'bw_freight_lift_frame',
@@ -67,6 +70,8 @@ const PASSAGE_FIXTURES = new Set([
   'off_security_turnstile',
 ]);
 const CEILING_FIXTURES = new Set([
+  'bw_targ_paper_lantern',
+  'bw_targ_hanging_rack',
   'bw_ceiling_panel',
   'wh_ceiling_lamp',
   'mall_ceiling_panel',

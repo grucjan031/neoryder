@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 OUT = ROOT / "public/assets/textures"
 CATALOG = json.loads((HERE / "catalog.json").read_text(encoding="utf-8"))
 QUALITY = 85
-BUDGET = 12_000_000
+BUDGET = 20_000_000
 EDGE_LIMIT = 6.0  # Średnia różnica kanału, w skali 0–255 po kompresji.
 PREVIEWS = Path(tempfile.gettempdir()) / "neoryder-textures"
 
