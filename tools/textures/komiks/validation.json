@@ -1,7 +1,7 @@
 {
-  "totalBytes": 2251080,
+  "totalBytes": 2436470,
   "budgetBytes": 6000000,
-  "fileCount": 26,
+  "fileCount": 29,
   "edgeLimit255": 6.0,
   "paletteRule": "HSV: S>=0.25, V>=0.12, delta>=10/255, alpha>=16; red [0,20)/[345,360), cyan [165,200], magenta [290,345)",
   "files": [
@@ -544,6 +544,69 @@
       "edgeDifference255": [
         2.0508,
         2.4938
+      ]
+    },
+    {
+      "id": "komiks_targ_wet_pavers",
+      "category": "surfaces",
+      "path": "surfaces/komiks_targ_wet_pavers.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#565656",
+      "description": "Mokry bruk z płyt i kostki — wersja komiksowa",
+      "bytes": 77202,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        2.1722,
+        2.2389
+      ]
+    },
+    {
+      "id": "komiks_targ_wood_planks",
+      "category": "surfaces",
+      "path": "surfaces/komiks_targ_wood_planks.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#4d4d4d",
+      "description": "Podłoga herbaciarni z desek — wersja komiksowa",
+      "bytes": 55462,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        1.8662,
+        2.249
+      ]
+    },
+    {
+      "id": "komiks_targ_fish_tiles",
+      "category": "surfaces",
+      "path": "surfaces/komiks_targ_fish_tiles.webp",
+      "width": 1024,
+      "height": 1024,
+      "dominantColor": "#666666",
+      "description": "Kafle hali rybnej z kratką odpływu — wersja komiksowa",
+      "bytes": 51826,
+      "visiblePixels": 1048576,
+      "forbiddenPixels": {
+        "red": 0,
+        "cyan": 0,
+        "magenta": 0,
+        "keyGreen": 0
+      },
+      "edgeDifference255": [
+        3.2881,
+        3.8096
       ]
     }
   ],

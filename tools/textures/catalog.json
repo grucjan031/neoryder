@@ -1830,5 +1830,314 @@
     "prompt": "Use case: stylized-concept. ONE 512×256 production game texture for Helixa Dynamics clinic, plaque_donor. One wide mosiac-finish brushed brass donor award plaque for a sculpture pedestal, with restrained border and dark engraved letters. Set the parenthesis as a smaller readable line. Use realistic warm pale brass and compact mounting pins. Flat orthographic head-on view. Isolate just the artwork with true transparent margins and no surrounding surface or cast shadow. Render exactly this content with Polish diacritics, punctuation and case intact: “DAWCA ROKU: STAŻYSTA KOWALSKI (MIMOWOLNIE)”. Use large readable type, legible at 2 meters in-game. No extra lettering or logos. No perspective or watermark. Clinic palette: ivory #e6e3d2, graphite #2a3344, Helixa blues #273cc0 and #3d7bff, green #6dff4a, amber #ffae1a, violet #8a5cff, warm white #fff1d6. Any medical cross is always green. No red, cyan, turquoise, magenta or pink.",
     "set": "med",
     "lossless": true
+  },
+  {
+    "id": "targ_wet_pavers",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Mokry bruk z płyt i kostki",
+    "subject": "Mokry bruk z płyt i kostki",
+    "prompt": "Use case: stylized-concept. Generate ONE 1024×1024 seamless game albedo texture (targ_wet_pavers) for a makeshift night market under an overpass. Orthographic top-down, edge to edge, faces uniformly lit. Mix broad worn concrete slabs and short rows of small cobblestone setts, with irregular but restrained joints and subtly damp stone. Use muted tones around #3c4658 with graphite #2a3344 in joints. Opposite edges must match so the texture repeats without a seam. No text, framing, perspective, distinct light source, baked specular glints, cast shadows, puddle reflections or watermark. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_wood_planks",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Podłoga herbaciarni z desek",
+    "subject": "Podłoga herbaciarni z desek",
+    "prompt": "Use case: stylized-concept. Generate ONE 1024×1024 seamless game albedo texture (targ_wood_planks) for a makeshift night market under an overpass. Orthographic top-down, edge to edge, faces uniformly lit. Parallel wood floorboards of uneven widths, staggered butt joints, pin knots and quiet lengthwise grain, worn smooth by years of foot traffic. Use muted tones around #5a4a3c with graphite #2a3344 in joints. Opposite edges must match so the texture repeats without a seam. No text, framing, perspective, distinct light source, baked specular glints, cast shadows, puddle reflections or watermark. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_fish_tiles",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Kafle hali rybnej z kratką odpływu",
+    "subject": "Kafle hali rybnej z kratką odpływu",
+    "prompt": "Use case: stylized-concept. Generate ONE 1024×1024 seamless game albedo texture (targ_fish_tiles) for a makeshift night market under an overpass. Orthographic top-down, edge to edge, faces uniformly lit. A repeating square grid of small fish-market ceramic tiles with thin grout, a single modest square steel drain grate aligned to the grid, and local chips. Use muted tones around #56627a with graphite #2a3344 in joints. Opposite edges must match so the texture repeats without a seam. No text, framing, perspective, distinct light source, baked specular glints, cast shadows, puddle reflections or watermark. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_sign_brama",
+    "category": "signs",
+    "width": 1024,
+    "height": 256,
+    "description": "Ręcznie gięty neon „NOCNY TARG”",
+    "subject": "Ręcznie gięty neon „NOCNY TARG”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 1024×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 4:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a paper lantern as a distinct small pictogram. Lettering: large generous rounded hand-bent capitals with a slightly rising baseline. Exact Polish text, including all diacritics and punctuation: “NOCNY TARG”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_garkuchnie",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „GARKUCHNIE”",
+    "subject": "Ręcznie gięty neon „GARKUCHNIE”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a pot and two wisps of steam as a distinct small pictogram. Lettering: loosely spaced, tall monoline capitals, upright industrial tubing. Exact Polish text, including all diacritics and punctuation: “GARKUCHNIE”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_ryby",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „HALA RYBNA”",
+    "subject": "Ręcznie gięty neon „HALA RYBNA”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a fish in profile as a distinct small pictogram. Lettering: broad squared-off capitals, short and heavy, with rounded tube elbows. Exact Polish text, including all diacritics and punctuation: “HALA RYBNA”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_czesci",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „CZĘŚCI I NAPRAWY”",
+    "subject": "Ręcznie gięty neon „CZĘŚCI I NAPRAWY”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a wrench head as a distinct small pictogram. Lettering: closely spaced segmented repair-shop capitals, with visibly bent hooks on letters. Exact Polish text, including all diacritics and punctuation: “CZĘŚCI I NAPRAWY”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_gabinet",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „GABINET — BEZ PYTAŃ”",
+    "subject": "Ręcznie gięty neon „GABINET — BEZ PYTAŃ”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a single closed eye as a distinct small pictogram. Lettering: narrow off-kilter capitals on two lines, first ending in the em dash. Exact Polish text, including all diacritics and punctuation: “GABINET — BEZ PYTAŃ”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_herbaciarnia",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „HERBACIARNIA”",
+    "subject": "Ręcznie gięty neon „HERBACIARNIA”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a small tea cup as a distinct small pictogram. Lettering: a flowing uppercase script with generous curved strokes, upright and very legible. Exact Polish text, including all diacritics and punctuation: “HERBACIARNIA”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_dostawy",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „DOSTAWY”",
+    "subject": "Ręcznie gięty neon „DOSTAWY”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a small crate as a distinct small pictogram. Lettering: angular, wide stencil-like open tube capitals, subtly forward leaning. Exact Polish text, including all diacritics and punctuation: “DOSTAWY”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_scena",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „POKAZ AKORDU — DZIŚ”",
+    "subject": "Ręcznie gięty neon „POKAZ AKORDU — DZIŚ”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a double helix as a distinct small pictogram. Lettering: tall geometric carnival marquee lettering, two centered lines with the dash preserved. Exact Polish text, including all diacritics and punctuation: “POKAZ AKORDU — DZIŚ”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_sign_winda",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ręcznie gięty neon „WINDA”",
+    "subject": "Ręcznie gięty neon „WINDA”",
+    "prompt": "Use case: stylized-concept. Generate ONE landscape 512×256 black-mask game texture for a handmade neon sign in a makeshift night market. Front-on, flat, tight composition in the central 2:1 safe area, with generous empty black margins above and below. Draw raised warm white #fff1d6 tube strokes only, on pure black #000000, with a simple ascending lift pictogram as a distinct small pictogram. Lettering: improvised monospaced capitals built out of straight tubing and neat quarter-circle joints. Exact Polish text, including all diacritics and punctuation: “WINDA”. Preserve the case exactly. The engine applies glow and tint. Solid black background, no halo, glow, gradient, light spill, mounted panel, shadows, watermark or other words. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ",
+    "lossless": true
+  },
+  {
+    "id": "targ_screen_show",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "Pionowy ekran pokazu Akordu",
+    "subject": "Pionowy ekran pokazu Akordu",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×768 game decal for a handmade night market. A near-flat dark graphite stage display face, thin dark frame, large original double helix icon and a crisp blue #3d7bff and violet #8a5cff graphic composition. Use confident condensed warm-white lettering. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:768 safe area. Exact Polish copy: “AKORD — DOSTROJENI DO JUTRA”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_menu_board",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "Kredowa tablica z menu garkuchni",
+    "subject": "Kredowa tablica z menu garkuchni",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×768 game decal for a handmade night market. An upright charcoal blackboard in a thin used wood frame with generous warm-white chalk lettering. Put each dish and price on its own line, spaced like a market menu. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:768 safe area. Exact Polish copy: “RAMEN 12”, “PIEROGI NA PARZE 9”, “ZUPA RYBNA 10”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_price_tags",
+    "category": "decals",
+    "width": 512,
+    "height": 256,
+    "description": "Rząd kartonowych cenówek",
+    "subject": "Rząd kartonowych cenówek",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×256 game decal for a handmade night market. A single horizontal row of three small worn kraft cardboard price tags with clearly separate silhouettes, holes and dark handwritten numerals, using the prices from the market menu. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:256 safe area. Exact Polish copy: “12”, “9”, “10”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_poster_wall",
+    "category": "decals",
+    "width": 1024,
+    "height": 512,
+    "description": "Warstwy zdartych plakatów i ogłoszeń",
+    "subject": "Warstwy zdartych plakatów i ogłoszeń",
+    "prompt": "Use case: stylized-concept. Generate ONE 1024×512 game decal for a handmade night market. One wide isolated patch of overlapping, weather-torn paper posters and notices, frayed edges. Use ochre, dirty ivory, muted indigo and graphite, plus abstract diagrams and pictograms. Keep the paper fragments free of visible letters and numbers. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 1024:512 safe area. No words or numbers. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_floor_stall_marks",
+    "category": "decals",
+    "width": 1024,
+    "height": 256,
+    "description": "Wytarte oznaczenia stanowisk 12, 13, 14",
+    "subject": "Wytarte oznaczenia stanowisk 12, 13, 14",
+    "prompt": "Use case: stylized-concept. Generate ONE 1024×256 game decal for a handmade night market. Direct top-down flat ground decal with three stenciled amber numbers in sequence next to worn, fractured yellow-amber stall divider lines. Keep paint loss mostly on corners so every number stays legible. Paint only, with gaps through to alpha. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 1024:256 safe area. Exact Polish copy: “12”, “13”, “14”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_tarp_pattern",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Łaty i ściegi ochrowej plandeki",
+    "subject": "Łaty i ściegi ochrowej plandeki",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×512 game decal for a handmade night market. One isolated grouping of irregular repair patches in coarse ochre tarp fabric #d08a1c and some darker canvas, with clearly visible stitch lines and frayed corners. Transparent between and around the patches; no text. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:512 safe area. No words or numbers. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_zupa",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "Tablica z zupą dnia",
+    "subject": "Tablica z zupą dnia",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×768 game decal for a handmade night market. A battered graphite chalkboard in a narrow timber frame, with very large warm-white chalk writing in two blocks. The chalk has a handmade market feel, with clean readable punctuation. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:768 safe area. Exact Polish copy: “ZUPA DNIA: WCZORAJSZA. ZUPA WCZORAJ: PRZEDWCZORAJSZA.”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_pokaz",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "Plakat polowego pokazu Akordu",
+    "subject": "Plakat polowego pokazu Akordu",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×768 game decal for a handmade night market. A weathered paper show poster, cream type, restrained blue and violet ink, thin graphic double-helix motif. Story copy dominates the composition. Use a broad bold market-poster handbill style. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:768 safe area. Exact Polish copy: “POKAZ POLOWY AKORDU — WSTĘP WOLNY, WYJŚCIE NIEKONIECZNIE”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_list_gonczy",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "List gończy za Iskrą",
+    "subject": "List gończy za Iskrą",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×768 game decal for a handmade night market. A creased wanted notice on torn off-white paper. A small clearly readable hooded silhouette in charcoal sits between the bold words POSZUKIWANI: ISKRA — and NAGRODA: UMORZENIE RATY. Ensure the dash is legible and only use the requested copy. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:768 safe area. Exact Polish copy: “POSZUKIWANI: ISKRA — NAGRODA: UMORZENIE RATY”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_nadia",
+    "category": "decals",
+    "width": 256,
+    "height": 256,
+    "description": "Karteczka Nadii dla Iskry",
+    "subject": "Karteczka Nadii dla Iskry",
+    "prompt": "Use case: stylized-concept. Generate ONE 256×256 game decal for a handmade night market. A small near-square bent ivory paper note from a fish stall. Use compact bold graphite handwriting with a small space after the initials. Give most of the area to the copy. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 256:256 safe area. Exact Polish copy: “N.K. — PACZKA DLA ISKRY POD LADĄ U RYBNEGO. NIE PYTAĆ.”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_cennik",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "Cennik naprawy protez",
+    "subject": "Cennik naprawy protez",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×768 game decal for a handmade night market. A handmade pricing notice on worn ochre cardboard, bold graphite hand-lettering. Keep the slashes visible as punctuation between prices. Give the guarantee a separate large block at the bottom. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:768 safe area. Exact Polish copy: “RĘKA LEWA 300 / RĘKA PRAWA 500 / OBIE 700 (PROMOCJA) / GWARANCJA: DO ROGU ULICY”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_origami",
+    "category": "decals",
+    "width": 256,
+    "height": 256,
+    "description": "Etykieta obok jednorożca z origami",
+    "subject": "Etykieta obok jednorożca z origami",
+    "prompt": "Use case: stylized-concept. Generate ONE 256×256 game decal for a handmade night market. An isolated warm ivory paper label with a small simple graphite line drawing of an origami unicorn and very large graphite text. Fit both short sentences on the single label. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 256:256 safe area. Exact Polish copy: “KTOŚ ZOSTAWIŁ. NIE RUSZAĆ.”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_herbata",
+    "category": "decals",
+    "width": 512,
+    "height": 256,
+    "description": "Tabliczka herbaty dnia",
+    "subject": "Tabliczka herbaty dnia",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×256 game decal for a handmade night market. A tiny teahouse counter sign in dark wood and pencil-scuffed blackboard, with hand-lettered warm-ivory chalk in two big lines. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:256 safe area. Exact Polish copy: “HERBATA DNIA: ŁZY W DESZCZU”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_kamienna",
+    "category": "decals",
+    "width": 512,
+    "height": 256,
+    "description": "Emaliowany drogowskaz metra Kamienna",
+    "subject": "Emaliowany drogowskaz metra Kamienna",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×256 game decal for a handmade night market. A chipped vintage rectangular enamel metro sign, muted blue with warm-ivory lettering. Top line exactly KAMIENNA ↓ — with a real downward arrow with a vertical stem and two diagonal strokes, followed by an em dash. Remaining words as a second compact bold block. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:256 safe area. Exact Polish copy: “KAMIENNA ↓ — STACJA NIECZYNNA OD POWODZI”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_dyplom",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Dyplom w ramce",
+    "subject": "Dyplom w ramce",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×512 game decal for a handmade night market. A square diploma of a makeshift clinic, old narrow wood frame, slightly worn warm-ivory paper, bold dark official letterforms and a small ochre ornamental border. No signature or seals that contain characters. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:512 safe area. Exact Polish copy: “CERTYFIKAT UKOŃCZENIA KURSU CHIRURGII (ONLINE, 3 DNI)”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_ulotka",
+    "category": "decals",
+    "width": 512,
+    "height": 768,
+    "description": "Podarta ulotka Helixy z dopiskiem sprayem",
+    "subject": "Podarta ulotka Helixy z dopiskiem sprayem",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×768 game decal for a handmade night market. A torn ivory and blue clinic flyer, its printed heading very large. Put the spray-painted second message across its lower half in dark graphite stencil rather than over the printed heading. Make every letter legible. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:768 safe area. Exact Polish copy: “BEZPŁATNA PRZYCHODNIA HELIXA — 61. PIĘTRO”, “NIC NIE JEST BEZPŁATNE”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_kot",
+    "category": "decals",
+    "width": 512,
+    "height": 256,
+    "description": "Ostrzeżenie przy kapliczce kota",
+    "subject": "Ostrzeżenie przy kapliczce kota",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×256 game decal for a handmade night market. A worn warm ivory cardboard plate from the market shrine, thick graphite handwriting, the last parenthetical line written slightly smaller but still clear. Use a tiny cat-head doodle only if there is still space. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:256 safe area. Exact Polish copy: “KOT SZEFA. NIE KARMIĆ. (KARMIONY 14 RAZY DZIŚ)”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
+  },
+  {
+    "id": "targ_ee_parasolki",
+    "category": "decals",
+    "width": 512,
+    "height": 256,
+    "description": "Szablon na blaszanym kontenerze",
+    "subject": "Szablon na blaszanym kontenerze",
+    "prompt": "Use case: stylized-concept. Generate ONE 512×256 game decal for a handmade night market. A cropped, scraped narrow patch of corrugated graphite sheet metal with a warm-ivory spray stencil, subject edges isolated against transparent background. Use bold connected industrial stencil type, with the parenthetical as clearly legible final line. Strictly orthographic frontal view of the asset, perfectly flat projection, rectangular face edges lined up with canvas. Transparent alpha outside the object silhouette and in intentional gaps. Center the isolated object on an aspect-appropriate canvas, fill the width in the 512:256 safe area. Exact Polish copy: “KUROGANE ARMS — ZAWARTOŚĆ: PARASOLKI (NA PEWNO)”. Preserve case, punctuation and every diacritic. Text must be clearly readable at two meters in game; no additional copy. No background scene, perspective, cast shadow or watermark. Market palette: amber #ffae1a, warm white #fff1d6, green #6dff4a, blue #3d7bff, violet #8a5cff, wood #5a4a3c, graphite #2a3344 and tarp ochre #d08a1c. No red, cyan, turquoise, magenta or pink.",
+    "set": "targ"
   }
 ]

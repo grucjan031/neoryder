@@ -2038,5 +2038,305 @@
     "dominantColor": "#f9dc9e",
     "description": "Mosiężna tabliczka Dawcy Roku",
     "bytes": 23674
+  },
+  {
+    "id": "targ_wet_pavers",
+    "category": "surfaces",
+    "path": "surfaces/targ_wet_pavers.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3b4657",
+    "description": "Mokry bruk z płyt i kostki",
+    "bytes": 73160
+  },
+  {
+    "id": "targ_wood_planks",
+    "category": "surfaces",
+    "path": "surfaces/targ_wood_planks.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#564837",
+    "description": "Podłoga herbaciarni z desek",
+    "bytes": 46028
+  },
+  {
+    "id": "targ_fish_tiles",
+    "category": "surfaces",
+    "path": "surfaces/targ_fish_tiles.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#49556c",
+    "description": "Kafle hali rybnej z kratką odpływu",
+    "bytes": 34316
+  },
+  {
+    "id": "targ_sign_brama",
+    "category": "signs",
+    "path": "signs/targ_sign_brama.webp",
+    "width": 1024,
+    "height": 256,
+    "dominantColor": "#fff4d9",
+    "description": "Ręcznie gięty neon „NOCNY TARG”",
+    "bytes": 12602
+  },
+  {
+    "id": "targ_sign_garkuchnie",
+    "category": "signs",
+    "path": "signs/targ_sign_garkuchnie.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fef7de",
+    "description": "Ręcznie gięty neon „GARKUCHNIE”",
+    "bytes": 5002
+  },
+  {
+    "id": "targ_sign_ryby",
+    "category": "signs",
+    "path": "signs/targ_sign_ryby.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff2d6",
+    "description": "Ręcznie gięty neon „HALA RYBNA”",
+    "bytes": 4194
+  },
+  {
+    "id": "targ_sign_czesci",
+    "category": "signs",
+    "path": "signs/targ_sign_czesci.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffae1",
+    "description": "Ręcznie gięty neon „CZĘŚCI I NAPRAWY”",
+    "bytes": 5890
+  },
+  {
+    "id": "targ_sign_gabinet",
+    "category": "signs",
+    "path": "signs/targ_sign_gabinet.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff6dc",
+    "description": "Ręcznie gięty neon „GABINET — BEZ PYTAŃ”",
+    "bytes": 9906
+  },
+  {
+    "id": "targ_sign_herbaciarnia",
+    "category": "signs",
+    "path": "signs/targ_sign_herbaciarnia.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff5dc",
+    "description": "Ręcznie gięty neon „HERBACIARNIA”",
+    "bytes": 8916
+  },
+  {
+    "id": "targ_sign_dostawy",
+    "category": "signs",
+    "path": "signs/targ_sign_dostawy.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffbe4",
+    "description": "Ręcznie gięty neon „DOSTAWY”",
+    "bytes": 5730
+  },
+  {
+    "id": "targ_sign_scena",
+    "category": "signs",
+    "path": "signs/targ_sign_scena.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff8de",
+    "description": "Ręcznie gięty neon „POKAZ AKORDU — DZIŚ”",
+    "bytes": 8070
+  },
+  {
+    "id": "targ_sign_winda",
+    "category": "signs",
+    "path": "signs/targ_sign_winda.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff2da",
+    "description": "Ręcznie gięty neon „WINDA”",
+    "bytes": 4308
+  },
+  {
+    "id": "targ_screen_show",
+    "category": "decals",
+    "path": "decals/targ_screen_show.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#1e2634",
+    "description": "Pionowy ekran pokazu Akordu",
+    "bytes": 12240
+  },
+  {
+    "id": "targ_menu_board",
+    "category": "decals",
+    "path": "decals/targ_menu_board.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#262a31",
+    "description": "Kredowa tablica z menu garkuchni",
+    "bytes": 34898
+  },
+  {
+    "id": "targ_price_tags",
+    "category": "decals",
+    "path": "decals/targ_price_tags.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#d09146",
+    "description": "Rząd kartonowych cenówek",
+    "bytes": 14682
+  },
+  {
+    "id": "targ_poster_wall",
+    "category": "decals",
+    "path": "decals/targ_poster_wall.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#debe94",
+    "description": "Warstwy zdartych plakatów i ogłoszeń",
+    "bytes": 91370
+  },
+  {
+    "id": "targ_floor_stall_marks",
+    "category": "decals",
+    "path": "decals/targ_floor_stall_marks.webp",
+    "width": 1024,
+    "height": 256,
+    "dominantColor": "#f59702",
+    "description": "Wytarte oznaczenia stanowisk 12, 13, 14",
+    "bytes": 38080
+  },
+  {
+    "id": "targ_tarp_pattern",
+    "category": "decals",
+    "path": "decals/targ_tarp_pattern.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#b65a09",
+    "description": "Łaty i ściegi ochrowej plandeki",
+    "bytes": 43044
+  },
+  {
+    "id": "targ_ee_zupa",
+    "category": "decals",
+    "path": "decals/targ_ee_zupa.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#202327",
+    "description": "Tablica z zupą dnia",
+    "bytes": 51304
+  },
+  {
+    "id": "targ_ee_pokaz",
+    "category": "decals",
+    "path": "decals/targ_ee_pokaz.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#fff6d2",
+    "description": "Plakat polowego pokazu Akordu",
+    "bytes": 62124
+  },
+  {
+    "id": "targ_ee_list_gonczy",
+    "category": "decals",
+    "path": "decals/targ_ee_list_gonczy.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e7c9a3",
+    "description": "List gończy za Iskrą",
+    "bytes": 40938
+  },
+  {
+    "id": "targ_ee_nadia",
+    "category": "decals",
+    "path": "decals/targ_ee_nadia.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#f4d7ae",
+    "description": "Karteczka Nadii dla Iskry",
+    "bytes": 10558
+  },
+  {
+    "id": "targ_ee_cennik",
+    "category": "decals",
+    "path": "decals/targ_ee_cennik.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#de8317",
+    "description": "Cennik naprawy protez",
+    "bytes": 36150
+  },
+  {
+    "id": "targ_ee_origami",
+    "category": "decals",
+    "path": "decals/targ_ee_origami.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#fff5d7",
+    "description": "Etykieta obok jednorożca z origami",
+    "bytes": 6380
+  },
+  {
+    "id": "targ_ee_herbata",
+    "category": "decals",
+    "path": "decals/targ_ee_herbata.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#2a2e34",
+    "description": "Tabliczka herbaty dnia",
+    "bytes": 13446
+  },
+  {
+    "id": "targ_ee_kamienna",
+    "category": "decals",
+    "path": "decals/targ_ee_kamienna.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#1b375a",
+    "description": "Emaliowany drogowskaz metra Kamienna",
+    "bytes": 15308
+  },
+  {
+    "id": "targ_ee_dyplom",
+    "category": "decals",
+    "path": "decals/targ_ee_dyplom.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#e3d5b6",
+    "description": "Dyplom w ramce",
+    "bytes": 31112
+  },
+  {
+    "id": "targ_ee_ulotka",
+    "category": "decals",
+    "path": "decals/targ_ee_ulotka.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e8cdae",
+    "description": "Podarta ulotka Helixy z dopiskiem sprayem",
+    "bytes": 55460
+  },
+  {
+    "id": "targ_ee_kot",
+    "category": "decals",
+    "path": "decals/targ_ee_kot.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#f8d9a7",
+    "description": "Ostrzeżenie przy kapliczce kota",
+    "bytes": 16060
+  },
+  {
+    "id": "targ_ee_parasolki",
+    "category": "decals",
+    "path": "decals/targ_ee_parasolki.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#373b43",
+    "description": "Szablon na blaszanym kontenerze",
+    "bytes": 20356
   }
 ]

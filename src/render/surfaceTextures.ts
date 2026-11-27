@@ -2,6 +2,9 @@ import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 import { resolveTextureKey } from './comicSurfaces';
 
 export type SurfaceTexture =
+  | 'targ_wet_pavers'
+  | 'targ_wood_planks'
+  | 'targ_fish_tiles'
   | 'med_resin_floor'
   | 'med_wall_panel'
   | 'med_atrium_terrazzo'

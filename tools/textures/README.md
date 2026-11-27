@@ -1,5 +1,9 @@
 # Narzędzia i prompty tekstur NEORYDER
 
+## Pakiet run6 — targ
+
+Zestaw nocnego targu obejmuje 3 powierzchnie, 3 odpowiedniki komiksowe, 9 neonów i 18 decali, w tym 12 easter eggów. Prompty są w `run6-prompts.json`. Generuj obrazy po jednym we wbudowanym imagegen i kopiuj PNG do `raw/<id>.png`. Włącz przezroczyste tło dla decali, a szyldy generuj na czerni, którą kluczuje shader. `python tools/textures/run6.py` buduje WebP (powierzchnie w jakości 65), aktualizuje oba manifesty i zapisuje arkusz oraz raport palety w `artifacts/maps/run6/`.
+
 ## Pakiet run5 — med
 
 Zestaw przychodni Helixy obejmuje 31 tekstur podstawowych i 3 powierzchnie komiksowe. Prompty są w `run5-prompts.json`, a źródła PNG w `raw/`. `python tools/textures/run5.py` buduje WebP według reguł run3, aktualizuje oba manifesty i zapisuje arkusz oraz pomiar HSV w `artifacts/maps/run5/`. Drogowskazy używają czerni jako maski przezroczystości w shaderze. Po budowie uruchom `python tools/textures/process.py validate`.
