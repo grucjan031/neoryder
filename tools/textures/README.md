@@ -1,5 +1,9 @@
 # Narzędzia i prompty tekstur NEORYDER
 
+## Pakiet run5 — med
+
+Zestaw przychodni Helixy obejmuje 31 tekstur podstawowych i 3 powierzchnie komiksowe. Prompty są w `run5-prompts.json`, a źródła PNG w `raw/`. `python tools/textures/run5.py` buduje WebP według reguł run3, aktualizuje oba manifesty i zapisuje arkusz oraz pomiar HSV w `artifacts/maps/run5/`. Drogowskazy używają czerni jako maski przezroczystości w shaderze. Po budowie uruchom `python tools/textures/process.py validate`.
+
 ## Pakiet run3 — Etap C
 
 30 nowych tekstur laboratorium wygenerowano sekwencyjnie wbudowanym imagegen; źródła są w `raw/` i `komiks/raw/`, a prompty w `run3-prompts.json`. Odcisk dłoni ponowiono raz, aby uzyskać sześć palców. Każdy wynik oraz końcowy arkusz obejrzano.

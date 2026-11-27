@@ -40,10 +40,10 @@ const clinicSurfaces = {
   clinic_laminate: { color: '#e6e3d2', roughness: 0.43 },
   clinic_vinyl: { color: '#969ca0', roughness: 0.7 },
   clinic_glass: {
-    color: '#a5b5ab',
-    roughness: 0.16,
+    color: '#7f93a0',
+    roughness: 0.45,
     transparent: true,
-    opacity: 0.22,
+    opacity: 0.12,
     depthWrite: false,
   },
 } as const;

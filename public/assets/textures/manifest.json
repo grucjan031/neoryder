@@ -1728,5 +1728,315 @@
     "dominantColor": "#5c6a7a",
     "description": "Modułowe panele cleanroom z aluminiową listwą techniczną",
     "bytes": 8960
+  },
+  {
+    "id": "med_resin_floor",
+    "category": "surfaces",
+    "path": "surfaces/med_resin_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#5d687c",
+    "description": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami",
+    "bytes": 9312
+  },
+  {
+    "id": "med_wall_panel",
+    "category": "surfaces",
+    "path": "surfaces/med_wall_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#58637b",
+    "description": "Lakierowane panele ścienne ze stalową listwą",
+    "bytes": 5252
+  },
+  {
+    "id": "med_atrium_terrazzo",
+    "category": "surfaces",
+    "path": "surfaces/med_atrium_terrazzo.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3a424c",
+    "description": "Grafitowe lastryko Atrium z mosiężną siatką",
+    "bytes": 120420
+  },
+  {
+    "id": "med_sign_rejestracja",
+    "category": "signs",
+    "path": "signs/med_sign_rejestracja.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff4db",
+    "description": "Drogowskaz Helixy „REJESTRACJA”",
+    "bytes": 3446
+  },
+  {
+    "id": "med_sign_apteka",
+    "category": "signs",
+    "path": "signs/med_sign_apteka.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#ffffeb",
+    "description": "Drogowskaz Helixy „APTEKA 24H”",
+    "bytes": 3766
+  },
+  {
+    "id": "med_sign_zabiegowe",
+    "category": "signs",
+    "path": "signs/med_sign_zabiegowe.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fefee6",
+    "description": "Drogowskaz Helixy „GABINETY ZABIEGOWE”",
+    "bytes": 4106
+  },
+  {
+    "id": "med_sign_diagnostyka",
+    "category": "signs",
+    "path": "signs/med_sign_diagnostyka.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fcf4e0",
+    "description": "Drogowskaz Helixy „DIAGNOSTYKA”",
+    "bytes": 3992
+  },
+  {
+    "id": "med_sign_blok_operacyjny",
+    "category": "signs",
+    "path": "signs/med_sign_blok_operacyjny.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff4d9",
+    "description": "Drogowskaz Helixy „BLOK OPERACYJNY”",
+    "bytes": 4046
+  },
+  {
+    "id": "med_sign_kalibracja",
+    "category": "signs",
+    "path": "signs/med_sign_kalibracja.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffde2",
+    "description": "Drogowskaz Helixy „KALIBRACJA AKORDU”",
+    "bytes": 4464
+  },
+  {
+    "id": "med_sign_regeneracja",
+    "category": "signs",
+    "path": "signs/med_sign_regeneracja.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff7e1",
+    "description": "Drogowskaz Helixy „REGENERACJA”",
+    "bytes": 4084
+  },
+  {
+    "id": "med_sign_atrium",
+    "category": "signs",
+    "path": "signs/med_sign_atrium.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff4de",
+    "description": "Drogowskaz Helixy „ATRIUM”",
+    "bytes": 2730
+  },
+  {
+    "id": "med_sign_winda",
+    "category": "signs",
+    "path": "signs/med_sign_winda.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fef4dd",
+    "description": "Drogowskaz Helixy „WINDA”",
+    "bytes": 2536
+  },
+  {
+    "id": "med_screen_vitals",
+    "category": "decals",
+    "path": "decals/med_screen_vitals.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#232d3d",
+    "description": "Monitor parametrów życiowych",
+    "bytes": 86540
+  },
+  {
+    "id": "med_screen_scan",
+    "category": "decals",
+    "path": "decals/med_screen_scan.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#1c2637",
+    "description": "Skan sylwetki z implantem przy skroni",
+    "bytes": 74550
+  },
+  {
+    "id": "med_poster_helixa_care",
+    "category": "decals",
+    "path": "decals/med_poster_helixa_care.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e3ddd0",
+    "description": "Plakat firmowy Helixa Dynamics",
+    "bytes": 39430
+  },
+  {
+    "id": "med_floor_helix_logo",
+    "category": "decals",
+    "path": "decals/med_floor_helix_logo.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#ddd7c8",
+    "description": "Okrągła inkrustacja Atrium",
+    "bytes": 115594
+  },
+  {
+    "id": "med_floor_cross",
+    "category": "decals",
+    "path": "decals/med_floor_cross.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#59f230",
+    "description": "Zielony krzyż posadzkowy",
+    "bytes": 35298
+  },
+  {
+    "id": "med_floor_wayline",
+    "category": "decals",
+    "path": "decals/med_floor_wayline.webp",
+    "width": 1024,
+    "height": 128,
+    "dominantColor": "#fa9a11",
+    "description": "Cztery pasy prowadzące",
+    "bytes": 21812
+  },
+  {
+    "id": "med_quarantine_tape",
+    "category": "decals",
+    "path": "decals/med_quarantine_tape.webp",
+    "width": 1024,
+    "height": 128,
+    "dominantColor": "#f79501",
+    "description": "Taśma kwarantanny",
+    "bytes": 29020
+  },
+  {
+    "id": "med_screen_queue_404",
+    "category": "decals",
+    "path": "decals/med_screen_queue_404.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#242b3a",
+    "description": "Tablica numerków przy rejestracji",
+    "bytes": 49994
+  },
+  {
+    "id": "med_poster_akord_free",
+    "category": "decals",
+    "path": "decals/med_poster_akord_free.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#f0ead9",
+    "description": "Plakat z ofertą Akordu i warunkiem kontraktu",
+    "bytes": 47906
+  },
+  {
+    "id": "med_card_tymon",
+    "category": "decals",
+    "path": "decals/med_card_tymon.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#dfd8c6",
+    "description": "Karta pacjenta Tymona",
+    "bytes": 20752
+  },
+  {
+    "id": "med_poster_pills",
+    "category": "decals",
+    "path": "decals/med_poster_pills.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#f0e8cf",
+    "description": "Plakat z niebieską i bursztynową kapsułką",
+    "bytes": 49070
+  },
+  {
+    "id": "med_note_pin_1234",
+    "category": "decals",
+    "path": "decals/med_note_pin_1234.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#fba208",
+    "description": "Bursztynowa karteczka z PIN-em chłodni",
+    "bytes": 15788
+  },
+  {
+    "id": "med_eye_chart",
+    "category": "decals",
+    "path": "decals/med_eye_chart.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e0dccd",
+    "description": "Tablica okulistyczna z ukrytą wiadomością",
+    "bytes": 26454
+  },
+  {
+    "id": "med_label_mug_lind",
+    "category": "decals",
+    "path": "decals/med_label_mug_lind.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#0f182b",
+    "description": "Nadruk na kubek dr Lind",
+    "bytes": 21950
+  },
+  {
+    "id": "med_plaque_scratch",
+    "category": "decals",
+    "path": "decals/med_plaque_scratch.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#d6a45b",
+    "description": "Tabliczka działu protetyki",
+    "bytes": 16872
+  },
+  {
+    "id": "med_plaque_k112",
+    "category": "decals",
+    "path": "decals/med_plaque_k112.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#f0c879",
+    "description": "Tabliczka kołyski kamertonu K-112",
+    "bytes": 15952
+  },
+  {
+    "id": "med_scratch_ida",
+    "category": "decals",
+    "path": "decals/med_scratch_ida.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#8b7f7f",
+    "description": "Wydrapany napis Idy i cztery pęczki kresek",
+    "bytes": 19680
+  },
+  {
+    "id": "med_nameplate_wolan",
+    "category": "decals",
+    "path": "decals/med_nameplate_wolan.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#e6dcc7",
+    "description": "Wizytówka dr Wolan z taśmą",
+    "bytes": 9146
+  },
+  {
+    "id": "med_plaque_donor",
+    "category": "decals",
+    "path": "decals/med_plaque_donor.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#f9dc9e",
+    "description": "Mosiężna tabliczka Dawcy Roku",
+    "bytes": 23674
   }
 ]

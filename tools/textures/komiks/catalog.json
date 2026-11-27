@@ -208,5 +208,32 @@
     "subject": "Modułowe panele cleanroom z aluminiową listwą techniczną",
     "set": "lab",
     "lossless": true
+  },
+  {
+    "id": "komiks_med_resin_floor",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami — wersja komiksowa",
+    "subject": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami — wersja komiksowa",
+    "set": "med"
+  },
+  {
+    "id": "komiks_med_wall_panel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Lakierowane panele ścienne ze stalową listwą — wersja komiksowa",
+    "subject": "Lakierowane panele ścienne ze stalową listwą — wersja komiksowa",
+    "set": "med"
+  },
+  {
+    "id": "komiks_med_atrium_terrazzo",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
+    "subject": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
+    "set": "med"
   }
 ]

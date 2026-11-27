@@ -2,6 +2,9 @@ import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 import { resolveTextureKey } from './comicSurfaces';
 
 export type SurfaceTexture =
+  | 'med_resin_floor'
+  | 'med_wall_panel'
+  | 'med_atrium_terrazzo'
   | 'lab_epoxy_floor'
   | 'lab_bunker_concrete'
   | 'lab_cleanroom_wall'
