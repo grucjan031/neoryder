@@ -359,6 +359,58 @@ Kontrola ręczna na mapie `run3`: obejrzeć figury przez szkło z 10–15 m i po
 
 Do etapu C materiały `lab_epoxy_floor`, `lab_bunker_concrete` i `lab_cleanroom_wall` pobierają odpowiednio tekstury `mall_stone_floor`, `concrete_raw_cast` i `tiles_wall`. Pulpit ma przygotowane pola UV na nadruk kubka i biomonitor. Do czasu dostarczenia grafiki pod biomonitorem widać ekran stanu.
 
+## Biurowiec Kurogane Arms (run4)
+
+Zestaw obejmuje 25 modeli z §4.1 projektu mapy. Każdy link otwiera studyjny podgląd PNG 720 × 720. Wymiary i liczby trójkątów pochodzą z GLB w `public/assets/models/city/`.
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python-exit-code 1 -P tools/blender/sets/kurogane_office.py
+node tools/levels/mapModelBounds.mjs
+```
+
+Po `--` można podać np. `--only off_elevator_shaft_door off_elevator_cab`. Modele stoją na Y = 0, z przodem w +Z. Panel akustyczny, ekran konferencyjny i tablica mają tył na Z = 0. Fasada sięga od Z = −0,15 do +0,20 m. Pozostałe modele mają początek na środku podstawy. AABB obu opraw sufitowych obejmuje uchwyty.
+
+### Montaż windy
+
+`off_elevator_cab` jest ruchomą kabiną 3,20 × 3,20 × 3,20 m. Ma otwarte wejścia od +Z i −Z. Panel na wschodnim słupku jest skierowany do wnętrza. Środki strzałek leżą na wysokościach 1,55 i 1,16 m, przy Z = −1,26 m. Zewnętrzny `off_elevator_call_panel` jest osobnym modelem z frontem w +Z.
+
+W każdym `off_elevator_shaft_door` są dwie grupy potomne, `door_left` po stronie −X i `door_right` po stronie +X. Każda zawiera komplet okuć i szkło jednego skrzydła. W pozycji zamkniętej środki grup leżą na lokalnym X = −0,55 i +0,55 m. Każde skrzydło ma szerokość 1,10 m. Po otwarciu ościeżnica pozostawia przejście 2,20 × 2,80 m.
+
+`ElevatorView.loadModel()` dodaje model kabiny do ruchomej platformy. Aby uruchomić skrzydła GLB, widok musi otrzymać instancję portalu danego przystanku i powiązać obie grupy z jego interpolowanym otwarciem `f`. Odpowiednikiem obecnego ruchu teleskopowego jest `scale.x = 1 - f` i `position.x = sign * 0.55 * (1 + f)` w układzie portalu. Przy `f = 1` obie grupy można ukryć. Proceduralna oprawa korzysta obecnie z własnych skrzydeł i sufitu kabiny na wysokości 2,65 m. Przy integracji modelu należy pominąć nakładające się powierzchnie renderu. Wyświetlacz nad portalem ma wymodelowane początkowe wskazanie „60”.
+
+### Materiały i podglądy
+
+Szyby używają dwustronnego `mat_glass_clear` o kryciu 0,22. Białe dyfuzory i podświetlenia mają materiał `mat_light_panel`. Ekrany analityczne i nadruki na kubkach mają UV dla `mat_screen_office_analytics` i `mat_label_office_mug`. Pod ekranami analitycznymi jest warstwa `mat_screen_map`, widoczna do czasu wczytania grafiki biurowej. Generator scala siatki według materiału, osobno dla nieruchomej ramy i obu ruchomych skrzydeł.
+
+| Model i podgląd | X × Y × Z [m] | Trójkąty GLB | Budżet |
+| --- | --- | ---: | ---: |
+| [`off_facade_mullion`](../artifacts/models/office/off_facade_mullion.png) | 4.00 × 4.80 × 0.35 | 306 | 420 |
+| [`off_glass_partition_wall`](../artifacts/models/office/off_glass_partition_wall.png) | 4.00 × 3.60 × 0.18 | 184 | 320 |
+| [`off_glass_partition_door`](../artifacts/models/office/off_glass_partition_door.png) | 4.00 × 3.60 × 0.24 | 280 | 460 |
+| [`off_elevator_cab`](../artifacts/models/office/off_elevator_cab.png) | 3.20 × 3.20 × 3.20 | 712 | 920 |
+| [`off_elevator_shaft_door`](../artifacts/models/office/off_elevator_shaft_door.png) | 3.60 × 3.40 × 0.35 | 328 | 540 |
+| [`off_elevator_call_panel`](../artifacts/models/office/off_elevator_call_panel.png) | 0.45 × 1.45 × 0.22 | 204 | 340 |
+| [`off_atrium_glass_rail`](../artifacts/models/office/off_atrium_glass_rail.png) | 4.00 × 1.10 × 0.14 | 114 | 260 |
+| [`off_reception_desk`](../artifacts/models/office/off_reception_desk.png) | 4.80 × 1.20 × 1.60 | 722 | 880 |
+| [`off_security_turnstile`](../artifacts/models/office/off_security_turnstile.png) | 3.20 × 1.15 × 1.40 | 294 | 580 |
+| [`off_ceiling_light_panel`](../artifacts/models/office/off_ceiling_light_panel.png) | 2.40 × 0.30 × 1.20 | 152 | 240 |
+| [`off_linear_baffle_light`](../artifacts/models/office/off_linear_baffle_light.png) | 3.60 × 0.35 × 0.80 | 310 | 360 |
+| [`off_acoustic_wall_panel`](../artifacts/models/office/off_acoustic_wall_panel.png) | 2.40 × 2.40 × 0.14 | 358 | 420 |
+| [`off_desk_pod`](../artifacts/models/office/off_desk_pod.png) | 3.60 × 1.35 × 1.80 | 1164 | 1180 |
+| [`off_executive_desk`](../artifacts/models/office/off_executive_desk.png) | 2.60 × 1.15 × 1.20 | 390 | 760 |
+| [`off_office_chair`](../artifacts/models/office/off_office_chair.png) | 0.70 × 1.05 × 0.70 | 520 | 520 |
+| [`off_conference_table`](../artifacts/models/office/off_conference_table.png) | 5.60 × 1.05 × 2.00 | 886 | 960 |
+| [`off_conf_screen_wall`](../artifacts/models/office/off_conf_screen_wall.png) | 4.20 × 2.40 × 0.22 | 162 | 380 |
+| [`off_whiteboard_wall`](../artifacts/models/office/off_whiteboard_wall.png) | 2.40 × 1.50 × 0.14 | 222 | 440 |
+| [`off_filing_cabinet`](../artifacts/models/office/off_filing_cabinet.png) | 1.80 × 2.10 × 0.75 | 520 | 580 |
+| [`off_kitchenette_counter`](../artifacts/models/office/off_kitchenette_counter.png) | 3.60 × 2.20 × 0.90 | 720 | 860 |
+| [`off_coffee_machine`](../artifacts/models/office/off_coffee_machine.png) | 1.40 × 1.55 × 0.85 | 676 | 680 |
+| [`off_lounge_sofa`](../artifacts/models/office/off_lounge_sofa.png) | 2.60 × 0.95 × 1.05 | 532 | 540 |
+| [`off_office_planter`](../artifacts/models/office/off_office_planter.png) | 2.40 × 1.45 × 0.90 | 664 | 680 |
+| [`off_office_printer`](../artifacts/models/office/off_office_printer.png) | 1.60 × 1.30 × 0.85 | 378 | 640 |
+| [`off_office_server_rack`](../artifacts/models/office/off_office_server_rack.png) | 1.20 × 2.30 × 1.00 | 694 | 740 |
+
+
 ## Przychodnia Helixy na Bulwarze (bulwar1)
 
 Siedem modeli własnych `bw_*` ma początek na środku podstawy, przód w +Z i wymiary w metrach. Generator zapisuje GLB w `public/assets/models/city/` i trzy podglądy każdego modelu w `tools/blender/previews/bulwar/<id>-{front,side,top}.png`.

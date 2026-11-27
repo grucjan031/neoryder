@@ -1,4 +1,9 @@
 {
+  "elevator": {
+    "call": "Wezwij windę",
+    "up": "Winda · GÓRA",
+    "down": "Winda · DÓŁ"
+  },
   "arenaAmmo": "Amunicja",
   "arenaMutator": "Mutator",
   "execute": "[{attack}] Wykończ",

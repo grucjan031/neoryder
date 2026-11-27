@@ -62,6 +62,7 @@
     "outlineFadeFar": 16,
     "outlineFarNormal": 0,
     "outlineFarOuter": 1,
+    "outlinePlaneDeltaLimit": 0.5,
     "inkNearScale": 1,
     "inkWidth": 0,
     "celBands": 0,

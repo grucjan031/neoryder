@@ -56,6 +56,37 @@ export const tuning = {
     groundOffsetM: 0.12,
     groundColor: '#151923',
     flySpeedMps: 55,
+    elevated: {
+      minDropM: 100,
+      towerCount: 8,
+      towerNearM: 56,
+      towerFarM: 115,
+      towerClearanceM: 18,
+      towerMinWidthM: 18,
+      towerMaxWidthM: 26,
+      crownMinY: 25,
+      crownMaxY: 90,
+      setbackHeightM: 10,
+      setbackScale: 0.66,
+      mastHeightM: 8,
+      mastWidthM: 1,
+      beaconPeriodS: 2.2,
+      beaconSizeM: 1.1,
+      adCount: 6,
+      adMinY: -15,
+      adMaxY: 24,
+      adOffsetM: 0.6,
+      canyonTrafficMinY: 25,
+      canyonTrafficMaxY: 95,
+      windowTrafficMax: 14,
+      windowTrafficNearM: 62,
+      windowTrafficFarM: 135,
+      windowTrafficMinY: -12,
+      windowTrafficMaxY: 26,
+      flybyClearanceM: 12,
+      flybyNorthY: 3.2,
+      flybyWestY: 9,
+    },
   },
   missions: {
     saboteurRangeM: 28,
@@ -191,6 +222,19 @@ export const tuning = {
     panoramaWindowEmission: 0.5,
     panoramaBeaconBrightness: 1,
     panoramaWall: '#1e2638',
+    elevated: {
+      windowCycleHz: 0.18,
+      windowAnimatedShare: 0.28,
+      windowFadeShare: 0.22,
+      hazeNearM: 90,
+      hazeFarM: 220,
+      canyonGlowDepthM: 40,
+      canyonGlowStrength: 0.045,
+      flybyPeriodS: 11,
+      flybySpeedMps: 40,
+      flybyLengthM: 9,
+      flybyHeightM: 1.4,
+    },
     /** Łuna miasta przy horyzoncie i chmury podświetlone od dołu (addytywnie do gradientu nieba). */
     skyGlowStrength: 1,
     skyCloudStrength: 1,
@@ -497,6 +541,12 @@ export const tuning = {
     outlineFarNormal: 0,
     outlineFarOuter: 1,
     /**
+     * Górna granica poprawki głębi na płaszczyznę (ułamek głębi środka): posadzka widziana pod
+     * małym kątem nie dostaje konturu od samego nachylenia. Przewidywany skok większy niż ta
+     * wartość jest ucinany, więc prawdziwe krawędzie dalej wychodzą z pełną siłą.
+     */
+    outlinePlaneDeltaLimit: 0.5,
+    /**
      * Styl komiksowy (próbki kierunku „Borderlands”, 0 = wyłączone, wygląd bez zmian):
      * inkNearScale ogranicza perspektywiczne pogrubienie konturu blisko kamery,
      * celBands > 0 dzieli jasność na pasma (celStrength = siła), hatchStrength przyciemnia
@@ -733,6 +783,19 @@ export const tuning = {
     spawnIntervalS: 0.7,
   },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
+  elevator: {
+    elevatorSpeedMps: 2.5,
+    elevatorAccelMps2: 3.5,
+    elevatorDoorOpenS: 0.55,
+    elevatorDoorDwellS: 2.5,
+    elevatorPanelReachM: 1.6,
+    maxEnemies: 2,
+    waitTimeoutS: 12,
+    landingOffsetM: 0.85,
+    boardingToleranceM: 0.24,
+    navCellM: 0.5,
+    navWalkMps: 3,
+  },
   arena: {
     maxEnemies: 30,
     /**

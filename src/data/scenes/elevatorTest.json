@@ -1,0 +1,216 @@
+{
+  "id": "elevatorTest",
+  "theme": "neonStreet",
+  "name": "Winda biurowca",
+  "type": "combat",
+  "playerSpawn": {
+    "x": 1,
+    "y": 0,
+    "z": 2.65
+  },
+  "elevators": [
+    {
+      "id": "biuro",
+      "x": 0,
+      "z": 0,
+      "width": 2.4,
+      "depth": 2.4,
+      "startStop": 0,
+      "stops": [
+        {
+          "y": 0,
+          "doorSide": "s"
+        },
+        {
+          "y": 4.8,
+          "doorSide": "s"
+        },
+        {
+          "y": 9.6,
+          "doorSide": "s"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "size": {
+        "x": 22,
+        "y": 0.2,
+        "z": 8
+      },
+      "position": {
+        "x": 7,
+        "y": -0.1,
+        "z": 5.2
+      },
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 12.924395537122809,
+        "y": 0.2,
+        "z": 4
+      },
+      "position": {
+        "x": 24,
+        "y": 2.2922967038573097,
+        "z": 3.2
+      },
+      "walkable": true,
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.38050637711236485
+      }
+    },
+    {
+      "size": {
+        "x": 22,
+        "y": 0.2,
+        "z": 8
+      },
+      "position": {
+        "x": 7,
+        "y": 4.7,
+        "z": 5.2
+      },
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.2,
+        "z": 8
+      },
+      "position": {
+        "x": 32,
+        "y": 4.7,
+        "z": 5.2
+      },
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 0.2,
+        "z": 4
+      },
+      "position": {
+        "x": 24,
+        "y": 4.7,
+        "z": 7.2
+      },
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 12.924395537122809,
+        "y": 0.2,
+        "z": 4
+      },
+      "position": {
+        "x": 24,
+        "y": 7.0922967038573095,
+        "z": 3.2
+      },
+      "walkable": true,
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.38050637711236485
+      }
+    },
+    {
+      "size": {
+        "x": 22,
+        "y": 0.2,
+        "z": 8
+      },
+      "position": {
+        "x": 7,
+        "y": 9.5,
+        "z": 5.2
+      },
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.2,
+        "z": 8
+      },
+      "position": {
+        "x": 32,
+        "y": 9.5,
+        "z": 5.2
+      },
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 0.2,
+        "z": 4
+      },
+      "position": {
+        "x": 24,
+        "y": 9.5,
+        "z": 7.2
+      },
+      "walkable": true
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -2,
+      "y": 4.8,
+      "z": 6
+    },
+    {
+      "x": 0,
+      "y": 4.8,
+      "z": 6
+    },
+    {
+      "x": 2,
+      "y": 4.8,
+      "z": 6
+    },
+    {
+      "x": 4,
+      "y": 4.8,
+      "z": 6
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": -3.75,
+        "y": 1.25,
+        "z": 7
+      },
+      "size": {
+        "x": 0.16,
+        "y": 2.5,
+        "z": 1.6
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": -3.75,
+        "y": 10.85,
+        "z": 7
+      },
+      "size": {
+        "x": 0.16,
+        "y": 2.5,
+        "z": 1.6
+      }
+    }
+  ]
+}

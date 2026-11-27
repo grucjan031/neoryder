@@ -3,10 +3,15 @@ import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import type { InputSnapshot } from '../core/input';
 import data from '../data/scenes/horizonTest.json';
+import { weatherDefinitions } from '../render/weatherSchema';
 import { loadRoom } from '../world/roomSchema';
+import type { RoomDefinition } from '../world/roomSchema';
 import type { Scene } from './index';
 import { createRoomTest } from './roomTest';
 import { mountWeatherControls } from './weatherTest';
+
+const OFFICE_TOWER_PROFILE = 'kuroganeOfficeTower';
+const OFFICE_TOWER_DROP_M = 180;
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -15,9 +20,142 @@ const idle: InputSnapshot = {
   lookDelta: { x: 0, y: 0 },
 };
 
+function parseDropM(raw: string | null): number | null {
+  if (raw === null || raw.trim() === '') return null;
+  const value = Number(raw);
+  return Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+/**
+ * Układ dla sceny `?scene=horizonTest`.
+ * Domyślnie zachowuje 600 × 600 m `horizonTest.json`; `?profile=kuroganeOfficeTower`
+ * uruchamia przeszklony pokład na 60. piętrze (`panoramaDropM: 180`) z „żywym miastem”
+ * i nowymi materiałami `off_*`, a `?drop=<m>` / `?weather=<id>` nadpisuje bazowy układ.
+ */
+export function horizonTestLayout(
+  search = typeof location === 'undefined' ? '' : location.search,
+): RoomDefinition {
+  const params = new URLSearchParams(search);
+  const profile = params.get('profile');
+  const weatherParam = params.get('weather');
+  const weather =
+    weatherParam && weatherDefinitions.has(weatherParam)
+      ? weatherParam
+      : undefined;
+  const drop = parseDropM(params.get('drop'));
+  if (profile === OFFICE_TOWER_PROFILE) {
+    const panoramaDropM = drop ?? OFFICE_TOWER_DROP_M;
+    return loadRoom({
+      id: 'horizonTestOfficeTower',
+      name: 'Horyzont — Wieżowiec Kurogane Arms (Piętra 60–62)',
+      type: 'combat',
+      theme: 'neonStreet',
+      weather: weather ?? OFFICE_TOWER_PROFILE,
+      panoramaDropM,
+      // Gracz stoi 3 m od północnej przeszklonej balustrady (bez niskiego sufitu nad głową),
+      // dzięki czemu od razu widzi głęboki kanion 180 m w dole i pełne sylwetki bliskich wieżowców.
+      playerSpawn: { x: 0, y: 0, z: -12 },
+      blocks: [
+        {
+          position: { x: 0, y: -0.5, z: 0 },
+          size: { x: 30, y: 1, z: 30 },
+          material: 'off_polished_granite',
+          walkable: true,
+        },
+        {
+          position: { x: 0, y: 0.55, z: -14.9 },
+          size: { x: 30, y: 1.1, z: 0.2 },
+          material: 'glass_clear',
+        },
+        {
+          position: { x: -14.9, y: 0.55, z: 0 },
+          size: { x: 0.2, y: 1.1, z: 29.6 },
+          material: 'glass_clear',
+        },
+        {
+          position: { x: 14.9, y: 0.55, z: 0 },
+          size: { x: 0.2, y: 1.1, z: 29.6 },
+          material: 'glass_clear',
+        },
+        // Osłonięta wnęka biurowa z tyłu tarasu (za graczem): sufit, rainShelter i próbki off_*.
+        {
+          position: { x: 0, y: 2.2, z: 14.9 },
+          size: { x: 30, y: 4.4, z: 0.2 },
+          material: 'glass_clear',
+        },
+        {
+          position: { x: 0, y: 4.6, z: 11 },
+          size: { x: 30, y: 0.4, z: 8 },
+          material: 'mall_acoustic_ceiling',
+          ceiling: true,
+        },
+        {
+          position: { x: -8, y: 2.2, z: 11 },
+          size: { x: 2, y: 4.4, z: 2 },
+          material: 'off_wood_slat_wall',
+        },
+        {
+          position: { x: 8, y: 0.1, z: 11 },
+          size: { x: 4, y: 0.2, z: 4 },
+          material: 'off_carpet_tile',
+          walkable: true,
+        },
+      ],
+      rainShelters: [
+        {
+          position: { x: 0, y: 2.2, z: 11 },
+          size: { x: 29.6, y: 4.4, z: 7.6 },
+        },
+      ],
+      lights: [
+        {
+          position: { x: 0, y: 4.1, z: -8 },
+          color: '#fff1d6',
+          intensity: 24,
+          range: 16,
+          floorY: 0,
+        },
+        {
+          position: { x: 0, y: 4.1, z: 10 },
+          color: '#ffae1a',
+          intensity: 24,
+          range: 16,
+          floorY: 0,
+        },
+      ],
+      spawnPoints: [
+        { x: -10, z: -6 },
+        { x: 10, z: -6 },
+        { x: -10, z: 4 },
+        { x: 10, z: 4 },
+      ],
+      doors: [
+        {
+          id: 'entry',
+          role: 'entry',
+          position: { x: -4, y: 1.5, z: 14.5 },
+          size: { x: 2, y: 3, z: 1 },
+        },
+        {
+          id: 'exit',
+          role: 'exit',
+          position: { x: 4, y: 1.5, z: 14.5 },
+          size: { x: 2, y: 3, z: 1 },
+        },
+      ],
+    });
+  }
+  return loadRoom({
+    ...data,
+    ...(weather && { weather }),
+    ...(drop !== null && { panoramaDropM: drop }),
+  });
+}
+
 export class HorizonTest implements Scene {
   readonly id = 'horizonTest';
-  private readonly room = createRoomTest(false, loadRoom(data));
+  private readonly layout: RoomDefinition;
+  private readonly room: ReturnType<typeof createRoomTest>;
   private readonly position = new Vector3();
   private readonly movement = new Vector3();
   private readonly rotation = new Euler(0, 0, 0, 'YXZ');
@@ -26,11 +164,51 @@ export class HorizonTest implements Scene {
   private controls?: HTMLDivElement;
   private unregister?: () => void;
 
+  constructor(search?: string) {
+    this.layout = horizonTestLayout(search);
+    this.room = createRoomTest(false, this.layout);
+  }
+
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
     await this.room.init(ctx, three);
     ctx.commands?.execute('god');
     this.controls = mountWeatherControls(ctx);
+    if (this.controls && typeof location !== 'undefined') {
+      const elevated = this.layout.id === 'horizonTestOfficeTower';
+      const modes = [
+        {
+          id: 'default',
+          label: 'Horyzont bazowy (drop 0 m)',
+          active: !elevated,
+        },
+        {
+          id: OFFICE_TOWER_PROFILE,
+          label: `Wieżowiec 60p (drop ${OFFICE_TOWER_DROP_M} m)`,
+          active: elevated,
+        },
+      ] as const;
+      for (const mode of modes) {
+        const button = document.createElement('button');
+        button.dataset.horizonProfile = mode.id;
+        button.textContent = mode.label;
+        button.setAttribute('aria-pressed', String(mode.active));
+        if (mode.active) {
+          button.style.fontWeight = '700';
+          button.style.outline = '2px solid #ffae1a';
+        }
+        button.addEventListener('click', () => {
+          const next = new URLSearchParams(location.search);
+          next.set('scene', 'horizonTest');
+          next.delete('drop');
+          next.delete('weather');
+          if (mode.id === 'default') next.delete('profile');
+          else next.set('profile', mode.id);
+          location.search = `?${next.toString()}`;
+        });
+        this.controls.append(button);
+      }
+    }
     this.unregister = ctx.commands?.register('fly', 'fly', () => {
       const camera = ctx.camera;
       if (!camera) return 'Brak kamery.';
@@ -75,6 +253,11 @@ export class HorizonTest implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'panoramaDropM') return this.layout.panoramaDropM ?? 0;
+    if (name === 'horizonProfile')
+      return this.layout.id === 'horizonTestOfficeTower'
+        ? OFFICE_TOWER_PROFILE
+        : 'default';
     return this.room.query(name);
   }
 

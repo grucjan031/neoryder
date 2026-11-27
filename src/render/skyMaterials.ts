@@ -17,16 +17,29 @@ import { SKY_PALETTE } from './skyline';
 export interface SkyUniforms {
   time: { value: number };
   floorY: { value: number };
+  roomFloorY: { value: number };
+  elevated: { value: number };
   palette: { value: Color[] };
   wall: { value: Color };
   uplight: { value: Color };
   glowLow: { value: Color };
   glowHigh: { value: Color };
+  skyHazeColor: { value: Color };
   glowStrength: { value: number };
   cloudStrength: { value: number };
   cloudSpeed: { value: number };
   windowEmission: { value: number };
   beaconBrightness: { value: number };
+  windowCycleHz: { value: number };
+  windowAnimatedShare: { value: number };
+  windowFadeShare: { value: number };
+  hazeNearM: { value: number };
+  hazeFarM: { value: number };
+  canyonGlowDepthM: { value: number };
+  canyonGlowStrength: { value: number };
+  flybyPeriodS: { value: number };
+  flybySpeedMps: { value: number };
+  flybySize: { value: Vector2 };
   [key: string]: { value: unknown };
 }
 
@@ -34,16 +47,29 @@ export function createSkyUniforms(): SkyUniforms {
   return {
     time: { value: 0 },
     floorY: { value: 0 },
+    roomFloorY: { value: 0 },
+    elevated: { value: 0 },
     palette: { value: SKY_PALETTE.map((c) => new Color(c)) },
     wall: { value: new Color('#1c2333') },
     uplight: { value: new Color('#ffae1a') },
     glowLow: { value: new Color('#ffae1a') },
     glowHigh: { value: new Color('#8a5cff') },
+    skyHazeColor: { value: new Color('#161528') },
     glowStrength: { value: 1 },
     cloudStrength: { value: 1 },
     cloudSpeed: { value: 0.004 },
     windowEmission: { value: 1 },
     beaconBrightness: { value: 1 },
+    windowCycleHz: { value: 0.18 },
+    windowAnimatedShare: { value: 0.28 },
+    windowFadeShare: { value: 0.22 },
+    hazeNearM: { value: 90 },
+    hazeFarM: { value: 220 },
+    canyonGlowDepthM: { value: 40 },
+    canyonGlowStrength: { value: 0.045 },
+    flybyPeriodS: { value: 11 },
+    flybySpeedMps: { value: 40 },
+    flybySize: { value: new Vector2(9, 1.4) },
   };
 }
 
@@ -105,6 +131,10 @@ const buildingCommon = /* glsl */ `
   uniform float floorY;
   uniform float time;
   uniform float windowEmission;
+  uniform float elevated;
+  uniform float windowCycleHz;
+  uniform float windowAnimatedShare;
+  uniform float windowFadeShare;
   varying vec3 vWorld;
   varying vec3 vLocal;
   varying vec3 vNormalL;
@@ -157,7 +187,22 @@ const buildingCommon = /* glsl */ `
     float run = floor((cell.x + 40.0) / runLen);
     float runHash = hash12(vec2(run + seed, cell.y * 1.7 + 11.0));
     float rowOn = step(0.18, row);
-    windowLit = rowOn * step(runHash, vParams.w);
+    float baseLit = rowOn * step(runHash, vParams.w);
+    if (elevated > 0.5) {
+      float animPick = hash12(vec2(run * 2.3 + seed, cell.y * 3.1 + 29.0));
+      if (animPick < windowAnimatedShare) {
+        float phase = hash12(vec2(cell.y * 5.7 + seed, run * 1.9 + 7.0));
+        float cycle = time * windowCycleHz + phase * 12.0;
+        float slot = floor(cycle);
+        float fracT = fract(cycle);
+        float prevOn = step(hash12(vec2(run + seed, cell.y * 1.7 + slot * 13.7 + 3.0)), vParams.w);
+        float nextOn = step(hash12(vec2(run + seed, cell.y * 1.7 + (slot + 1.0) * 13.7 + 3.0)), vParams.w);
+        float fadeW = clamp(windowFadeShare, 0.02, 0.5);
+        float blend = smoothstep(1.0 - fadeW, 1.0, fracT);
+        baseLit = rowOn * mix(prevOn, nextOn, blend);
+      }
+    }
+    windowLit = baseLit;
     // Pojedyncze okna w innym odcieniu (bursztyn / błękit) ożywiają ciepłą biel.
     float odd = hash12(cell + seed);
     if (odd > 0.93) windowTint = paletteColor(odd > 0.975 ? 2.0 : 0.0);
@@ -169,6 +214,13 @@ const buildingFragment = /* glsl */ `
   ${buildingCommon}
   uniform vec3 wall;
   uniform vec3 uplight;
+  uniform vec3 glowHigh;
+  uniform float roomFloorY;
+  uniform vec3 skyHazeColor;
+  uniform float hazeNearM;
+  uniform float hazeFarM;
+  uniform float canyonGlowDepthM;
+  uniform float canyonGlowStrength;
   void main() {
     computeWindows();
     float tone = vParams2.y;
@@ -183,8 +235,17 @@ const buildingFragment = /* glsl */ `
     // Delikatne pasy stropów (poziomy rytm także przy zgaszonych oknach).
     col *= 1.0 - 0.18 * step(0.92, fract(v / pitch.y)) * step(0.5, 1.0 - abs(n.y));
     col = mix(col, vec3(0.006, 0.008, 0.014), windowMask * (1.0 - windowLit));
-    col += windowTint * windowLit * windowMask * windowEmission;
-    col += accentTint * accentMask * 0.6;
+    float haze = 0.0;
+    if (elevated > 0.5) {
+      float dist = length(vWorld - cameraPosition);
+      haze = smoothstep(hazeNearM, max(hazeFarM, hazeNearM + 1.0), dist);
+      float canyonDepth = max(roomFloorY - vWorld.y - canyonGlowDepthM, 0.0);
+      float canyonFactor = 1.0 - exp(-canyonDepth / 65.0);
+      col += mix(glowHigh, uplight, 0.45) * canyonGlowStrength * canyonFactor * tone;
+      col = mix(col, skyHazeColor, haze * 0.42);
+    }
+    col += windowTint * windowLit * windowMask * windowEmission * (1.0 - haze * 0.35);
+    col += accentTint * accentMask * 0.6 * (1.0 - haze * 0.25);
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
   }
@@ -334,6 +395,84 @@ export function createTrafficMaterial(uniforms: SkyUniforms): ShaderMaterial {
     toneMapped: false,
     transparent: true,
     depthWrite: false,
+    blending: AdditiveBlending,
+    premultipliedAlpha: true,
+  });
+  material.userData.bloom = true;
+  return material;
+}
+
+// --- Bliski przelot pojazdu tuż za szybą (1 draw call, InstancedMesh) -------
+
+const flybyVertex = /* glsl */ `
+  attribute vec4 flyOrigin; // startX, height, startZ, phaseFrac
+  attribute vec4 flyDir;    // dirX, dirZ, spanM, -
+  uniform float time;
+  uniform float flybyPeriodS;
+  uniform float flybySpeedMps;
+  uniform vec2 flybySize;
+  varying vec2 vUv;
+  varying float vFade;
+  void main() {
+    vUv = uv;
+    float period = max(flybyPeriodS, 0.5);
+    float speed = max(flybySpeedMps, 1.0);
+    float span = max(flyDir.z, 1.0);
+    float localT = mod(time + flyOrigin.w * period, period);
+    float dist = localT * speed;
+    float progress = dist / span;
+    if (progress > 1.0) {
+      vFade = 0.0;
+      gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+      return;
+    }
+    vFade = smoothstep(0.0, 0.08, progress) * (1.0 - smoothstep(0.92, 1.0, progress));
+    vec3 dir = vec3(flyDir.x, 0.0, flyDir.y);
+    vec3 center = modelMatrix[3].xyz
+      + vec3(flyOrigin.x, flyOrigin.y + sin(time * 2.1 + flyOrigin.w * 6.28318) * 0.25, flyOrigin.z)
+      + dir * dist;
+    vec3 toCam = normalize(cameraPosition - center);
+    vec3 side = cross(dir, toCam);
+    float sideLen = length(side);
+    vec3 upVec = sideLen > 1e-4 ? side / sideLen : vec3(0.0, 1.0, 0.0);
+    vec3 world = center + dir * (position.x * flybySize.x) + upVec * (position.y * flybySize.y);
+    gl_Position = projectionMatrix * viewMatrix * vec4(world, 1.0);
+  }
+`;
+
+const flybyFragment = /* glsl */ `
+  ${paletteGlsl}
+  varying vec2 vUv;
+  varying float vFade;
+  void main() {
+    if (vFade <= 0.001) discard;
+    float dy = abs(vUv.y - 0.5) * 2.0;
+    // Przednie światło (#fff1d6 ciepła biel) i tylne światło + smuga (#ffae1a bursztyn), zero czerwieni.
+    float dFront = length(vec2((vUv.x - 0.88) * 3.8, dy));
+    float frontCore = (1.0 - smoothstep(0.12, 0.32, dFront)) * 2.8;
+    float frontHalo = pow(max(1.0 - dFront, 0.0), 2.5) * 0.9;
+    float dRear = length(vec2((vUv.x - 0.56) * 3.4, dy));
+    float rearCore = (1.0 - smoothstep(0.14, 0.36, dRear)) * 2.2;
+    float rearHalo = pow(max(1.0 - dRear, 0.0), 2.4) * 0.85;
+    float trailX = smoothstep(0.0, 0.56, vUv.x) * (1.0 - smoothstep(0.56, 0.84, vUv.x));
+    float trailY = pow(max(1.0 - dy, 0.0), 3.0);
+    float streak = trailX * trailY * 0.75;
+    vec3 rgb = (palette[1] * (frontCore + frontHalo) + palette[0] * (rearCore + rearHalo + streak)) * vFade;
+    gl_FragColor = glowOut(rgb);
+    #include <colorspace_fragment>
+  }
+`;
+
+export function createFlybyMaterial(uniforms: SkyUniforms): ShaderMaterial {
+  const material = new ShaderMaterial({
+    name: 'sky_flyby',
+    uniforms,
+    vertexShader: flybyVertex,
+    fragmentShader: flybyFragment,
+    toneMapped: false,
+    transparent: true,
+    depthWrite: false,
+    side: DoubleSide,
     blending: AdditiveBlending,
     premultipliedAlpha: true,
   });

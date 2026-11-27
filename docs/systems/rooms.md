@@ -127,8 +127,8 @@ Pule `roomPools` w `src/data/sectors/kurogane.json`:
 
 | Typ    | Pokoje                                                                                    |
 | ------ | ----------------------------------------------------------------------------------------- |
-| combat | `run1` (magazyn Kurogane Arms), `run2` (galeria Atrium Nova), `run3` (tajne laboratorium Kurogane Arms); losowane bez powtórki pod rząd |
-| elite  | `run1`, `run2`, `run3` (węzeł elitarny losuje mocniejsze fale na tych samych mapach)              |
+| combat | `run1` (magazyn Kurogane Arms), `run2` (galeria Atrium Nova), `run3` (tajne laboratorium Kurogane Arms), `run4` (biurowiec Kurogane Arms, 60.–62. piętro z windą); losowane bez powtórki pod rząd |
+| elite  | `run1`, `run2`, `run3`, `run4` (węzeł elitarny losuje mocniejsze fale na tych samych mapach)              |
 | shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                           |
 | rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                          |
 | puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                          |

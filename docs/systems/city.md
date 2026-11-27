@@ -370,6 +370,21 @@ Pozostałe klucze `tuning.horizon`: `firstRingM` 66, `secondRingM` 92, `thirdRin
 `trafficMinM` 74, `trafficMaxM` 140, `freestandingAdM` 90, `flySpeedMps` 55
 (prędkość kamery swobodnej w scenach testowych).
 
+### „Żywe miasto” dla wysoko położonych map (`panoramaDropM`)
+
+Gdy pokój podaje `panoramaDropM >= tuning.horizon.elevated.minDropM` (domyślnie `100` m, np. `180` m dla 60. piętra biurowca Kurogane Arms), `SceneAtmosphere`, `Panorama`, `buildSkyline` i `skyMaterials` przechodzą w tryb wysoko położonego miasta (wszystkie dotychczasowe mapy bez wysokiego `panoramaDropM` pozostają bez zmian):
+
+- **`outer-ground` i zasięg kamery (`SceneAtmosphere`):** dla map z `panoramaDropM >= minDropM` płaszczyzna gruntu powstaje na dnie kanionu (`min Y obwiedni − panoramaDropM − groundOffsetM`), a płaszczyzna `far` kamery i kopuła nieba rozszerzają się tak, aby objąć pełną przekątną 3D aż do dna kanionu i koron sąsiednich wieżowców (również gdy rzut poziomy mapy ma `radiusM <= 50 m`).
+- **Bliskie cyber-wieżowce sąsiednie (`buildSkyline`, strumień `skyline-elevated`):** `towerCount` (8) megastruktur na promieniach `towerNearM..towerFarM` (`56..115` m, z gwarancją odsunięcia od `facadeBounds` o `towerClearanceM` 18 m), o szerokości `18..26` m i koronach `crownMinY..crownMaxY` (`+25..+90` m względem podłogi mapy), z uskokami (`setbackHeightM` 10 m, `setbackScale` 0,66), neonowymi wieńcami i podświetlonymi narożnikami (`layer: 4`), masztami (`mastHeightM` 8 m, `mastWidthM` 1 m) oraz migającymi światłami ostrzegawczymi **wyłącznie** w barwach bursztynu (`#ffae1a`) i ciepłej bieli (`#fff1d6`) — **zero czerwieni**.
+- **6 animowanych billboardów (`skyline-ad`):** `adCount` (6) paneli na fasadach bliskich wieżowców na wysokości pięter gry (`adMinY..adMaxY`: `−15..+24` m, odsunięcie `adOffsetM` 0,6 m).
+- **3 pułapy latających pojazdów (`InstancedMesh`, 1 draw call na pulę):**
+  1. **Dno kanionu** (`skyline-traffic`, `tier: 'canyon'`): `floorY + canyonTrafficMinY..canyonTrafficMaxY` (`+25..+95` m od dna kanionu).
+  2. **Wysokość pięter gry** (`skyline-traffic`, `tier: 'window'`): do `windowTrafficMax` (14) torów w promieniu `windowTrafficNearM..windowTrafficFarM` (`62..135` m) na wysokości `windowTrafficMinY..windowTrafficMaxY` (`−12..+26` m).
+  3. **2 tory bliskiego przelotu za szybą** (`skyline-flyby`, 1 `InstancedMesh`): wzdłuż fasady północnej (`flybyNorthY` `+3,2` m) i zachodniej (`flybyWestY` `+9` m) w odległości `flybyClearanceM` (`12` m, zakres 9–15 m), co `flybyPeriodS` (`11` s) przy prędkości `flybySpeedMps` (`40` m/s), długości smugi `flybyLengthM` (`9` m) i wysokości `flybyHeightM` (`1,4` m); przednie światło `#fff1d6`, tylne światło i smuga `#ffae1a`.
+- **Animacja okien i perspektywa powietrzna (`skyMaterials.ts`):** w `computeWindows()` wybrane deterministycznym haszem ciągi okienne (`windowAnimatedShare` 0,28) powoli zapalają się i gasną (`windowCycleHz` 0,18 Hz, płynne przejście `windowFadeShare` 0,22), a `buildingFragment` dokłada perspektywę powietrzną (`hazeNearM..hazeFarM` `90..220` m) oraz łunę głębokiego kanionu poniżej `canyonGlowDepthM` (`40` m, siła `canyonGlowStrength` 0,045) bez użycia globalnej mgły we wnętrzu.
+
+Podgląd w 30 s: `?scene=horizonTest&profile=kuroganeOfficeTower&debug=1` (lub przycisk „Wieżowiec 60p (drop 180 m)” w pasku `?scene=horizonTest&debug=1`). Testy: `tests/unit/skyline.test.ts`.
+
 ### Gradient nieba w przebiegu koloru
 
 `StylePipeline` (`outline.ts`) na czas przebiegu koloru dodaje do sceny pełnoekranowy quad

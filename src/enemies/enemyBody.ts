@@ -1,3 +1,4 @@
+import { platformSkinM, supportingPlatform } from '../physics/platformMotion';
 import { steerVelocity } from './locomotion';
 import {
   ColliderDesc,
@@ -247,6 +248,19 @@ export class EnemyBody {
       }
       this.stepping = true;
     }
+    const waypoint = this.deps.transitWaypoint?.(this.id);
+    if (waypoint && dt > 0) {
+      const p = this.body.translation(),
+        dx = waypoint.x - p.x,
+        dz = waypoint.z - p.z;
+      const speed = tuning.elevator.navWalkMps;
+      const factor = Math.min(
+        1 / dt,
+        speed / Math.max(Number.EPSILON, Math.hypot(dx, dz)),
+      );
+      vx = dx * factor;
+      vz = dz * factor;
+    }
     const scale = this.geometry.locomotionScale;
     if (scale !== undefined) {
       steerVelocity(
@@ -283,25 +297,63 @@ export class EnemyBody {
       )
         separating.add(neighbor.id);
     }
+    const platform = supportingPlatform(
+      this.deps.platformFloors,
+      center,
+      this.geometry.height,
+      this.geometry.controllerOffset,
+      this.verticalSpeed,
+    );
     this.controller.computeColliderMovement(
       this.collider,
       {
         x: (vx + this.impulse.x) * dt,
-        y: this.verticalSpeed * dt,
+        y: platform ? 0 : this.verticalSpeed * dt,
         z: (vz + this.impulse.z) * dt,
       },
       QueryFilterFlags.EXCLUDE_SENSORS,
       this.groups,
       (collider) =>
+        collider.handle !== platform?.floorHandle &&
         !separating.has(this.deps.entities.byCollider(collider.handle) ?? -1),
     );
     const movement = this.controller.computedMovement();
+    // Na szwie podestu Rapier może wyczerpać iteracje o płaską podłogę
+    // bez ruchu. Przywróć odstęp kapsuły od rzeczywistego punktu styku.
+    if (
+      waypoint &&
+      !platform &&
+      this.verticalSpeed <= 0 &&
+      !movement.x &&
+      !movement.z
+    ) {
+      const hit = this.controller.computedCollision(0);
+      if (hit && hit.normal1.y > 1 - 1e-6)
+        movement.y = Math.max(
+          movement.y,
+          hit.witness1.y +
+            this.geometry.height / 2 +
+            this.geometry.controllerOffset +
+            platformSkinM -
+            center.y,
+        );
+    }
+    if (platform)
+      movement.y +=
+        platform.state.y +
+        this.geometry.height / 2 +
+        this.geometry.controllerOffset +
+        platformSkinM -
+        center.y;
     this.body.setNextKinematicTranslation({
       x: center.x + movement.x,
       y: center.y + movement.y,
       z: center.z + movement.z,
     });
-    if (this.verticalSpeed <= 0 && this.controller.computedGrounded())
+    if (
+      this.verticalSpeed <= 0 &&
+      (platform || this.controller.computedGrounded())
+    )
       this.verticalSpeed = 0;
     let wallSlam: WallSlam | null = null;
     if (
