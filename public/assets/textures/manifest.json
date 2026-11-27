@@ -1968,5 +1968,325 @@
     "dominantColor": "#583c23",
     "description": "Pionowe lamele z ciemnego orzecha na czarnym filcu.",
     "bytes": 40064
+  },
+  {
+    "id": "res_iskra_investigation_board",
+    "category": "decals",
+    "path": "decals/res_iskra_investigation_board.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#26211d",
+    "description": "Główna tablica śledcza Operacja Iskra: mapa stacji Kamienna, list gończy z sylwetką, fotografie i notatki o Doktor Wolan, Mirze, Szronie i Bajcie, bursztynowe i ciepłobiałe nici.",
+    "bytes": 318724
+  },
+  {
+    "id": "res_ee_run1_forklift_memo",
+    "category": "decals",
+    "path": "decals/res_ee_run1_forklift_memo.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#ecbd85",
+    "description": "Raport powypadkowy z magazynu K-09 o intruzie rzucającym skrzyniami w wózki AGV i koszcie naprawy suwnicy 420 000 KR.",
+    "bytes": 143502
+  },
+  {
+    "id": "res_ee_run2_atrium_vip",
+    "category": "decals",
+    "path": "decals/res_ee_run2_atrium_vip.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#0d131b",
+    "description": "Certyfikat VIP salonu Atrium Nova o zegarku pułkownika odebranym przed nocną masakrą manekinów.",
+    "bytes": 141502
+  },
+  {
+    "id": "res_ee_run3_cocoon04_alert",
+    "category": "decals",
+    "path": "decals/res_ee_run3_cocoon04_alert.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#e5d4ba",
+    "description": "Tabliczka eksponatu Projekt Chimera z ostrzeżeniem o sześciopalczastym obiekcie w wentylacji.",
+    "bytes": 139904
+  },
+  {
+    "id": "res_ee_run4_penthouse_invoice",
+    "category": "decals",
+    "path": "decals/res_ee_run4_penthouse_invoice.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#f5e6d3",
+    "description": "Faktura za szybę panoramiczną i drukarkę z dopiskiem o ukryciu akt w leśnej willi.",
+    "bytes": 136798
+  },
+  {
+    "id": "res_ee_helixa_akord_dossier",
+    "category": "decals",
+    "path": "decals/res_ee_helixa_akord_dossier.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#e8dbca",
+    "description": "Teczka medyczna Helixa Dynamics o dostawie kamertonów Akord do przesłuchań i rozliczeniu szczepień.",
+    "bytes": 117232
+  },
+  {
+    "id": "res_ee_orbis_grid_firewall",
+    "category": "decals",
+    "path": "decals/res_ee_orbis_grid_firewall.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fef6e6",
+    "description": "Wydruk alertu Orbis Grid o hakerze Bajcie i podmienionej muzyce w windach Koalicji.",
+    "bytes": 121132
+  },
+  {
+    "id": "res_ee_vintage_2048_wine",
+    "category": "decals",
+    "path": "decals/res_ee_vintage_2048_wine.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#f1dbb9",
+    "description": "Karta degustacyjna Château Kurogane 2048 o smaku czystego monopolu i śladowej ilości synt-siarki.",
+    "bytes": 145954
+  },
+  {
+    "id": "res_ee_kitchen_notes",
+    "category": "decals",
+    "path": "decals/res_ee_kitchen_notes.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fcdd98",
+    "description": "Bursztynowa lista zakupów na lodówce z kodem do winiarni 0451.",
+    "bytes": 131792
+  },
+  {
+    "id": "res_ee_colonel_book_titles",
+    "category": "decals",
+    "path": "decals/res_ee_colonel_book_titles.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#1c1c1b",
+    "description": "Okładki książek o parowaniu ostrza plazmowego i etyce korporacyjnej.",
+    "bytes": 158774
+  },
+  {
+    "id": "res_ee_mira_blade_trophy",
+    "category": "decals",
+    "path": "decals/res_ee_mira_blade_trophy.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#38240b",
+    "description": "Mosiężna tabliczka trofeum z grawerem Miry z warsztatu na stacji Kamienna.",
+    "bytes": 49824
+  },
+  {
+    "id": "res_ee_art_plaque",
+    "category": "decals",
+    "path": "decals/res_ee_art_plaque.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#c8862a",
+    "description": "Mosiężna tabliczka obrazu Cisza po pacyfikacji sektora 4.",
+    "bytes": 38038
+  },
+  {
+    "id": "label_residence_mug",
+    "category": "labels",
+    "path": "labels/label_residence_mug.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#fef9f3",
+    "description": "Nadruk UV na kubek szefa bezpieczeństwa roku.",
+    "bytes": 24944
+  },
+  {
+    "id": "res_kurogane_villa_crest",
+    "category": "decals",
+    "path": "decals/res_kurogane_villa_crest.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#2c2723",
+    "description": "Mosiężno-bursztynowy monogram podłogowy Willi Kuroyama.",
+    "bytes": 165840
+  },
+  {
+    "id": "res_drain_stain",
+    "category": "decals",
+    "path": "decals/res_drain_stain.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#373736",
+    "description": "Ciemna mokra plama i rysy wokół kraty odpływowej w chłodnym graficie i bursztynie.",
+    "bytes": 165006
+  },
+  {
+    "id": "res_villa_kuroyama",
+    "category": "signs",
+    "path": "signs/res_villa_kuroyama.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fdad02",
+    "description": "Szyld Willa Kuroyama — Enklawa Leśna Kurogane.",
+    "bytes": 17886
+  },
+  {
+    "id": "res_art_neon_forest",
+    "category": "signs",
+    "path": "signs/res_art_neon_forest.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#011538",
+    "description": "Podświetlany obraz złoto-błękitnego lasu nocą.",
+    "bytes": 49248
+  },
+  {
+    "id": "res_winter_pool",
+    "category": "signs",
+    "path": "signs/res_winter_pool.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#3979fb",
+    "description": "Szyld Pawilon Deszczu — Basen & Ogród Zimowy.",
+    "bytes": 10110
+  },
+  {
+    "id": "res_armored_garage",
+    "category": "signs",
+    "path": "signs/res_armored_garage.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#1a1a1a",
+    "description": "Szyld Garaż Pancerny — Flota Specjalna.",
+    "bytes": 22444
+  },
+  {
+    "id": "res_guard_post",
+    "category": "signs",
+    "path": "signs/res_guard_post.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#ffc426",
+    "description": "Szyld Dyżurka Straży — Monitoring Obwodowy.",
+    "bytes": 18114
+  },
+  {
+    "id": "res_colonel_office",
+    "category": "signs",
+    "path": "signs/res_colonel_office.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#241602",
+    "description": "Szyld Gabinet Pułkownika — Dostęp Wyłącznie: K. Vane.",
+    "bytes": 15966
+  },
+  {
+    "id": "res_trophy_sanctuary",
+    "category": "signs",
+    "path": "signs/res_trophy_sanctuary.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0a021b",
+    "description": "Szyld Sanktuarium Kurogane — Kolekcja Broni & Trofeów.",
+    "bytes": 16088
+  },
+  {
+    "id": "res_wine_cellar",
+    "category": "signs",
+    "path": "signs/res_wine_cellar.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#251a01",
+    "description": "Szyld Krypta Roczników — Winiarnia Prywatna.",
+    "bytes": 16978
+  },
+  {
+    "id": "res_interrogation_zone",
+    "category": "signs",
+    "path": "signs/res_interrogation_zone.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fea710",
+    "description": "Tablica Sekcja Przesłuchań — Strefa Wyciszona Akustycznie.",
+    "bytes": 14710
+  },
+  {
+    "id": "res_bunker_exit",
+    "category": "signs",
+    "path": "signs/res_bunker_exit.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#67fa4a",
+    "description": "Szyld Bunkier Bastion — Tunel Ewakuacyjny.",
+    "bytes": 13046
+  },
+  {
+    "id": "screen_res_radar",
+    "category": "screens",
+    "path": "screens/screen_res_radar.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#092a13",
+    "description": "Zielono-bursztynowy radar perymetru leśnego i drona H-06.",
+    "bytes": 44478
+  },
+  {
+    "id": "screen_res_audio_wave",
+    "category": "screens",
+    "path": "screens/screen_res_audio_wave.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#76fa57",
+    "description": "Oscyloskop zapisu audio nr 44 ze stacji Kamienna.",
+    "bytes": 37376
+  },
+  {
+    "id": "screen_iskra_board",
+    "category": "screens",
+    "path": "screens/screen_iskra_board.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#09121b",
+    "description": "Cyfrowy podkład mapy stacji Kamienna i schematu komórki Iskra.",
+    "bytes": 130412
+  },
+  {
+    "id": "res_arch_concrete",
+    "category": "surfaces",
+    "path": "surfaces/res_arch_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#4b535e",
+    "description": "Gładki beton architektoniczny z rysunkiem szalunku i otworami po ściągach.",
+    "bytes": 35418
+  },
+  {
+    "id": "res_dark_walnut",
+    "category": "surfaces",
+    "path": "surfaces/res_dark_walnut.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#332b1d",
+    "description": "Wielkoformatowy fornir i parkiet z ciemnego wędzonego orzecha.",
+    "bytes": 39824
+  },
+  {
+    "id": "res_nero_marble",
+    "category": "surfaces",
+    "path": "surfaces/res_nero_marble.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#191a1c",
+    "description": "Polerowany czarny marmur Nero Marquina ze złotym i białym żyłkowaniem.",
+    "bytes": 65358
+  },
+  {
+    "id": "res_plush_carpet",
+    "category": "surfaces",
+    "path": "surfaces/res_plush_carpet.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#282b33",
+    "description": "Gęsty miękki dywan wełniano-jedwabny z geometrycznym obrysem.",
+    "bytes": 114676
   }
 ]

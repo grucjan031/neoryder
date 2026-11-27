@@ -258,5 +258,45 @@
     "dominantColor": "#585858",
     "description": "Komiksowe lamele orzechowe na filcu z kreskowanymi słojami.",
     "bytes": 160988
+  },
+  {
+    "id": "komiks_res_arch_concrete",
+    "category": "surfaces",
+    "path": "surfaces/komiks_res_arch_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#595959",
+    "description": "Komiksowy beton architektoniczny z tuszowanymi liniami szalunku.",
+    "bytes": 30100
+  },
+  {
+    "id": "komiks_res_dark_walnut",
+    "category": "surfaces",
+    "path": "surfaces/komiks_res_dark_walnut.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#1c1c1c",
+    "description": "Komiksowy parkiet z tuszowanymi słojami ciemnego orzecha.",
+    "bytes": 32734
+  },
+  {
+    "id": "komiks_res_nero_marble",
+    "category": "surfaces",
+    "path": "surfaces/komiks_res_nero_marble.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#262626",
+    "description": "Komiksowy czarny marmur z rysowanym żyłkowaniem.",
+    "bytes": 71384
+  },
+  {
+    "id": "komiks_res_plush_carpet",
+    "category": "surfaces",
+    "path": "surfaces/komiks_res_plush_carpet.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#272727",
+    "description": "Komiksowy grafitowy dywan z kreskowanym splotem.",
+    "bytes": 198100
   }
 ]

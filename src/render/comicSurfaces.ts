@@ -8,6 +8,10 @@ import { activeLook } from './lookPresets';
  */
 export const COMIC_SURFACES = new Set([
   'off_carpet_tile',
+  'res_arch_concrete',
+  'res_dark_walnut',
+  'res_nero_marble',
+  'res_plush_carpet',
   'off_polished_granite',
   'off_wood_slat_wall',
   'lab_epoxy_floor',

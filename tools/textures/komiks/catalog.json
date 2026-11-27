@@ -241,5 +241,49 @@
     "prompt": "Single square seamless tileable material albedo, fills frame edge-to-edge, uniform lighting, completely orthographic. Opposite edges must tile. No text, border, shadow gradient or vignette. Monochrome ink graphic novel wall material. Twelve straight vertical architectural walnut slats on black felt, delicate drawn woodgrain, inked edges, hatched dark grays, restrained engraved pale highlight lines. Continuous slats full image height. No red, cyan, magenta, watermark or scene.",
     "set": "office",
     "lossless": false
+  },
+  {
+    "id": "komiks_res_arch_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowy beton architektoniczny z tuszowanymi liniami szalunku.",
+    "subject": "comic architectural concrete with ink outlines and cel-shaded planes.",
+    "prompt": "Use case: stylized-concept. Seamless square comic-book game material, comic architectural concrete with ink outlines and cel-shaded planes. No red, cyan, magenta, watermark or scene.",
+    "set": "run6",
+    "lossless": false
+  },
+  {
+    "id": "komiks_res_dark_walnut",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowy parkiet z tuszowanymi słojami ciemnego orzecha.",
+    "subject": "comic smoked walnut parquet with inked seams and fine hatching.",
+    "prompt": "Use case: stylized-concept. Seamless square comic-book game material, comic smoked walnut parquet with inked seams and fine hatching. No red, cyan, magenta, watermark or scene.",
+    "set": "run6",
+    "lossless": false
+  },
+  {
+    "id": "komiks_res_nero_marble",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowy czarny marmur z rysowanym żyłkowaniem.",
+    "subject": "comic near-black marble with warm-white and muted amber veins.",
+    "prompt": "Use case: stylized-concept. Seamless square comic-book game material, comic near-black marble with warm-white and muted amber veins. No red, cyan, magenta, watermark or scene.",
+    "set": "run6",
+    "lossless": false
+  },
+  {
+    "id": "komiks_res_plush_carpet",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowy grafitowy dywan z kreskowanym splotem.",
+    "subject": "comic plush graphite carpet with inked woven geometric border.",
+    "prompt": "Use case: stylized-concept. Seamless square comic-book game material, comic plush graphite carpet with inked woven geometric border. No red, cyan, magenta, watermark or scene.",
+    "set": "run6",
+    "lossless": false
   }
 ]
