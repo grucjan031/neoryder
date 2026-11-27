@@ -210,7 +210,7 @@ it('run7: osłony w salonie nie zostawiają pustego kwadratu większego niż 8 m
   expect(largest * step).toBeLessThanOrEqual(8);
 });
 
-it('run7: pula walk i elit sektora Kurogane to run1–run7', () => {
+it('run7: pula walk i elit sektora Kurogane to run1–run8', () => {
   expect(sector.roomPools.combat).toEqual([
     'run1',
     'run2',
@@ -219,6 +219,7 @@ it('run7: pula walk i elit sektora Kurogane to run1–run7', () => {
     'run5',
     'run6',
     'run7',
+    'run8',
   ]);
   expect(sector.roomPools.elite).toEqual(sector.roomPools.combat);
 });
