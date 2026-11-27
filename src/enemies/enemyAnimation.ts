@@ -1,6 +1,6 @@
 import { tuning } from '../core/tuning';
 import type { EnemyDefinition } from './enemySchema';
-import { canKnockDown, knockdownTiming } from './enemyKnockdown';
+import { canKnockDown, knockdownTiming, stunDuration } from './enemyKnockdown';
 import type { EnemySnapshot } from './types';
 
 export type EnemyClip =
@@ -72,19 +72,17 @@ export function selectEnemyAnimation(
     ...(durationS !== undefined ? { durationS } : {}),
   });
   if (snapshot.state === 'stunned') {
-    // Kip-up: od początku wyskoku poza bojowa, w której wróg ląduje.
+    // Klip bojowy przejmuje kończyny w czasie prostowania po kontakcie stóp.
     if (snapshot.knockdown && canKnockDown(definition)) {
       const timing = knockdownTiming(
-        definition.stunOnHeavyS,
+        stunDuration(definition, snapshot),
         tuning.vfx.enemyKnockdown,
       );
-      if (
-        snapshot.stateTimeS >=
-        timing.fallS +
-          timing.lieS +
-          timing.kipS * tuning.vfx.enemyKnockdown.tuckAt
-      )
-        return result(ranged ? 'Pistol_Idle_Loop' : 'Sword_Idle');
+      if (snapshot.stateTimeS >= timing.landAtS)
+        return result(
+          ranged ? 'Pistol_Idle_Loop' : shield ? 'Idle_Loop' : 'Sword_Idle',
+        );
+      return result(ranged ? 'Pistol_Idle_Loop' : 'Idle_Loop');
     }
     return result('Hit_Chest', true, definition.stunOnHeavyS);
   }

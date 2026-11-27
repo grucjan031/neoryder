@@ -583,12 +583,22 @@ export class AiTest implements Scene {
       });
     register(
       'knock',
-      'knock — mocny odrzut wszystkich wrogów od gracza (przewrócenie i kip-up)',
-      () => {
+      'knock [kątDeg] — mocny odrzut wszystkich wrogów od gracza albo w podanym kierunku świata (przewrócenie i kip-up; 90 = widok z boku)',
+      (args) => {
+        const angle = args[0] === undefined ? undefined : Number(args[0]);
+        if (args.length > 1 || (angle !== undefined && !Number.isFinite(angle)))
+          return 'Uzycie: knock [kątDeg]';
         const from = this.player.getState().position;
         this.manager.forEach((enemy) => {
-          const dx = enemy.current.position.x - from.x;
-          const dz = enemy.current.position.z - from.z;
+          const rad = ((angle ?? 0) * Math.PI) / 180;
+          const dx =
+            angle === undefined
+              ? enemy.current.position.x - from.x
+              : Math.sin(rad);
+          const dz =
+            angle === undefined
+              ? enemy.current.position.z - from.z
+              : -Math.cos(rad);
           const length = Math.hypot(dx, dz) || 1;
           this.damage.deal(enemy.id, {
             source: id,

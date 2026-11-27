@@ -401,10 +401,11 @@ describe('Szturmowiec — prawdziwy Rapier', () => {
     expect(f.enemy.previous).toEqual(before);
   });
 
-  it('knocks back, interrupts telegraph on heavy and does not attack while stunned', () => {
+  it('knocks down, interrupts telegraph on heavy and does not attack while stunned', () => {
     const f = setup();
     const stunned = vi.fn();
     const dealt = vi.fn();
+    const durationS = f.settings.enemies.knockdownStunS;
     f.bus.on('enemy_stunned', stunned);
     f.bus.on('damage_dealt', dealt);
     f.steps();
@@ -417,10 +418,11 @@ describe('Szturmowiec — prawdziwy Rapier', () => {
     });
     expect(stunned).toHaveBeenCalledExactlyOnceWith({
       id: f.enemy.id,
-      durationS: raw.stunOnHeavyS,
+      durationS,
     });
     expect(f.enemy.current.state).toBe('stunned');
-    f.steps(Math.round(raw.stunOnHeavyS / SIM_DT) - 1);
+    expect(f.enemy.current.knockdown).toEqual({ x: 0, z: -1 });
+    f.steps(Math.ceil(durationS / SIM_DT) - 1);
     expect(f.enemy.current.state).toBe('stunned');
     expect(f.enemy.current.position.z).toBeLessThan(-0.5);
     expect(
@@ -428,6 +430,7 @@ describe('Szturmowiec — prawdziwy Rapier', () => {
     ).toHaveLength(0);
     f.steps();
     expect(f.enemy.current.state).toBe('chase');
+    expect(f.enemy.current.knockdown).toBeUndefined();
   });
 
   it('survives a real swing that gets parried mid-strike (hitbox cleared by stun)', () => {

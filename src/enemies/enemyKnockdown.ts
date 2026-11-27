@@ -1,4 +1,4 @@
-import type { Tuning } from '../core/tuning';
+import { tuning, type Tuning } from '../core/tuning';
 import type { EnemyDefinition } from './enemySchema';
 import type { EnemySnapshot } from './types';
 
@@ -31,7 +31,7 @@ export interface KnockdownTiming {
 }
 
 /**
- * Upadek, leżenie i kip-up mieszczą się w czasie ogłuszenia `stunS` (balans bez zmian):
+ * Upadek, leżenie i kip-up mieszczą się w czasie ogłuszenia `stunS`:
  * leżenie wypełnia resztę, a przy krótszym ogłuszeniu upadek i wyskok skalują się proporcjonalnie.
  */
 export function knockdownTiming(
@@ -57,6 +57,16 @@ export interface KnockdownPose {
   phase: 'fall' | 'lie' | 'kip';
   /** Pochylenie w stopniach w kierunku przewrócenia (90 = na plecach). */
   tiltDeg: number;
+  hipFlexDeg: number;
+  kneeFlexDeg: number;
+  spineArchDeg: number;
+  shoulderDeg: number;
+  elbowDeg: number;
+  armSpreadDeg: number;
+  /** Udział neutralnej podstawy kończyn nad klipem walki. */
+  neutralWeight: number;
+  /** Obniżenie bioder nad stopami w przysiadzie. */
+  crouchM: number;
   /** Podniesienie (m): odbicie po uderzeniu o ziemię i podskok kip-upu. */
   liftM: number;
   /** Ugięcie w pionie (1 = bez zmian) przy podciągnięciu nóg i lądowaniu. */
@@ -65,14 +75,63 @@ export interface KnockdownPose {
   landedAgoS: number | null;
 }
 
-const smooth = (v: number): number => {
-  const t = Math.min(1, Math.max(0, v));
-  return t * t * (3 - 2 * t);
+type Angles = Pick<
+  KnockdownPose,
+  | 'tiltDeg'
+  | 'hipFlexDeg'
+  | 'kneeFlexDeg'
+  | 'spineArchDeg'
+  | 'shoulderDeg'
+  | 'elbowDeg'
+  | 'armSpreadDeg'
+>;
+const neutral: Angles = {
+  tiltDeg: 0,
+  hipFlexDeg: 0,
+  kneeFlexDeg: 0,
+  spineArchDeg: 0,
+  shoulderDeg: 0,
+  elbowDeg: 0,
+  armSpreadDeg: 0,
 };
-const easeOut = (v: number): number =>
-  1 - (1 - Math.min(1, Math.max(0, v))) ** 3;
+const mix = (a: number, b: number, w: number) => a + (b - a) * w;
+const smooth = (u: number) => u * u * (3 - 2 * u);
+function blend(a: Angles, b: Angles, w: number): Angles {
+  return {
+    tiltDeg: mix(a.tiltDeg, b.tiltDeg, w),
+    hipFlexDeg: mix(a.hipFlexDeg, b.hipFlexDeg, w),
+    kneeFlexDeg: mix(a.kneeFlexDeg, b.kneeFlexDeg, w),
+    spineArchDeg: mix(a.spineArchDeg, b.spineArchDeg, w),
+    shoulderDeg: mix(a.shoulderDeg, b.shoulderDeg, w),
+    elbowDeg: mix(a.elbowDeg, b.elbowDeg, w),
+    armSpreadDeg: mix(a.armSpreadDeg, b.armSpreadDeg, w),
+  };
+}
 
-/** Poza w chwili `timeS` od początku ogłuszenia (czysta funkcja; widok nakłada ją na korzeń modelu). */
+/** Odpowiedź tłumionej sprężyny. Pierwsze ekstremum wypada na −overshoot. */
+function springReturn(u: number, overshoot: number): number {
+  if (u >= 1) return 0;
+  if (overshoot <= 0) return 1 - smooth(u);
+  const damping = -Math.log(overshoot) / Math.PI;
+  const end = 2 * Math.PI - Math.atan2(1, damping);
+  const angle = u * end;
+  const position =
+    Math.exp(-damping * angle) * (Math.cos(angle) + damping * Math.sin(angle));
+  // Wygaszenie po pierwszym przeregulowaniu daje zerową prędkość przy oddaniu klipu.
+  const settle = Math.max(0, (angle - Math.PI) / (end - Math.PI));
+  return position * (1 - smooth(settle));
+}
+
+export function stunDuration(
+  definition: EnemyDefinition,
+  snapshot: Pick<EnemySnapshot, 'knockdown'>,
+  knockdownS = tuning.enemies.knockdownStunS,
+): number {
+  return snapshot.knockdown && canKnockDown(definition)
+    ? knockdownS
+    : definition.stunOnHeavyS;
+}
+
 export function knockdownPose(
   timeS: number,
   stunS: number,
@@ -80,68 +139,105 @@ export function knockdownPose(
 ): KnockdownPose {
   const timing = knockdownTiming(stunS, t);
   const time = Math.min(Math.max(0, timeS), timing.totalS);
-  const lie = t.lieTiltDeg;
+  const kipStart = timing.fallS + timing.lieS;
+  const fallen = {
+    ...neutral,
+    tiltDeg: t.lieTiltDeg,
+    hipFlexDeg: t.fallHipDeg,
+    kneeFlexDeg: t.fallKneeDeg,
+    armSpreadDeg: t.fallArmSpreadDeg,
+  };
+  const base = {
+    liftM: 0,
+    squash: 1,
+    neutralWeight: 1,
+    crouchM: 0,
+    landedAgoS: null,
+  };
   if (time < timing.fallS) {
-    // Upadek przyspiesza jak przy przewróceniu (u²).
-    const u = time / Math.max(timing.fallS, 1e-6);
+    const u = time / timing.fallS;
     return {
+      ...base,
+      ...blend(neutral, fallen, smooth(u)),
+      tiltDeg: fallen.tiltDeg * u * u,
+      neutralWeight: smooth(u),
       phase: 'fall',
-      tiltDeg: lie * u * u,
-      liftM: 0,
-      squash: 1,
-      landedAgoS: null,
     };
   }
   const afterImpact = time - timing.fallS;
   const bounce =
     afterImpact < t.bounceS
-      ? t.bounceM *
-        Math.sin((Math.PI * afterImpact) / Math.max(t.bounceS, 1e-6))
+      ? t.bounceM * Math.sin((Math.PI * afterImpact) / t.bounceS)
       : 0;
-  const kipStart = timing.fallS + timing.lieS;
   if (time < kipStart)
+    return { ...base, ...fallen, liftM: bounce, phase: 'lie' };
+
+  const v = timing.kipS > 0 ? Math.min(1, (time - kipStart) / timing.kipS) : 1;
+  const kip = { ...base, phase: 'kip' as const };
+  const tuck = {
+    ...neutral,
+    tiltDeg: t.tuckTiltDeg,
+    hipFlexDeg: t.tuckHipDeg,
+    kneeFlexDeg: t.tuckKneeDeg,
+    shoulderDeg: t.tuckShoulderDeg,
+    elbowDeg: t.tuckElbowDeg,
+  };
+  if (v < t.tuckAt) {
+    const u = Math.min(1, v / Math.max(t.holdAt, Number.EPSILON));
+    const w = 1 - (1 - u) ** 3;
     return {
-      phase: 'lie',
-      tiltDeg: lie,
-      liftM: bounce,
-      squash: 1,
-      landedAgoS: null,
-    };
-  const v = (time - kipStart) / Math.max(timing.kipS, 1e-6);
-  const tuckEnd = t.tuckAt;
-  const land = t.landAt;
-  const landedAgoS = time >= timing.landAtS ? time - timing.landAtS : null;
-  if (v < tuckEnd) {
-    // Podciągnięcie nóg: przetoczenie na łopatki i ugięcie.
-    const w = smooth(v / tuckEnd);
-    return {
-      phase: 'kip',
-      tiltDeg: lie + t.tuckDeg * w,
-      liftM: bounce,
-      squash: 1 - t.tuckSquash * w,
-      landedAgoS,
-    };
-  }
-  if (v < land) {
-    // Wyskok z pleców na nogi: szybki obrót przez pion z lekkim przechyłem do przodu i podskok.
-    const w = (v - tuckEnd) / (land - tuckEnd);
-    const from = lie + t.tuckDeg;
-    return {
-      phase: 'kip',
-      tiltDeg: from + (-t.overshootDeg - from) * easeOut(w),
-      liftM: t.jumpM * Math.sin(Math.PI * w),
-      squash: 1 - t.tuckSquash * (1 - smooth(w * 2)),
-      landedAgoS,
+      ...kip,
+      ...blend(fallen, tuck, w),
+      liftM: mix(bounce, t.tuckLiftM, w),
     };
   }
-  // Lądowanie w pozycji bojowej: wyprost z przechyłu i krótkie ugięcie.
-  const w = (v - land) / Math.max(1 - land, 1e-6);
+  const kick = {
+    ...neutral,
+    tiltDeg: t.kickTiltDeg,
+    hipFlexDeg: t.kickHipDeg,
+    spineArchDeg: t.kickArchDeg,
+    shoulderDeg: t.kickShoulderDeg,
+  };
+  const land = {
+    ...neutral,
+    tiltDeg: t.landTiltDeg,
+    hipFlexDeg: t.landHipDeg,
+    kneeFlexDeg: t.landKneeDeg,
+    shoulderDeg: t.landShoulderDeg,
+    elbowDeg: t.landElbowDeg,
+  };
+  if (time < timing.landAtS) {
+    // Jedna parabola przez wybicie i kontakt, z wierzchołkiem dokładnie na jumpM.
+    const u = (v - t.tuckAt) / (t.landAt - t.tuckAt);
+    const height = Math.sqrt(Math.max(0, t.jumpM - t.tuckLiftM));
+    const liftM = t.jumpM - (height - (height + Math.sqrt(t.jumpM)) * u) ** 2;
+    if (v < t.kickAt) {
+      const w = (v - t.tuckAt) / (t.kickAt - t.tuckAt);
+      return {
+        ...kip,
+        ...blend(tuck, kick, smooth(w)),
+        tiltDeg: mix(tuck.tiltDeg, kick.tiltDeg, 1 - (1 - w) ** 4),
+        liftM,
+      };
+    }
+    const w = smooth((v - t.kickAt) / (t.landAt - t.kickAt));
+    return {
+      ...kip,
+      ...blend(kick, land, w),
+      liftM,
+      crouchM: t.landDropM * w,
+      squash: 1 - t.landSquash * w,
+    };
+  }
+  const u = (v - t.landAt) / (1 - t.landAt);
+  const rest = springReturn(u, t.standOvershoot);
   return {
-    phase: 'kip',
-    tiltDeg: -t.overshootDeg * (1 - smooth(w)),
-    liftM: 0,
-    squash: 1 - t.landSquash * Math.sin(Math.PI * Math.min(1, w)),
-    landedAgoS,
+    ...kip,
+    ...blend(neutral, land, rest),
+    squash: 1 - t.landSquash * rest,
+    neutralWeight: 1 - smooth(u),
+    crouchM: t.landDropM * rest,
+    landedAgoS: time - timing.landAtS,
   };
 }
 
@@ -150,6 +246,7 @@ export function knockdownFrame(
   definition: EnemyDefinition,
   snapshot: Pick<EnemySnapshot, 'state' | 'stateTimeS' | 'knockdown'>,
   t: KnockdownTuning,
+  knockdownS = tuning.enemies.knockdownStunS,
 ): KnockdownPose | null {
   if (
     snapshot.state !== 'stunned' ||
@@ -157,7 +254,11 @@ export function knockdownFrame(
     !canKnockDown(definition)
   )
     return null;
-  return knockdownPose(snapshot.stateTimeS, definition.stunOnHeavyS, t);
+  return knockdownPose(
+    snapshot.stateTimeS,
+    stunDuration(definition, snapshot, knockdownS),
+    t,
+  );
 }
 
 /** Przesunięcie korzenia po obrocie wokół bioder, wspólne dla widoku i hurtboxów. */
@@ -174,6 +275,11 @@ export function knockdownOffset(
     sin,
     cos,
     forward: -hip * sin,
-    up: hip - (hip - rest) * Math.max(0, sin) + pose.liftM - hip * cos,
+    up:
+      hip -
+      (hip - rest) * Math.max(0, sin) +
+      pose.liftM -
+      hip * cos -
+      pose.crouchM,
   };
 }
