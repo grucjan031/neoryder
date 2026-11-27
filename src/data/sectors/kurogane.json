@@ -116,8 +116,8 @@
     }
   },
   "roomPools": {
-    "combat": ["run1", "run2", "run3"],
-    "elite": ["run1", "run2", "run3"],
+    "combat": ["run1", "run2", "run3", "run4"],
+    "elite": ["run1", "run2", "run3", "run4"],
     "shop": ["noodleShop", "shopRoom"],
     "rest": ["restRoom", "rooftopRest"],
     "puzzle": ["puzzlePlate", "puzzleLaser"],

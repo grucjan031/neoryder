@@ -1,6 +1,7 @@
 import {
   Box3,
   BoxGeometry,
+  Color,
   Group,
   InstancedBufferAttribute,
   InstancedMesh,
@@ -19,6 +20,7 @@ import {
   createAdMaterial,
   createBeaconMaterial,
   createBuildingMaterial,
+  createFlybyMaterial,
   createSkyMaterial,
   createSkyUniforms,
   createTrafficMaterial,
@@ -26,17 +28,21 @@ import {
 
 /**
  * Wyłącznie tło: seed osobnego strumienia, brak ciał fizycznych, brak świateł.
- * 7 meshy: wieżowce (1 InstancedMesh), światła ostrzegawcze, pojazdy,
+ * Standardowo 7 meshy: wieżowce (1 InstancedMesh), światła ostrzegawcze, pojazdy,
  * 3 hologramy reklam i kopuła nieba (łuna + chmury) w podgrupie `sky`.
+ * Dla wysoko położonych map (`dropM >= tuning.horizon.elevated.minDropM`) dokłada
+ * 6 billboardów na sąsiednich wieżowcach oraz osobną pulę bliskich przelotów (1 InstancedMesh).
  */
 export class Panorama extends Group {
   private signature = '';
   private readonly uniforms = createSkyUniforms();
+  private readonly horizonColor = new Color();
   private readonly quad = new PlaneGeometry(1, 1);
   private readonly sphere = new SphereGeometry(1, 32, 16);
   private readonly buildingMaterial = createBuildingMaterial(this.uniforms);
   private readonly beaconMaterial = createBeaconMaterial(this.uniforms);
   private readonly trafficMaterial = createTrafficMaterial(this.uniforms);
+  private readonly flybyMaterial = createFlybyMaterial(this.uniforms);
   private readonly skyMaterial = createSkyMaterial(this.uniforms);
   private readonly sky = new Group();
   private readonly owned: (BufferGeometry | Material)[] = [];
@@ -44,10 +50,12 @@ export class Panorama extends Group {
     private readonly seed: string,
     private readonly floorY: number,
     private readonly exclusion?: Box3,
+    private readonly dropM = 0,
   ) {
     super();
     this.name = 'city-panorama';
     this.uniforms.floorY.value = floorY;
+    this.uniforms.roomFloorY.value = floorY + dropM;
     this.sky.name = 'city-sky';
     const dome = new Mesh(this.sphere, this.skyMaterial);
     dome.name = 'sky-dome';
@@ -59,15 +67,34 @@ export class Panorama extends Group {
   sync(dt: number, horizon?: ReturnType<typeof horizonParameters>): void {
     const t = tuning.render;
     const c = tuning.city;
+    const h = tuning.horizon;
+    const he = h.elevated;
+    const ce = c.elevated;
+    const elevated = this.dropM >= he.minDropM;
     this.visible = t.panoramaEnabled > 0;
     const u = this.uniforms;
     u.time.value += dt;
+    u.elevated.value = elevated ? 1 : 0;
+    u.roomFloorY.value = this.floorY + this.dropM;
     u.wall.value.set(c.panoramaWall);
     u.windowEmission.value = c.panoramaWindowEmission;
     u.beaconBrightness.value = c.panoramaBeaconBrightness;
     u.glowStrength.value = c.skyGlowStrength;
     u.cloudStrength.value = c.skyCloudStrength;
     u.cloudSpeed.value = c.skyCloudSpeed;
+    u.windowCycleHz.value = ce.windowCycleHz;
+    u.windowAnimatedShare.value = ce.windowAnimatedShare;
+    u.windowFadeShare.value = ce.windowFadeShare;
+    u.hazeNearM.value = ce.hazeNearM;
+    u.hazeFarM.value = ce.hazeFarM;
+    u.canyonGlowDepthM.value = ce.canyonGlowDepthM;
+    u.canyonGlowStrength.value = ce.canyonGlowStrength;
+    u.flybyPeriodS.value = ce.flybyPeriodS;
+    u.flybySpeedMps.value = ce.flybySpeedMps;
+    u.flybySize.value.set(ce.flybyLengthM, ce.flybyHeightM);
+    u.skyHazeColor.value
+      .set(t.fogColor)
+      .lerp(this.horizonColor.set(t.skyHorizon), 0.35);
     this.sky.scale.setScalar(
       horizon?.domeRadiusM ?? tuning.horizon.legacyDomeM,
     );
@@ -76,7 +103,14 @@ export class Panorama extends Group {
       0,
       horizon?.expanded ? horizon.center.z : 0,
     );
-    const h = tuning.horizon;
+    const facadeBounds = this.exclusion
+      ? {
+          minX: this.exclusion.min.x - this.position.x,
+          maxX: this.exclusion.max.x - this.position.x,
+          minZ: this.exclusion.min.z - this.position.z,
+          maxZ: this.exclusion.max.z - this.position.z,
+        }
+      : undefined;
     const signature = [
       t.panoramaDensity,
       t.panoramaHeight,
@@ -87,6 +121,49 @@ export class Panorama extends Group {
       h.trafficMinM,
       h.trafficMaxM,
       h.freestandingAdM,
+      this.dropM,
+      elevated ? 1 : 0,
+      ...(elevated
+        ? [
+            he.minDropM,
+            he.towerCount,
+            he.towerNearM,
+            he.towerFarM,
+            he.towerClearanceM,
+            he.towerMinWidthM,
+            he.towerMaxWidthM,
+            he.crownMinY,
+            he.crownMaxY,
+            he.setbackHeightM,
+            he.setbackScale,
+            he.mastHeightM,
+            he.mastWidthM,
+            he.beaconPeriodS,
+            he.beaconSizeM,
+            he.adCount,
+            he.adMinY,
+            he.adMaxY,
+            he.adOffsetM,
+            he.canyonTrafficMinY,
+            he.canyonTrafficMaxY,
+            he.windowTrafficMax,
+            he.windowTrafficNearM,
+            he.windowTrafficFarM,
+            he.windowTrafficMinY,
+            he.windowTrafficMaxY,
+            he.flybyClearanceM,
+            he.flybyNorthY,
+            he.flybyWestY,
+            ...(facadeBounds
+              ? [
+                  facadeBounds.minX,
+                  facadeBounds.maxX,
+                  facadeBounds.minZ,
+                  facadeBounds.maxZ,
+                ]
+              : []),
+          ]
+        : []),
       ...(horizon?.ringsM ?? [
         h.firstRingM,
         h.secondRingM,
@@ -100,6 +177,8 @@ export class Panorama extends Group {
     this.add(this.sky);
     const layout = buildSkyline(this.seed, {
       floorY: this.floorY,
+      dropM: this.dropM,
+      ...(facadeBounds && { facadeBounds }),
       ...(horizon && {
         ringsM: horizon.ringsM,
         ringOffsetM: horizon.ringOffsetM,
@@ -151,10 +230,11 @@ export class Panorama extends Group {
     });
     buildings.instanceMatrix.needsUpdate = true;
     buildings.computeBoundingSphere();
+    buildings.frustumCulled = false;
     this.owned.push(box);
     this.add(buildings);
 
-    // Światła ostrzegawcze (bursztyn): billboardy addytywne z bloomem.
+    // Światła ostrzegawcze (bursztyn / ciepła biel): billboardy addytywne z bloomem.
     const beaconQuad = this.quad.clone();
     const beaconData = new Float32Array(layout.beacons.length * 4);
     beaconQuad.setAttribute(
@@ -206,8 +286,34 @@ export class Panorama extends Group {
     this.owned.push(trafficQuad);
     this.add(traffic);
 
-    // Hologramy reklam na fasadach (3 panele, jednostronne logicznie, addytywne).
-    layout.ads.slice(0, 3).forEach((ad, i) => {
+    // Bliskie przeloty za szybą (tylko wysoko położone mapy, 1 InstancedMesh = 1 draw call).
+    if (layout.flybys.length > 0) {
+      const flybyQuad = this.quad.clone();
+      const origins = new Float32Array(layout.flybys.length * 4);
+      const dirs = new Float32Array(layout.flybys.length * 4);
+      layout.flybys.forEach((f, i) => {
+        origins.set([f.startX, f.height, f.startZ, f.phaseFrac], i * 4);
+        dirs.set([f.dirX, f.dirZ, f.spanM, 0], i * 4);
+      });
+      flybyQuad.setAttribute(
+        'flyOrigin',
+        new InstancedBufferAttribute(origins, 4),
+      );
+      flybyQuad.setAttribute('flyDir', new InstancedBufferAttribute(dirs, 4));
+      const flyby = new InstancedMesh(
+        flybyQuad,
+        this.flybyMaterial,
+        layout.flybys.length,
+      );
+      flyby.name = 'skyline-flyby';
+      flyby.frustumCulled = false;
+      flyby.userData.noOutline = true;
+      this.owned.push(flybyQuad);
+      this.add(flyby);
+    }
+
+    // Hologramy reklam na fasadach (3 na zwykłych mapach, 6 na wysoko położonych).
+    layout.ads.forEach((ad, i) => {
       const material = createAdMaterial(
         this.uniforms,
         ad.color,
@@ -241,6 +347,7 @@ export class Panorama extends Group {
     this.buildingMaterial.dispose();
     this.beaconMaterial.dispose();
     this.trafficMaterial.dispose();
+    this.flybyMaterial.dispose();
     this.skyMaterial.dispose();
   }
 }

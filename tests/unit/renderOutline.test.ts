@@ -16,6 +16,7 @@ import {
   createRenderPipeline,
   inkAt,
   outlineFadeAt,
+  planeDepthDelta,
   SKY_BACKGROUND_ORDER,
   skyBackgroundFragment,
 } from '../../src/render/outline';
@@ -158,6 +159,13 @@ it('przekazuje wygaszanie konturu z odległością do kompozycji', () => {
   expect(shader).toContain('smoothstep(outlineFadeNear');
   expect(shader).toContain('1.0 - far * (1.0 - outlineFarNormal)');
   expect(shader).toContain('mix(1.0, behind, far * outlineFarOuter)');
+  // Skok głębi liczony po odjęciu płaszczyzny środka: posadzka pod małym kątem nie dostaje konturu.
+  expect(shader).toContain(
+    'depth -= planeDepthDelta(centerNormal, centerRay, uv)',
+  );
+  expect(uniforms.planeDeltaLimit!.value).toBe(
+    tuning.render.outlinePlaneDeltaLimit,
+  );
   pipeline.dispose();
 });
 
@@ -319,4 +327,37 @@ it('gradient nieba jest tłem przebiegu koloru przed przezroczystymi, kompozycja
   pipeline.render(scene, new PerspectiveCamera());
   expect(passes.map((p) => p.sky)).toEqual([false, false, false]);
   pipeline.dispose();
+});
+
+it('poprawka płaszczyzny: posadzka pod małym kątem nie ma resztkowego skoku głębi, krok ma', () => {
+  // Posadzka y = 0, oko 0,25 m nad nią, kamera patrzy poziomo: normalna widoku (0, 1, 0).
+  const eye = 0.25;
+  const f = 640;
+  const normal = [0, 1, 0] as const;
+  const depthAtRow = (row: number) => (eye * f) / row;
+  const ray = (row: number) => [0, row / f, -1] as const;
+  const limit = tuning.render.outlinePlaneDeltaLimit;
+  for (const row of [4, 8, 20]) {
+    const relative = depthAtRow(row + 1) / depthAtRow(row) - 1;
+    // Sam skok względny jest daleko ponad progiem konturu...
+    expect(Math.abs(relative)).toBeGreaterThan(
+      tuning.render.outlineDepthThreshold,
+    );
+    // ...ale płaszczyzna go przewiduje, więc reszta jest zerowa.
+    const predicted = planeDepthDelta(normal, ray(row), ray(row + 1), limit);
+    expect(relative - predicted).toBeCloseTo(0, 6);
+  }
+  // Prawdziwy krok głębi (obiekt przed posadzką) przewidywaniem się nie zeruje.
+  const step = 0.4 * depthAtRow(10);
+  const residual =
+    (step - depthAtRow(10)) / depthAtRow(10) -
+    planeDepthDelta(normal, ray(10), ray(10), limit);
+  expect(Math.abs(residual)).toBeGreaterThan(
+    tuning.render.outlineDepthThreshold,
+  );
+  // Brak przewidywania: promienie równoległe do płaszczyzny lub po jej drugiej stronie.
+  expect(planeDepthDelta(normal, [0, 0, -1], ray(5), limit)).toBe(0);
+  expect(planeDepthDelta(normal, ray(5), ray(-5), limit)).toBe(0);
+  // Wynik jest ograniczony.
+  expect(planeDepthDelta(normal, ray(100), ray(0.01), limit)).toBe(limit);
 });

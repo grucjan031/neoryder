@@ -1,6 +1,7 @@
 import type { Vec3 } from '../core/math';
 import type { RoomDefinition } from './roomSchema';
-import { tuning } from '../core/tuning';
+import { ElevatorRoutes } from './elevatorRoutes';
+import { tuning, type Tuning } from '../core/tuning';
 import { NO_CELL, type RouteGraph } from './enemyBatch';
 
 type Block = RoomDefinition['blocks'][number];
@@ -130,8 +131,15 @@ export class ArenaSurfaceNavigation {
   private readonly widthZ: number;
   private readonly shapes = new Map<Block, Shape>();
 
-  constructor(room: RoomDefinition) {
-    const config = room.arena!;
+  readonly elevatorRoutes?: ElevatorRoutes;
+
+  constructor(room: RoomDefinition, settings: Tuning = tuning) {
+    const config = room.arena ?? {
+      navigationCellM: settings.elevator.navCellM,
+      navigationClearanceM: settings.player.capsuleRadius,
+      navigationMaxRiseM: settings.enemies.stepHeight,
+      navigationHeadroomM: settings.player.capsuleHeight,
+    };
     this.cell = config.navigationCellM;
     this.clearance = config.navigationClearanceM;
     if (!config.navigationMaxRiseM || !config.navigationHeadroomM)
@@ -253,6 +261,18 @@ export class ArenaSurfaceNavigation {
       }
     }
     this.interior = new Uint8Array(this.cells.length);
+    if (room.elevators?.length)
+      this.elevatorRoutes = new ElevatorRoutes(
+        room.elevators,
+        settings.elevator,
+        (p) => this.locate(p),
+        (from, to) => {
+          const steps = this.field(to)[from]!;
+          return steps < 0
+            ? Infinity
+            : (steps * this.cell) / settings.elevator.navWalkMps;
+        },
+      );
   }
 
   private connects(a: Cell, b: Cell): boolean {
@@ -599,6 +619,16 @@ export class ArenaSurfaceNavigation {
     return open || this.sweptClear(surface, start, end);
   }
   path(start: Vec3, goal: Vec3): Vec3[] {
+    const rides = this.elevatorRoutes?.rides(start, goal);
+    if (!rides?.length) return this.walkPath(start, goal);
+    const result: Vec3[] = [];
+    for (const r of rides) {
+      result.push(...this.walkPath(start, r.entry), r.exit);
+      start = r.exit;
+    }
+    return result.concat(this.walkPath(start, goal));
+  }
+  private walkPath(start: Vec3, goal: Vec3): Vec3[] {
     const origin = this.locate(start);
     const target = this.locate(goal);
     if (origin === undefined || target === undefined) return [];

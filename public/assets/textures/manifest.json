@@ -1730,6 +1730,246 @@
     "bytes": 8960
   },
   {
+    "id": "off_kurogane_hq",
+    "category": "signs",
+    "path": "signs/off_kurogane_hq.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0c131b",
+    "description": "Szyld centrali sektora z bursztynowym monogramem Kurogane Arms.",
+    "bytes": 21770
+  },
+  {
+    "id": "off_floor_60",
+    "category": "signs",
+    "path": "signs/off_floor_60.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0c1424",
+    "description": "Błękitny szyld recepcji i dywizji kontraktów na piętrze 60.",
+    "bytes": 23966
+  },
+  {
+    "id": "off_floor_61",
+    "category": "signs",
+    "path": "signs/off_floor_61.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#141c20",
+    "description": "Bursztynowy szyld centrum konferencyjnego i węzła IT na piętrze 61.",
+    "bytes": 23858
+  },
+  {
+    "id": "off_floor_62",
+    "category": "signs",
+    "path": "signs/off_floor_62.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#111625",
+    "description": "Fioletowo-złoty szyld zarządu i gabinetów na piętrze 62.",
+    "bytes": 26474
+  },
+  {
+    "id": "off_conf_aegis",
+    "category": "signs",
+    "path": "signs/off_conf_aegis.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#051425",
+    "description": "Oznaczenie sali Aegis z błękitną tarczą.",
+    "bytes": 20262
+  },
+  {
+    "id": "off_conf_vanguard",
+    "category": "signs",
+    "path": "signs/off_conf_vanguard.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#181826",
+    "description": "Oznaczenie sali Vanguard z fioletowo-bursztynowym herbem.",
+    "bytes": 21042
+  },
+  {
+    "id": "off_sky_lounge",
+    "category": "signs",
+    "path": "signs/off_sky_lounge.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0d151c",
+    "description": "Zielony szyld strefy socjalnej Sky Lounge.",
+    "bytes": 22300
+  },
+  {
+    "id": "off_it_repro",
+    "category": "signs",
+    "path": "signs/off_it_repro.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0c1421",
+    "description": "Oznaczenie serwerowni i reprografii z dostępem IT.",
+    "bytes": 26108
+  },
+  {
+    "id": "off_boardroom",
+    "category": "signs",
+    "path": "signs/off_boardroom.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#141923",
+    "description": "Bursztynowy szyld gabinetu zarządu dla członków rady.",
+    "bytes": 24260
+  },
+  {
+    "id": "off_elevator_sign",
+    "category": "signs",
+    "path": "signs/off_elevator_sign.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0b1520",
+    "description": "Oznaczenie windy panoramicznej i obsługiwanych pięter.",
+    "bytes": 22338
+  },
+  {
+    "id": "off_kurogane_floor_crest",
+    "category": "decals",
+    "path": "decals/off_kurogane_floor_crest.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#b78b3c",
+    "description": "Mosiężny herb posadzkowy Kurogane Arms z rokiem założenia 2048.",
+    "bytes": 104966
+  },
+  {
+    "id": "off_elevator_floor_zone",
+    "category": "decals",
+    "path": "decals/off_elevator_floor_zone.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#034e01",
+    "description": "Podłogowe oznaczenie strefy windy z instrukcją obsługi panelu.",
+    "bytes": 45704
+  },
+  {
+    "id": "off_scattered_contracts",
+    "category": "decals",
+    "path": "decals/off_scattered_contracts.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#e5d5bb",
+    "description": "Rozrzucone wydruki arkuszy kalkulacyjnych i poufnych umów.",
+    "bytes": 86014
+  },
+  {
+    "id": "off_kpi_poster",
+    "category": "decals",
+    "path": "decals/off_kpi_poster.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#06294c",
+    "description": "Plakat HR wiążący nadgodziny ze wzrostem zysku akcjonariuszy.",
+    "bytes": 150094
+  },
+  {
+    "id": "off_printer_error_note",
+    "category": "decals",
+    "path": "decals/off_printer_error_note.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#eee2cd",
+    "description": "Kartka o drukarce nr 4 zacinającej papier przy raportach z sektora X-51.",
+    "bytes": 104006
+  },
+  {
+    "id": "off_coffee_rules",
+    "category": "decals",
+    "path": "decals/off_coffee_rules.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#1e2126",
+    "description": "Tabliczka z zasadą wymiany wkładu synt-kofeiny po ostatnim espresso.",
+    "bytes": 81260
+  },
+  {
+    "id": "off_glass_frost_stripe",
+    "category": "decals",
+    "path": "decals/off_glass_frost_stripe.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#e6e3da",
+    "description": "Matowy pas na szyby z powtarzanym monogramem Kurogane.",
+    "bytes": 17880
+  },
+  {
+    "id": "off_rain_streaks_glass",
+    "category": "decals",
+    "path": "decals/off_rain_streaks_glass.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#b7b7b9",
+    "description": "Krople i pionowe strużki deszczu na zewnętrznej stronie fasady.",
+    "bytes": 23366
+  },
+  {
+    "id": "screen_office_analytics",
+    "category": "screens",
+    "path": "screens/screen_office_analytics.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#000c22",
+    "description": "Ekran analityczny Kurogane z wykresami kontraktów, mapą wieżowców i indeksem giełdowym.",
+    "bytes": 72130
+  },
+  {
+    "id": "screen_elevator_panel",
+    "category": "screens",
+    "path": "screens/screen_elevator_panel.webp",
+    "width": 256,
+    "height": 512,
+    "dominantColor": "#101825",
+    "description": "Panel windy z numerami pięter i przyciskami kierunku jazdy.",
+    "bytes": 30762
+  },
+  {
+    "id": "label_office_mug",
+    "category": "labels",
+    "path": "labels/label_office_mug.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#f8f2e5",
+    "description": "Nadruk pracownika miesiąca z działu likwidacji ryzyka na kubek.",
+    "bytes": 19710
+  },
+  {
+    "id": "off_carpet_tile",
+    "category": "surfaces",
+    "path": "surfaces/off_carpet_tile.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#242b39",
+    "description": "Grafitowo-granatowa wykładzina modułowa z kierunkowym splotem włókien.",
+    "bytes": 268982
+  },
+  {
+    "id": "off_polished_granite",
+    "category": "surfaces",
+    "path": "surfaces/off_polished_granite.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#25282a",
+    "description": "Ciemny polerowany granit z żyłkami i stalowymi szwami dylatacyjnymi.",
+    "bytes": 169016
+  },
+  {
+    "id": "off_wood_slat_wall",
+    "category": "surfaces",
+    "path": "surfaces/off_wood_slat_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#583c23",
+    "description": "Pionowe lamele z ciemnego orzecha na czarnym filcu.",
+    "bytes": 40064
+  },
+  {
     "id": "med_resin_floor",
     "category": "surfaces",
     "path": "surfaces/med_resin_floor.webp",

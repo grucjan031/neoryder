@@ -255,8 +255,16 @@ export class Hud {
     text.execute,
   );
 
-  setExecuteHint(ready: boolean): void {
-    this.executeHint.hidden = !ready;
+  private panelAction?: keyof typeof text.elevator;
+  setExecuteHint(ready: boolean, panel?: keyof typeof text.elevator): void {
+    if (panel !== this.panelAction) {
+      this.panelAction = panel;
+      setInputHint(
+        this.executeHint,
+        panel ? `[{power2}] ${text.elevator[panel]}` : text.execute,
+      );
+    }
+    this.executeHint.hidden = !ready && !panel;
   }
 
   setCoolingHint(phase: CoolingPhase | undefined): void {

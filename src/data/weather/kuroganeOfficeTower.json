@@ -1,0 +1,70 @@
+{
+  "id": "kuroganeOfficeTower",
+  "title": "Biurowiec Kurogane Arms — Piętra 60–62",
+  "precipitation": {
+    "kind": "rain",
+    "density": 0.42,
+    "speed": 18,
+    "color": "#889bb8",
+    "opacity": 0.28,
+    "exposureS": 0.025,
+    "widthM": 0.013
+  },
+  "wind": {
+    "direction": {
+      "x": 1,
+      "z": -0.35
+    },
+    "strength": 0.85,
+    "gustStrength": 0.25,
+    "gustPeriodS": 7
+  },
+  "fog": {
+    "color": "#0b101d",
+    "density": 0,
+    "heightM": 20,
+    "strength": 0,
+    "nearM": 90,
+    "farM": 240
+  },
+  "surface": {
+    "gloss": 0.65,
+    "reflections": 0.82,
+    "puddles": 0.15
+  },
+  "lighting": {
+    "hemiIntensity": 4.4,
+    "keyIntensity": 1.55,
+    "panoramaEnabled": true
+  },
+  "sky": {
+    "horizonColor": "#2b1f3d"
+  },
+  "lightning": {
+    "enabled": false,
+    "minIntervalS": 25,
+    "maxIntervalS": 55,
+    "brightness": 0,
+    "color": "#fff1d6",
+    "decayS": 0.18
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.08,
+    "opacity": 0,
+    "color": "#9aa8c0",
+    "lifeS": 10
+  },
+  "ambience": [
+    {
+      "kind": "generator",
+      "gain": 0.08,
+      "radiusM": 95
+    },
+    {
+      "kind": "wind",
+      "gain": 0.1,
+      "radiusM": 110
+    }
+  ]
+}

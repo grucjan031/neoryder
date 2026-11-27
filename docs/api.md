@@ -1733,7 +1733,10 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   emisyjna jak `light_white`, synchronizowana z zasilaniem, ale bez `userData.bloom`.
   Jej płaski wpis w `arenaMaterials.json` rejestruje także powierzchnię dla `mapAudit`.
   `portLooks` ma opcjonalne `opacity` < 1 włączające `transparent`.
-  Prefiks modeli `mall_` jest w `CITY_MODEL_PREFIXES` (`src/render/cityModels.ts`).
+  Prefiks modeli `mall_` jest w `CITY_MODEL_PREFIXES` (`src/render/cityModels.ts`), podobnie
+  `lab_` oraz `off_` (wykończenia biurowca `off_carpet_tile`, `off_polished_granite`,
+  `off_wood_slat_wall` w `arenaMaterials.json`, `urbanMaterials.ts`, `surfaceTextures.ts`
+  i `BLOCK_MATERIALS`).
   `BLOCK_MATERIALS` (`src/world/dressingSchema.ts`, pole `block.material`)
   dopuszcza: `world`, `concrete`, `asphalt`, `metal`, `facade`, `trim`, `glass`,
   `paving`, `plaster`, `corrugated`, `rust`, `hazard`. Parametry motywu:
@@ -1745,6 +1748,9 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.
   Opcjonalny `panoramaExclusion` (`Box3` w przestrzeni świata) wyklucza bryły
   panoramy przecinające obszar poziomu liniowego.
+  Parametr `panoramaDropM` obniża bazę panoramy względem `floorY`. Po osiągnięciu
+  `tuning.horizon.elevated.minDropM` obniża również grunt zewnętrzny i włącza
+  sąsiednie wieże oraz tory przelotu względem obwiedni fasad.
   `sync(dt)` odświeża oprawę; wyłącznie render, bez zmian symulacji.
 - Pola `signs/lights/decals/ambientFx` pozostają danymi dla integratora.
 
@@ -2641,6 +2647,12 @@ Misja liniowa zapamiętuje zgłoszone grupy w `raisedAlarms` checkpointu. Zależ
 Opcjonalne `encounters[].stealth` przyjmuje `alarmGroup` (domyślnie id spotkania), `visionRangeM`, pełny kąt `visionAngleDeg` oraz listę `patrols`. Trasy przydzielane są kolejno przy udanym spawnie. Patrol ma `points: Vec3[]`, `mode: 'loop' | 'pingpong'` i opcjonalny postój `waitS`.
 
 `alarm_raised { groupId: string }` oznacza pierwsze zakończone zgłoszenie grupy. Subskrybenci widzą już zaalarmowanych strażników. Zabicie zgłaszającego przed końcem opóźnienia anuluje jego zgłoszenie. Cicha likwidacja emituje standardowe `execute_performed`.
+
+## Windy pokojowe
+
+`RoomDefinition.elevators?` opisuje kabiny i przystanki. Indeksy przystanków zaczynają się od zera, a `y` oznacza wysokość stóp. Panele i nawigacja wywołują tę samą operację `request(stop)`. Stan kabiny i kolejka zawierają wyłącznie dane JSON. W stałym kroku pokój najpierw wyznacza ruch kabiny, następnie kontrolery dodają pionowe przesunięcie podpierającej je podłogi i na końcu wykonuje krok świata Rapiera.
+
+EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `elevatorDeparted { id, from, to }` przy rozpoczęciu jazdy, `elevatorArrived { id, stop }` po wyrównaniu podłogi i `elevatorDoors { id, stop, opening }` przy rozpoczęciu ruchu drzwi. Graf powierzchni udostępnia przejazd z id windy oraz indeksami wejścia i wyjścia. AI może osobno zapytać o trasę pieszą po przekroczeniu czasu oczekiwania.
 
 ## Skiny broni
 

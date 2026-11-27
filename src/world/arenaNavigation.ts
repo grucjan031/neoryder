@@ -1,3 +1,4 @@
+import type { Tuning } from '../core/tuning';
 import type { Vec3 } from '../core/math';
 import { FLOOR_EPSILON_M, type RoomDefinition } from './roomSchema';
 import { ArenaSurfaceNavigation } from './arenaSurfaceNavigation';
@@ -15,8 +16,16 @@ export class ArenaNavigation {
   private readonly cell: number;
   private readonly surface?: ArenaSurfaceNavigation;
   private batch?: EnemyBatch;
-  constructor(private readonly room: RoomDefinition) {
+  constructor(
+    private readonly room: RoomDefinition,
+    settings: Tuning = tuning,
+  ) {
     const config = room.arena;
+    if (room.elevators?.length) {
+      this.cell = config?.navigationCellM ?? settings.elevator.navCellM;
+      this.surface = new ArenaSurfaceNavigation(room, settings);
+      return;
+    }
     if (!config) throw new Error('Nawigacja wymaga danych areny.');
     this.cell = config.navigationCellM;
     if (room.blocks.some((b) => b.walkable)) {
@@ -142,6 +151,10 @@ export class ArenaNavigation {
     }
     result.push(goal);
     return result;
+  }
+
+  elevatorRoute(start: Vec3, goal: Vec3) {
+    return this.surface?.elevatorRoutes?.rides(start, goal) ?? [];
   }
 
   next(start: Vec3, goal: Vec3): Vec3 {

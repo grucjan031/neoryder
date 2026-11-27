@@ -46,6 +46,14 @@ const WALL_FIXTURES = new Set([
   'lab_corkboard_evidence',
   'lab_decon_shower',
   'lab_hazmat_suit_rack',
+  'off_facade_mullion',
+  'off_glass_partition_wall',
+  'off_glass_partition_door',
+  'off_elevator_shaft_door',
+  'off_elevator_call_panel',
+  'off_conf_screen_wall',
+  'off_whiteboard_wall',
+  'off_acoustic_wall_panel',
 ]);
 // Ramy grodzi i bramki skanerów stoją na podłodze, ale w środku podstawy mają celowy otwór przejścia.
 const PASSAGE_FIXTURES = new Set([
@@ -54,6 +62,9 @@ const PASSAGE_FIXTURES = new Set([
   'bw_freight_lift_frame',
   'lab_blast_door_frame',
   'lab_bio_scanner_gate',
+  'off_glass_partition_door',
+  'off_elevator_shaft_door',
+  'off_security_turnstile',
 ]);
 const CEILING_FIXTURES = new Set([
   'bw_ceiling_panel',
@@ -63,6 +74,8 @@ const CEILING_FIXTURES = new Set([
   'mall_hanging_banner',
   'lab_ceiling_strip',
   'lab_ceiling_manifold',
+  'off_ceiling_light_panel',
+  'off_linear_baffle_light',
 ]);
 const EDGE = 0.35;
 const LARGE_HEIGHT = 0.6;

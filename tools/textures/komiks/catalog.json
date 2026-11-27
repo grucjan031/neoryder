@@ -210,6 +210,39 @@
     "lossless": true
   },
   {
+    "id": "komiks_off_carpet_tile",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowa wykładzina z kreskowanym splotem włókien.",
+    "subject": "Monochrome ink graphic novel material. Directional carpet yarn: short broken strokes carefully bundled into woven ribs, mid-dark gray halftones, even dark contrast, no large focal point.",
+    "prompt": "Single square seamless tileable material albedo, fills frame edge-to-edge, uniform lighting, completely orthographic. Opposite edges must tile. No text, border, shadow gradient or vignette. Monochrome ink graphic novel material. Directional carpet yarn: short broken strokes carefully bundled into woven ribs, mid-dark gray halftones, even dark contrast, no large focal point. No red, cyan, magenta, watermark or scene.",
+    "set": "office",
+    "lossless": false
+  },
+  {
+    "id": "komiks_off_polished_granite",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowy granit o tuszowych żyłkach i stalowych szwach między płytami.",
+    "subject": "Monochrome ink graphic novel floor. Dark polished granite slabs with thin steel joint grid. Broken pale mineral veins, small irregular ink flecks, dark grays and silver hatching.",
+    "prompt": "Single square seamless tileable material albedo, fills frame edge-to-edge, uniform lighting, completely orthographic. Opposite edges must tile. No text, border, shadow gradient or vignette. Monochrome ink graphic novel floor. Dark polished granite slabs with thin steel joint grid. Broken pale mineral veins, small irregular ink flecks, dark grays and silver hatching. No red, cyan, magenta, watermark or scene.",
+    "set": "office",
+    "lossless": false
+  },
+  {
+    "id": "komiks_off_wood_slat_wall",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Komiksowe lamele orzechowe na filcu z kreskowanymi słojami.",
+    "subject": "Monochrome ink graphic novel wall material. Twelve straight vertical architectural walnut slats on black felt, delicate drawn woodgrain, inked edges, hatched dark grays, restrained engraved pale highlight lines. Continuous slats full image height.",
+    "prompt": "Single square seamless tileable material albedo, fills frame edge-to-edge, uniform lighting, completely orthographic. Opposite edges must tile. No text, border, shadow gradient or vignette. Monochrome ink graphic novel wall material. Twelve straight vertical architectural walnut slats on black felt, delicate drawn woodgrain, inked edges, hatched dark grays, restrained engraved pale highlight lines. Continuous slats full image height. No red, cyan, magenta, watermark or scene.",
+    "set": "office",
+    "lossless": false
+  },
+  {
     "id": "komiks_med_resin_floor",
     "category": "surfaces",
     "width": 1024,

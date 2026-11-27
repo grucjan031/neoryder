@@ -97,6 +97,7 @@ describe('pogoda z danych', () => {
       'drizzleWind',
       'helixaClinic',
       'indoorIndustrial',
+      'kuroganeOfficeTower',
       'kuroganeSecretLab',
       'kuroganeWarehouse',
       'mallAfterHours',
@@ -126,6 +127,27 @@ describe('pogoda z danych', () => {
     expect(profile.ambience.map((source) => source.kind)).toEqual([
       'rain',
       'generator',
+    ]);
+  });
+  it('Biurowiec Kurogane ma deszcz za szybą, włączoną panoramę, zerową mgłę i brak błyskawic', () => {
+    const profile = weatherSchema.parse(
+      weatherDefinitions.get('kuroganeOfficeTower'),
+    );
+    expect(profile.precipitation.kind).toBe('rain');
+    expect(profile.precipitation.density).toBeCloseTo(0.42);
+    expect(profile.fog.density).toBe(0);
+    expect(profile.fog.strength).toBe(0);
+    expect(profile.dust.density).toBe(0);
+    expect(profile.lightning.enabled).toBe(false);
+    expect(profile.lighting).toEqual({
+      hemiIntensity: 4.4,
+      keyIntensity: 1.55,
+      panoramaEnabled: true,
+    });
+    expect(profile.sky?.horizonColor).toBe('#2b1f3d');
+    expect(profile.ambience.map((source) => source.kind)).toEqual([
+      'generator',
+      'wind',
     ]);
   });
   it.each(['snow', 'ashfall'])(

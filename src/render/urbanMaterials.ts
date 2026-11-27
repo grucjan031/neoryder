@@ -51,6 +51,12 @@ const labKinds = [
   'lab_cleanroom_wall',
 ] as const;
 
+const offKinds = [
+  'off_carpet_tile',
+  'off_polished_granite',
+  'off_wood_slat_wall',
+] as const;
+
 const mallSurfaces = [
   'mall_stone_floor',
   'mall_terrazzo_inlay',
@@ -126,6 +132,7 @@ const portLooks = z
       ...arenaKinds,
       ...mallKinds,
       ...labKinds,
+      ...offKinds,
       ...medKinds,
       ...constructionPowerKinds,
       ...portRailKinds,
@@ -150,6 +157,7 @@ const portLooks = z
         ...arenaKinds,
         ...mallTextures,
         ...labKinds,
+        ...offKinds,
         ...medKinds,
         'asphalt',
         ...constructionPowerKinds,
@@ -187,6 +195,7 @@ export const urbanKinds = [
   ...arenaKinds,
   ...mallKinds,
   ...labKinds,
+  ...offKinds,
   ...medKinds,
   ...constructionPowerKinds,
   ...portRailKinds,
