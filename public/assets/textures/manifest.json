@@ -1400,6 +1400,36 @@
     "bytes": 11136
   },
   {
+    "id": "floor_lane_line",
+    "category": "decals",
+    "path": "decals/floor_lane_line.webp",
+    "width": 512,
+    "height": 112,
+    "dominantColor": "#fdfdfd",
+    "description": "Linia korytarza transportowego na posadzce magazynu",
+    "bytes": 5456
+  },
+  {
+    "id": "floor_sector_k09",
+    "category": "decals",
+    "path": "decals/floor_sector_k09.webp",
+    "width": 512,
+    "height": 171,
+    "dominantColor": "#fdfdfd",
+    "description": "Szablon oznaczenia strefy K09 na posadzce magazynu",
+    "bytes": 15668
+  },
+  {
+    "id": "floor_pallet_bay",
+    "category": "decals",
+    "path": "decals/floor_pallet_bay.webp",
+    "width": 512,
+    "height": 505,
+    "dominantColor": "#fdfdfd",
+    "description": "Koperta odkładcza palety na posadzce magazynu",
+    "bytes": 33060
+  },
+  {
     "id": "mall_new_collection",
     "category": "signs",
     "path": "signs/mall_new_collection.webp",
