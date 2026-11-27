@@ -1,61 +1,9 @@
 // Oprawa wizualna Rezydencji Pułkownika Kurogane Arms — Willa Kuroyama (run6):
 // tekstury, Tablica Śledcza „Iskra”, 12 Easter Eggów, 5 zagrożeń środowiskowych,
-// skrzynie, szyldy, 26 źródeł światła i 20 punktów spawnu na 3 kondygnacjach.
+// szyldy, 32 źródła światła i 20 punktów spawnu na 3 kondygnacjach.
 import { COLOR, PI, Q, R, Y_B, Y_L0, Y_L1, box, vec } from './_run6Kit.mjs';
 
 const C = COLOR;
-
-/*
- * Planowane pozycje dodatkowych modeli drugiej partii (obecnie nieobecnych w mapModelBounds.json).
- * Do czasu wygenerowania ich plików .glb w drugiej partii, w _run6Rooms.mjs zastępują je
- * dozwolone istniejące modele z §4.3.A oraz kompozycje bloków z materiałami res_*:
- *
- * const PENDING_MODELS = [
- *   // R1 Hol Wejściowy
- *   { model: 'res_coat_closet', room: 'R1', x: -7.6, y: Y_L0, z: 4.7, turn: 0, fallback: 'res_wardrobe_glass' },
- *   { model: 'res_coat_closet', room: 'R1', x: 7.6, y: Y_L0, z: 4.7, turn: 0, fallback: 'res_wardrobe_glass' },
- *   { model: 'res_foyer_console', room: 'R1', x: 7.6, y: Y_L0, z: 6.7, turn: 0, fallback: 'off_executive_desk' },
- *   // R2 Wielki Dwukondygnacyjny Salon
- *   { model: 'res_lounge_armchair', room: 'R2', x: 4.6, y: Y_L0, z: -5.0, turn: -1, fallback: 'off_lounge_sofa' },
- *   { model: 'res_lounge_armchair', room: 'R2', x: 4.6, y: Y_L0, z: -8.2, turn: 0, fallback: 'off_lounge_sofa' },
- *   { model: 'res_lounge_armchair', room: 'R2', x: -9.2, y: Y_L0, z: -8.2, turn: 1, fallback: 'off_lounge_sofa' },
- *   { model: 'res_whisky_bar_counter', room: 'R2', x: 9.2, y: Y_L0, z: -9.8, turn: 0, fallback: 'off_kitchenette_counter + waistDivider' },
- *   // R3 Jadalnia Reprezentacyjna
- *   { model: 'res_dining_chair', room: 'R3', x: -28.0, y: Y_L0, z: -2.8, turn: 1, fallback: 'off_office_chair (x8 wokół res_dining_table_long)' },
- *   { model: 'res_dining_credenza', room: 'R3', x: -18.6, y: Y_L0, z: -4.8, turn: 0, fallback: 'off_kitchenette_counter' },
- *   // R4 Nowoczesna Kuchnia
- *   { model: 'res_kitchen_cabinet_bank', room: 'R4', x: -27.8, y: Y_L0, z: -11.5, turn: 1, fallback: 'off_kitchenette_counter' },
- *   { model: 'res_kitchen_cabinet_bank', room: 'R4', x: -17.0, y: Y_L0, z: -8.8, turn: -1, fallback: 'off_kitchenette_counter' },
- *   // R5 Kryty Basen i Ogród Zimowy
- *   { model: 'res_zen_water_wall', room: 'R5', x: 16.55, y: Y_L0, z: -7.0, turn: 1, fallback: 'composite block res_nero_marble + canal_water' },
- *   // R6 Garaż Pancerny
- *   { model: 'res_ev_charger_pillar', room: 'R6', x: -24.2, y: Y_L0, z: 13.5, turn: 0, fallback: 'composite block machine + neon_blue + neon_amber' },
- *   // R7 Pokój Ochrony Parteru
- *   { model: 'res_security_console', room: 'R7', x: 18.0, y: Y_L0, z: 13.4, turn: 2, fallback: 'lab_security_desk + res_recording_console' },
- *   { model: 'res_tactical_gun_cabinet', room: 'R7', x: 28.8, y: Y_L0, z: 7.2, turn: -1, fallback: 'lab_prototype_weapon_rack (x3)' },
- *   { model: 'res_drone_charging_dock', room: 'R7', x: 26.8, y: Y_L0, z: 5.4, turn: 0, fallback: 'wh_weapon_case_stack' },
- *   // R8 Biuro Pułkownika & R9 Biblioteka
- *   { model: 'res_lounge_armchair', room: 'R8', x: -7.2, y: Y_L1, z: -21.3, turn: 2, fallback: 'off_lounge_sofa' },
- *   { model: 'res_lounge_armchair', room: 'R9', x: -28.2, y: Y_L1, z: -24.0, turn: 1, fallback: 'off_lounge_sofa' },
- *   // R10 Sala Trofeów
- *   { model: 'res_blade_display_pedestal', room: 'R10', x: 16.5, y: Y_L1, z: -24.0, turn: 0, fallback: 'composite plinth res_nero_marble + neon_amber' },
- *   { model: 'res_ee_x51_specimen_jar', room: 'R10', x: 25.5, y: Y_L1, z: -24.0, turn: 0, fallback: 'composite plinth res_nero_marble + neon_violet' },
- *   // R11 Sypialnia i Garderoba
- *   { model: 'res_luxury_watch_case', room: 'R11', x: -8.8, y: Y_L1, z: -35.5, turn: 1, fallback: 'mall_kurogane_display' },
- *   // R12 Prywatne Spa i Łazienka
- *   { model: 'res_freestanding_tub', room: 'R12', x: 14.0, y: Y_L1, z: -39.2, turn: 0, fallback: 'composite tub res_nero_marble + canal_water + steam' },
- *   { model: 'res_marble_vanity', room: 'R12', x: 12.0, y: Y_L1, z: -30.65, turn: 0, fallback: 'composite vanity res_nero_marble + glass_clear + light_panel' },
- *   // R13 Sala Tortur i Przesłuchań
- *   { model: 'res_interrogation_lamp', room: 'R13', x: -19.0, y: -1.54, z: 24.0, turn: 0, fallback: 'composite lamp light_panel + metal + res_recessed_led_strip' },
- *   { model: 'res_floor_drain_grate', room: 'R13', x: -19.0, y: Y_B, z: 24.0, turn: 0, fallback: 'city_vent_grate' },
- *   { model: 'res_oneway_mirror', room: 'R13', x: -27.76, y: Y_B + 1.85, z: 24.0, turn: 1, fallback: 'composite mirror glass_clear + light_panel' },
- *   // R14 Winiarnia
- *   { model: 'res_tasting_island', room: 'R14', x: 0.0, y: Y_B, z: 25.2, turn: 0, fallback: 'composite island res_dark_walnut + res_nero_marble' },
- *   { model: 'res_wine_barrel_rack', room: 'R14', x: -4.3, y: Y_B, z: 27.2, turn: 1, fallback: 'composite rack res_dark_walnut + neon_amber (x2)' },
- *   // R15 Podziemny Bunkier Ochrony
- *   { model: 'res_security_console', room: 'R15', x: 16.0, y: Y_B, z: 25.2, turn: 0, fallback: 'lab_security_desk + res_recording_console' },
- * ];
- */
 
 /** Pomocnik dodający naklejkę podłogową lub ścienną z `tint`. */
 function mark(
@@ -113,25 +61,6 @@ export const SPAWNS = [
   [16, Y_B, 21], // 19: R15 Podziemny Bunkier Ochrony — N
   [19, Y_B, 29], // 20: R15 Podziemny Bunkier Ochrony — przed śluzą exit
 ];
-
-/** Equipment cases stay in the garage and security rooms. */
-function crates(k, p) {
-  for (const [x, y, z, size] of [
-    [-26.2, Y_L0, 14.2, 1],
-    [-16, Y_L0, 13, 0.5],
-    [21.2, Y_L0, 8, 0.5],
-    [12.5, Y_B, 21.2, 1],
-    [18, Y_B, 23, 0.5],
-  ]) {
-    const half = size / 2;
-    p.reserve(R(x - half, x + half, z - half, z + half), y);
-    k.arena.block({
-      position: vec(x, y + half, z),
-      size: vec(size, size, size),
-      model: size === 1 ? 'crate' : 'crate_small',
-    });
-  }
-}
 
 /** 5 zagrożeń środowiskowych (§5.2 docs/maps/run6.md) na Parterze, Piętrze i w Piwnicy. */
 function hazards(k, p) {
@@ -238,7 +167,7 @@ function decalsAndEasterEggs(k) {
     'res_ee_run1_forklift_memo',
     -19.5,
     Y_L0 + 1.8,
-    4.22,
+    4.38,
     1.1,
     1.1,
     0,
@@ -308,7 +237,7 @@ function decalsAndEasterEggs(k) {
   mark(
     k,
     'res_ee_orbis_grid_firewall',
-    27.78,
+    27.55,
     Y_B + 1.8,
     26.5,
     1.1,
@@ -362,18 +291,19 @@ function decalsAndEasterEggs(k) {
     0.96,
   );
 
-  // 11. Easter Egg #10 (Ostrze z warsztatu Miry): tabliczka na zachodnim postumencie w Sali Trofeów R10 (16.5, Y_L1 + 1.1, -24.0).
+  // 11. Easter Egg #10 (Ostrze z warsztatu Miry): tabliczka na froncie zachodniego postumentu w R10.
   mark(
     k,
     'res_ee_mira_blade_trophy',
     16.5,
-    Y_L1 + 1.112,
-    -24.0,
+    Y_L1 + 0.6,
+    -23.385,
     0.76,
     0.38,
-    Q,
+    0,
     '#ffffff',
     0.96,
+    'wall',
   );
 
   // 12. Easter Egg #11 (Sztuka Korporacyjna): mosiężna tabliczka pod tryptykiem na południowej ścianie Salonu R2 (Z = +4, X = -7.5).
@@ -382,7 +312,7 @@ function decalsAndEasterEggs(k) {
     'res_ee_art_plaque',
     -7.5,
     Y_L0 + 1.05,
-    3.78,
+    3.55,
     0.96,
     0.48,
     PI,
@@ -418,10 +348,10 @@ function signage(k) {
   neon('res_art_neon_forest', 7.5, Y_L0 + 2.45, 3.6, 2.8, PI);
   neon('res_art_neon_forest', -16.4, Y_L0 + 2.4, -3.5, 2.6, -Q);
 
-  neon('res_art_neon_forest', -9.77, Y_L0 + 2.2, 6.0, 2.6, Q);
-  neon('res_art_neon_forest', -10.0, Y_L1 + 2.4, -30.4, 2.8, PI);
+  neon('res_art_neon_forest', -9.55, Y_L0 + 2.2, 6.0, 2.6, Q);
+  neon('res_art_neon_forest', -20.5, Y_L1 + 2.4, -30.4, 2.8, PI);
   neon('res_winter_pool', 12.0, Y_L1 + 3.15, -30.23, 2.1, PI);
-  neon('res_wine_cellar', 0, Y_B + 2.2, 31.77, 2.5, PI);
+  neon('res_wine_cellar', 0, Y_B + 2.2, 31.55, 2.5, PI);
 
   // R5 Kryty Basen, R6 Garaż Pancerny, R7 Pokój Ochrony Parteru
   neon('res_winter_pool', 15.77, Y_L0 + 4.0, 1.0, 2.6, -Q);
@@ -453,10 +383,7 @@ function signage(k) {
 }
 
 /**
- * 26 źródeł światła `lights[]` (§5.3 docs/maps/run6.md):
- * - 12 na Parterze (`floorY: 0.0`),
- * - 8 na Piętrze (`floorY: 4.8`),
- * - 6 w Piwnicy (`floorY: -4.8`),
+ * 26 źródeł bazowych i 6 lokalnych świateł stref meblowych (§5.3 docs/maps/run6.md).
  * - 100% bez `cone: true` (0 smug wolumetrycznych!).
  */
 function lights(k) {
@@ -491,7 +418,7 @@ function lights(k) {
   k.light(21.0, Y_L1 + 2.5, -24.0, C.violet, 20, 13, { floorY: Y_L1 });
   k.light(16.5, Y_L1 + 2.4, -24.0, C.amber, 16, 10, { floorY: Y_L1 });
   // R11 Sypialnia i Garderoba (2)
-  k.light(-14.0, Y_L1 + 2.5, -36.0, C.violet, 18, 13, { floorY: Y_L1 });
+  k.light(-14.0, Y_L1 + 2.5, -36.0, C.warm, 18, 13, { floorY: Y_L1 });
   k.light(0.0, Y_L1 + 2.5, -36.0, C.warm, 16, 11, { floorY: Y_L1 });
   // R12 Prywatne Spa i Sauna (1)
   k.light(14.0, Y_L1 + 2.5, -36.0, C.blue, 18, 13, { floorY: Y_L1 });
@@ -509,10 +436,20 @@ function lights(k) {
   // R15 Podziemny Bunkier Ochrony (2)
   k.light(20.0, Y_B + 2.5, 22.0, C.blue, 18, 12, { floorY: Y_B });
   k.light(19.0, Y_B + 2.4, 31.0, C.green, 22, 13, { floorY: Y_B });
+
+  // Ciepłe światło na orzechu, książkach i tapicerce, bez stożków.
+  for (const [x, y, z, intensity, range] of [
+    [-7.8, Y_L0, 6.5, 8, 6],
+    [5.8, Y_L0, -6.5, 8, 6],
+    [-9.2, Y_L0, -7.6, 7, 6],
+    [-28.0, Y_L1, -23.0, 8, 6],
+    [-20.0, Y_L1, -38.0, 8, 6],
+    [0, Y_B, 26.2, 8, 7],
+  ])
+    k.light(x, y + 1.9, z, C.warm, intensity, range, { floorY: y });
 }
 
 export function dress(k, placer) {
-  crates(k, placer);
   hazards(k, placer);
   decalsAndEasterEggs(k);
   signage(k);

@@ -5,6 +5,8 @@ import { facePoint } from '../../src/world/elevatorSchema';
 import { roomDefinitions } from '../../src/world/rooms';
 import sector from '../../src/data/sectors/kurogane.json';
 import { tuning } from '../../src/core/tuning';
+import measuredBounds from '../../src/data/render/mapModelBounds.json';
+import { Box3, Euler, Matrix4, Ray, Vector3 } from 'three';
 
 const room = roomDefinitions.get('run6')!;
 const nav = new ArenaNavigation(room);
@@ -217,4 +219,147 @@ it('run6: mapa jest w puli walk i elit sektora Kurogane', () => {
     'run6',
   ]);
   expect(sector.roomPools.elite).toEqual(sector.roomPools.combat);
+});
+
+it('run6: wszystkie 31 modeli drugiej partii jest użyte, a obce meble i skrzynie usunięte', () => {
+  const models = new Set([
+    ...room.blocks.map((b) => b.model),
+    ...(room.decor ?? []).map((d) => d.model),
+  ]);
+  for (const suffix of [
+    'dining_chair',
+    'lounge_armchair',
+    'freestanding_tub',
+    'whisky_bar_counter',
+    'tactical_gun_cabinet',
+    'interrogation_lamp',
+    'zen_water_wall',
+    'blade_display_pedestal',
+    'coat_closet',
+    'dining_credenza',
+    'drone_charging_dock',
+    'ev_charger_pillar',
+    'floor_drain_grate',
+    'foyer_console',
+    'kitchen_cabinet_bank',
+    'luxury_watch_case',
+    'marble_vanity',
+    'oneway_mirror',
+    'security_console',
+    'tasting_island',
+    'wine_barrel_rack',
+    'side_table',
+    'arc_floor_lamp',
+    'table_lamp',
+    'nightstand',
+    'bar_stool',
+    'tv_acoustic_wall',
+    'ficus_planter',
+    'abstract_sculpture',
+    'ottoman',
+    'decor_shelf',
+  ])
+    expect(models.has(`res_${suffix}`), suffix).toBe(true);
+  const infrastructure = new Set([
+    'city_ac_unit',
+    'city_pipe_run',
+    'city_shutter',
+    'city_vent_grate',
+    'lab_cryo_server_rack',
+    'mall_security_fixture',
+    'off_office_server_rack',
+    'wh_wall_terminal',
+  ]);
+  expect(
+    [...models].filter(
+      (m) => m && !m.startsWith('res_') && !infrastructure.has(m),
+    ),
+  ).toEqual([]);
+  const chairs = room.blocks.filter((b) => b.model === 'res_dining_chair');
+  expect(chairs).toHaveLength(10);
+  expect(chairs.filter((b) => b.position.x < -27)).toHaveLength(4);
+  expect(chairs.filter((b) => b.position.x > -26)).toHaveLength(4);
+});
+
+const bounds: Record<string, { min: number[]; max: number[] }> = measuredBounds;
+const transparentModels = new Set([
+  'res_forest_glass_facade',
+  'res_glass_balustrade',
+]);
+const transform = (
+  position: Goal,
+  rotation = { x: 0, y: 0, z: 0 },
+  scale = 1,
+) =>
+  new Matrix4()
+    .makeRotationFromEuler(new Euler(rotation.x, rotation.y, rotation.z))
+    .scale(new Vector3(scale, scale, scale))
+    .setPosition(position.x, position.y, position.z);
+const occluders = [
+  ...room.blocks
+    .filter(
+      (b) =>
+        b.visible !== false &&
+        b.material !== 'glass_clear' &&
+        !transparentModels.has(b.model ?? ''),
+    )
+    .map((b) => ({
+      name: b.model ?? b.material,
+      box: new Box3()
+        .setFromCenterAndSize(
+          new Vector3(),
+          new Vector3(b.size.x, b.size.y, b.size.z),
+        )
+        .applyMatrix4(transform(b.position, b.rotation)),
+    })),
+  ...(room.decor ?? [])
+    .filter((d) => !transparentModels.has(d.model))
+    .map((d) => {
+      const m = bounds[d.model]!;
+      return {
+        name: d.model,
+        box: new Box3(
+          new Vector3().fromArray(m.min),
+          new Vector3().fromArray(m.max),
+        ).applyMatrix4(
+          transform(d.position, { x: 0, y: d.yaw ?? 0, z: 0 }, d.scale ?? 1),
+        ),
+      };
+    }),
+];
+
+it.each([
+  { id: 'Salon', eye: [-2, 1.65, -15.5], end: [-2, 1.65, -22] },
+  { id: 'Jadalnia', eye: [-28.9, 1.65, -1], end: [-33, 1.65, -1] },
+  { id: 'Basen', eye: [27, 1.65, -8], end: [33, 1.65, -8] },
+  {
+    id: 'Biuro przez salon i górną fasadę',
+    eye: [7, 6.45, -22],
+    end: [7, 6.45, 8],
+  },
+  { id: 'Sypialnia', eye: [-14, 6.45, -39], end: [-14, 6.45, -45] },
+])('run6: $id ma wolny widok na zewnątrz na wysokości oczu', ({ eye, end }) => {
+  const origin = new Vector3().fromArray(eye);
+  const destination = new Vector3().fromArray(end);
+  const distance = origin.distanceTo(destination);
+  const ray = new Ray(origin, destination.clone().sub(origin).normalize());
+  const crossed = (box: Box3) => {
+    const hit = ray.intersectBox(box, new Vector3());
+    return hit !== null && origin.distanceTo(hit) < distance;
+  };
+  expect(occluders.filter((o) => crossed(o.box)).map((o) => o.name)).toEqual(
+    [],
+  );
+  expect(
+    (room.decor ?? []).some((d) => {
+      if (d.model !== 'res_forest_glass_facade') return false;
+      const m = bounds[d.model]!;
+      return crossed(
+        new Box3(
+          new Vector3().fromArray(m.min),
+          new Vector3().fromArray(m.max),
+        ).applyMatrix4(transform(d.position, { x: 0, y: d.yaw ?? 0, z: 0 })),
+      );
+    }),
+  ).toBe(true);
 });

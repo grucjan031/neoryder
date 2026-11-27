@@ -7,9 +7,7 @@
 // Piwnica B (y = -4.8 m): R13 (Sala Tortur i Przesłuchań), R14 (Winiarnia), R15 (Podziemny Bunkier Ochrony).
 import {
   MAT_BUNKER,
-  MAT_CARPET,
   MAT_CONCRETE,
-  MAT_GLASS,
   MAT_MARBLE,
   MAT_WALNUT,
   PI,
@@ -29,7 +27,7 @@ import {
   deco,
   holdingCageBars,
   recessedLedStrip,
-  residenceCabinet,
+  rug,
   solid,
   waistDivider,
 } from './_run6Kit.mjs';
@@ -80,18 +78,21 @@ function buildRoomR1(k, p) {
   p.prop('res_bonsai_pedestal', 0, 6.2, Y_L0, 0);
 
   // Zachodnia strefa szatni i oczekiwania (poza wejściem R6 Z ∈ [8, 12] i Klatką #1 X ∈ [-8.4, -5.2], Z = 16).
-  p.prop('res_wardrobe_glass', -7.6, 4.7, Y_L0, 0);
-  p.prop('off_lounge_sofa', -7.8, 6.5, Y_L0, 0);
-  p.prop('res_winter_garden_planter', -9.1, 13.6, Y_L0, 1);
+  rug(k, 3.1, 11.5, Y_L0, 4.0, 3.4);
+  p.prop('res_coat_closet', -7.6, 4.7, Y_L0, 0);
+  p.prop('res_lounge_armchair', -7.8, 6.5, Y_L0, 0);
+  p.prop('res_ficus_planter', -9.1, 13.6, Y_L0, 1);
 
   // Wschodnia strefa konsoli wejściowej i foyer (poza wejściem R7 Z ∈ [8, 12] i Klatką #2 X ∈ [5.2, 8.4], Z = 16).
-  p.prop('res_wardrobe_glass', 7.6, 4.7, Y_L0, 0);
-  residenceCabinet(k, p, 'off_executive_desk', 7.6, 6.7, Y_L0, 0);
+  p.prop('res_coat_closet', 7.6, 4.7, Y_L0, 0);
+  p.prop('res_foyer_console', 7.6, 6.7, Y_L0);
+  p.prop('res_decor_shelf', 9.4, 6.1, Y_L0, -1);
+  p.prop('res_abstract_sculpture', 7.7, 12.7, Y_L0);
   p.prop('res_bonsai_pedestal', 5.2, 6.5, Y_L0, 0);
-  p.prop('off_lounge_sofa', 3.6, 11.6, Y_L0, -1);
+  p.prop('res_lounge_armchair', 3.6, 11.6, Y_L0, -1);
   p.prop('res_coffee_table_marble', 2.1, 11.6, Y_L0, 1);
-  p.prop('res_winter_garden_planter', 9.1, 13.6, Y_L0, -1);
-  residenceCabinet(k, p, 'mall_directory', 2.6, 14.8, Y_L0, 2);
+  p.prop('res_ficus_planter', 9.1, 13.6, Y_L0, -1);
+  p.prop('res_decor_shelf', 3.4, 15.3, Y_L0, 2);
 
   // Detale ścienne i oświetlenie sufitu Holu R1 (mat_light_panel, zero stożków).
   chandelierLinear(k, 0, Y_L0_CEIL, 9.5, 0);
@@ -113,9 +114,7 @@ function buildRoomR2(k, p) {
 
   // 2. Centralna strefa wypoczynkowa na dywanie `res_plush_carpet` (X ∈ [-7.4, 3.2], Z ∈ [-9.6, -0.4]):
   // 3 narożne sofy `res_luxury_sofa_l`, 2 marmurowe stoliki `res_coffee_table_marble` i fotele/sofy boczne.
-  box(k, -2.0, Y_L0 - 0.013, -5.0, 10.8, 0.04, 9.2, MAT_CARPET, {
-    walkable: true,
-  });
+  rug(k, -2.0, -5.0, Y_L0, 10.8, 9.2);
   p.prop('res_luxury_sofa_l', -5.2, -4.4, Y_L0, 1);
   p.prop('res_luxury_sofa_l', -1.2, -1.6, Y_L0, 2);
   p.prop('res_luxury_sofa_l', -1.2, -8.4, Y_L0, 0);
@@ -123,21 +122,27 @@ function buildRoomR2(k, p) {
   p.prop('res_coffee_table_marble', 1.4, -4.8, Y_L0, 1);
 
   // Wschodnia sekcja wypoczynkowa naprzeciw kominka (poza spawnem #2 (8, 0, -5)).
-  p.prop('off_lounge_sofa', 4.6, -5.0, Y_L0, -1);
-  p.prop('off_lounge_sofa', 4.6, -8.2, Y_L0, 0);
+  p.prop('res_lounge_armchair', 4.6, -5.0, Y_L0, -1);
+  p.prop('res_lounge_armchair', 4.6, -8.2, Y_L0, 0);
   p.prop('res_bonsai_pedestal', 4.6, -1.6, Y_L0, 0);
 
   // 3. Strefa muzyczna NW przy przeszkleniu na las: Fortepian Holograficzny `res_grand_piano_holo`
   // (X = -6.2, Z = -13.8 — poza spawnem #3 (-10, 0, -15)).
   p.prop('res_grand_piano_holo', -6.2, -13.8, Y_L0, 0);
   p.prop('res_bonsai_pedestal', -1.5, -13.5, Y_L0, 0);
-  p.prop('res_winter_garden_planter', -10.2, -11.5, Y_L0, 0);
+  p.prop('res_ficus_planter', -10.2, -11.5, Y_L0, 0);
 
   // 4. Strefa Barku Whisky i Cygar NE (poza spawnem #4 (9, 0, -14)):
-  residenceCabinet(k, p, 'off_kitchenette_counter', 9.2, -9.8, Y_L0, 0);
-  waistDivider(k, p, 9.2, Y_L0, -7.8, 2.8, 0.38);
+  rug(k, 5.1, -6.1, Y_L0, 3.0, 6.4);
+  p.prop('res_whisky_bar_counter', 9.2, -9.8, Y_L0);
+  for (const x of [8.3, 10.1]) p.prop('res_bar_stool', x, -8.5, Y_L0);
+  p.prop('res_side_table', 5.8, -6.5, Y_L0);
+  deco(k, 'res_table_lamp', 5.8, Y_L0 + 0.57, -6.5);
+  p.prop('res_arc_floor_lamp', 6.0, -4.1, Y_L0, 2);
+  p.prop('res_side_table', -9.2, -6.8, Y_L0);
+  p.prop('res_arc_floor_lamp', -10.4, -8.5, Y_L0, 1);
   p.prop('res_wine_rack_wall', 9.2, -10.85, Y_L0, 0);
-  p.prop('res_winter_garden_planter', 5.2, -14.2, Y_L0, 0);
+  p.prop('res_ficus_planter', 5.2, -14.2, Y_L0, 0);
 
   // 5. Zabudowa pod spocznikami i wyższymi biegami Klatek Schodowych #3 i #4 (Z ∈ [-9.8, -5.0], wys. 1.9 m)
   // oraz boczne osłony zbijające puste przestrzenie Salonu poniżej 8 m (z pełną drożnością bram).
@@ -150,29 +155,31 @@ function buildRoomR2(k, p) {
     walkable: false,
   });
 
-  p.prop('off_lounge_sofa', -9.2, -8.2, Y_L0, 1);
+  p.prop('res_lounge_armchair', -9.2, -8.2, Y_L0, 1);
   waistDivider(k, p, -7.8, Y_L0, 0.8, 2.4, 0.36);
-  p.prop('off_lounge_sofa', -7.8, 2.3, Y_L0, 2);
+  p.prop('res_lounge_armchair', -7.8, 2.3, Y_L0, 2);
   waistDivider(k, p, 8.2, Y_L0, -1.2, 2.4, 0.36);
-  p.prop('off_lounge_sofa', 8.2, 2.3, Y_L0, 2);
-  p.prop('res_winter_garden_planter', -13.8, -16.8, Y_L0, 0);
-  p.prop('res_winter_garden_planter', 13.8, -16.8, Y_L0, 0);
+  p.prop('res_lounge_armchair', 8.2, 2.3, Y_L0, 2);
+  p.prop('res_ficus_planter', -13.8, -16.8, Y_L0, 0);
+  p.prop('res_ficus_planter', 13.8, -16.8, Y_L0, 0);
 
   // Obrazy `res_wall_art_triptych` na południowej ścianie Salonu (Z = +3.80, X = -7.5 z EE-11 oraz X = +7.5).
   deco(k, 'res_wall_art_triptych', -7.5, Y_L0 + 1.55, 3.74, PI);
   deco(k, 'res_wall_art_triptych', 7.5, Y_L0 + 1.55, 3.74, PI);
 
   // 6. Wyposażenie Antresoli Salonu `R2-M` (y = +4.80 m, poza spawnami (-14.4,4.8,-1) i (14.4,4.8,-1)):
-  p.prop('off_lounge_sofa', -6.8, -17.1, Y_L1, 0);
-  p.prop('off_lounge_sofa', 6.8, -17.1, Y_L1, 0);
-  p.prop('res_winter_garden_planter', -4.0, -17.2, Y_L1, 0);
-  p.prop('res_winter_garden_planter', 4.0, -17.2, Y_L1, 0);
-  residenceCabinet(k, p, 'mall_bench', -9.6, -17.2, Y_L1, 0);
-  residenceCabinet(k, p, 'mall_bench', 9.6, -17.2, Y_L1, 0);
+  p.prop('res_lounge_armchair', -6.8, -17.1, Y_L1, 0);
+  p.prop('res_lounge_armchair', 6.8, -17.1, Y_L1, 0);
+  p.prop('res_ficus_planter', -4.0, -17.2, Y_L1, 0);
+  p.prop('res_ficus_planter', 4.0, -17.2, Y_L1, 0);
+  p.prop('res_side_table', -8.2, -17.2, Y_L1);
+  deco(k, 'res_table_lamp', -8.2, Y_L1 + 0.57, -17.2);
+  p.prop('res_side_table', 8.2, -17.2, Y_L1);
+  deco(k, 'res_table_lamp', 8.2, Y_L1 + 0.57, -17.2);
 
-  p.prop('off_lounge_sofa', -13.0, 2.8, Y_L1, 2);
+  p.prop('res_lounge_armchair', -13.0, 2.8, Y_L1, 2);
   p.prop('res_coffee_table_marble', -11.2, 1.0, Y_L1, 1);
-  p.prop('off_lounge_sofa', 13.0, 2.8, Y_L1, 2);
+  p.prop('res_lounge_armchair', 13.0, 2.8, Y_L1, 2);
   p.prop('res_coffee_table_marble', 11.2, 1.0, Y_L1, -1);
 
   // 7. Oprawy sufitowe pod wysokim stropem Salonu (y = 9.60 m) i pod płytą Antresoli (y = 4.40 m).
@@ -190,18 +197,22 @@ function buildRoomR2(k, p) {
 
 /** R3 — Jadalnia Reprezentacyjna „Stół Koalicji” (L0 W, X ∈ [-30, -16], Z ∈ [-6, 4], y = 0.0 m). */
 function buildRoomR3(k, p) {
-  // Długi 12-osobowy Stół Jadalniany `res_dining_table_long` (2.0 × 1.05 × 5.2 m)
+  // Długi 10-osobowy Stół Jadalniany `res_dining_table_long` (2.0 × 1.05 × 5.2 m)
   // przy zachodnim przeszkleniu na las (X = -26.5, Z = -1.0 — poza spawnem #5 (-23, 0, -1) i osią bram X = -23!).
-  box(k, -26.5, Y_L0 - 0.013, -1.0, 4.4, 0.04, 6.8, MAT_CARPET, {
-    walkable: true,
-  });
+  rug(k, -26.5, -1.0, Y_L0, 4.4, 6.8);
   p.prop('res_dining_table_long', -26.5, -1.0, Y_L0, 0);
+  for (const z of [-2.95, -1.65, -0.35, 0.95]) {
+    p.prop('res_dining_chair', -28.05, z, Y_L0, 1);
+    p.prop('res_dining_chair', -24.95, z, Y_L0, -1);
+  }
+  p.prop('res_dining_chair', -26.5, -4.15, Y_L0);
+  p.prop('res_dining_chair', -26.5, 2.15, Y_L0, 2);
 
   // Wschodnia strefa bufetowa i kredens (X ∈ [-20.5, -16.8], poza bramą R3<->R2 na Z ∈ [-1, 3]).
-  residenceCabinet(k, p, 'off_kitchenette_counter', -18.6, -4.8, Y_L0, 0);
+  p.prop('res_dining_credenza', -18.6, -4.8, Y_L0);
   waistDivider(k, p, -19.5, Y_L0, -2.2, 2.4, 0.38);
-  p.prop('res_winter_garden_planter', -28.4, 2.8, Y_L0, 0);
-  p.prop('res_winter_garden_planter', -18.8, 3.2, Y_L0, 0);
+  p.prop('res_ficus_planter', -28.4, 2.8, Y_L0, 0);
+  p.prop('res_ficus_planter', -18.8, 3.2, Y_L0, 0);
 
   // Obraz ścienny i oprawy sufitowe w Jadalni R3.
   deco(k, 'res_wall_art_triptych', -16.22, Y_L0 + 1.5, -3.5, -Q);
@@ -222,15 +233,14 @@ function buildRoomR4(k, p) {
   p.prop('res_smart_fridge', -19.2, -16.8, Y_L0, 0);
 
   // Ciągi zabudowy kuchennej, ekspresy i zielnik hydroponiczny przy oknie NW.
-  residenceCabinet(k, p, 'off_kitchenette_counter', -27.8, -11.5, Y_L0, 1);
-  residenceCabinet(k, p, 'off_kitchenette_counter', -17.0, -8.8, Y_L0, -1);
-  p.prop('off_coffee_machine', -19.2, -7.0, Y_L0, 2);
-  p.prop('mall_trash_bin', -20.6, -7.0, Y_L0, 2);
-  p.prop('res_winter_garden_planter', -26.8, -16.8, Y_L0, 0);
+  p.prop('res_kitchen_cabinet_bank', -28.9, -11.5, Y_L0, 1);
+  p.prop('res_kitchen_cabinet_bank', -16.7, -8.8, Y_L0, -1);
+  p.prop('res_dining_credenza', -19.2, -6.8, Y_L0, 2);
+  p.prop('res_ficus_planter', -26.8, -16.8, Y_L0, 0);
   box(k, -26.8, Y_L0 + 2.4, -17.1, 2.6, 0.08, 0.16, 'neon_green', {
     walkable: false,
   });
-  p.prop('res_winter_garden_planter', -28.4, -7.4, Y_L0, 1);
+  p.prop('res_ficus_planter', -28.4, -7.4, Y_L0, 1);
 
   for (const x of [-26.5, -20.0]) {
     recessedLedStrip(k, x, Y_L0_CEIL, -15.0, 0);
@@ -262,24 +272,15 @@ function buildRoomR5(k, p) {
   p.prop('res_pool_lounger', 18.2, -9.8, Y_L0, 1);
   p.prop('res_pool_lounger', 18.2, -4.2, Y_L0, 1);
 
-  // Donice Ogrodu Zimowego z bambusami `res_winter_garden_planter` (2.6 × 1.65 × 1.0 m) dające twardą osłonę.
-  p.prop('res_winter_garden_planter', 23.0, -16.8, Y_L0, 0);
-  p.prop('res_winter_garden_planter', 27.6, -16.8, Y_L0, 0);
-  p.prop('res_winter_garden_planter', 18.4, -16.8, Y_L0, 0);
-  p.prop('res_winter_garden_planter', 28.4, 1.8, Y_L0, -1);
-  p.prop('res_winter_garden_planter', 18.0, 2.8, Y_L0, 0);
+  // Liściaste fikusy kadrują okna Ogrodu Zimowego i zostawiają widok na las.
+  p.prop('res_ficus_planter', 23.0, -16.8, Y_L0, 0);
+  p.prop('res_ficus_planter', 27.6, -16.8, Y_L0, 0);
+  p.prop('res_ficus_planter', 18.4, -16.8, Y_L0, 0);
+  p.prop('res_ficus_planter', 28.4, 1.8, Y_L0, -1);
+  p.prop('res_ficus_planter', 18.0, 2.8, Y_L0, 0);
 
   // Kaskadowa Ściana Wodna Zen przy ścianie zachodniej (X = +16.6, Z = -7.0, między bramami Z = -14 i Z = +1).
-  p.reserve(R(16.2, 17.1, -9.2, -4.8), Y_L0);
-  box(k, 16.55, Y_L0 + 1.4, -7.0, 0.5, 2.8, 4.2, MAT_MARBLE, {
-    walkable: false,
-  });
-  box(k, 16.82, Y_L0 + 1.4, -7.0, 0.06, 2.4, 3.6, 'canal_water', {
-    walkable: false,
-  });
-  box(k, 16.84, Y_L0 + 2.65, -7.0, 0.08, 0.08, 3.8, 'neon_blue', {
-    walkable: false,
-  });
+  p.prop('res_zen_water_wall', 16.7, -7.0, Y_L0, 1);
 
   for (const z of [-15.0, -9.5, -4.5, 1.5]) {
     recessedLedStrip(k, 19.5, Y_L0_CEIL, z, 0);
@@ -303,22 +304,11 @@ function buildRoomR6(k, p) {
   });
 
   // Kolumna szybkiego ładowania EV (X = -24.2, Z = +13.5).
-  p.reserve(R(-24.7, -23.7, 13.0, 14.0), Y_L0);
-  box(k, -24.2, Y_L0 + 1.05, 13.5, 0.75, 2.1, 0.75, 'machine', {
-    walkable: false,
-  });
-  box(k, -24.2, Y_L0 + 1.2, 13.9, 0.45, 1.4, 0.06, 'neon_blue', {
-    walkable: false,
-  });
-  box(k, -24.2, Y_L0 + 1.98, 13.5, 0.8, 0.08, 0.8, 'neon_amber', {
-    walkable: false,
-  });
-
-  // Skrzynie ze sprzętem taktycznym, stół zbrojmistrza i pancerne bramy garażowe na ścianie zachodniej.
-  p.prop('wh_weapon_case_stack', -28.4, 10.5, Y_L0, 1);
-  p.prop('wh_weapon_case_stack', -28.4, 13.8, Y_L0, 1);
-  p.prop('wh_workbench_weapons', -15.2, 14.8, Y_L0, 2);
-  p.prop('off_filing_cabinet', -12.2, 14.8, Y_L0, 2);
+  p.prop('res_ev_charger_pillar', -24.2, 13.5, Y_L0);
+  p.prop('res_drone_charging_dock', -28.2, 10.5, Y_L0, 1);
+  p.prop('res_tactical_gun_cabinet', -28.5, 13.8, Y_L0, 1);
+  p.prop('res_kitchen_cabinet_bank', -15.2, 15.2, Y_L0, 2);
+  p.prop('res_coat_closet', -11.3, 14.5, Y_L0, -1);
 
   deco(k, 'city_shutter', -29.75, Y_L0, 8.2, Q);
   deco(k, 'city_shutter', -29.75, Y_L0, 12.8, Q);
@@ -336,11 +326,11 @@ function buildRoomR6(k, p) {
 function buildRoomR7(k, p) {
   // Konsole monitoringu obwodowego wokół spawnu #10 (18, 0, 10) — z pełnym marginesem > 1.5 m od spawnu i lasera X = 24.0.
   p.prop('res_recording_console', 18.0, 6.6, Y_L0, 0);
-  p.prop('off_office_chair', 18.0, 5.5, Y_L0, 0);
-  p.prop('lab_security_desk', 18.0, 13.4, Y_L0, 2);
-  p.prop('off_office_chair', 18.0, 14.6, Y_L0, 2);
-  p.prop('off_executive_desk', 13.6, 13.4, Y_L0, 2);
-  p.prop('off_filing_cabinet', 15.2, 4.8, Y_L0, 0);
+  p.prop('res_lounge_armchair', 18.0, 5.5, Y_L0, 0);
+  p.prop('res_security_console', 18.0, 13.4, Y_L0, 2);
+  p.prop('res_lounge_armchair', 18.0, 14.8, Y_L0, 2);
+  p.prop('res_security_console', 13.6, 13.4, Y_L0, 2);
+  p.prop('res_coat_closet', 13.5, 4.8, Y_L0);
 
   // Pylony emitera bramki laserowej `guardroom-armory-laser` (X = 24.0, Z: 6.0 -> 14.0).
   for (const z of [5.75, 14.25]) {
@@ -354,11 +344,11 @@ function buildRoomR7(k, p) {
   }
 
   // Wschodni przedział Zbrojowni Straży (X ∈ [25.5, 29.5]): stojaki broni, pancerne szafy i stacja dronów.
-  p.prop('lab_prototype_weapon_rack', 28.8, 7.2, Y_L0, -1);
-  p.prop('lab_prototype_weapon_rack', 28.8, 10.0, Y_L0, -1);
-  p.prop('lab_prototype_weapon_rack', 28.8, 12.8, Y_L0, -1);
-  p.prop('lab_classified_cabinet', 26.8, 14.8, Y_L0, 2);
-  p.prop('wh_weapon_case_stack', 26.8, 5.4, Y_L0, 0);
+  p.prop('res_tactical_gun_cabinet', 28.8, 7.2, Y_L0, -1);
+  p.prop('res_tactical_gun_cabinet', 28.8, 10.0, Y_L0, -1);
+  p.prop('res_tactical_gun_cabinet', 28.8, 12.8, Y_L0, -1);
+  p.prop('res_tactical_gun_cabinet', 26.8, 14.8, Y_L0, 2);
+  p.prop('res_drone_charging_dock', 26.8, 5.4, Y_L0);
 
   // Ściana monitorów CCTV `res_cctv_monitor_wall` na południowej ścianie R7 (Z = +15.78).
   deco(k, 'res_cctv_monitor_wall', 18.0, Y_L0 + 0.9, 15.78, PI);
@@ -385,28 +375,26 @@ function buildRoomR8(k, p) {
   // 2. Monumentalne Biurko Pułkownika Vane'a `res_colonel_desk` (3.0 × 1.15 × 1.35 m)
   // na X = 0.0, Z = -25.4 (poza spawnem #13 (0, 4.8, -22) i punktem B (0, 4.8, -24)) + fotel Pułkownika.
   p.prop('res_colonel_desk', 0, -25.4, Y_L1, 0);
-  p.prop('off_office_chair', 0, -26.8, Y_L1, 0);
+  p.prop('res_lounge_armchair', 0, -26.8, Y_L1, 0);
 
   // Bramka biometryczna przy wejściu z Antresoli Salonu (Z = -19.2, prześwit 2.5 m na osi X = 0).
   biometricArch(k, p, 0, Y_L1, -19.2, 0);
 
   // 3. Zachodnia strefa gabinetowa VIP (X ∈ [-10.5, -3.5]):
-  box(k, -7.2, Y_L1 - 0.013, -23.5, 5.6, 0.04, 6.2, MAT_CARPET, {
-    walkable: true,
-  });
+  rug(k, -7.2, -23.5, Y_L1, 5.6, 6.2);
   p.prop('res_coffee_table_marble', -7.2, -23.5, Y_L1, 0);
-  p.prop('off_lounge_sofa', -7.2, -21.3, Y_L1, 2);
-  p.prop('off_lounge_sofa', -7.2, -25.7, Y_L1, 0);
+  p.prop('res_lounge_armchair', -7.2, -21.3, Y_L1, 2);
+  p.prop('res_lounge_armchair', -7.2, -25.7, Y_L1, 0);
   p.prop('res_bookshelf_wall', -9.2, -29.3, Y_L1, 0);
-  p.prop('res_winter_garden_planter', -10.4, -19.4, Y_L1, 0);
+  p.prop('res_ficus_planter', -10.4, -19.4, Y_L1, 0);
 
   // 4. Wschodnia strefa odpraw taktycznych i tajnych akt (X ∈ [3.5, 10.5]):
   p.prop('res_holo_globe_stand', 6.5, -23.5, Y_L1, 0);
   p.prop('res_trophy_case_tall', 9.2, -19.2, Y_L1, 2);
-  residenceCabinet(k, p, 'lab_classified_cabinet', 3.4, -29.2, Y_L1, 0);
-  residenceCabinet(k, p, 'lab_classified_cabinet', 10.8, -28.0, Y_L1, -1);
-  p.prop('off_lounge_sofa', 6.5, -20.2, Y_L1, 2);
-  p.prop('res_winter_garden_planter', 10.4, -21.2, Y_L1, 0);
+  p.prop('res_decor_shelf', 3.4, -29.2, Y_L1);
+  p.prop('res_tactical_gun_cabinet', 10.8, -28.0, Y_L1, -1);
+  p.prop('res_lounge_armchair', 6.5, -20.2, Y_L1, 2);
+  p.prop('res_ficus_planter', 10.4, -21.2, Y_L1, 0);
 
   // Oprawy sufitowe pod stropem Biura R8 (y = 9.60 m).
   chandelierLinear(k, 0, Y_L1_CEIL, -24.0, 0);
@@ -421,9 +409,7 @@ function buildRoomR8(k, p) {
 function buildRoomR9(k, p) {
   // Dywan biblioteczny i 4 dwustronne podświetlane Regały Biblioteczne `res_bookshelf_wall` (3.2 × 2.8 × 0.75 m)
   // tworzące labirynt osłon CQB wokół spawnu #14 (-21, 4.8, -24).
-  box(k, -26.25, Y_L1 - 0.013, -24.0, 5.2, 0.04, 7.2, MAT_CARPET, {
-    walkable: true,
-  });
+  rug(k, -26.25, -24.0, Y_L1, 5.2, 7.2);
   p.prop('res_bookshelf_wall', -21.0, -27.2, Y_L1, 0);
   p.prop('res_bookshelf_wall', -21.0, -20.8, Y_L1, 0);
   p.prop('res_bookshelf_wall', -25.6, -29.3, Y_L1, 0);
@@ -432,12 +418,16 @@ function buildRoomR9(k, p) {
   // Strefa czytelnicza z Holo-Globusem `res_holo_globe_stand` i stolikiem z księgami Easter Egg #9.
   p.prop('res_holo_globe_stand', -25.8, -24.5, Y_L1, 0);
   p.prop('res_coffee_table_marble', -25.0, -21.2, Y_L1, 0);
-  p.prop('off_lounge_sofa', -28.2, -24.0, Y_L1, 1);
-  residenceCabinet(k, p, 'off_executive_desk', -16.0, -24.0, Y_L1, 1);
-  p.prop('off_office_chair', -17.3, -24.0, Y_L1, 1);
-  residenceCabinet(k, p, 'lab_classified_cabinet', -13.2, -28.8, Y_L1, 0);
-  p.prop('res_winter_garden_planter', -28.4, -19.6, Y_L1, 1);
-  p.prop('res_winter_garden_planter', -28.4, -28.4, Y_L1, 1);
+  p.prop('res_lounge_armchair', -28.2, -24.0, Y_L1, 1);
+  p.prop('res_side_table', -28.2, -22.6, Y_L1);
+  deco(k, 'res_table_lamp', -28.2, Y_L1 + 0.57, -22.6);
+  p.prop('res_arc_floor_lamp', -28.2, -25.5, Y_L1, 1);
+  p.prop('res_ottoman', -27.0, -22.7, Y_L1);
+  p.prop('res_colonel_desk', -16.0, -24.0, Y_L1, 1);
+  p.prop('res_lounge_armchair', -17.6, -24.0, Y_L1, 1);
+  p.prop('res_decor_shelf', -13.2, -28.8, Y_L1);
+  p.prop('res_ficus_planter', -28.4, -19.6, Y_L1, 1);
+  p.prop('res_ficus_planter', -28.4, -28.4, Y_L1, 1);
 
   for (const x of [-26.0, -21.0, -16.0]) {
     recessedLedStrip(k, x, Y_L1_CEIL, -21.0, 0);
@@ -470,13 +460,7 @@ function buildRoomR10(k, p) {
   p.prop('res_trophy_case_tall', 26.5, -18.8, Y_L1, 2);
 
   // Postument Zachodni (X = +16.5, Z = -24.0) z ostrzem z warsztatu Miry (Easter Egg #10):
-  p.reserve(R(15.85, 17.15, -24.65, -23.35), Y_L1);
-  box(k, 16.5, Y_L1 + 0.55, -24.0, 1.2, 1.1, 1.2, MAT_MARBLE, {
-    walkable: false,
-  });
-  box(k, 16.5, Y_L1 + 1.06, -24.0, 1.24, 0.06, 1.24, 'neon_amber', {
-    walkable: false,
-  });
+  p.prop('res_blade_display_pedestal', 16.5, -24.0, Y_L1);
 
   // Postument Wschodni (X = +25.5, Z = -24.0) z próbką ze Zbiornika nr 04 z Sektora X-51 (Easter Egg #3):
   p.reserve(R(24.85, 26.15, -24.65, -23.35), Y_L1);
@@ -490,7 +474,8 @@ function buildRoomR10(k, p) {
   // Dodatkowe stojaki prototypów przy ścianie wschodniej (X = +29.1).
   p.prop('res_trophy_case_tall', 29.1, -21.8, Y_L1, -1);
   p.prop('res_trophy_case_tall', 29.1, -26.2, Y_L1, -1);
-  residenceCabinet(k, p, 'mall_kurogane_display', 18.0, -18.8, Y_L1, 2);
+  p.prop('res_blade_display_pedestal', 17.8, -20.5, Y_L1, 2);
+  p.prop('res_tactical_gun_cabinet', 15.4, -29.2, Y_L1);
 
   chandelierLinear(k, 21.0, Y_L1_CEIL, -24.0, 0);
   for (const x of [16.0, 21.0, 26.0]) {
@@ -504,25 +489,33 @@ function buildRoomR10(k, p) {
 function buildRoomR11(k, p) {
   // 1. Strefa sypialniana (X ∈ [-24, -8], poza spawnem #16 (-14, 4.8, -39)):
   // Łoże Platformowe King-Size `res_master_bed_king` (2.8 × 1.25 × 2.6 m) na X = -14.0, Z = -35.2.
-  box(k, -14.0, Y_L1 - 0.013, -35.2, 5.2, 0.04, 4.8, MAT_CARPET, {
-    walkable: true,
-  });
+  rug(k, -14.0, -35.2, Y_L1, 5.2, 4.8);
   p.prop('res_master_bed_king', -14.0, -35.2, Y_L1, 0);
 
   // Narożnik wypoczynkowy NW przy panoramicznym oknie na las i lądowisko drona H-06.
   p.prop('res_luxury_sofa_l', -20.8, -35.5, Y_L1, 1);
   p.prop('res_coffee_table_marble', -18.2, -35.5, Y_L1, 1);
   p.prop('res_bonsai_pedestal', -21.5, -40.2, Y_L1, 0);
-  p.prop('res_winter_garden_planter', -22.2, -31.5, Y_L1, 0);
-  deco(k, 'res_wall_art_triptych', -10.0, Y_L1 + 1.5, -30.25, PI);
+  p.prop('res_ficus_planter', -22.2, -31.5, Y_L1, 0);
+  rug(k, -20.5, -37.5, Y_L1, 5.0, 6.6);
+  rug(k, -4.1, -36.0, Y_L1, 3.4, 3.4);
+  p.prop('res_tv_acoustic_wall', -10.0, -30.55, Y_L1, 2);
+  p.prop('res_lounge_armchair', -20.6, -38.7, Y_L1, 1);
+  p.prop('res_side_table', -19.2, -38.7, Y_L1);
+  p.prop('res_arc_floor_lamp', -22.7, -38.1, Y_L1, 1);
+  for (const x of [-16.2, -11.8]) {
+    p.prop('res_nightstand', x, -35.7, Y_L1);
+    deco(k, 'res_table_lamp', x, Y_L1 + 0.6, -35.7);
+  }
+  p.prop('res_ottoman', -14.0, -32.8, Y_L1);
 
   // 2. Przeszklona Garderoba Walk-In (X ∈ [-8, 4]):
   // 2 szafy `res_wardrobe_glass` (3.2 × 2.4 × 0.85 m), ścianka ekspozycyjna na X = +1.5, Z = -36.0 (nośnik EE-02!)
-  // oraz gablota zegarków `mall_kurogane_display`.
+  // oraz gablota zegarków `res_luxury_watch_case`.
   p.prop('res_wardrobe_glass', -6.8, -40.8, Y_L1, 0);
   p.prop('res_wardrobe_glass', -1.8, -40.8, Y_L1, 0);
-  residenceCabinet(k, p, 'mall_kurogane_display', -8.8, -35.5, Y_L1, 1);
-  residenceCabinet(k, p, 'lab_locker_bench', -4.2, -36.0, Y_L1, 0);
+  p.prop('res_luxury_watch_case', -8.8, -35.5, Y_L1, 1);
+  p.prop('res_ottoman', -4.2, -36.0, Y_L1);
 
   p.reserve(R(1.25, 1.75, -37.4, -34.6), Y_L1);
   box(k, 1.5, Y_L1 + 1.4, -36.0, 0.36, 2.8, 2.6, MAT_WALNUT, {
@@ -545,36 +538,15 @@ function buildRoomR12(k, p) {
   p.prop('res_sauna_cabin', 21.2, -32.2, Y_L1, 2);
 
   // 2. Monolityczna Wolnostojąca Wanna Kamienna przed północnym oknem na las (X = +14.0, Z = -39.2) z parą `steam`.
-  p.reserve(R(12.7, 15.3, -40.0, -38.4), Y_L1);
-  box(k, 14.0, Y_L1 + 0.44, -39.2, 2.4, 0.88, 1.3, MAT_MARBLE, {
-    walkable: false,
-  });
-  box(k, 14.0, Y_L1 + 0.89, -39.2, 2.0, 0.04, 0.95, 'canal_water', {
-    walkable: false,
-  });
-  box(k, 14.0, Y_L1 + 0.06, -39.2, 2.5, 0.08, 1.4, 'neon_blue', {
-    walkable: false,
-  });
-  k.fx('steam', 14.0, Y_L1 + 0.95, -39.2, 0.7);
+  p.prop('res_freestanding_tub', 14.0, -39.2, Y_L1);
+  k.fx('steam', 14.0, Y_L1 + 0.9, -39.2, 0.7);
+  p.prop('res_marble_vanity', 12.0, -30.65, Y_L1, 2);
 
-  // 3. Podwójna Konsola Umywalkowa z lustrem LED przy ścianie południowej (X = +12.0, Z = -30.7, między bramami X = 8 i X = 16).
-  p.reserve(R(10.5, 13.5, -31.2, -30.2), Y_L1);
-  box(k, 12.0, Y_L1 + 0.48, -30.65, 2.8, 0.96, 0.72, MAT_MARBLE, {
-    walkable: false,
-  });
-  box(k, 12.0, Y_L1 + 1.65, -30.26, 2.6, 1.2, 0.06, MAT_GLASS, {
-    walkable: false,
-  });
-  box(k, 12.0, Y_L1 + 2.28, -30.26, 2.68, 0.08, 0.08, 'light_panel', {
-    walkable: false,
-  });
-
-  // Leżanki relaksacyjne, wyspa ręcznikowa w centrum i donice z bambusem.
   waistDivider(k, p, 14.0, Y_L1, -35.5, 2.6, 0.38);
   p.prop('res_pool_lounger', 8.2, -39.2, Y_L1, 0);
   p.prop('res_pool_lounger', 19.6, -39.2, Y_L1, 0);
-  p.prop('res_winter_garden_planter', 22.2, -36.5, Y_L1, -1);
-  p.prop('res_winter_garden_planter', 5.6, -40.6, Y_L1, 0);
+  p.prop('res_ficus_planter', 22.2, -36.5, Y_L1, -1);
+  p.prop('res_ficus_planter', 5.6, -40.6, Y_L1, 0);
 
   for (const x of [8.5, 14.0, 19.5]) {
     recessedLedStrip(k, x, Y_L1_CEIL, -33.0, 0);
@@ -589,19 +561,13 @@ function buildRoomR13(k, p) {
   // Fotel Przesłuchań z Pasami `res_interrogation_chair` (1.25 × 1.45 × 1.35 m),
   // Krata Odpływowa w posadzce pod fotelem oraz nisko zawieszona zimno-biała Lampa Przesłuchań (`light_panel`).
   p.prop('res_interrogation_chair', -19.0, 24.0, Y_B, 0);
-  deco(k, 'city_vent_grate', -19.0, Y_B, 24.0, 0);
-  box(k, -19.0, -0.75, 24.0, 0.08, 1.5, 0.08, 'metal', {
+  deco(k, 'res_floor_drain_grate', -19.0, Y_B - 0.052, 24.0);
+  box(k, -19.0, -0.455, 24.0, 0.06, 0.91, 0.06, 'metal', {
     ceiling: true,
     walkable: false,
   });
-  box(k, -19.0, -1.54, 24.0, 1.25, 0.12, 0.85, 'light_panel', {
-    ceiling: true,
-    walkable: false,
-  });
+  deco(k, 'res_interrogation_lamp', -19.0, -1.54, 24.0);
 
-  // 2. Stalowy Wózek z Narzędziami Ekstrakcji `res_instrument_trolley` (1.4 × 1.05 × 0.75 m)
-  // obok fotela (X = -16.2, Z = +24.0 — niesie teczkę Easter Egg #5 `res_ee_helixa_akord_dossier.webp`)
-  // oraz drugi wózek pomocniczy na (X = -19.0, Z = +20.8).
   p.prop('res_instrument_trolley', -16.2, 24.0, Y_B, 0);
   p.prop('res_instrument_trolley', -19.0, 20.8, Y_B, 0);
 
@@ -615,24 +581,19 @@ function buildRoomR13(k, p) {
   box(k, -14.0, Y_B + 2.4, 30.4, 0.36, 4.8, 3.2, MAT_BUNKER, {
     walkable: false,
   });
-  p.prop('lab_locker_bench', -24.0, 30.8, Y_B, 0);
-  p.prop('lab_locker_bench', -16.0, 30.8, Y_B, 0);
+  p.prop('res_ottoman', -24.0, 30.8, Y_B, 0);
+  p.prop('res_ottoman', -16.0, 30.8, Y_B, 0);
 
   // 4. Lustro Weneckie na ścianie zachodniej (X = -27.76, Z = +24.0) oraz Konsola Nagrań `res_recording_console`
   // (X = -26.2, Z = +24.0 — 3.75 m na zachód od spawnu #17 (-22, -4.8, 24)).
-  box(k, -27.76, Y_B + 1.85, 24.0, 0.1, 1.8, 3.4, MAT_GLASS, {
-    walkable: false,
-  });
-  box(k, -27.74, Y_B + 2.78, 24.0, 0.14, 0.08, 3.5, 'light_panel', {
-    walkable: false,
-  });
+  deco(k, 'res_oneway_mirror', -27.77, Y_B + 0.8, 24.0, Q);
   p.prop('res_recording_console', -26.2, 24.0, Y_B, 1);
-  p.prop('off_office_chair', -25.0, 24.0, Y_B, -1);
+  p.prop('res_lounge_armchair', -24.9, 24.0, Y_B, -1);
 
   // Północna strefa aparatury i archiwum przesłuchań (Z ∈ [16.5, 19.5]).
-  p.prop('lab_classified_cabinet', -26.2, 17.0, Y_B, 0);
+  p.prop('res_tactical_gun_cabinet', -26.2, 17.0, Y_B);
   p.prop('lab_cryo_server_rack', -23.2, 17.0, Y_B, 0);
-  p.prop('wh_weapon_case_stack', -15.5, 17.2, Y_B, 0);
+  p.prop('res_recording_console', -15.5, 17.2, Y_B);
   deco(k, 'city_pipe_run', -27.7, Y_B, 19.0, Q);
   deco(k, 'city_ac_unit', -20.0, Y_B + 3.2, 16.25, 0);
   deco(k, 'wh_wall_terminal', -10.22, Y_B + 1.2, 24.0, -Q);
@@ -655,16 +616,9 @@ function buildRoomR14(k, p) {
 
   // Kamienno-dębowy Stół Degustacyjny w centrum Winiarni (X = 0.0, Z = +26.2 — poza spawnem #18 (0,-4.8,21) i punktem C (0,-4.8,24))
   // z kartą degustacyjną Easter Egg #7 (`res_ee_vintage_2048_wine.webp`).
-  p.reserve(R(-1.7, 1.7, 25.4, 27.0), Y_B);
-  box(k, 0, Y_B + 0.52, 26.2, 3.2, 1.04, 1.4, MAT_WALNUT, {
-    walkable: false,
-  });
-  box(k, 0, Y_B + 1.07, 26.2, 3.4, 0.06, 1.56, MAT_MARBLE, {
-    walkable: false,
-  });
-  box(k, 0, Y_B + 1.02, 26.2, 3.28, 0.04, 1.44, 'neon_amber', {
-    walkable: false,
-  });
+  rug(k, 0, 26.6, Y_B, 5.0, 4.0);
+  p.prop('res_tasting_island', 0, 26.2, Y_B);
+  for (const x of [-1.0, 1.0]) p.prop('res_bar_stool', x, 27.6, Y_B, 2);
 
   // 4 podświetlane Ścienne Regały na Wino `res_wine_rack_wall` (3.2 × 2.8 × 0.65 m):
   // 2 przy ścianie południowej (Z = 31.3) oraz 2 wzdłuż wewnętrznych policzków Klatek Schodowych #1 i #2 (X = ±4.5).
@@ -676,13 +630,7 @@ function buildRoomR14(k, p) {
   // Dębowe leżnie beczek wina (X = ±4.3, Z = 27.2) oraz zabudowa pod niższym biegiem schodów (Z ∈ [21.5, 26.2], wys. 1.7 m)
   // — strefa Z ∈ [16.0, 21.0] pod górnym biegiem pozostaje w 100% otwarta dla północnych bram Z = 18.4!
   for (const sx of [-1, 1]) {
-    p.reserve(R(sx * 4.3 - 0.55, sx * 4.3 + 0.55, 26.0, 28.4), Y_B);
-    box(k, sx * 4.3, Y_B + 0.72, 27.2, 1.0, 1.44, 2.2, MAT_WALNUT, {
-      walkable: false,
-    });
-    box(k, sx * 4.3, Y_B + 0.1, 27.2, 1.06, 0.06, 2.26, 'neon_amber', {
-      walkable: false,
-    });
+    p.prop('res_wine_barrel_rack', sx * 4.3, 27.2, Y_B, sx < 0 ? 1 : -1);
   }
   p.reserve(R(-8.4, -5.2, 21.5, 26.2), Y_B);
   solid(k, R(-8.4, -5.2, 21.5, 24.0), Y_B, Y_B + 1.55, MAT_WALNUT, {
@@ -715,11 +663,11 @@ function buildRoomR15(k, p) {
   // 3. Konsole dowodzenia bunkrem tworzące szykanę przed śluzą ewakuacyjną `exit` (19, -3.3, 32.5),
   // z zachowaniem pełnego odstępu od spawnów #19 (16, -4.8, 21), #20 (19, -4.8, 29) oraz beczki (14, -4.8, 29.5).
   p.prop('res_recording_console', 19.5, 21.0, Y_B, -1);
-  p.prop('off_office_chair', 20.6, 21.0, Y_B, 1);
-  p.prop('lab_security_desk', 16.0, 25.2, Y_B, 0);
-  p.prop('off_office_chair', 16.0, 24.0, Y_B, 0);
-  p.prop('lab_prototype_weapon_rack', 13.5, 16.8, Y_B, 0);
-  p.prop('wh_weapon_case_stack', 11.6, 24.0, Y_B, 1);
+  p.prop('res_lounge_armchair', 20.8, 21.0, Y_B, 1);
+  p.prop('res_security_console', 16.0, 25.2, Y_B, 0);
+  p.prop('res_lounge_armchair', 16.0, 23.8, Y_B, 0);
+  p.prop('res_tactical_gun_cabinet', 13.5, 16.8, Y_B, 0);
+  p.prop('res_tactical_gun_cabinet', 11.2, 24.0, Y_B, 1);
 
   deco(k, 'city_ac_unit', 24.0, Y_B + 3.2, 16.25, 0);
   deco(k, 'city_pipe_run', 27.7, Y_B, 29.0, -Q);

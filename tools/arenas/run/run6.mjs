@@ -108,9 +108,9 @@ function structure(k, placer) {
   // 4. Piwnica (B, y = -4.80 m, płyta -5.40..-4.80 m).
   deck(k, ROOMS.R13, Y_B, MAT_BUNKER, 0.6);
   // Posadzka Winiarni R14 (X ∈ [-10, 10], Z ∈ [16, 32]) wycięta wokół szybu windy X ∈ [-1.3, 1.3], Z ∈ [16.0, 16.3].
-  deck(k, R(-10, 10, 16.3, 32), Y_B, MAT_CONCRETE, 0.6);
-  deck(k, R(-10, -1.3, 16, 16.3), Y_B, MAT_CONCRETE, 0.6);
-  deck(k, R(1.3, 10, 16, 16.3), Y_B, MAT_CONCRETE, 0.6);
+  deck(k, R(-10, 10, 16.3, 32), Y_B, MAT_WALNUT, 0.6);
+  deck(k, R(-10, -1.3, 16, 16.3), Y_B, MAT_WALNUT, 0.6);
+  deck(k, R(1.3, 10, 16, 16.3), Y_B, MAT_WALNUT, 0.6);
   deck(k, ROOMS.R15, Y_B, MAT_BUNKER, 0.6);
   // Wnęka drzwi wyjściowych exit (południe R15: X ∈ [17, 21], Z ∈ [32, 33]).
   deck(k, R(17, 21, 32, 33), Y_B, MAT_BUNKER, 0.6);

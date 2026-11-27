@@ -99,7 +99,66 @@ export function solid(k, rect, y0, y1, material, opts = {}) {
 
 /** Płyta chodzenia z wierzchem na `y` (domyślnie grubość SLAB = 0.4 m). */
 export function deck(k, rect, y, material, thickness = SLAB, opts = {}) {
-  return k.solid(rect, y - thickness, y, material, { walkable: true, ...opts });
+  if (![MAT_WALNUT, MAT_MARBLE].includes(material))
+    return k.solid(rect, y - thickness, y, material, {
+      walkable: true,
+      ...opts,
+    });
+  // Jedna płaszczyzna nawigacji pod podziałem wizualnym posadzki.
+  k.solid(rect, y - thickness, y, material, {
+    walkable: true,
+    visible: false,
+    ...opts,
+  });
+  k.solid(rect, y - thickness, y - 0.004, 'trim', { walkable: true, ...opts });
+  const tiles = (lo, hi, pitch) => {
+    const out = [];
+    let cursor = lo;
+    for (let edge = lo + pitch; edge < hi - 0.08; edge += pitch) {
+      out.push([cursor, edge - 0.006]);
+      cursor = edge + 0.006;
+    }
+    out.push([cursor, hi]);
+    return out;
+  };
+  const wood = material === MAT_WALNUT;
+  for (const [x0, x1] of tiles(rect.minX, rect.maxX, wood ? 1.2 : 2.8)) {
+    for (const [z0, z1] of tiles(rect.minZ, rect.maxZ, wood ? 4.2 : 2.8)) {
+      k.solid(R(x0, x1, z0, z1), y - 0.012, y, material, {
+        walkable: true,
+        ...opts,
+      });
+    }
+  }
+}
+
+/** Cienki dywan z orzechową bordiurą, bez stopnia na trasie ruchu. */
+export function rug(k, x, z, y, w, d) {
+  box(k, x, y - 0.013, z, w, 0.04, d, MAT_CARPET, { walkable: true });
+  for (const side of [-1, 1]) {
+    box(
+      k,
+      x + side * (w / 2 - 0.06),
+      y + 0.008,
+      z,
+      0.06,
+      0.002,
+      d - 0.06,
+      MAT_WALNUT,
+      { walkable: true },
+    );
+    box(
+      k,
+      x,
+      y + 0.008,
+      z + side * (d / 2 - 0.06),
+      w - 0.18,
+      0.002,
+      0.06,
+      MAT_WALNUT,
+      { walkable: true },
+    );
+  }
 }
 
 /** Dodaje objętość chronioną przed opadami deszczu (`rainShelters`) od `y0` do `y1`. */
@@ -304,6 +363,76 @@ export function spans(a, b, gaps = []) {
   return out.filter(([s0, s1]) => s1 - s0 > 0.2);
 }
 
+/** Okładziny na pełnych odcinkach ścian; otwory i tafle pozostają odsłonięte. */
+function wallFinishes(k, axis, at, a, b, y, thickness) {
+  const levels = [
+    [Y_L0, ['R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7']],
+    [Y_L1, ['R2', 'R8', 'R9', 'R10', 'R11', 'R12']],
+    [Y_B, ['R13', 'R14', 'R15']],
+  ];
+  const rooms = levels.find(([floor]) => Math.abs(floor - y) < 0.01)?.[1];
+  if (!rooms) return;
+  for (const side of [-1, 1]) {
+    const normal = at + side * (thickness / 2 + 0.08);
+    for (const id of rooms) {
+      const r = ROOMS[id];
+      const inside =
+        axis === 'x'
+          ? normal > r.minZ && normal < r.maxZ
+          : normal > r.minX && normal < r.maxX;
+      if (!inside) continue;
+      const lo = Math.max(a, axis === 'x' ? r.minX : r.minZ) + 0.04;
+      const hi = Math.min(b, axis === 'x' ? r.maxX : r.maxZ) - 0.04;
+      if (hi - lo < 0.3) continue;
+      const technical = ['R6', 'R7', 'R13', 'R15'].includes(id);
+      const stone = ['R4', 'R5', 'R10', 'R12'].includes(id);
+      const face = at + side * (thickness / 2 + 0.025);
+      const panel = technical ? MAT_BUNKER : stone ? MAT_MARBLE : MAT_WALNUT;
+      const strip = (from, to, height, h, depth, material, offset = 0) =>
+        box(
+          k,
+          axis === 'x' ? (from + to) / 2 : face + side * offset,
+          y + height,
+          axis === 'x' ? face + side * offset : (from + to) / 2,
+          axis === 'x' ? to - from : depth,
+          h,
+          axis === 'x' ? depth : to - from,
+          material,
+          { walkable: false },
+        );
+      strip(lo, hi, 1.72, 2.92, 0.04, panel);
+      strip(lo, hi, 0.12, 0.24, 0.06, MAT_MARBLE);
+      // Ciemna wnęka i cofnięta ciepła listwa nad panelami na wysokości oczu.
+      strip(lo, hi, 3.26, 0.16, 0.06, 'trim');
+      strip(lo + 0.06, hi - 0.06, 3.24, 0.035, 0.025, 'light_panel', 0.034);
+      const pitch = technical ? 1.8 : stone ? 2.0 : 1.2;
+      for (let c = lo + 0.12; c < hi - 0.08; c += pitch)
+        strip(
+          c - 0.025,
+          c + 0.025,
+          1.72,
+          2.92,
+          0.055,
+          technical ? 'metal' : 'trim',
+          0.03,
+        );
+      if (!technical && !stone && hi - lo > 1.5) {
+        for (const end of [lo, hi - 0.64])
+          for (let i = 0; i < 4; i++)
+            strip(
+              end + i * 0.16,
+              end + i * 0.16 + 0.085,
+              1.72,
+              2.92,
+              0.09,
+              MAT_WALNUT,
+              0.065,
+            );
+      }
+    }
+  }
+}
+
 /**
  * Ściana osiowa z otworami drzwiowymi lub okiennymi.
  * `axis = 'x'`: ściana biegnie wzdłuż X na `z = at`, od `start` do `end`.
@@ -333,6 +462,8 @@ export function segmentedWall(
         ? R(a, b, at - thickness / 2, at + thickness / 2)
         : R(at - thickness / 2, at + thickness / 2, a, b);
     solid(k, rect, lo, hi, mat, { walkable: false });
+    if (mat !== MAT_GLASS && hi - lo >= 3.2)
+      wallFinishes(k, axis, at, a, b, lo, thickness);
   };
   for (let i = 1; i < edges.length; i++) {
     const a = edges[i - 1],
