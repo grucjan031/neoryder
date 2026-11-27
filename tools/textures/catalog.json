@@ -1146,6 +1146,33 @@
     "set": "mall"
   },
   {
+    "id": "floor_lane_line",
+    "category": "decals",
+    "width": 512,
+    "height": 112,
+    "description": "Linia korytarza transportowego na posadzce magazynu",
+    "subject": "Worn painted floor lane line of a warehouse transport corridor.",
+    "set": "run1"
+  },
+  {
+    "id": "floor_sector_k09",
+    "category": "decals",
+    "width": 512,
+    "height": 171,
+    "description": "Szablon oznaczenia strefy K09 na posadzce magazynu",
+    "subject": "Worn stencilled floor marking of warehouse sector K09.",
+    "set": "run1"
+  },
+  {
+    "id": "floor_pallet_bay",
+    "category": "decals",
+    "width": 512,
+    "height": 505,
+    "description": "Koperta odkładcza palety na posadzce magazynu",
+    "subject": "Worn painted floor outline of a pallet set-down bay.",
+    "set": "run1"
+  },
+  {
     "id": "mall_new_collection",
     "category": "signs",
     "width": 512,
