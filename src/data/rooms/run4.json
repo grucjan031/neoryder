@@ -5141,6 +5141,21 @@
       "position": {
         "x": -5.8,
         "y": 0.475,
+        "z": 15.6
+      },
+      "size": {
+        "x": 2.6,
+        "y": 0.95,
+        "z": 1.05
+      }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "off_lounge_sofa",
+      "position": {
+        "x": -5.8,
+        "y": 0.475,
         "z": 18.8
       },
       "rotation": {
@@ -5229,6 +5244,21 @@
         "z": 0.9
       },
       "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "off_lounge_sofa",
+      "position": {
+        "x": 5.8,
+        "y": 0.475,
+        "z": 15.6
+      },
+      "size": {
+        "x": 2.6,
+        "y": 0.95,
+        "z": 1.05
+      }
     },
     {
       "instance": true,
@@ -8753,13 +8783,13 @@
     {
       "material": "trim",
       "position": {
-        "x": 0,
-        "y": 3.5,
+        "x": -1.04,
+        "y": 4.02,
         "z": -12.2
       },
       "size": {
-        "x": 3.9,
-        "y": 0.28,
+        "x": 5.98,
+        "y": 1.25,
         "z": 0.24
       },
       "walkable": false
@@ -8767,13 +8797,13 @@
     {
       "material": "trim",
       "position": {
-        "x": 0,
-        "y": 8.3,
+        "x": -1.04,
+        "y": 8.82,
         "z": -12.2
       },
       "size": {
-        "x": 3.9,
-        "y": 0.28,
+        "x": 5.98,
+        "y": 1.25,
         "z": 0.24
       },
       "walkable": false
@@ -8781,13 +8811,13 @@
     {
       "material": "trim",
       "position": {
-        "x": 0,
-        "y": 13.1,
+        "x": 1.04,
+        "y": 13.62,
         "z": -15.8
       },
       "size": {
-        "x": 3.9,
-        "y": 0.28,
+        "x": 5.98,
+        "y": 1.25,
         "z": 0.24
       },
       "walkable": false
@@ -8807,101 +8837,44 @@
       "walkable": false
     },
     {
-      "material": "mall_terrazzo_inlay",
+      "material": "off_polished_granite",
       "position": {
         "x": 0,
         "y": 0.14,
         "z": -2.2
       },
       "size": {
-        "x": 2.4,
+        "x": 0.72,
         "y": 0.28,
-        "z": 2.4
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_polished_granite",
-      "position": {
-        "x": 0,
-        "y": 0.68,
-        "z": -2.2
-      },
-      "size": {
-        "x": 1.65,
-        "y": 0.8,
-        "z": 1.65
-      },
-      "walkable": false
-    },
-    {
-      "material": "light_panel",
-      "position": {
-        "x": 0,
-        "y": 1.12,
-        "z": -2.2
-      },
-      "size": {
-        "x": 1.72,
-        "y": 0.08,
-        "z": 1.72
+        "z": 1.08
       },
       "walkable": false
     },
     {
       "material": "trim",
       "position": {
-        "x": -0.38,
-        "y": 2.45,
+        "x": -0.22,
+        "y": 1.73,
         "z": -2.2
       },
-      "rotation": {
-        "x": 0,
-        "y": 0.35,
-        "z": 0
-      },
       "size": {
-        "x": 0.22,
-        "y": 2.6,
-        "z": 0.78
-      },
-      "walkable": false
-    },
-    {
-      "material": "trim",
-      "position": {
-        "x": 0.38,
-        "y": 2.65,
-        "z": -2.2
-      },
-      "rotation": {
-        "x": 0,
-        "y": -0.35,
-        "z": 0
-      },
-      "size": {
-        "x": 0.22,
-        "y": 3,
-        "z": 0.78
+        "x": 0.12,
+        "y": 2.9,
+        "z": 0.54
       },
       "walkable": false
     },
     {
       "material": "off_wood_slat_wall",
       "position": {
-        "x": 0,
-        "y": 2.85,
+        "x": 0.22,
+        "y": 2.0300000000000002,
         "z": -2.2
       },
-      "rotation": {
-        "x": 0,
-        "y": 0.7853981633974483,
-        "z": 0
-      },
       "size": {
-        "x": 0.32,
-        "y": 3.4,
-        "z": 0.32
+        "x": 0.12,
+        "y": 3.5,
+        "z": 0.54
       },
       "walkable": false
     },
@@ -8909,177 +8882,13 @@
       "material": "neon_amber",
       "position": {
         "x": 0,
-        "y": 2.85,
+        "y": 1.8800000000000001,
         "z": -2.2
       },
-      "rotation": {
-        "x": 0,
-        "y": 0.7853981633974483,
-        "z": 0
-      },
       "size": {
-        "x": 0.14,
-        "y": 3.1,
-        "z": 0.42
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_bench",
-      "position": {
-        "x": 0,
-        "y": 0.425,
-        "z": -4.1
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.85,
-        "z": 0.9
-      }
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_bench",
-      "position": {
-        "x": 0,
-        "y": 0.425,
-        "z": -0.3
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.85,
-        "z": 0.9
-      }
-    },
-    {
-      "material": "mall_terrazzo_inlay",
-      "position": {
-        "x": 0,
-        "y": -0.014,
-        "z": 6.4
-      },
-      "size": {
-        "x": 3.8,
-        "y": 0.04,
-        "z": 4.4
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_planter",
-      "position": {
-        "x": 0,
-        "y": 0.675,
-        "z": 6.4
-      },
-      "size": {
-        "x": 3.2,
-        "y": 1.35,
-        "z": 1.4
-      }
-    },
-    {
-      "material": "wood",
-      "position": {
-        "x": 0,
-        "y": 1.65,
-        "z": 6.4
-      },
-      "size": {
-        "x": 0.16,
-        "y": 1.7,
-        "z": 0.16
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 0,
-        "y": 2.15,
-        "z": 6.4
-      },
-      "size": {
-        "x": 1.65,
-        "y": 0.62,
-        "z": 1.15
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 0,
-        "y": 2.65,
-        "z": 6.4
-      },
-      "size": {
-        "x": 1.3,
-        "y": 0.62,
-        "z": 0.95
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 0,
-        "y": 3.1,
-        "z": 6.4
-      },
-      "size": {
-        "x": 0.85,
-        "y": 0.62,
-        "z": 0.7
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_bench",
-      "position": {
-        "x": 0,
-        "y": 0.425,
-        "z": 4.6
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.85,
-        "z": 0.9
-      }
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_bench",
-      "position": {
-        "x": 0,
-        "y": 0.425,
-        "z": 8.2
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.85,
-        "z": 0.9
-      }
-    },
-    {
-      "material": "mall_terrazzo_inlay",
-      "position": {
-        "x": -8.2,
-        "y": -0.014,
-        "z": 7.3
-      },
-      "size": {
-        "x": 2.2,
-        "y": 0.04,
-        "z": 4.6
+        "x": 0.12,
+        "y": 3.2,
+        "z": 0.54
       },
       "walkable": false
     },
@@ -9088,14 +8897,9 @@
       "material": "metal",
       "model": "off_office_planter",
       "position": {
-        "x": -8.2,
+        "x": 0,
         "y": 0.725,
         "z": 7.3
-      },
-      "rotation": {
-        "x": 0,
-        "y": 1.5707963267948966,
-        "z": 0
       },
       "size": {
         "x": 2.4,
@@ -9104,174 +8908,18 @@
       }
     },
     {
-      "material": "wood",
-      "position": {
-        "x": -8.2,
-        "y": 1.65,
-        "z": 7.3
-      },
-      "size": {
-        "x": 0.16,
-        "y": 1.7,
-        "z": 0.16
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": -8.2,
-        "y": 2.15,
-        "z": 7.3
-      },
-      "size": {
-        "x": 1.65,
-        "y": 0.62,
-        "z": 1.15
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": -8.2,
-        "y": 2.65,
-        "z": 7.3
-      },
-      "size": {
-        "x": 1.3,
-        "y": 0.62,
-        "z": 0.95
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": -8.2,
-        "y": 3.1,
-        "z": 7.3
-      },
-      "size": {
-        "x": 0.85,
-        "y": 0.62,
-        "z": 0.7
-      },
-      "walkable": false
-    },
-    {
       "instance": true,
       "material": "metal",
       "model": "mall_bench",
       "position": {
-        "x": -8.2,
+        "x": 0,
         "y": 0.425,
-        "z": 5.2
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.85,
-        "z": 0.9
-      }
-    },
-    {
-      "material": "mall_terrazzo_inlay",
-      "position": {
-        "x": 8.2,
-        "y": -0.014,
-        "z": 7.3
-      },
-      "size": {
-        "x": 2.2,
-        "y": 0.04,
-        "z": 4.6
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "off_office_planter",
-      "position": {
-        "x": 8.2,
-        "y": 0.725,
-        "z": 7.3
+        "z": 8.45
       },
       "rotation": {
         "x": 0,
-        "y": 1.5707963267948966,
+        "y": 3.141592653589793,
         "z": 0
-      },
-      "size": {
-        "x": 2.4,
-        "y": 1.45,
-        "z": 0.9
-      }
-    },
-    {
-      "material": "wood",
-      "position": {
-        "x": 8.2,
-        "y": 1.65,
-        "z": 7.3
-      },
-      "size": {
-        "x": 0.16,
-        "y": 1.7,
-        "z": 0.16
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 8.2,
-        "y": 2.15,
-        "z": 7.3
-      },
-      "size": {
-        "x": 1.65,
-        "y": 0.62,
-        "z": 1.15
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 8.2,
-        "y": 2.65,
-        "z": 7.3
-      },
-      "size": {
-        "x": 1.3,
-        "y": 0.62,
-        "z": 0.95
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 8.2,
-        "y": 3.1,
-        "z": 7.3
-      },
-      "size": {
-        "x": 0.85,
-        "y": 0.62,
-        "z": 0.7
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_bench",
-      "position": {
-        "x": 8.2,
-        "y": 0.425,
-        "z": 5.2
       },
       "size": {
         "x": 2.6,
@@ -9282,128 +8930,128 @@
     {
       "material": "trim",
       "position": {
-        "x": -8.4,
+        "x": 0,
         "y": 0.08,
-        "z": 3
+        "z": 6.48
+      },
+      "size": {
+        "x": 2.46,
+        "y": 0.16,
+        "z": 0.38
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_wood_slat_wall",
+      "position": {
+        "x": 0,
+        "y": 0.58,
+        "z": 6.48
+      },
+      "size": {
+        "x": 2.4,
+        "y": 0.86,
+        "z": 0.32
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": 0,
+        "y": 1.04,
+        "z": 6.48
+      },
+      "size": {
+        "x": 2.44,
+        "y": 0.04,
+        "z": 0.34
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_polished_granite",
+      "position": {
+        "x": 0,
+        "y": 1.1,
+        "z": 6.48
+      },
+      "size": {
+        "x": 2.48,
+        "y": 0.08,
+        "z": 0.38
+      },
+      "walkable": false
+    },
+    {
+      "material": "trim",
+      "position": {
+        "x": -8,
+        "y": 0.08,
+        "z": 5.6
       },
       "size": {
         "x": 0.38,
         "y": 0.16,
-        "z": 2.2600000000000002
+        "z": 1.86
       },
       "walkable": false
     },
     {
       "material": "off_wood_slat_wall",
       "position": {
-        "x": -8.4,
+        "x": -8,
         "y": 0.58,
-        "z": 3
+        "z": 5.6
       },
       "size": {
         "x": 0.32,
         "y": 0.86,
-        "z": 2.2
+        "z": 1.8
       },
       "walkable": false
     },
     {
       "material": "light_panel",
       "position": {
-        "x": -8.4,
+        "x": -8,
         "y": 1.04,
-        "z": 3
+        "z": 5.6
       },
       "size": {
         "x": 0.36,
         "y": 0.04,
-        "z": 2.22
+        "z": 1.82
       },
       "walkable": false
     },
     {
       "material": "off_polished_granite",
       "position": {
-        "x": -8.4,
+        "x": -8,
         "y": 1.1,
-        "z": 3
+        "z": 5.6
       },
       "size": {
         "x": 0.4,
         "y": 0.08,
-        "z": 2.2600000000000002
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_carpet_tile",
-      "position": {
-        "x": 6.2,
-        "y": -0.014,
-        "z": 2
-      },
-      "size": {
-        "x": 4.4,
-        "y": 0.04,
-        "z": 5.2
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_wood_slat_wall",
-      "position": {
-        "x": 6.2,
-        "y": 0.18,
-        "z": 2
-      },
-      "size": {
-        "x": 1.76,
-        "y": 0.36,
-        "z": 0.76
-      },
-      "walkable": false
-    },
-    {
-      "material": "light_panel",
-      "position": {
-        "x": 6.2,
-        "y": 0.38,
-        "z": 2
-      },
-      "size": {
-        "x": 1.92,
-        "y": 0.03,
-        "z": 0.92
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_polished_granite",
-      "position": {
-        "x": 6.2,
-        "y": 0.43,
-        "z": 2
-      },
-      "size": {
-        "x": 2,
-        "y": 0.08,
-        "z": 1
+        "z": 1.86
       },
       "walkable": false
     },
     {
       "instance": true,
       "material": "metal",
-      "model": "off_lounge_sofa",
+      "model": "off_office_planter",
       "position": {
-        "x": 6.2,
-        "y": 0.475,
-        "z": 3.8
+        "x": 8.4,
+        "y": 0.725,
+        "z": 4.45
       },
       "size": {
-        "x": 2.6,
-        "y": 0.95,
-        "z": 1.05
+        "x": 2.4,
+        "y": 1.45,
+        "z": 0.9
       }
     },
     {
@@ -9411,9 +9059,9 @@
       "material": "metal",
       "model": "off_lounge_sofa",
       "position": {
-        "x": 6.2,
+        "x": 6.25,
         "y": 0.475,
-        "z": 0.2
+        "z": 3.2
       },
       "rotation": {
         "x": 0,
@@ -9429,11 +9077,124 @@
     {
       "instance": true,
       "material": "metal",
+      "model": "off_lounge_sofa",
+      "position": {
+        "x": 6.25,
+        "y": 0.475,
+        "z": -1.55
+      },
+      "size": {
+        "x": 2.6,
+        "y": 0.95,
+        "z": 1.05
+      }
+    },
+    {
+      "material": "off_wood_slat_wall",
+      "position": {
+        "x": 7.45,
+        "y": 0.18,
+        "z": -0.4
+      },
+      "size": {
+        "x": 1.16,
+        "y": 0.36,
+        "z": 0.45999999999999996
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": 7.45,
+        "y": 0.38,
+        "z": -0.4
+      },
+      "size": {
+        "x": 1.3199999999999998,
+        "y": 0.03,
+        "z": 0.62
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_polished_granite",
+      "position": {
+        "x": 7.45,
+        "y": 0.43,
+        "z": -0.4
+      },
+      "size": {
+        "x": 1.4,
+        "y": 0.08,
+        "z": 0.7
+      },
+      "walkable": false
+    },
+    {
+      "material": "trim",
+      "position": {
+        "x": 8.6,
+        "y": 0.08,
+        "z": -1.55
+      },
+      "size": {
+        "x": 0.38,
+        "y": 0.16,
+        "z": 2.06
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_wood_slat_wall",
+      "position": {
+        "x": 8.6,
+        "y": 0.58,
+        "z": -1.55
+      },
+      "size": {
+        "x": 0.32,
+        "y": 0.86,
+        "z": 2
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": 8.6,
+        "y": 1.04,
+        "z": -1.55
+      },
+      "size": {
+        "x": 0.36,
+        "y": 0.04,
+        "z": 2.02
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_polished_granite",
+      "position": {
+        "x": 8.6,
+        "y": 1.1,
+        "z": -1.55
+      },
+      "size": {
+        "x": 0.4,
+        "y": 0.08,
+        "z": 2.06
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "metal",
       "model": "off_office_planter",
       "position": {
-        "x": 8.4,
+        "x": -7.65,
         "y": 0.725,
-        "z": 2
+        "z": -5
       },
       "rotation": {
         "x": 0,
@@ -9451,9 +9212,9 @@
       "material": "metal",
       "model": "mall_bench",
       "position": {
-        "x": 4,
+        "x": -7.65,
         "y": 0.425,
-        "z": 2
+        "z": -7.6
       },
       "rotation": {
         "x": 0,
@@ -9471,7 +9232,7 @@
       "material": "metal",
       "model": "mall_directory",
       "position": {
-        "x": -2,
+        "x": -2.8,
         "y": 1.2,
         "z": -9.2
       },
@@ -9484,408 +9245,21 @@
     {
       "instance": true,
       "material": "metal",
-      "model": "mall_directory",
+      "model": "off_acoustic_wall_panel",
       "position": {
-        "x": 2,
+        "x": -9.42,
         "y": 1.2,
-        "z": -9.2
+        "z": -7
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
       },
       "size": {
-        "x": 1.2,
+        "x": 2.4,
         "y": 2.4,
-        "z": 0.45
-      }
-    },
-    {
-      "material": "trim",
-      "position": {
-        "x": -4.6,
-        "y": 0.08,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.2600000000000002,
-        "y": 0.16,
-        "z": 0.38
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_wood_slat_wall",
-      "position": {
-        "x": -4.6,
-        "y": 0.58,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.2,
-        "y": 0.86,
-        "z": 0.32
-      },
-      "walkable": false
-    },
-    {
-      "material": "light_panel",
-      "position": {
-        "x": -4.6,
-        "y": 1.04,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.24,
-        "y": 0.04,
-        "z": 0.34
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_polished_granite",
-      "position": {
-        "x": -4.6,
-        "y": 1.1,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.2800000000000002,
-        "y": 0.08,
-        "z": 0.38
-      },
-      "walkable": false
-    },
-    {
-      "material": "trim",
-      "position": {
-        "x": 4.6,
-        "y": 0.08,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.2600000000000002,
-        "y": 0.16,
-        "z": 0.38
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_wood_slat_wall",
-      "position": {
-        "x": 4.6,
-        "y": 0.58,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.2,
-        "y": 0.86,
-        "z": 0.32
-      },
-      "walkable": false
-    },
-    {
-      "material": "light_panel",
-      "position": {
-        "x": 4.6,
-        "y": 1.04,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.24,
-        "y": 0.04,
-        "z": 0.34
-      },
-      "walkable": false
-    },
-    {
-      "material": "off_polished_granite",
-      "position": {
-        "x": 4.6,
-        "y": 1.1,
-        "z": -9.2
-      },
-      "size": {
-        "x": 2.2800000000000002,
-        "y": 0.08,
-        "z": 0.38
-      },
-      "walkable": false
-    },
-    {
-      "material": "mall_terrazzo_inlay",
-      "position": {
-        "x": -7.8,
-        "y": -0.014,
-        "z": -6.5
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.04,
-        "z": 5.8
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "off_office_planter",
-      "position": {
-        "x": -7.8,
-        "y": 0.725,
-        "z": -5.2
-      },
-      "rotation": {
-        "x": 0,
-        "y": 1.5707963267948966,
-        "z": 0
-      },
-      "size": {
-        "x": 2.4,
-        "y": 1.45,
-        "z": 0.9
-      }
-    },
-    {
-      "material": "wood",
-      "position": {
-        "x": -7.8,
-        "y": 1.65,
-        "z": -5.2
-      },
-      "size": {
-        "x": 0.16,
-        "y": 1.7,
-        "z": 0.16
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": -7.8,
-        "y": 2.15,
-        "z": -5.2
-      },
-      "size": {
-        "x": 1.65,
-        "y": 0.62,
-        "z": 1.15
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": -7.8,
-        "y": 2.65,
-        "z": -5.2
-      },
-      "size": {
-        "x": 1.3,
-        "y": 0.62,
-        "z": 0.95
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": -7.8,
-        "y": 3.1,
-        "z": -5.2
-      },
-      "size": {
-        "x": 0.85,
-        "y": 0.62,
-        "z": 0.7
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_bench",
-      "position": {
-        "x": -7.8,
-        "y": 0.425,
-        "z": -8.2
-      },
-      "rotation": {
-        "x": 0,
-        "y": 1.5707963267948966,
-        "z": 0
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.85,
-        "z": 0.9
-      }
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "off_office_planter",
-      "position": {
-        "x": -6.2,
-        "y": 0.725,
-        "z": -11.5
-      },
-      "size": {
-        "x": 2.4,
-        "y": 1.45,
-        "z": 0.9
-      }
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "off_lounge_sofa",
-      "position": {
-        "x": -6.2,
-        "y": 0.475,
-        "z": -14.2
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.95,
-        "z": 1.05
-      }
-    },
-    {
-      "material": "mall_terrazzo_inlay",
-      "position": {
-        "x": 7.8,
-        "y": -0.014,
-        "z": -6.5
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.04,
-        "z": 5.8
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "off_office_planter",
-      "position": {
-        "x": 7.8,
-        "y": 0.725,
-        "z": -5.2
-      },
-      "rotation": {
-        "x": 0,
-        "y": -1.5707963267948966,
-        "z": 0
-      },
-      "size": {
-        "x": 2.4,
-        "y": 1.45,
-        "z": 0.9
-      }
-    },
-    {
-      "material": "wood",
-      "position": {
-        "x": 7.8,
-        "y": 1.65,
-        "z": -5.2
-      },
-      "size": {
-        "x": 0.16,
-        "y": 1.7,
-        "z": 0.16
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 7.8,
-        "y": 2.15,
-        "z": -5.2
-      },
-      "size": {
-        "x": 1.65,
-        "y": 0.62,
-        "z": 1.15
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 7.8,
-        "y": 2.65,
-        "z": -5.2
-      },
-      "size": {
-        "x": 1.3,
-        "y": 0.62,
-        "z": 0.95
-      },
-      "walkable": false
-    },
-    {
-      "material": "container_olive",
-      "position": {
-        "x": 7.8,
-        "y": 3.1,
-        "z": -5.2
-      },
-      "size": {
-        "x": 0.85,
-        "y": 0.62,
-        "z": 0.7
-      },
-      "walkable": false
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "mall_bench",
-      "position": {
-        "x": 7.8,
-        "y": 0.425,
-        "z": -8.2
-      },
-      "rotation": {
-        "x": 0,
-        "y": 1.5707963267948966,
-        "z": 0
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.85,
-        "z": 0.9
-      }
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "off_office_planter",
-      "position": {
-        "x": 6.2,
-        "y": 0.725,
-        "z": -11.5
-      },
-      "size": {
-        "x": 2.4,
-        "y": 1.45,
-        "z": 0.9
-      }
-    },
-    {
-      "instance": true,
-      "material": "metal",
-      "model": "off_lounge_sofa",
-      "position": {
-        "x": 6.2,
-        "y": 0.475,
-        "z": -14.2
-      },
-      "size": {
-        "x": 2.6,
-        "y": 0.95,
-        "z": 1.05
+        "z": 0.14
       }
     },
     {
@@ -9893,9 +9267,9 @@
       "material": "metal",
       "model": "off_filing_cabinet",
       "position": {
-        "x": -8.2,
+        "x": -9.25,
         "y": 1.05,
-        "z": -1.2
+        "z": -9.7
       },
       "rotation": {
         "x": 0,
@@ -9913,13 +9287,13 @@
       "material": "metal",
       "model": "off_filing_cabinet",
       "position": {
-        "x": 8.2,
+        "x": -9.25,
         "y": 1.05,
-        "z": -2.2
+        "z": -12
       },
       "rotation": {
         "x": 0,
-        "y": -1.5707963267948966,
+        "y": 1.5707963267948966,
         "z": 0
       },
       "size": {
@@ -9927,6 +9301,138 @@
         "y": 2.1,
         "z": 0.75
       }
+    },
+    {
+      "instance": true,
+      "material": "metal",
+      "model": "off_office_planter",
+      "position": {
+        "x": -8.35,
+        "y": 0.725,
+        "z": -14.12
+      },
+      "rotation": {
+        "x": 0,
+        "y": 1.5707963267948966,
+        "z": 0
+      },
+      "size": {
+        "x": 2.4,
+        "y": 1.45,
+        "z": 0.9
+      }
+    },
+    {
+      "material": "trim",
+      "position": {
+        "x": -4.95,
+        "y": 0.08,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.2600000000000002,
+        "y": 0.16,
+        "z": 0.38
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_wood_slat_wall",
+      "position": {
+        "x": -4.95,
+        "y": 0.58,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.86,
+        "z": 0.32
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": -4.95,
+        "y": 1.04,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.24,
+        "y": 0.04,
+        "z": 0.34
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_polished_granite",
+      "position": {
+        "x": -4.95,
+        "y": 1.1,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.2800000000000002,
+        "y": 0.08,
+        "z": 0.38
+      },
+      "walkable": false
+    },
+    {
+      "material": "trim",
+      "position": {
+        "x": 4.95,
+        "y": 0.08,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.2600000000000002,
+        "y": 0.16,
+        "z": 0.38
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_wood_slat_wall",
+      "position": {
+        "x": 4.95,
+        "y": 0.58,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.86,
+        "z": 0.32
+      },
+      "walkable": false
+    },
+    {
+      "material": "light_panel",
+      "position": {
+        "x": 4.95,
+        "y": 1.04,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.24,
+        "y": 0.04,
+        "z": 0.34
+      },
+      "walkable": false
+    },
+    {
+      "material": "off_polished_granite",
+      "position": {
+        "x": 4.95,
+        "y": 1.1,
+        "z": -9.2
+      },
+      "size": {
+        "x": 2.2800000000000002,
+        "y": 0.08,
+        "z": 0.38
+      },
+      "walkable": false
     },
     {
       "instance": true,
@@ -13983,1476 +13489,708 @@
   ],
   "decals": [
     {
-      "opacity": 0.75,
-      "position": {
-        "x": 18.5,
-        "y": 0.01,
-        "z": 14
-      },
-      "size": {
-        "h": 0.8,
-        "w": 7.2
-      },
-      "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": 23.5,
-        "y": 4.81,
-        "z": -18
-      },
-      "size": {
-        "h": 3.2,
-        "w": 3
-      },
-      "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#3d7bff",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": 16.5,
-        "y": 9.61,
-        "z": -35.5
-      },
-      "size": {
-        "h": 0.8,
-        "w": 7.2
-      },
-      "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#8a5cff",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.88,
+      "opacity": 0.92,
       "position": {
         "x": 0,
         "y": 0.012,
         "z": 24.5
       },
       "size": {
-        "h": 1.7,
-        "w": 3.4
+        "h": 3,
+        "w": 3
       },
       "surface": "floor",
-      "texture": "plaque_evil_corp",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_floor_crest",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.92,
       "position": {
         "x": 0,
         "y": 0.012,
-        "z": 15.2
+        "z": 15.7
       },
       "size": {
-        "h": 1.8,
-        "w": 3.6
+        "h": 2.4,
+        "w": 2.4
       },
       "surface": "floor",
-      "texture": "plaque_evil_corp",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_floor_crest",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.92,
       "position": {
         "x": 0,
         "y": 0.012,
         "z": 2
       },
       "size": {
-        "h": 1.9,
-        "w": 3.8
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "floor",
-      "texture": "plaque_evil_corp",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_floor_crest",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.92,
       "position": {
         "x": 0,
         "y": 0.012,
-        "z": -7.2
+        "z": -7
       },
       "size": {
-        "h": 1.6,
-        "w": 3.2
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "floor",
-      "texture": "plaque_evil_corp",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_floor_crest",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.92,
       "position": {
         "x": 0,
         "y": 9.612,
-        "z": -20
+        "z": -20.5
       },
       "size": {
-        "h": 1.6,
-        "w": 3.2
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "floor",
-      "texture": "plaque_evil_corp",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_floor_crest",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.92,
       "position": {
         "x": 0,
         "y": 9.612,
         "z": -35
       },
       "size": {
-        "h": 1.8,
-        "w": 3.6
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "floor",
-      "texture": "plaque_evil_corp",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_floor_crest",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.94,
       "position": {
         "x": 0,
         "y": 0.012,
-        "z": -11.5
+        "z": -11.35
       },
       "size": {
-        "h": 1.2,
-        "w": 3.2
+        "h": 1.4,
+        "w": 2.8
       },
       "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
+      "texture": "off_elevator_floor_zone",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.94,
       "position": {
         "x": 0,
         "y": 4.811999999999999,
-        "z": -11.2
+        "z": -11.35
       },
       "size": {
-        "h": 1.2,
-        "w": 3.2
+        "h": 1.4,
+        "w": 2.8
       },
       "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
+      "texture": "off_elevator_floor_zone",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.88,
+      "opacity": 0.94,
       "position": {
         "x": 0,
         "y": 9.612,
         "z": -16.8
       },
       "size": {
-        "h": 1.2,
-        "w": 3.2
+        "h": 1.4,
+        "w": 2.8
       },
       "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
+      "texture": "off_elevator_floor_zone",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {
-      "opacity": 0.72,
-      "position": {
-        "x": 0,
-        "y": 0.011,
-        "z": 21.5
-      },
-      "size": {
-        "h": 0.75,
-        "w": 13.6
-      },
-      "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.7,
-      "position": {
-        "x": 0,
-        "y": 0.011,
-        "z": 10
-      },
-      "size": {
-        "h": 0.65,
-        "w": 11.4
-      },
-      "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.8,
-      "position": {
-        "x": 0,
-        "y": 0.012,
-        "z": 22.8
-      },
-      "size": {
-        "h": 0.8,
-        "w": 3.2
-      },
-      "surface": "floor",
-      "texture": "floor_stop",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -2.8,
-        "y": 0.01,
-        "z": 25.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -2.8,
-        "y": 0.01,
-        "z": 16.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -2.8,
-        "y": 0.01,
-        "z": 11.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -2.8,
-        "y": 0.01,
-        "z": 4.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -2.8,
-        "y": 0.01,
-        "z": -3.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -2.8,
-        "y": 0.01,
-        "z": -9.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.8,
-      "position": {
-        "x": -6.5,
-        "y": 0.01,
-        "z": 20
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.4
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#3d7bff",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.8,
-      "position": {
-        "x": -6.5,
-        "y": 0.01,
-        "z": 1
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.4
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#3d7bff",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.58,
-      "position": {
-        "x": -7.8,
-        "y": 0.01,
-        "z": 20
-      },
-      "size": {
-        "h": 1.5,
-        "w": 1.4
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.58,
-      "position": {
-        "x": -7.8,
-        "y": 0.01,
-        "z": 1
-      },
-      "size": {
-        "h": 1.5,
-        "w": 1.4
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#3d7bff",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 2.8,
-        "y": 0.01,
-        "z": 25.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 2.8,
-        "y": 0.01,
-        "z": 16.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 2.8,
-        "y": 0.01,
-        "z": 11.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 2.8,
-        "y": 0.01,
-        "z": 4.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 2.8,
-        "y": 0.01,
-        "z": -3.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 2.8,
-        "y": 0.01,
-        "z": -9.5
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.2
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.8,
-      "position": {
-        "x": 6.5,
-        "y": 0.01,
-        "z": 24
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.4
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#3d7bff",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.8,
-      "position": {
-        "x": 6.5,
-        "y": 0.01,
-        "z": 1
-      },
-      "size": {
-        "h": 0.38,
-        "w": 5.4
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#3d7bff",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.58,
-      "position": {
-        "x": 7.8,
-        "y": 0.01,
-        "z": 24
-      },
-      "size": {
-        "h": 1.5,
-        "w": 1.4
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": -1.5707963267948966
-    },
-    {
-      "opacity": 0.58,
-      "position": {
-        "x": 7.8,
-        "y": 0.01,
-        "z": 1
-      },
-      "size": {
-        "h": 1.5,
-        "w": 1.4
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#3d7bff",
-      "yaw": -1.5707963267948966
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": -17.2,
-        "y": 0.01,
-        "z": 5.5
-      },
-      "size": {
-        "h": 0.36,
-        "w": 6
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#3d7bff",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": 16.5,
-        "y": 0.01,
-        "z": 5.5
-      },
-      "size": {
-        "h": 0.36,
-        "w": 5.6
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": -17.2,
-        "y": 0.01,
-        "z": 14.5
-      },
-      "size": {
-        "h": 0.36,
-        "w": 6
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#3d7bff",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": 16.5,
-        "y": 0.01,
-        "z": 14.5
-      },
-      "size": {
-        "h": 0.36,
-        "w": 5.6
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": -17.2,
-        "y": 0.01,
-        "z": 23.5
-      },
-      "size": {
-        "h": 0.36,
-        "w": 6
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#3d7bff",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.75,
-      "position": {
-        "x": 16.5,
-        "y": 0.01,
-        "z": 23.5
-      },
-      "size": {
-        "h": 0.36,
-        "w": 5.6
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -4.5,
-        "y": 4.81,
-        "z": -19
-      },
-      "size": {
-        "h": 0.38,
-        "w": 7
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -3,
-        "y": 9.61,
-        "z": -22
-      },
-      "size": {
-        "h": 0.38,
-        "w": 7
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": -1.8,
-        "y": 9.61,
-        "z": -35
-      },
-      "size": {
-        "h": 0.38,
-        "w": 9
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#6dff4a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 4.5,
-        "y": 4.81,
-        "z": -19
-      },
-      "size": {
-        "h": 0.38,
-        "w": 7
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 3,
-        "y": 9.61,
-        "z": -22
-      },
-      "size": {
-        "h": 0.38,
-        "w": 7
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.82,
-      "position": {
-        "x": 1.8,
-        "y": 9.61,
-        "z": -35
-      },
-      "size": {
-        "h": 0.38,
-        "w": 9
-      },
-      "surface": "floor",
-      "texture": "lab_clearance_line",
-      "tint": "#6dff4a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "opacity": 0.48,
-      "position": {
-        "x": -0.9,
-        "y": 0.01,
-        "z": 28.4
-      },
-      "size": {
-        "h": 1.1,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "puddle1",
-      "tint": "#8fa5c8",
-      "yaw": 0.15
-    },
-    {
-      "opacity": 0.55,
-      "position": {
-        "x": -0.6000000000000001,
-        "y": 0.015,
-        "z": 27.299999999999997
-      },
-      "size": {
-        "h": 2.4,
-        "w": 1.1
-      },
-      "surface": "floor",
-      "texture": "mall_wet_footprints",
-      "tint": "#fff1d6",
-      "yaw": 3.2165926535897933
-    },
-    {
-      "opacity": 0.48,
-      "position": {
-        "x": 1.1,
-        "y": 0.01,
-        "z": 27.2
-      },
-      "size": {
-        "h": 1.1,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "puddle1",
-      "tint": "#8fa5c8",
-      "yaw": -0.2
-    },
-    {
-      "opacity": 0.55,
-      "position": {
-        "x": 1.4000000000000001,
-        "y": 0.015,
-        "z": 26.099999999999998
-      },
-      "size": {
-        "h": 2.4,
-        "w": 1.1
-      },
-      "surface": "floor",
-      "texture": "mall_wet_footprints",
-      "tint": "#fff1d6",
-      "yaw": 3.041592653589793
-    },
-    {
-      "opacity": 0.48,
-      "position": {
-        "x": -0.6,
-        "y": 0.01,
-        "z": 24.8
-      },
-      "size": {
-        "h": 1.1,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "puddle1",
-      "tint": "#8fa5c8",
-      "yaw": 0.1
-    },
-    {
-      "opacity": 0.55,
-      "position": {
-        "x": -0.3,
-        "y": 0.015,
-        "z": 23.7
-      },
-      "size": {
-        "h": 2.4,
-        "w": 1.1
-      },
-      "surface": "floor",
-      "texture": "mall_wet_footprints",
-      "tint": "#fff1d6",
-      "yaw": 3.191592653589793
-    },
-    {
-      "opacity": 0.48,
-      "position": {
-        "x": 1.4,
-        "y": 0.01,
-        "z": 19.8
-      },
-      "size": {
-        "h": 1.1,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "puddle1",
-      "tint": "#8fa5c8",
-      "yaw": -0.25
-    },
-    {
-      "opacity": 0.55,
-      "position": {
-        "x": 1.7,
-        "y": 0.015,
-        "z": 18.7
-      },
-      "size": {
-        "h": 2.4,
-        "w": 1.1
-      },
-      "surface": "floor",
-      "texture": "mall_wet_footprints",
-      "tint": "#fff1d6",
-      "yaw": 3.016592653589793
-    },
-    {
-      "opacity": 0.48,
-      "position": {
-        "x": -2.2,
-        "y": 0.01,
-        "z": 8.8
-      },
-      "size": {
-        "h": 1.1,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "puddle1",
-      "tint": "#8fa5c8",
-      "yaw": 0.3
-    },
-    {
-      "opacity": 0.55,
-      "position": {
-        "x": -1.9000000000000001,
-        "y": 0.015,
-        "z": 7.700000000000001
-      },
-      "size": {
-        "h": 2.4,
-        "w": 1.1
-      },
-      "surface": "floor",
-      "texture": "mall_wet_footprints",
-      "tint": "#fff1d6",
-      "yaw": 3.291592653589793
-    },
-    {
-      "opacity": 0.48,
-      "position": {
-        "x": 2.4,
-        "y": 0.01,
-        "z": -4.5
-      },
-      "size": {
-        "h": 1.1,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "puddle1",
-      "tint": "#8fa5c8",
-      "yaw": -0.2
-    },
-    {
-      "opacity": 0.55,
-      "position": {
-        "x": 2.6999999999999997,
-        "y": 0.015,
-        "z": -5.6
-      },
-      "size": {
-        "h": 2.4,
-        "w": 1.1
-      },
-      "surface": "floor",
-      "texture": "mall_wet_footprints",
-      "tint": "#fff1d6",
-      "yaw": 3.041592653589793
-    },
-    {
-      "opacity": 0.58,
-      "position": {
-        "x": -17.2,
-        "y": 4.8149999999999995,
-        "z": -20.5
-      },
-      "size": {
-        "h": 2.4,
-        "w": 1.1
-      },
-      "surface": "floor",
-      "texture": "mall_wet_footprints",
-      "tint": "#fff1d6",
-      "yaw": 0.4
-    },
-    {
-      "opacity": 0.85,
+      "opacity": 0.94,
       "position": {
         "x": -19.2,
         "y": 0.012,
         "z": 15.2
       },
       "size": {
-        "h": 1.3,
-        "w": 1.3
+        "h": 0.95,
+        "w": 0.95
       },
       "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
       "yaw": 0.3
     },
     {
-      "opacity": 0.85,
+      "opacity": 0.94,
       "position": {
         "x": -16.8,
         "y": 0.012,
         "z": 7.2
       },
       "size": {
-        "h": 1.3,
-        "w": 1.3
+        "h": 0.95,
+        "w": 0.95
       },
       "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
       "yaw": -0.4
     },
     {
-      "opacity": 0.85,
-      "position": {
-        "x": -22.8,
-        "y": 0.012,
-        "z": 12.2
-      },
-      "size": {
-        "h": 1.3,
-        "w": 1.3
-      },
-      "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
-      "yaw": 0.2
-    },
-    {
-      "opacity": 0.85,
-      "position": {
-        "x": 15.8,
-        "y": 0.012,
-        "z": 6.2
-      },
-      "size": {
-        "h": 1.3,
-        "w": 1.3
-      },
-      "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
-      "yaw": -0.35
-    },
-    {
-      "opacity": 0.85,
-      "position": {
-        "x": -3.2,
-        "y": 0.012,
-        "z": 12.8
-      },
-      "size": {
-        "h": 1.3,
-        "w": 1.3
-      },
-      "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
-      "yaw": 0.25
-    },
-    {
-      "opacity": 0.85,
+      "opacity": 0.94,
       "position": {
         "x": 15.5,
         "y": 4.811999999999999,
         "z": -21.2
       },
       "size": {
-        "h": 1.3,
-        "w": 1.3
+        "h": 1.05,
+        "w": 1.05
       },
       "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
       "yaw": 0.2
     },
     {
-      "opacity": 0.85,
+      "opacity": 0.94,
       "position": {
         "x": 14.2,
         "y": 4.811999999999999,
         "z": -15.6
       },
       "size": {
-        "h": 1.3,
-        "w": 1.3
+        "h": 0.95,
+        "w": 0.95
       },
       "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
       "yaw": -0.5
     },
     {
-      "opacity": 0.85,
+      "opacity": 0.94,
       "position": {
-        "x": 7.2,
-        "y": 9.612,
-        "z": -25.8
+        "x": -18.9,
+        "y": 10.388,
+        "z": -18.19
       },
       "size": {
-        "h": 1.3,
-        "w": 1.3
+        "h": 0.34,
+        "w": 0.34
       },
       "surface": "floor",
-      "texture": "lab_redacted_papers",
-      "tint": "#fff1d6",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
+      "yaw": 0.24
+    },
+    {
+      "opacity": 0.94,
+      "position": {
+        "x": -20.5,
+        "y": 9.612,
+        "z": -24.4
+      },
+      "size": {
+        "h": 0.85,
+        "w": 0.85
+      },
+      "surface": "floor",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
       "yaw": 0.15
     },
     {
-      "opacity": 0.92,
+      "opacity": 0.94,
       "position": {
-        "x": -10.18,
-        "y": 1.65,
-        "z": 14
+        "x": 18.9,
+        "y": 10.388,
+        "z": -18.19
       },
       "size": {
-        "h": 1.1,
-        "w": 1.6
+        "h": 0.34,
+        "w": 0.34
+      },
+      "surface": "floor",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
+      "yaw": -0.22
+    },
+    {
+      "opacity": 0.94,
+      "position": {
+        "x": 20.5,
+        "y": 9.612,
+        "z": -24.4
+      },
+      "size": {
+        "h": 0.85,
+        "w": 0.85
+      },
+      "surface": "floor",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
+      "yaw": -0.25
+    },
+    {
+      "opacity": 0.94,
+      "position": {
+        "x": -17.9,
+        "y": 10.388,
+        "z": -34.69
+      },
+      "size": {
+        "h": 0.34,
+        "w": 0.34
+      },
+      "surface": "floor",
+      "texture": "off_scattered_contracts",
+      "tint": "#ffffff",
+      "yaw": 0.18
+    },
+    {
+      "opacity": 0.96,
+      "position": {
+        "x": -10.22,
+        "y": 2.4,
+        "z": 16.5
+      },
+      "size": {
+        "h": 1.35,
+        "w": 0.9
       },
       "surface": "wall",
-      "texture": "board_resonance_profit",
-      "tint": "#ffae1a",
+      "texture": "off_kpi_poster",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
-      "opacity": 0.92,
+      "opacity": 0.96,
       "position": {
         "x": -14.5,
-        "y": 6.449999999999999,
-        "z": -12.18
+        "y": 6.55,
+        "z": -12.22
       },
       "size": {
-        "h": 1.1,
-        "w": 1.6
+        "h": 1.35,
+        "w": 0.9
       },
       "surface": "wall",
-      "texture": "board_resonance_profit",
-      "tint": "#3d7bff",
+      "texture": "off_kpi_poster",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {
-      "opacity": 0.95,
+      "opacity": 0.96,
       "position": {
-        "x": 16,
-        "y": 6.199999999999999,
-        "z": -12.18
+        "x": 10.22,
+        "y": 6.449999999999999,
+        "z": -21.5
       },
       "size": {
         "h": 0.65,
         "w": 0.65
       },
       "surface": "wall",
-      "texture": "sticky_code_0451",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
+      "texture": "off_printer_error_note",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
     },
     {
-      "opacity": 0.92,
+      "opacity": 0.96,
       "position": {
-        "x": -10.18,
-        "y": 6.25,
+        "x": -10.22,
+        "y": 6.4,
         "z": -15
       },
       "size": {
-        "h": 0.95,
-        "w": 0.95
+        "h": 0.82,
+        "w": 0.82
       },
       "surface": "wall",
-      "texture": "note_object_07",
-      "tint": "#6dff4a",
+      "texture": "off_coffee_rules",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
-      "opacity": 0.7,
+      "opacity": 0.8,
       "position": {
-        "x": -20,
+        "x": -9.86,
         "y": 1.3,
-        "z": 29.9
+        "z": -0.6000000000000001
       },
       "size": {
-        "h": 0.24,
-        "w": 3.6
+        "h": 0.36,
+        "w": 0.72
       },
       "surface": "wall",
-      "texture": "mall_tactile_strip",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
     },
     {
-      "opacity": 0.7,
+      "opacity": 0.8,
       "position": {
-        "x": 20,
+        "x": -9.86,
         "y": 1.3,
-        "z": 29.9
+        "z": 2.6
       },
       "size": {
-        "h": 0.24,
-        "w": 3.6
+        "h": 0.36,
+        "w": 0.72
       },
       "surface": "wall",
-      "texture": "mall_tactile_strip",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
     },
     {
-      "opacity": 0.7,
+      "opacity": 0.8,
       "position": {
-        "x": -20,
+        "x": 9.86,
+        "y": 1.3,
+        "z": -0.6000000000000001
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": 9.86,
+        "y": 1.3,
+        "z": 2.6
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -9.86,
         "y": 6.1,
-        "z": 7.9
+        "z": 0.3999999999999999
       },
       "size": {
-        "h": 0.24,
-        "w": 3.6
+        "h": 0.36,
+        "w": 0.72
       },
       "surface": "wall",
-      "texture": "mall_tactile_strip",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
     },
     {
-      "opacity": 0.7,
+      "opacity": 0.8,
       "position": {
-        "x": 20,
+        "x": -9.86,
         "y": 6.1,
-        "z": 7.9
+        "z": 3.6
       },
       "size": {
-        "h": 0.24,
-        "w": 3.6
+        "h": 0.36,
+        "w": 0.72
       },
       "surface": "wall",
-      "texture": "mall_tactile_strip",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
     },
     {
-      "opacity": 0.7,
+      "opacity": 0.8,
       "position": {
-        "x": -12,
-        "y": 10.9,
-        "z": -41.9
+        "x": 9.86,
+        "y": 6.1,
+        "z": 0.3999999999999999
       },
       "size": {
-        "h": 0.24,
-        "w": 3.6
+        "h": 0.36,
+        "w": 0.72
       },
       "surface": "wall",
-      "texture": "mall_tactile_strip",
-      "tint": "#ffae1a",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": 9.86,
+        "y": 6.1,
+        "z": 3.6
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -21.6,
+        "y": 6.1,
+        "z": -11.86
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.7,
+      "opacity": 0.8,
       "position": {
-        "x": 12,
-        "y": 10.9,
-        "z": -41.9
+        "x": -18.4,
+        "y": 6.1,
+        "z": -11.86
       },
       "size": {
-        "h": 0.24,
-        "w": 3.6
+        "h": 0.36,
+        "w": 0.72
       },
       "surface": "wall",
-      "texture": "mall_tactile_strip",
-      "tint": "#ffae1a",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.55,
+      "opacity": 0.8,
+      "position": {
+        "x": 18.4,
+        "y": 6.1,
+        "z": -11.86
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": 21.6,
+        "y": 6.1,
+        "z": -11.86
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 0
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -9.86,
+        "y": 10.9,
+        "z": -23.6
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": -9.86,
+        "y": 10.9,
+        "z": -20.4
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": 9.86,
+        "y": 10.9,
+        "z": -23.6
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.8,
+      "position": {
+        "x": 9.86,
+        "y": 10.9,
+        "z": -20.4
+      },
+      "size": {
+        "h": 0.36,
+        "w": 0.72
+      },
+      "surface": "wall",
+      "texture": "off_glass_frost_stripe",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.66,
       "position": {
         "x": -29.9,
         "y": 2.2,
         "z": 14
       },
       "size": {
-        "h": 2.2,
-        "w": 1.8
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "wall",
-      "texture": "leak_streak",
-      "tint": "#3d7bff",
+      "texture": "off_rain_streaks_glass",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
-      "opacity": 0.55,
+      "opacity": 0.66,
       "position": {
         "x": 29.9,
         "y": 2.2,
         "z": 14
       },
       "size": {
-        "h": 2.2,
-        "w": 1.8
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "wall",
-      "texture": "leak_streak",
-      "tint": "#3d7bff",
+      "texture": "off_rain_streaks_glass",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
-      "opacity": 0.55,
+      "opacity": 0.66,
+      "position": {
+        "x": -29.9,
+        "y": 7,
+        "z": -18
+      },
+      "size": {
+        "h": 2.6,
+        "w": 2.6
+      },
+      "surface": "wall",
+      "texture": "off_rain_streaks_glass",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 0.66,
+      "position": {
+        "x": 29.9,
+        "y": 7,
+        "z": -5
+      },
+      "size": {
+        "h": 2.6,
+        "w": 2.6
+      },
+      "surface": "wall",
+      "texture": "off_rain_streaks_glass",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "opacity": 0.66,
       "position": {
         "x": -23.9,
         "y": 12,
         "z": -35
       },
       "size": {
-        "h": 2.2,
-        "w": 1.8
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "wall",
-      "texture": "leak_streak",
-      "tint": "#3d7bff",
+      "texture": "off_rain_streaks_glass",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
-      "opacity": 0.55,
+      "opacity": 0.66,
       "position": {
         "x": 23.9,
         "y": 12,
         "z": -35
       },
       "size": {
-        "h": 2.2,
-        "w": 1.8
+        "h": 2.6,
+        "w": 2.6
       },
       "surface": "wall",
-      "texture": "leak_streak",
-      "tint": "#3d7bff",
+      "texture": "off_rain_streaks_glass",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
-    },
-    {
-      "opacity": 0.62,
-      "position": {
-        "x": 0,
-        "y": 0.01,
-        "z": 27
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.62,
-      "position": {
-        "x": 0,
-        "y": 0.01,
-        "z": 19
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.62,
-      "position": {
-        "x": 0,
-        "y": 0.01,
-        "z": 12
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.62,
-      "position": {
-        "x": 0,
-        "y": 0.01,
-        "z": 4.5
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.62,
-      "position": {
-        "x": 0,
-        "y": 0.01,
-        "z": -5
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.62,
-      "position": {
-        "x": 0,
-        "y": 0.01,
-        "z": -9.8
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.6,
-      "position": {
-        "x": 0,
-        "y": 9.61,
-        "z": -19
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#6dff4a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.6,
-      "position": {
-        "x": 0,
-        "y": 9.61,
-        "z": -25.8
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#6dff4a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.6,
-      "position": {
-        "x": 0,
-        "y": 9.61,
-        "z": -31.5
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#6dff4a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "opacity": 0.6,
-      "position": {
-        "x": 0,
-        "y": 9.61,
-        "z": -38.5
-      },
-      "size": {
-        "h": 1.7,
-        "w": 1.5
-      },
-      "surface": "floor",
-      "texture": "floor_arrow",
-      "tint": "#6dff4a",
-      "yaw": 3.141592653589793
     },
     {
       "opacity": 0.88,
@@ -16985,15 +15723,6 @@
       "yaw": 1.5707963267948966
     },
     {
-      "model": "city_ad_screen",
-      "position": {
-        "x": -9.8,
-        "y": 1.2,
-        "z": 26.2
-      },
-      "yaw": 1.5707963267948966
-    },
-    {
       "model": "wh_wall_terminal",
       "position": {
         "x": -9.8,
@@ -17017,15 +15746,6 @@
         "x": 9.8,
         "y": 1.1,
         "z": 14.2
-      },
-      "yaw": -1.5707963267948966
-    },
-    {
-      "model": "city_ad_screen",
-      "position": {
-        "x": 9.8,
-        "y": 1.2,
-        "z": 26.2
       },
       "yaw": -1.5707963267948966
     },
@@ -19186,15 +17906,15 @@
       "kind": "neon",
       "position": {
         "x": -5.2,
-        "y": 1.85,
+        "y": 1.96,
         "z": 11.24
       },
       "size": {
-        "h": 0.9,
-        "w": 1.8
+        "h": 1.57,
+        "w": 3.14
       },
-      "texture": "mall_kurogane",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_hq",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -19202,15 +17922,15 @@
       "kind": "neon",
       "position": {
         "x": 5.2,
-        "y": 1.85,
+        "y": 1.96,
         "z": 11.24
       },
       "size": {
-        "h": 0.9,
-        "w": 1.8
+        "h": 1.57,
+        "w": 3.14
       },
-      "texture": "mall_kurogane",
-      "tint": "#ffae1a",
+      "texture": "off_kurogane_hq",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -19218,175 +17938,239 @@
       "kind": "neon",
       "position": {
         "x": 0,
-        "y": 3.55,
-        "z": 10.22
+        "y": 4.4,
+        "z": 10.23
+      },
+      "size": {
+        "h": 0.73,
+        "w": 1.46
+      },
+      "texture": "off_kurogane_hq",
+      "tint": "#ffffff",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 0,
+        "y": 4.02,
+        "z": -12.05
+      },
+      "size": {
+        "h": 1.2,
+        "w": 2.4
+      },
+      "texture": "off_elevator_sign",
+      "tint": "#ffffff",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -2.95,
+        "y": 4.02,
+        "z": -12.05
+      },
+      "size": {
+        "h": 1.025,
+        "w": 2.05
+      },
+      "texture": "off_floor_60",
+      "tint": "#ffffff",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 0,
+        "y": 8.82,
+        "z": -12.05
+      },
+      "size": {
+        "h": 1.2,
+        "w": 2.4
+      },
+      "texture": "off_elevator_sign",
+      "tint": "#ffffff",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -2.95,
+        "y": 8.82,
+        "z": -12.05
+      },
+      "size": {
+        "h": 1.025,
+        "w": 2.05
+      },
+      "texture": "off_floor_61",
+      "tint": "#ffffff",
+      "yaw": 0
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 0,
+        "y": 13.62,
+        "z": -15.95
+      },
+      "size": {
+        "h": 1.2,
+        "w": 2.4
+      },
+      "texture": "off_elevator_sign",
+      "tint": "#ffffff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 2.95,
+        "y": 13.62,
+        "z": -15.95
+      },
+      "size": {
+        "h": 1.025,
+        "w": 2.05
+      },
+      "texture": "off_floor_62",
+      "tint": "#ffffff",
+      "yaw": 3.141592653589793
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -9.77,
+        "y": 2.55,
+        "z": 4.8
+      },
+      "size": {
+        "h": 1.05,
+        "w": 2.1
+      },
+      "texture": "off_floor_60",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 10.23,
+        "y": 2.55,
+        "z": 21
+      },
+      "size": {
+        "h": 0.875,
+        "w": 1.75
+      },
+      "texture": "off_floor_60",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -9.79,
+        "y": 8.719999999999999,
+        "z": -3
+      },
+      "size": {
+        "h": 1.075,
+        "w": 2.15
+      },
+      "texture": "off_floor_61",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": 9.79,
+        "y": 8.719999999999999,
+        "z": -3
+      },
+      "size": {
+        "h": 1.075,
+        "w": 2.15
+      },
+      "texture": "off_floor_61",
+      "tint": "#ffffff",
+      "yaw": -1.5707963267948966
+    },
+    {
+      "flicker": 0,
+      "kind": "neon",
+      "position": {
+        "x": -7.8,
+        "y": 13.8,
+        "z": -16.12
       },
       "size": {
         "h": 1,
         "w": 2
       },
-      "texture": "mall_kurogane",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 0,
-        "y": 3.5,
-        "z": 29.85
-      },
-      "size": {
-        "h": 0.95,
-        "w": 1.9
-      },
-      "texture": "floor_l0",
-      "tint": "#3d7bff",
+      "texture": "off_floor_62",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {
       "flicker": 0,
       "kind": "neon",
       "position": {
-        "x": -9.78,
-        "y": 3.6,
-        "z": 20
+        "x": 7.8,
+        "y": 13.8,
+        "z": -16.12
       },
       "size": {
-        "h": 0.85,
-        "w": 1.7
+        "h": 1,
+        "w": 2
       },
-      "texture": "floor_l0",
-      "tint": "#3d7bff",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 9.78,
-        "y": 3.6,
-        "z": 24
-      },
-      "size": {
-        "h": 0.85,
-        "w": 1.7
-      },
-      "texture": "mall_kurogane",
-      "tint": "#ffae1a",
-      "yaw": -1.5707963267948966
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": -9.78,
-        "y": 3.6,
-        "z": 1
-      },
-      "size": {
-        "h": 0.85,
-        "w": 1.7
-      },
-      "texture": "floor_l0",
-      "tint": "#3d7bff",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 9.78,
-        "y": 3.6,
-        "z": 1
-      },
-      "size": {
-        "h": 0.85,
-        "w": 1.7
-      },
-      "texture": "floor_l0",
-      "tint": "#ffae1a",
-      "yaw": -1.5707963267948966
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 0,
-        "y": 3.5,
-        "z": -12.05
-      },
-      "size": {
-        "h": 0.9,
-        "w": 1.8
-      },
-      "texture": "floor_l0",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 0,
-        "y": 8.3,
-        "z": -12.05
-      },
-      "size": {
-        "h": 0.9,
-        "w": 1.8
-      },
-      "texture": "floor_l1",
-      "tint": "#ffae1a",
-      "yaw": 0
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 0,
-        "y": 8.45,
-        "z": 7.85
-      },
-      "size": {
-        "h": 0.95,
-        "w": 1.9
-      },
-      "texture": "floor_l1",
-      "tint": "#ffae1a",
+      "texture": "off_floor_62",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {
       "flicker": 0,
       "kind": "neon",
       "position": {
-        "x": -9.85,
-        "y": 8.55,
+        "x": -9.77,
+        "y": 8.78,
         "z": 2
       },
       "size": {
-        "h": 0.9,
-        "w": 1.8
+        "h": 1.4,
+        "w": 2.8
       },
-      "texture": "lab_sector_x51",
-      "tint": "#3d7bff",
+      "texture": "off_conf_aegis",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
       "flicker": 0,
       "kind": "neon",
       "position": {
-        "x": 9.85,
-        "y": 8.55,
+        "x": 9.77,
+        "y": 8.78,
         "z": 2
       },
       "size": {
-        "h": 0.9,
-        "w": 1.8
+        "h": 1.4,
+        "w": 2.8
       },
-      "texture": "lab_prototype_armory",
-      "tint": "#8a5cff",
+      "texture": "off_conf_vanguard",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
@@ -19394,15 +18178,15 @@
       "kind": "neon",
       "position": {
         "x": -20,
-        "y": 8.45,
-        "z": -11.78
+        "y": 8.8,
+        "z": -11.77
       },
       "size": {
-        "h": 0.85,
-        "w": 1.7
+        "h": 1.3,
+        "w": 2.6
       },
-      "texture": "cat_cafe",
-      "tint": "#6dff4a",
+      "texture": "off_sky_lounge",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -19410,47 +18194,47 @@
       "kind": "neon",
       "position": {
         "x": 20,
-        "y": 8.45,
-        "z": -11.78
+        "y": 8.8,
+        "z": -11.77
       },
       "size": {
-        "h": 0.85,
-        "w": 1.7
+        "h": 1.3,
+        "w": 2.6
       },
-      "texture": "lab_data_vault",
-      "tint": "#3d7bff",
+      "texture": "off_it_repro",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
       "flicker": 0,
       "kind": "neon",
       "position": {
-        "x": -9.78,
-        "y": 8.45,
+        "x": -9.77,
+        "y": 8.8,
         "z": -19
       },
       "size": {
-        "h": 0.85,
-        "w": 1.7
+        "h": 1.3,
+        "w": 2.6
       },
-      "texture": "cat_cafe",
-      "tint": "#6dff4a",
+      "texture": "off_sky_lounge",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
       "flicker": 0,
       "kind": "neon",
       "position": {
-        "x": 9.78,
-        "y": 8.45,
+        "x": 9.77,
+        "y": 8.8,
         "z": -19
       },
       "size": {
-        "h": 0.85,
-        "w": 1.7
+        "h": 1.3,
+        "w": 2.6
       },
-      "texture": "lab_data_vault",
-      "tint": "#3d7bff",
+      "texture": "off_it_repro",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
@@ -19458,63 +18242,15 @@
       "kind": "neon",
       "position": {
         "x": 0,
-        "y": 13.1,
-        "z": -15.95
+        "y": 13.78,
+        "z": -27.77
       },
       "size": {
-        "h": 0.9,
-        "w": 1.8
+        "h": 1.55,
+        "w": 3.1
       },
-      "texture": "floor_l2",
-      "tint": "#ffae1a",
-      "yaw": 3.141592653589793
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": -9.85,
-        "y": 13.35,
-        "z": -22
-      },
-      "size": {
-        "h": 0.85,
-        "w": 1.7
-      },
-      "texture": "floor_l2",
-      "tint": "#ffae1a",
-      "yaw": 1.5707963267948966
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 9.85,
-        "y": 13.35,
-        "z": -22
-      },
-      "size": {
-        "h": 0.85,
-        "w": 1.7
-      },
-      "texture": "floor_l2",
-      "tint": "#8a5cff",
-      "yaw": -1.5707963267948966
-    },
-    {
-      "flicker": 0,
-      "kind": "neon",
-      "position": {
-        "x": 0,
-        "y": 13.25,
-        "z": -27.78
-      },
-      "size": {
-        "h": 1,
-        "w": 2
-      },
-      "texture": "lab_restricted_omega",
-      "tint": "#ffae1a",
+      "texture": "off_boardroom",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -19522,15 +18258,15 @@
       "kind": "neon",
       "position": {
         "x": 0,
-        "y": 13.25,
-        "z": -28.22
+        "y": 13.78,
+        "z": -28.23
       },
       "size": {
-        "h": 1,
-        "w": 2
+        "h": 1.55,
+        "w": 3.1
       },
-      "texture": "mall_kurogane",
-      "tint": "#ffae1a",
+      "texture": "off_boardroom",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {

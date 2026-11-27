@@ -1,101 +1,8 @@
-// Oprawa wizualna, tekstury z przełącznikiem PENDING_TEXTURES, easter eggi, zagrożenia, skrzynie,
+// Oprawa wizualna biurowca: tekstury, zagro?enia, skrzynie,
 // szyldy, światła i 18 punktów spawnu mapy run4 (Wieżowiec Korporacyjny Kurogane Arms — Piętra 60–62).
-import {
-  COLOR,
-  PI,
-  Q,
-  R,
-  Y_L0,
-  Y_L1,
-  Y_L2,
-  box,
-  vec,
-} from './_run4Kit.mjs';
+import { COLOR, PI, Q, R, Y_L0, Y_L1, Y_L2, box, vec } from './_run4Kit.mjs';
 
 const C = COLOR;
-
-/**
- * Przełącznik tekstur oczekujących z §4.2 docs/maps/run4.md (Etap C).
- * Domyślnie WYŁĄCZONY (`false`), aby `run4.json` ładował się bez brakujących plików `.webp`
- * i korzystał z pasujących do biura istniejących tekstur/szyldów z innych map.
- */
-export const USE_PENDING_TEXTURES = false;
-
-/**
- * Zbiorczy rejestr wszystkich tekstur z §4.2 docs/maps/run4.md wraz z istniejącymi zamiennikami.
- */
-export const PENDING_TEXTURES = {
-  // --- Szyldy neonowe (public/assets/textures/signs/) ---
-  off_kurogane_hq: { pending: 'off_kurogane_hq', fallback: 'mall_kurogane' },
-  off_floor_60: { pending: 'off_floor_60', fallback: 'floor_l0' },
-  off_floor_61: { pending: 'off_floor_61', fallback: 'floor_l1' },
-  off_floor_62: { pending: 'off_floor_62', fallback: 'floor_l2' },
-  off_conf_aegis: { pending: 'off_conf_aegis', fallback: 'lab_sector_x51' },
-  off_conf_vanguard: {
-    pending: 'off_conf_vanguard',
-    fallback: 'lab_prototype_armory',
-  },
-  off_sky_lounge: { pending: 'off_sky_lounge', fallback: 'cat_cafe' },
-  off_it_repro: { pending: 'off_it_repro', fallback: 'lab_data_vault' },
-  off_boardroom: { pending: 'off_boardroom', fallback: 'lab_restricted_omega' },
-  off_elevator_sign: { pending: 'off_elevator_sign', fallback: 'floor_l0' },
-
-  // --- Decale i humor korporacyjny (public/assets/textures/decals/) ---
-  off_kurogane_floor_crest: {
-    pending: 'off_kurogane_floor_crest',
-    fallback: 'plaque_evil_corp',
-  },
-  off_elevator_floor_zone: {
-    pending: 'off_elevator_floor_zone',
-    fallback: 'lab_clearance_line',
-  },
-  off_scattered_contracts: {
-    pending: 'off_scattered_contracts',
-    fallback: 'lab_redacted_papers',
-  },
-  off_kpi_poster: {
-    pending: 'off_kpi_poster',
-    fallback: 'board_resonance_profit',
-  },
-  off_printer_error_note: {
-    pending: 'off_printer_error_note',
-    fallback: 'sticky_code_0451',
-  },
-  off_coffee_rules: {
-    pending: 'off_coffee_rules',
-    fallback: 'note_object_07',
-  },
-  off_glass_frost_stripe: {
-    pending: 'off_glass_frost_stripe',
-    fallback: 'mall_tactile_strip',
-  },
-  off_rain_streaks_glass: {
-    pending: 'off_rain_streaks_glass',
-    fallback: 'leak_streak',
-  },
-
-  // --- Ekrany i etykiety UV (public/assets/textures/screens/, labels/) ---
-  screen_office_analytics: {
-    pending: 'screen_office_analytics',
-    fallback: 'screen_news',
-  },
-  screen_elevator_panel: {
-    pending: 'screen_elevator_panel',
-    fallback: 'screen_status',
-  },
-  label_office_mug: {
-    pending: 'label_office_mug',
-    fallback: 'label_lab_mug',
-  },
-};
-
-/** Aktywne identyfikatory tekstur biurowca (zależnie od flagi `USE_PENDING_TEXTURES`). */
-export const OFFICE_TEXTURES = Object.fromEntries(
-  Object.entries(PENDING_TEXTURES).map(([key, { pending, fallback }]) => [
-    key,
-    USE_PENDING_TEXTURES ? pending : fallback,
-  ]),
-);
 
 /** Pomocnik dodający naklejkę podłogową lub ścienną z `tint`. */
 function mark(
@@ -246,379 +153,139 @@ function hazards(k, p) {
   p.reserve(R(27.0, 28.0, -14.5, -13.5), Y_L1);
   k.fx('sparks', 23.5, Y_L1 + 0.8, -18.0, 1.2);
   k.fx('sparks', 16.5, Y_L2 + 0.85, -35.5, 0.9);
-  mark(k, 'floor_hazard', 18.5, Y_L0 + 0.01, 14.0, 7.2, 0.8, 0, C.amber, 0.75);
-  mark(k, 'floor_hazard', 23.5, Y_L1 + 0.01, -18.0, 3.0, 3.2, 0, C.blue, 0.75);
-  mark(k, 'floor_hazard', 16.5, Y_L2 + 0.01, -35.5, 7.2, 0.8, Q, C.violet, 0.75);
 }
 
-/** Oznakowanie poziome, ścieżki w granicie, herby Kurogane Arms, ślady stóp i easter eggi (§4.2). */
-function decalsAndEasterEggs(k) {
-  // Herby podłogowe Kurogane Arms w granicie Lobby R1, Atrium A0, Foyer Zarządu R9 i Gabinetu R10.
-  for (const [x, y, z, w, h] of [
-    [0, Y_L0, 24.5, 3.4, 1.7],
-    [0, Y_L0, 15.2, 3.6, 1.8],
-    [0, Y_L0, 2.0, 3.8, 1.9],
-    [0, Y_L0, -7.2, 3.2, 1.6],
-    [0, Y_L2, -20.0, 3.2, 1.6],
-    [0, Y_L2, -35.0, 3.6, 1.8],
+function decals(k) {
+  for (const [x, y, z, size] of [
+    [0, Y_L0, 24.5, 3.0],
+    [0, Y_L0, 15.7, 2.4],
+    [0, Y_L0, 2.0, 2.6],
+    [0, Y_L0, -7.0, 2.6],
+    [0, Y_L2, -20.5, 2.6],
+    [0, Y_L2, -35.0, 2.6],
   ]) {
     mark(
       k,
-      OFFICE_TEXTURES.off_kurogane_floor_crest,
+      'off_kurogane_floor_crest',
       x,
       y + 0.012,
       z,
-      w,
-      h,
+      size,
+      size,
       0,
-      C.amber,
-      0.88,
+      '#ffffff',
+      0.92,
     );
   }
 
-  // Oznaczenia progów przed 3 przystankami działającej windy (L0, L1, L2) oraz przed kordonem bramek R1.
-  mark(
-    k,
-    OFFICE_TEXTURES.off_elevator_floor_zone,
-    0,
-    Y_L0 + 0.012,
-    -11.5,
-    3.2,
-    1.2,
-    0,
-    C.amber,
-    0.88,
-  );
-  mark(
-    k,
-    OFFICE_TEXTURES.off_elevator_floor_zone,
-    0,
-    Y_L1 + 0.012,
-    -11.2,
-    3.2,
-    1.2,
-    0,
-    C.amber,
-    0.88,
-  );
-  mark(
-    k,
-    OFFICE_TEXTURES.off_elevator_floor_zone,
-    0,
-    Y_L2 + 0.012,
-    -16.8,
-    3.2,
-    1.2,
-    PI,
-    C.amber,
-    0.88,
-  );
-  mark(k, 'floor_hazard', 0, Y_L0 + 0.011, 21.5, 13.6, 0.75, 0, C.amber, 0.72);
-  mark(k, 'floor_hazard', 0, Y_L0 + 0.011, 10.0, 11.4, 0.65, 0, C.amber, 0.7);
-  mark(k, 'floor_stop', 0, Y_L0 + 0.012, 22.8, 3.2, 0.8, PI, C.amber, 0.8);
+  for (const [y, z, yaw] of [
+    [Y_L0, -11.35, 0],
+    [Y_L1, -11.35, 0],
+    [Y_L2, -16.8, PI],
+  ]) {
+    mark(
+      k,
+      'off_elevator_floor_zone',
+      0,
+      y + 0.012,
+      z,
+      2.8,
+      1.4,
+      yaw,
+      '#ffffff',
+      0.94,
+    );
+  }
 
-  // Ścieżki prowadzące w granicie (wzorem run3): z Lobby R1 przez Atrium A0 do windy, schodów i skrzydeł R2/R3.
-  for (const sx of [-1, 1]) {
-    for (const z of [25.5, 16.5, 11.5, 4.5, -3.5, -9.5]) {
+  for (const [x, y, z, size, yaw] of [
+    [-19.2, Y_L0, 15.2, 0.95, 0.3],
+    [-16.8, Y_L0, 7.2, 0.95, -0.4],
+    [15.5, Y_L1, -21.2, 1.05, 0.2],
+    [14.2, Y_L1, -15.6, 0.95, -0.5],
+    [-18.9, Y_L2 + 0.776, -18.19, 0.34, 0.24],
+    [-20.5, Y_L2, -24.4, 0.85, 0.15],
+    [18.9, Y_L2 + 0.776, -18.19, 0.34, -0.22],
+    [20.5, Y_L2, -24.4, 0.85, -0.25],
+    [-17.9, Y_L2 + 0.776, -34.69, 0.34, 0.18],
+  ]) {
+    mark(
+      k,
+      'off_scattered_contracts',
+      x,
+      y + 0.012,
+      z,
+      size,
+      size,
+      yaw,
+      '#ffffff',
+      0.94,
+    );
+  }
+
+  // Ekrany analityczne i nadruki kubk?w korzystaj? z UV modeli off_desk_pod,
+  // off_conf_screen_wall, off_executive_desk i off_coffee_machine.
+  for (const [texture, x, y, z, w, h, yaw] of [
+    ['off_kpi_poster', -10.22, Y_L0 + 2.4, 16.5, 0.9, 1.35, -Q],
+    ['off_kpi_poster', -14.5, Y_L1 + 1.75, -12.22, 0.9, 1.35, PI],
+    ['off_printer_error_note', 10.22, Y_L1 + 1.65, -21.5, 0.65, 0.65, Q],
+    ['off_coffee_rules', -10.22, Y_L1 + 1.6, -15.0, 0.82, 0.82, -Q],
+  ]) {
+    mark(k, texture, x, y, z, w, h, yaw, '#ffffff', 0.96, 'wall');
+  }
+
+  // Sta?e skrzyd?a szklanych portali. Ka?dy pas ma osobny blok no?ny.
+  for (const [x, y, z, alongX, facing] of [
+    [-10, Y_L0, 1, false, 1],
+    [10, Y_L0, 1, false, -1],
+    [-10, Y_L1, 2, false, 1],
+    [10, Y_L1, 2, false, -1],
+    [-20, Y_L1, -12, true, 1],
+    [20, Y_L1, -12, true, 1],
+    [-10, Y_L2, -22, false, 1],
+    [10, Y_L2, -22, false, -1],
+  ]) {
+    for (const offset of [-1.6, 1.6]) {
+      const px = x + (alongX ? offset : facing * 0.14);
+      const pz = z + (alongX ? facing * 0.14 : offset);
       mark(
         k,
-        OFFICE_TEXTURES.off_elevator_floor_zone,
-        sx * 2.8,
-        Y_L0 + 0.01,
-        z,
-        5.2,
-        0.38,
-        Q,
-        C.amber,
-        0.82,
+        'off_glass_frost_stripe',
+        px,
+        y + 1.3,
+        pz,
+        0.72,
+        0.36,
+        alongX ? 0 : facing * Q,
+        '#ffffff',
+        0.8,
+        'wall',
       );
     }
-    // Poprzeczne ścieżki do skrzydeł bocznych R2 (X = -10) i R3 (X = +10) oraz w Openspace R2.
-    mark(
-      k,
-      OFFICE_TEXTURES.off_elevator_floor_zone,
-      sx * 6.5,
-      Y_L0 + 0.01,
-      sx < 0 ? 20.0 : 24.0,
-      5.4,
-      0.38,
-      0,
-      C.blue,
-      0.8,
-    );
-    mark(
-      k,
-      OFFICE_TEXTURES.off_elevator_floor_zone,
-      sx * 6.5,
-      Y_L0 + 0.01,
-      1.0,
-      5.4,
-      0.38,
-      0,
-      C.blue,
-      0.8,
-    );
-    mark(
-      k,
-      'floor_arrow',
-      sx * 7.8,
-      Y_L0 + 0.01,
-      sx < 0 ? 20.0 : 24.0,
-      1.4,
-      1.5,
-      sx < 0 ? Q : -Q,
-      C.amber,
-      0.58,
-    );
-    mark(
-      k,
-      'floor_arrow',
-      sx * 7.8,
-      Y_L0 + 0.01,
-      1.0,
-      1.4,
-      1.5,
-      sx < 0 ? Q : -Q,
-      C.blue,
-      0.58,
-    );
-  }
-  // Linie komunikacyjne w alejach Openspace R2 (X = -17.2 i -23.2) oraz Korytarza Panoramowego R3 (X = 16.5).
-  for (const z of [5.5, 14.5, 23.5]) {
-    mark(
-      k,
-      OFFICE_TEXTURES.off_elevator_floor_zone,
-      -17.2,
-      Y_L0 + 0.01,
-      z,
-      6.0,
-      0.36,
-      Q,
-      C.blue,
-      0.75,
-    );
-    mark(
-      k,
-      OFFICE_TEXTURES.off_elevator_floor_zone,
-      16.5,
-      Y_L0 + 0.01,
-      z,
-      5.6,
-      0.36,
-      Q,
-      C.amber,
-      0.75,
-    );
-  }
-  // Linie prowadzące na Mostku L1, w Galerii Północnej L1 oraz w Foyer Zarządu L2 i Penthouse R10.
-  for (const sx of [-1, 1]) {
-    mark(
-      k,
-      OFFICE_TEXTURES.off_elevator_floor_zone,
-      sx * 4.5,
-      Y_L1 + 0.01,
-      -19.0,
-      7.0,
-      0.38,
-      0,
-      C.amber,
-      0.82,
-    );
-    mark(
-      k,
-      OFFICE_TEXTURES.off_elevator_floor_zone,
-      sx * 3.0,
-      Y_L2 + 0.01,
-      -22.0,
-      7.0,
-      0.38,
-      Q,
-      C.amber,
-      0.82,
-    );
-    mark(
-      k,
-      OFFICE_TEXTURES.off_elevator_floor_zone,
-      sx * 1.8,
-      Y_L2 + 0.01,
-      -35.0,
-      9.0,
-      0.38,
-      Q,
-      C.green,
-      0.82,
-    );
   }
 
-  // Mokre ślady obuwia (`mall_wet_footprints`) i naniesione kałuże przy wejściu do Lobby R1 oraz w Atrium i kuchni R6.
-  for (const [x, z, yaw] of [
-    [-0.9, 28.4, 0.15],
-    [1.1, 27.2, -0.2],
-    [-0.6, 24.8, 0.1],
-    [1.4, 19.8, -0.25],
-    [-2.2, 8.8, 0.3],
-    [2.4, -4.5, -0.2],
-  ]) {
-    mark(k, 'puddle1', x, Y_L0 + 0.01, z, 1.5, 1.1, yaw, '#8fa5c8', 0.48);
-    mark(
-      k,
-      'mall_wet_footprints',
-      x + 0.3,
-      Y_L0 + 0.015,
-      z - 1.1,
-      1.1,
-      2.4,
-      PI + yaw * 0.5,
-      C.warm,
-      0.55,
-    );
-  }
-  mark(
-    k,
-    'mall_wet_footprints',
-    -17.2,
-    Y_L1 + 0.015,
-    -20.5,
-    1.1,
-    2.4,
-    0.4,
-    C.warm,
-    0.58,
-  );
-
-  // Porozrzucane poufne kontrakty zbrojeniowe przy drukarkach w R7, w R2, R3 i w R9.
-  for (const [x, y, z, yaw] of [
-    [-19.2, Y_L0, 15.2, 0.3],
-    [-16.8, Y_L0, 7.2, -0.4],
-    [-22.8, Y_L0, 12.2, 0.2],
-    [15.8, Y_L0, 6.2, -0.35],
-    [-3.2, Y_L0, 12.8, 0.25],
-    [15.5, Y_L1, -21.2, 0.2],
-    [14.2, Y_L1, -15.6, -0.5],
-    [7.2, Y_L2, -25.8, 0.15],
-  ]) {
-    mark(
-      k,
-      OFFICE_TEXTURES.off_scattered_contracts,
-      x,
-      y + 0.012,
-      z,
-      1.3,
-      1.3,
-      yaw,
-      C.warm,
-      0.85,
-    );
-  }
-
-  // Plakaty motywacyjne KPI, kartka o zacinającej drukarce nr 4 i regulamin synt-kofeiny
-  // (każda naklejka ścienna leży w 100% wewnątrz pojedynczego ciągłego bloku ściany!).
-  mark(
-    k,
-    OFFICE_TEXTURES.off_kpi_poster,
-    -10.18,
-    Y_L0 + 1.65,
-    14.0,
-    1.6,
-    1.1,
-    -Q,
-    C.amber,
-    0.92,
-    'wall',
-  );
-  // Na Z = -12 (R4/R6) otwór drzwiowy to X ∈ [-22, -18]; ciągły blok ściany to X ∈ [-18, -10], środek X = -14.5.
-  mark(
-    k,
-    OFFICE_TEXTURES.off_kpi_poster,
-    -14.5,
-    Y_L1 + 1.65,
-    -12.18,
-    1.6,
-    1.1,
-    PI,
-    C.blue,
-    0.92,
-    'wall',
-  );
-  // Na Z = -12 (R5/R7) otwór drzwiowy to X ∈ [18, 22]; ciągły blok ściany to X ∈ [10, 18], środek X = 16.0.
-  mark(
-    k,
-    OFFICE_TEXTURES.off_printer_error_note,
-    16.0,
-    Y_L1 + 1.4,
-    -12.18,
-    0.65,
-    0.65,
-    PI,
-    C.amber,
-    0.95,
-    'wall',
-  );
-  // Na X = -10 (R6/A0) otwór drzwiowy to Z ∈ [-21, -17]; ciągły blok ściany to Z ∈ [-17, -12], środek Z = -15.0.
-  mark(
-    k,
-    OFFICE_TEXTURES.off_coffee_rules,
-    -10.18,
-    Y_L1 + 1.45,
-    -15.0,
-    0.95,
-    0.95,
-    -Q,
-    C.green,
-    0.92,
-    'wall',
-  );
-
-  // Pasy ostrzegawcze na szklanych ściankach i krople deszczu na zewnętrznych fasadach
-  // (na Z = -42 w R10 omijamy otwór exit X ∈ [-2, 2], umieszczając pasy na pełnych blokach X = ±12).
-  for (const [x, y, z, yaw] of [
-    [-20.0, Y_L0 + 1.3, 29.9, PI],
-    [20.0, Y_L0 + 1.3, 29.9, PI],
-    [-20.0, Y_L1 + 1.3, 7.9, PI],
-    [20.0, Y_L1 + 1.3, 7.9, PI],
-    [-12.0, Y_L2 + 1.3, -41.9, 0],
-    [12.0, Y_L2 + 1.3, -41.9, 0],
-  ]) {
-    mark(
-      k,
-      OFFICE_TEXTURES.off_glass_frost_stripe,
-      x,
-      y,
-      z,
-      3.6,
-      0.24,
-      yaw,
-      C.amber,
-      0.7,
-      'wall',
-    );
-  }
   for (const [x, y, z, yaw] of [
     [-29.9, Y_L0 + 2.2, 14.0, Q],
     [29.9, Y_L0 + 2.2, 14.0, -Q],
+    [-29.9, Y_L1 + 2.2, -18.0, Q],
+    [29.9, Y_L1 + 2.2, -5.0, -Q],
     [-23.9, Y_L2 + 2.4, -35.0, Q],
     [23.9, Y_L2 + 2.4, -35.0, -Q],
   ]) {
     mark(
       k,
-      OFFICE_TEXTURES.off_rain_streaks_glass,
+      'off_rain_streaks_glass',
       x,
       y,
       z,
-      1.8,
-      2.2,
+      2.6,
+      2.6,
       yaw,
-      C.blue,
-      0.55,
+      '#ffffff',
+      0.66,
       'wall',
     );
   }
 
-  // Strzałki kierunkowe i oznaczenie śluzy ewakuacyjnej EXIT na Piętrze 62.
-  for (const z of [27.0, 19.0, 12.0, 4.5, -5.0, -9.8])
-    mark(k, 'floor_arrow', 0, Y_L0 + 0.01, z, 1.5, 1.7, PI, C.amber, 0.62);
-  for (const z of [-19.0, -25.8, -31.5, -38.5])
-    mark(k, 'floor_arrow', 0, Y_L2 + 0.01, z, 1.5, 1.7, PI, C.green, 0.6);
   mark(
     k,
     'mall_exit_stencil',
@@ -635,87 +302,40 @@ function decalsAndEasterEggs(k) {
 
 /** Szyldy neonowe (`kind: "neon"`, 0 stożków `holo`!) nad portalami, za recepcją i na szybie windy na 3 piętrach. */
 function signage(k) {
-  const neon = (texture, x, y, z, w, h, yaw, tint, flicker = 0) => {
-    const width = Math.min(w, h * 2);
-    k.neon(texture, x, y, z, width, width / 2, yaw, tint, flicker);
-  };
+  const neon = (texture, x, y, z, w, yaw) =>
+    k.neon(texture, x, y, z, w, w / 2, yaw, '#ffffff', 0);
 
-  // --- PIĘTRO 60 (L0) ---
-  // R1 Lobby: logo Kurogane na dwóch ściankach reprezentacyjnych za recepcją (Z = 11.24, y = 1.85 m),
-  // nad głównym portalem do Atrium (Z = 10.22, obniżone do y = 3.55 m z dala od stropu!) oraz nad entry.
-  neon(OFFICE_TEXTURES.off_kurogane_hq, -5.2, Y_L0 + 1.85, 11.24, 2.6, 0.9, 0, C.amber);
-  neon(OFFICE_TEXTURES.off_kurogane_hq, 5.2, Y_L0 + 1.85, 11.24, 2.6, 0.9, 0, C.amber);
-  neon(OFFICE_TEXTURES.off_kurogane_hq, 0, Y_L0 + 3.55, 10.22, 3.4, 1.0, 0, C.amber);
-  neon(OFFICE_TEXTURES.off_floor_60, 0, Y_L0 + 3.5, 29.85, 3.0, 0.95, PI, C.blue);
-  // Nad bramami bocznymi z R1/A0 do R2 (X = -9.78) i R3 (X = +9.78).
-  neon(OFFICE_TEXTURES.off_floor_60, -9.78, Y_L0 + 3.6, 20.0, 2.6, 0.85, Q, C.blue);
-  neon(OFFICE_TEXTURES.off_kurogane_hq, 9.78, Y_L0 + 3.6, 24.0, 2.6, 0.85, -Q, C.amber);
-  neon(OFFICE_TEXTURES.off_floor_60, -9.78, Y_L0 + 3.6, 1.0, 2.6, 0.85, Q, C.blue);
-  neon(OFFICE_TEXTURES.off_floor_60, 9.78, Y_L0 + 3.6, 1.0, 2.6, 0.85, -Q, C.amber);
-  // Szyb windy w Atrium na poziomie L0 (Z = -12.05): szyld z numerem piętra L0 (docelowo off_elevator_sign).
-  neon(
-    USE_PENDING_TEXTURES
-      ? OFFICE_TEXTURES.off_elevator_sign
-      : OFFICE_TEXTURES.off_floor_60,
-    0,
-    Y_L0 + 3.5,
-    -12.05,
-    2.8,
-    0.9,
-    0,
-    C.amber,
-  );
+  // R1: oznakowanie za ladami i mniejszy szyld nad przej?ciem do atrium.
+  for (const x of [-5.2, 5.2])
+    neon('off_kurogane_hq', x, Y_L0 + 1.96, 11.24, 3.14, 0);
+  neon('off_kurogane_hq', 0, Y_L0 + 4.4, 10.23, 1.46, 0);
 
-  // --- PIĘTRO 61 (L1) ---
-  // Szyb windy na poziomie L1 (Z = -12.05): szyld z numerem piętra L1 oraz wejścia do Sal Konferencyjnych R4/R5 (Z = 2.0).
-  neon(
-    USE_PENDING_TEXTURES
-      ? OFFICE_TEXTURES.off_elevator_sign
-      : OFFICE_TEXTURES.off_floor_61,
-    0,
-    Y_L1 + 3.5,
-    -12.05,
-    2.8,
-    0.9,
-    0,
-    C.amber,
-  );
-  neon(OFFICE_TEXTURES.off_floor_61, 0, Y_L1 + 3.65, 7.85, 3.0, 0.95, PI, C.amber);
-  neon(OFFICE_TEXTURES.off_conf_aegis, -9.85, Y_L1 + 3.75, 2.0, 2.8, 0.9, Q, C.blue);
-  neon(
-    OFFICE_TEXTURES.off_conf_vanguard,
-    9.85,
-    Y_L1 + 3.75,
-    2.0,
-    2.8,
-    0.9,
-    -Q,
-    C.violet,
-  );
-  // Wejścia do Kuchni „Sky Lounge” R6 i Serwerowni R7 (Z = -11.78 oraz X = ±9.78).
-  neon(OFFICE_TEXTURES.off_sky_lounge, -20.0, Y_L1 + 3.65, -11.78, 2.6, 0.85, 0, C.green);
-  neon(OFFICE_TEXTURES.off_it_repro, 20.0, Y_L1 + 3.65, -11.78, 2.6, 0.85, 0, C.blue);
-  neon(OFFICE_TEXTURES.off_sky_lounge, -9.78, Y_L1 + 3.65, -19.0, 2.6, 0.85, Q, C.green);
-  neon(OFFICE_TEXTURES.off_it_repro, 9.78, Y_L1 + 3.65, -19.0, 2.6, 0.85, -Q, C.blue);
+  // Szyby i doj?cia do schod?w. Wysokie szyldy windy pozostawiaj? widoczne
+  // drzwi, a tablice pi?ter wisz? obok nich.
+  for (const [y, z, yaw, floor] of [
+    [Y_L0, -12.05, 0, 'off_floor_60'],
+    [Y_L1, -12.05, 0, 'off_floor_61'],
+    [Y_L2, -15.95, PI, 'off_floor_62'],
+  ]) {
+    neon('off_elevator_sign', 0, y + 4.02, z, 2.4, yaw);
+    neon(floor, Math.cos(yaw) * -2.95, y + 4.02, z, 2.05, yaw);
+  }
 
-  // --- PIĘTRO 62 (L2) ---
-  // Szyb windy na poziomie L2 (od strony Foyer Zarządu, Z = -15.95): szyld z numerem piętra L2, Foyer R9 i Gabinet R10.
-  neon(
-    USE_PENDING_TEXTURES
-      ? OFFICE_TEXTURES.off_elevator_sign
-      : OFFICE_TEXTURES.off_floor_62,
-    0,
-    Y_L2 + 3.5,
-    -15.95,
-    2.8,
-    0.9,
-    PI,
-    C.amber,
-  );
-  neon(OFFICE_TEXTURES.off_floor_62, -9.85, Y_L2 + 3.75, -22.0, 2.6, 0.85, Q, C.amber);
-  neon(OFFICE_TEXTURES.off_floor_62, 9.85, Y_L2 + 3.75, -22.0, 2.6, 0.85, -Q, C.violet);
-  neon(OFFICE_TEXTURES.off_boardroom, 0, Y_L2 + 3.65, -27.78, 3.4, 1.0, 0, C.amber);
-  neon(OFFICE_TEXTURES.off_kurogane_hq, 0, Y_L2 + 3.65, -28.22, 3.4, 1.0, PI, C.amber);
+  neon('off_floor_60', -9.77, Y_L0 + 2.55, 4.8, 2.1, Q);
+  neon('off_floor_60', 10.23, Y_L0 + 2.55, 21.0, 1.75, Q);
+  neon('off_floor_61', -9.79, Y_L1 + 3.92, -3.0, 2.15, Q);
+  neon('off_floor_61', 9.79, Y_L1 + 3.92, -3.0, 2.15, -Q);
+  for (const x of [-7.8, 7.8])
+    neon('off_floor_62', x, Y_L2 + 4.2, -16.12, 2.0, PI);
+
+  neon('off_conf_aegis', -9.77, Y_L1 + 3.98, 2.0, 2.8, Q);
+  neon('off_conf_vanguard', 9.77, Y_L1 + 3.98, 2.0, 2.8, -Q);
+  neon('off_sky_lounge', -20.0, Y_L1 + 4.0, -11.77, 2.6, 0);
+  neon('off_it_repro', 20.0, Y_L1 + 4.0, -11.77, 2.6, 0);
+  neon('off_sky_lounge', -9.77, Y_L1 + 4.0, -19.0, 2.6, Q);
+  neon('off_it_repro', 9.77, Y_L1 + 4.0, -19.0, 2.6, -Q);
+  neon('off_boardroom', 0, Y_L2 + 4.18, -27.77, 3.1, 0);
+  neon('off_boardroom', 0, Y_L2 + 4.18, -28.23, 3.1, PI);
 
   // Portal wyjścia ewakuacyjnego EXIT na północnej fasadzie R10 (Z = -41.85).
   k.neon('arrow', 0, Y_L2 + 3.6, -41.85, 2.6, 0.9, 0, C.green, 0);
@@ -784,7 +404,7 @@ function lights(k) {
 export function dress(k, placer) {
   crates(k, placer);
   hazards(k, placer);
-  decalsAndEasterEggs(k);
+  decals(k);
   signage(k);
   lights(k);
 }

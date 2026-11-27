@@ -5,7 +5,6 @@
 import {
   MAT_CARPET,
   MAT_GRANITE,
-  MAT_INLAY,
   MAT_WOOD_SLAT,
   PI,
   Q,
@@ -24,7 +23,6 @@ import {
   coffeeTable,
   deco,
   linearBaffleLight,
-  planterTree,
   securityTurnstile,
   solid,
   waistDivider,
@@ -67,6 +65,7 @@ function buildRoomR1(k, p) {
       walkable: false,
     });
     coffeeTable(k, p, sx * 5.8, Y_L0, 17.2, 1.8, 0.9);
+    p.prop('off_lounge_sofa', sx * 5.8, 15.6, Y_L0, 0);
     p.prop('off_lounge_sofa', sx * 5.8, 18.8, Y_L0, 2);
     p.prop('mall_bench', sx * 3.4, 17.2, Y_L0, 1);
   }
@@ -113,7 +112,6 @@ function buildRoomR1(k, p) {
       walkable: false,
     });
     deco(k, 'off_acoustic_wall_panel', xWall, 1.1, 14.2, yaw);
-    deco(k, 'city_ad_screen', xWall, 1.2, 26.2, yaw);
     deco(k, 'wh_wall_terminal', xWall, 1.2, 17.0, yaw);
     deco(k, 'mall_security_fixture', xWall, 1.25, 11.4, yaw);
   }
@@ -313,97 +311,58 @@ function buildAtriumA0(k, p) {
     }
   }
   // Belki nadprożowe szybu windy na poszczególnych piętrach (oparcie dla szyldów pięter).
-  for (const y of [3.5, Y_L1 + 3.5]) {
-    box(k, 0, y, -12.2, 3.9, 0.28, 0.24, 'trim', { walkable: false });
+  for (const [y, z, side] of [
+    [Y_L0, -12.2, -1],
+    [Y_L1, -12.2, -1],
+    [Y_L2, -15.8, 1],
+  ]) {
+    box(k, side * 1.04, y + 4.02, z, 5.98, 1.25, 0.24, 'trim', {
+      walkable: false,
+    });
   }
-  box(k, 0, Y_L2 + 3.5, -15.8, 3.9, 0.28, 0.24, 'trim', { walkable: false });
 
-  // Zabudowa pod niższym biegiem Klatki Schodowej #1 w Atrium (X ∈ [-5.6, -2.4], Z ∈ [-2.8, 2.0], wys. 1.8 m),
-  // całkowicie poniżej spocznika M01-W (y = 2.0..2.4 m) i z dala od spawnu #6 (-4, 0, -6).
+  // Obudowa pod pierwszym biegiem zachodnich schod?w.
   p.reserve(R(-5.7, -2.3, -2.9, 2.1), Y_L0);
   solid(k, R(-5.6, -2.4, -2.8, 2.0), Y_L0, 1.8, MAT_WOOD_SLAT, {
     walkable: false,
   });
 
-  // --- CENTRALNA RZEŹBA / INSTALACJA KORPORACYJNA KUROGANE ARMS (0, 0, -2.2) ---
-  // Stoi w sercu Atrium między Punktem A (0, 0, 2.0) a spawnami (±4, 0, -6); stanowi też osłonę do walki!
-  p.reserve(R(-1.25, 1.25, -3.45, -0.95), Y_L0);
-  box(k, 0, Y_L0 + 0.14, -2.2, 2.4, 0.28, 2.4, MAT_INLAY, { walkable: false });
-  box(k, 0, Y_L0 + 0.68, -2.2, 1.65, 0.8, 1.65, MAT_GRANITE, {
+  // Instalacja ma 0,72 m szeroko?ci przy pod?odze. Do obudowy schodow
+  // zostaje 2,04 m przej?cia, a doj?cie do windy jest otwarte od wschodu.
+  p.reserve(R(-0.36, 0.36, -2.74, -1.66), Y_L0);
+  box(k, 0, Y_L0 + 0.14, -2.2, 0.72, 0.28, 1.08, MAT_GRANITE, {
     walkable: false,
   });
-  box(k, 0, Y_L0 + 1.12, -2.2, 1.72, 0.08, 1.72, 'light_panel', {
-    walkable: false,
-  });
-  // Trzy strzeliste skrzydła monolitu ze stali i orzecha z bursztynowym rdzeniem.
-  box(k, -0.38, Y_L0 + 2.45, -2.2, 0.22, 2.6, 0.78, 'trim', {
-    rotation: { x: 0, y: 0.35, z: 0 },
-    walkable: false,
-  });
-  box(k, 0.38, Y_L0 + 2.65, -2.2, 0.22, 3.0, 0.78, 'trim', {
-    rotation: { x: 0, y: -0.35, z: 0 },
-    walkable: false,
-  });
-  box(k, 0, Y_L0 + 2.85, -2.2, 0.32, 3.4, 0.32, MAT_WOOD_SLAT, {
-    rotation: { x: 0, y: PI / 4, z: 0 },
-    walkable: false,
-  });
-  box(k, 0, Y_L0 + 2.85, -2.2, 0.14, 3.1, 0.42, 'neon_amber', {
-    rotation: { x: 0, y: PI / 4, z: 0 },
-    walkable: false,
-  });
-  p.prop('mall_bench', 0, -4.1, Y_L0, 0);
-  p.prop('mall_bench', 0, -0.3, Y_L0, 0);
-
-  // --- WYSPY Z ROŚLINAMI, DRZEWKAMI, ŁAWKAMI I OSŁONAMI NA WYSOKOŚCI PASA CO ~5-6 M ---
-  // 1. Wyspa Południowo-Centralna (0, 0, 6.4 — między portalem Lobby Z = 10 a Punktem A Z = 2):
-  box(k, 0, Y_L0 - 0.014, 6.4, 3.8, 0.04, 4.4, MAT_INLAY, {
-    walkable: false,
-  });
-  p.prop('mall_planter', 0, 6.4, Y_L0, 0);
-  planterTree(k, 0, Y_L0, 6.4);
-  p.prop('mall_bench', 0, 4.6, Y_L0, 0);
-  p.prop('mall_bench', 0, 8.2, Y_L0, 0);
-
-  // 2. Wyspy Południowo-Zachodnia (-8.2, 0, 7.3) i Południowo-Wschodnia (+8.2, 0, 7.3):
-  for (const sx of [-1, 1]) {
-    const ix = sx * 8.2;
-    box(k, ix, Y_L0 - 0.014, 7.3, 2.2, 0.04, 4.6, MAT_INLAY, {
+  for (const [x, height, material] of [
+    [-0.22, 2.9, 'trim'],
+    [0.22, 3.5, MAT_WOOD_SLAT],
+    [0, 3.2, 'neon_amber'],
+  ]) {
+    box(k, x, Y_L0 + 0.28 + height / 2, -2.2, 0.12, height, 0.54, material, {
       walkable: false,
     });
-    p.prop('off_office_planter', ix, 7.3, Y_L0, 1);
-    planterTree(k, ix, Y_L0, 7.3);
-    p.prop('mall_bench', ix, 5.2, Y_L0, 0);
   }
-  waistDivider(k, p, -8.4, Y_L0, 3.0, 0.32, 2.2);
 
-  // 3. Wyspa Wschodnia Wypoczynkowa (+6.2, 0, 2.0 — naprzeciw Klatki Schodowej #1, z wolną aleją X ∈ [1.2, 3.5]):
-  box(k, 6.2, Y_L0 - 0.014, 2.0, 4.4, 0.04, 5.2, MAT_CARPET, {
-    walkable: false,
-  });
-  coffeeTable(k, p, 6.2, Y_L0, 2.0, 2.0, 1.0);
-  p.prop('off_lounge_sofa', 6.2, 3.8, Y_L0, 0);
-  p.prop('off_lounge_sofa', 6.2, 0.2, Y_L0, 2);
-  p.prop('off_office_planter', 8.4, 2.0, Y_L0, 1);
-  p.prop('mall_bench', 4.0, 2.0, Y_L0, 1);
+  // Trzy wyspy: od lobby, naprzeciw schod?w i przy zachodnim INFO.
+  p.prop('off_office_planter', 0, 7.3, Y_L0, 0);
+  p.prop('mall_bench', 0, 8.45, Y_L0, 2);
+  waistDivider(k, p, 0, Y_L0, 6.48, 2.4, 0.32);
+  waistDivider(k, p, -8.0, Y_L0, 5.6, 0.32, 1.8);
+  p.prop('off_office_planter', 8.4, 4.45, Y_L0, 0);
+  p.prop('off_lounge_sofa', 6.25, 3.2, Y_L0, 2);
+  p.prop('off_lounge_sofa', 6.25, -1.55, Y_L0, 0);
+  coffeeTable(k, p, 7.45, Y_L0, -0.4, 1.4, 0.7);
+  waistDivider(k, p, 8.6, Y_L0, -1.55, 0.32, 2.0);
 
-  // 4. Wyspy Północne i Osłony Taktyczne przed Szybem Windy (Z = -6.0..-14.2, poza spawnami (±4, 0, -6)):
-  p.prop('mall_directory', -2.0, -9.2, Y_L0, 0);
-  p.prop('mall_directory', 2.0, -9.2, Y_L0, 0);
-  waistDivider(k, p, -4.6, Y_L0, -9.2, 2.2, 0.32);
-  waistDivider(k, p, 4.6, Y_L0, -9.2, 2.2, 0.32);
-  for (const sx of [-1, 1]) {
-    box(k, sx * 7.8, Y_L0 - 0.014, -6.5, 2.6, 0.04, 5.8, MAT_INLAY, {
-      walkable: false,
-    });
-    p.prop('off_office_planter', sx * 7.8, -5.2, Y_L0, sx > 0 ? -1 : 1);
-    planterTree(k, sx * 7.8, Y_L0, -5.2);
-    p.prop('mall_bench', sx * 7.8, -8.2, Y_L0, 1);
-    p.prop('off_office_planter', sx * 6.2, -11.5, Y_L0, 0);
-    p.prop('off_lounge_sofa', sx * 6.2, -14.2, Y_L0, 0);
-  }
-  p.prop('off_filing_cabinet', -8.2, -1.2, Y_L0, 1);
-  p.prop('off_filing_cabinet', 8.2, -2.2, Y_L0, -1);
+  p.prop('off_office_planter', -7.65, -5.0, Y_L0, 1);
+  p.prop('mall_bench', -7.65, -7.6, Y_L0, 1);
+  p.prop('mall_directory', -2.8, -9.2, Y_L0, 0);
+  p.prop('off_acoustic_wall_panel', -9.42, -7.0, Y_L0, 1);
+  for (const z of [-9.7, -12.0])
+    p.prop('off_filing_cabinet', -9.25, z, Y_L0, 1);
+  p.prop('off_office_planter', -8.35, -14.12, Y_L0, 1);
+  waistDivider(k, p, -4.95, Y_L0, -9.2, 2.2, 0.32);
+  waistDivider(k, p, 4.95, Y_L0, -9.2, 2.2, 0.32);
 
   // Poziom L1 Atrium (y = 4.8 m): donice i ławki na Mostkach L1 oraz strefa wypoczynkowa w Północnej Galerii L1.
   p.prop('off_office_planter', -3.6, 6.5, Y_L1, 0);
