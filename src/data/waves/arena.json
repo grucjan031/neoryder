@@ -81,9 +81,10 @@
     {
       "spawnIntervalS": 0.7,
       "groups": [
+        { "enemy": "chimera", "count": 1 },
         {
           "enemy": "assaulter",
-          "count": 4
+          "count": 3
         },
         {
           "enemy": "gunner",

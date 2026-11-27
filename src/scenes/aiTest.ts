@@ -946,6 +946,19 @@ export function createBarrierTest(loadModels = true): AiTest {
   });
 }
 
+export function createChimeraTest(): AiTest {
+  return new AiTest(true, {
+    id: 'chimera-test',
+    data: {
+      ...defaultData,
+      initialEnemies: [
+        { id: 'chimera', position: { x: -2, y: 0, z: -6 } },
+        { id: 'chimera', position: { x: 2, y: 0, z: -8 } },
+        { id: 'assaulter', position: { x: 0, y: 0, z: -7 } },
+      ],
+    },
+  });
+}
 export function createHelixTest(loadModels = true): AiTest {
   return new AiTest(loadModels, {
     id: 'helix-test',

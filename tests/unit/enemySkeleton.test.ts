@@ -47,6 +47,56 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+it('chimera zachowuje materiały kriokokonu i ma osobne zamachy obu łap', async () => {
+  const gltf = await load('enemy_chimera');
+  const materials = new Set<string>();
+  gltf.scene.traverse((node) => {
+    if (node instanceof SkinnedMesh) {
+      for (const material of Array.isArray(node.material)
+        ? node.material
+        : [node.material])
+        materials.add(material.name);
+    }
+  });
+  expect(materials).toEqual(
+    new Set([
+      'mat_snow',
+      'mat_trim',
+      'mat_metal',
+      'mat_neon_blue',
+      'mat_rubber',
+    ]),
+  );
+  const mixer = new AnimationMixer(gltf.scene);
+  const hand = gltf.scene.getObjectByName('handL')!;
+  const positions = new Map<string, Vector3>();
+  for (const clip of gltf.animations) {
+    mixer.stopAllAction();
+    mixer.clipAction(clip).play();
+    mixer.update(clip.duration * 0.8);
+    positions.set(clip.name, hand.getWorldPosition(new Vector3()));
+  }
+  expect([...positions.keys()]).toEqual(
+    expect.arrayContaining([
+      'ReadyL',
+      'ReadyR',
+      'ReadyB',
+      'ClawL',
+      'ClawR',
+      'ClawB',
+      'Walk_Loop',
+      'Jog_Fwd_Loop',
+      'Idle_Loop',
+      'Lost',
+      'Hit_Head',
+      'Hit_Chest',
+    ]),
+  );
+  expect(
+    positions.get('ReadyL')!.distanceTo(positions.get('ReadyR')!),
+  ).toBeGreaterThan(0.15);
+});
+
 it.each([
   [trooper, ['hand_R', 'baton', 'baton_tip', 'visor']],
   [gunner, ['hand_R', 'rifle', 'muzzle', 'visor']],

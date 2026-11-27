@@ -1,0 +1,69 @@
+{
+  "id": "chimera",
+  "threatCost": 3,
+  "kind": "chimera",
+  "model": "enemy_chimera",
+  "grabbable": true,
+  "maxHealth": 220,
+  "moveSpeed": 1.55,
+  "turnRateDegS": 360,
+  "attackRange": 1.5,
+  "telegraphS": 0.55,
+  "swingActiveS": 0.22,
+  "recoveryS": 0.68,
+  "cooldownS": 0.9,
+  "damage": 22,
+  "knockbackResist": 0.35,
+  "stunOnHeavyS": 0.6,
+  "repathJitter": 0.15,
+  "body": {
+    "locomotionScale": 1,
+    "height": 2.08,
+    "halfHeight": 0.35,
+    "radius": 0.3,
+    "centerY": 1.19,
+    "headY": 1.84,
+    "headRadius": 0.22,
+    "headMultiplier": 1.5,
+    "controllerOffset": 0.02,
+    "knockbackDamping": 8,
+    "attackHalfWidth": 0.55,
+    "attackHalfHeight": 0.65
+  },
+  "animation": {
+    "strideM": 1.8,
+    "jogFromSpeedFrac": 0.225,
+    "clipStrideM": {
+      "Walk_Loop": 1.41,
+      "Jog_Fwd_Loop": 4.61
+    },
+    "walkAngle": 0.5,
+    "telegraphAngle": -2.4,
+    "swingAngle": 1.2,
+    "elbowAngle": -1,
+    "stunAngle": 0.3,
+    "pulseHz": 6,
+    "pulseScale": 0.4
+  },
+  "chimera": {
+    "stalkMinS": 1.5,
+    "stalkExtraS": 2.8,
+    "sprintS": 1.25,
+    "sprintSpeed": 6.9,
+    "lostChance": 0.38,
+    "lostS": 1.85,
+    "turncoatChance": 0.07,
+    "preyRangeM": 7,
+    "preyIds": [
+      "assaulter",
+      "gunner",
+      "drone",
+      "shielder",
+      "sniper",
+      "turret",
+      "hacker",
+      "executor",
+      "securityChief"
+    ]
+  }
+}

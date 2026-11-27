@@ -296,6 +296,62 @@ function setup(seed = 'enemies', targetZ = 1.5, kind = 'assaulter') {
   };
 }
 
+describe('Chimera', () => {
+  it('zmienia tempo, zapowiada różne ciosy i przestaje walczyć podczas dezorientacji', () => {
+    const { enemy, steps, moveTarget, health } = setup(
+      'lab-claws',
+      28,
+      'chimera',
+    );
+    let fastest = 0;
+    for (let i = 0; i < 300; i++) {
+      steps();
+      fastest = Math.max(fastest, enemy.current.speed);
+    }
+    expect(fastest).toBeGreaterThan(enemy.definition.moveSpeed * 2);
+    const claws = new Set<string>();
+    let lostTicks = 0;
+    for (let i = 0; i < 2400; i++) {
+      if (i % 60 === 0)
+        moveTarget(enemy.current.position.z + 1.1, enemy.current.position.x);
+      const hp = health.current;
+      steps();
+      const s = enemy.current;
+      if (s.state === 'telegraph') claws.add(s.claw!);
+      if (s.chimeraMode === 'lost' && s.state === 'idle') {
+        lostTicks++;
+        expect(health.current).toBe(hp);
+      }
+    }
+    expect(lostTicks).toBeGreaterThan(30);
+    expect(claws.size).toBe(3);
+    expect(health.current).toBeLessThan(10000);
+  });
+
+  it('łapy trafiają wybranego żołnierza Kurogane i omijają chimerę w tym samym hurtboksie', () => {
+    const { manager, enemy, removeTarget, world, bus } = setup(
+      'lab-prey',
+      20,
+      'chimera',
+    );
+    removeTarget();
+    const pos = { x: 0, y: 0, z: 1.25 };
+    const guard = manager.spawn('assaulter', pos);
+    const kin = manager.spawn('chimera', pos);
+    const hits: number[] = [];
+    bus.on('damage_dealt', (e) => {
+      if (e.source === enemy.id) hits.push(e.target);
+    });
+    world.step();
+    for (let i = 0; i < 36000 && !hits.length; i++) {
+      enemy.step(SIM_DT);
+      world.step();
+    }
+    expect(hits).toContain(guard.id);
+    expect(hits).not.toContain(kin.id);
+  });
+});
+
 describe('Szturmowiec — prawdziwy Rapier', () => {
   it('validates data and exposes a factory per archetype', () => {
     expect(enemySchema.parse(raw)).toMatchObject({
