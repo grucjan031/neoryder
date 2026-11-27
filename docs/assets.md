@@ -1366,4 +1366,79 @@ przezierność gablot i fasady oraz brak nakładania kabiny na proceduralne czę
 | [`res_wine_rack_wall`](../artifacts/models/residence/res_wine_rack_wall.png) | 3.20 × 2.80 × 0.65 | 780 | 880 | 40928 |
 | [`res_cctv_monitor_wall`](../artifacts/models/residence/res_cctv_monitor_wall.png) | 4.00 × 2.40 × 0.25 | 372 | 440 | 25328 |
 
+### Rezydencja — druga partia wyposażenia (31 modeli)
+
+21 modeli z §3.5 `docs/maps/run6.md` i listy `PENDING_MODELS` oraz 10 dodatków:
+stolik boczny, lampa łukowa, lampa stołowa, szafka nocna, stołek barowy, ściana TV,
+fikus, rzeźba, puf i otwarty regał dekoracyjny. Łącznie katalog zawiera 69 modeli.
+Pierwsze 38 GLB pozostaje identyczne bajtowo; walidator sprawdza zapisane SHA-256.
+To osobne zasoby do późniejszego podpięcia przez autora mapy.
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python-exit-code 1 -P tools/blender/sets/kurogane_residence.py -- --batch2
+node artifacts/models/residence/validate.mjs --write-bounds
+node artifacts/models/residence/validate.mjs
+python artifacts/models/residence/contact_batch2.py
+```
+
+Opcja `--batch2` ogranicza eksport do nowych modeli i chroni pierwszą partię przed
+ponownym eksportem. Można ją łączyć z `--no-preview` lub użyć `--only res_<nazwa>`.
+Kontrakt wymiarów i budżetów drugiej partii: `artifacts/models/residence/batch2-specs.json`.
+Wymiary podane w §3.5 zachowano; dla pozostałych mebli przyjęto wielkości poniżej.
+Wysokość AABB obejmuje dekoracje na blatach. Te same zasady montażu: metry, Y-up,
+przód +Z, spód na Y = 0, środek podstawy w XZ = 0. Lustra i TV są ścienne,
+`res_interrogation_lamp` jest sufitowa; brak colliderów, świateł i kamer w GLB.
+
+Paleta i materiały pozostają wspólne z pierwszą partią. Detale obejmują wypukłą
+tapicerkę z lamówkami, ryflowany orzech, żyłki kamienia, uchwyty i szwy szuflad,
+szklane gabloty, zegarki na poduszkach, otwarte misy, armaturę, kratę z prześwitami,
+profilowane beczki i dwa drony w doku. Lustra są statycznymi powierzchniami metalu
+ze szkłem; nie wymagają dodatkowego renderowania odbić. Szafa taktyczna zawiera
+wyłącznie stylizowane rekwizyty ekspozycyjne. Nowa emisja: bursztyn, ciepła biel
+oraz zielone wskaźniki ładowania. Zestaw przesłuchań pozostaje bez krwi i makabry.
+
+Obejrzano wszystkie 31 podglądów na arkuszach `contact-batch2-1.jpg`–`contact-batch2-4.jpg`.
+Po przeglądzie zaokrąglono łuk lampy, ścięto narożniki oparcia fotela i poszerzono
+liście fikusa; liście mają zamkniętą geometrię widoczną także od spodu, a gałązki
+łączą się z profilem pnia. Do szybkiego odbioru otwórz arkusze, następnie PNG w tabeli;
+przy integracji sprawdź wysokość siedzisk, wolne miejsce przy szafach i gablotach
+oraz czytelność drobnych przedmiotów z kamery FPP.
+
+Pełny raport drugiej partii: [batch2-report.md](../artifacts/models/residence/batch2-report.md).
+
+| Model / PNG | X x Y x Z (m) | Tri | Limit tri | Bajty |
+|---|---|---:|---:|---:|
+| [res_dining_chair](../artifacts/models/residence/res_dining_chair.png) | 0.62 x 0.96 x 0.66 | 286 | 520 | 18324 |
+| [res_lounge_armchair](../artifacts/models/residence/res_lounge_armchair.png) | 1.12 x 1.02 x 1.08 | 420 | 700 | 25028 |
+| [res_freestanding_tub](../artifacts/models/residence/res_freestanding_tub.png) | 2.20 x 0.85 x 1.20 | 558 | 980 | 32732 |
+| [res_whisky_bar_counter](../artifacts/models/residence/res_whisky_bar_counter.png) | 3.20 x 1.42 x 1.20 | 754 | 1100 | 47468 |
+| [res_tactical_gun_cabinet](../artifacts/models/residence/res_tactical_gun_cabinet.png) | 2.20 x 2.20 x 0.80 | 626 | 1120 | 43572 |
+| [res_interrogation_lamp](../artifacts/models/residence/res_interrogation_lamp.png) | 0.86 x 0.63 x 0.86 | 480 | 620 | 26764 |
+| [res_zen_water_wall](../artifacts/models/residence/res_zen_water_wall.png) | 2.60 x 2.80 x 0.85 | 428 | 760 | 27892 |
+| [res_blade_display_pedestal](../artifacts/models/residence/res_blade_display_pedestal.png) | 1.20 x 1.45 x 1.20 | 368 | 700 | 25244 |
+| [res_coat_closet](../artifacts/models/residence/res_coat_closet.png) | 1.80 x 2.40 x 0.72 | 370 | 760 | 25076 |
+| [res_dining_credenza](../artifacts/models/residence/res_dining_credenza.png) | 3.08 x 1.27 x 0.80 | 768 | 1120 | 45548 |
+| [res_drone_charging_dock](../artifacts/models/residence/res_drone_charging_dock.png) | 1.70 x 1.60 x 1.20 | 520 | 980 | 31312 |
+| [res_ev_charger_pillar](../artifacts/models/residence/res_ev_charger_pillar.png) | 0.90 x 1.60 x 0.57 | 256 | 760 | 20256 |
+| [res_floor_drain_grate](../artifacts/models/residence/res_floor_drain_grate.png) | 1.40 x 0.06 x 1.40 | 344 | 480 | 21256 |
+| [res_foyer_console](../artifacts/models/residence/res_foyer_console.png) | 2.10 x 1.77 x 0.55 | 463 | 760 | 30828 |
+| [res_kitchen_cabinet_bank](../artifacts/models/residence/res_kitchen_cabinet_bank.png) | 3.60 x 2.40 x 0.68 | 622 | 1000 | 39304 |
+| [res_luxury_watch_case](../artifacts/models/residence/res_luxury_watch_case.png) | 1.65 x 1.17 x 0.78 | 668 | 980 | 41352 |
+| [res_marble_vanity](../artifacts/models/residence/res_marble_vanity.png) | 2.80 x 2.10 x 0.75 | 632 | 1100 | 39756 |
+| [res_oneway_mirror](../artifacts/models/residence/res_oneway_mirror.png) | 3.20 x 2.00 x 0.18 | 72 | 240 | 9236 |
+| [res_security_console](../artifacts/models/residence/res_security_console.png) | 3.20 x 1.35 x 1.40 | 548 | 1120 | 36216 |
+| [res_tasting_island](../artifacts/models/residence/res_tasting_island.png) | 3.40 x 1.10 x 1.60 | 956 | 1240 | 54024 |
+| [res_wine_barrel_rack](../artifacts/models/residence/res_wine_barrel_rack.png) | 2.40 x 1.65 x 1.10 | 1058 | 1240 | 50576 |
+| [res_side_table](../artifacts/models/residence/res_side_table.png) | 0.76 x 0.57 x 0.76 | 370 | 700 | 21992 |
+| [res_arc_floor_lamp](../artifacts/models/residence/res_arc_floor_lamp.png) | 1.80 x 2.00 x 0.64 | 724 | 980 | 40252 |
+| [res_table_lamp](../artifacts/models/residence/res_table_lamp.png) | 0.50 x 0.63 x 0.50 | 500 | 760 | 28724 |
+| [res_nightstand](../artifacts/models/residence/res_nightstand.png) | 0.68 x 0.60 x 0.54 | 250 | 480 | 19696 |
+| [res_bar_stool](../artifacts/models/residence/res_bar_stool.png) | 0.56 x 1.04 x 0.58 | 244 | 560 | 16464 |
+| [res_tv_acoustic_wall](../artifacts/models/residence/res_tv_acoustic_wall.png) | 3.60 x 2.70 x 0.55 | 434 | 760 | 29436 |
+| [res_ficus_planter](../artifacts/models/residence/res_ficus_planter.png) | 1.25 x 1.90 x 1.25 | 892 | 1000 | 52672 |
+| [res_abstract_sculpture](../artifacts/models/residence/res_abstract_sculpture.png) | 0.90 x 1.82 x 0.80 | 534 | 1100 | 31604 |
+| [res_ottoman](../artifacts/models/residence/res_ottoman.png) | 0.88 x 0.44 x 0.86 | 308 | 420 | 18864 |
+| [res_decor_shelf](../artifacts/models/residence/res_decor_shelf.png) | 1.90 x 2.22 x 0.50 | 600 | 980 | 37680 |
+| **SUMA: 31** | | **16053** | | **989148** |
+
 Łącznie: **15342 trójkątów**, **1028172 bajtów GLB**. Wszystkie modele mieszczą się w indywidualnych budżetach.

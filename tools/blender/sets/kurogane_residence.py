@@ -1,4 +1,4 @@
-"""Willa Kuroyama: 38 modeli §4.1 run6. Metry glTF, Y-up, front +Z.
+"""Willa Kuroyama: 38 modeli §4.1 run6 i 31 modeli partii 2. Metry glTF, Y-up, front +Z.
 
 Budowa i kontrola budżetów: Blender -b --factory-startup -P ten_plik -- --no-preview.
 Bez --no-preview powstają również studyjne PNG, jak w zestawach run3/run4.
@@ -725,7 +725,541 @@ def cctv_monitor_wall(r):
             screen(r,(col-1)*1.31,.42+row*.78,.08,1.24,.70,RADAR if (col+row)%2 else STATUS)
 
 
-# Wymiary i budżety są dosłownym kontraktem §4.1, nie zależą od kamery podglądu.
+def vessel(r, name, x, z, profile, mat, sides=16):
+    """Otwarty profil: zewnętrzna ścianka, rant, wnętrze i dno (bez pokrywy)."""
+    vertices = [(x+rx*math.cos(i*math.tau/sides), y, z+rz*math.sin(i*math.tau/sides))
+                for y,rx,rz in profile for i in range(sides)]
+    faces = [(j*sides+i,j*sides+(i+1)%sides,(j+1)*sides+(i+1)%sides,(j+1)*sides+i)
+             for j in range(len(profile)-1) for i in range(sides)]
+    faces += [tuple(reversed(range(sides))), tuple(range((len(profile)-1)*sides,len(profile)*sides))]
+    return surface(r,name,vertices,faces,mat)
+
+
+def marble_veins(r, x, y, z, w, d):
+    for shift in (-.23,.22):
+        points = [(x+w*(shift+dx),y,z+d*dz) for dx,dz in ((-.12,-.43),(.02,-.17),(-.04,.09),(.16,.43))]
+        for a,b in zip(points,points[1:]):
+            beam(r,"fine_stone_vein",a,b,.004,.002,ALLOY)
+
+
+def bottle(r, x, y, z, h=.3):
+    form(r,"bottle",x,z,[(y,.065,.065,0),(y+h*.68,.065,.065,0),
+                         (y+h*.79,.025,.025,0),(y+h,.025,.025,0)],LEAF,8)
+    face(r,"bottle_label",x,y+h*.38,z+.065,.083,h*.28,PAPER)
+    drum(r,"bottle_cap",x,z,y+h*.93,y+h,.027,GOLD,8)
+
+
+def stem_glass(r, x, y, z):
+    drum(r,"glass_foot",x,z,y,y+.009,.055,GLASS,8)
+    rod(r,"glass_stem",(x,y+.009,z),(x,y+.11,z),.008,GLASS,6)
+    vessel(r,"tasting_bowl",x,z,[(y+.10,.018,.018),(y+.17,.060,.060),
+           (y+.24,.045,.045),(y+.24,.039,.039),(y+.17,.052,.052),(y+.12,.014,.014)],GLASS,8)
+
+
+def dining_chair(r):
+    feet(r,.55,.57,.42)
+    slab(r,"walnut_seat_shell",0,.40,0,.55,.045,.56,.08,WOOD)
+    cushion(r,0,.445,.025,.52,.085,.50)
+    for s in (-1,1):
+        beam(r,"raked_back_stile",(s*.23,.40,-.21),(s*.26,.94,-.30),.028,.035,WOOD)
+        beam(r,"arm_bridge",(s*.27,.66,-.25),(s*.27,.62,.17),.035,.035,WOOD)
+        rod(r,"arm_strut",(s*.25,.43,.17),(s*.27,.62,.17),.012,STEEL,6)
+    panel(r,"curved_back_shell",0,.80,-.27,.57,.28,.075,.075,WOOD)
+    panel(r,"upholstered_back",0,.80,-.223,.50,.21,.045,.06,FELT)
+    face(r,"back_welt",0,.79,-.199,.40,.006,ALLOY)
+
+
+def lounge_armchair(r):
+    drum(r,"swivel_disc",0,0,0,.055,.39,STEEL,12)
+    drum(r,"swivel_column",0,0,.055,.23,.075,GOLD,8)
+    slab(r,"floating_shell",0,.23,0,.98,.09,.86,.15,WOOD)
+    cushion(r,0,.32,.10,.77,.18,.73)
+    panel(r,"sculpted_walnut_back",0,.69,-.42,.91,.61,.11,.14,WOOD)
+    panel(r,"back_padding",0,.73,-.365,.77,.45,.17,.09,FELT)
+    for s in (-1,1):
+        beam(r,"arm_support",(s*.43,.29,.20),(s*.47,.57,.20),.03,.03,STEEL)
+        slab(r,"sculpted_arm",s*.47,.55,-.01,.16,.10,.77,.07,WOOD)
+        slab(r,"arm_leather",s*.47,.65,-.01,.13,.025,.59,.045,FELT)
+    cushion(r,0,.49,-.18,.48,.12,.24)
+
+
+def freestanding_tub(r):
+    vessel(r,"sculpted_stone_bath",0,0,[(.03,.76,.36),(.12,.88,.46),(.58,1.10,.60),
+           (.72,1.08,.59),(.73,.98,.49),(.59,.94,.45),(.19,.65,.29)],ENAMEL,24)
+    drum(r,"drain",0,0,.191,.195,.045,STEEL,10)
+    face(r,"overflow_slot",0,.57,-.438,.13,.018,STEEL)
+    tube(r,"freestanding_faucet",[(.88,0,-.38),(.88,.81,-.38),(.61,.83,-.38),(.61,.77,-.38)],.026,GOLD,8)
+    rod(r,"tap_control",(.88,.67,-.38),(.98,.67,-.38),.014,GOLD,6)
+    for x in (-.18,-.06,.06,.18):
+        box(r,"bath_bridge_slat",x,.74,0,.10,.025,1.05,WOOD)
+    vessel(r,"soap_dish",.06,.2,[(.765,.08,.05),(.79,.09,.06),(.79,.075,.045),(.77,.065,.035)],PAPER,8)
+
+
+def whisky_bar_counter(r):
+    slab(r,"recessed_bar_plinth",0,0,0,2.8,.12,.78,.08,DARK)
+    slab(r,"bar_body",0,.12,0,2.9,.84,.82,.08,WOOD)
+    for i in range(23):
+        box(r,"fluted_walnut_front",(i-11)*.12,.54,.424,.045,.73,.03,ENAMEL)
+    slab(r,"marble_bar_top",0,.96,0,3.2,.09,1.05,.14,ENAMEL)
+    marble_veins(r,0,1.051,0,3,1)
+    face(r,"concealed_bar_led",0,.91,.421,2.78,.018,AMBER)
+    rod(r,"brass_footrail",(-1.35,.19,.58),(1.35,.19,.58),.026,GOLD,8)
+    for x in (-1.15,1.15):
+        rod(r,"footrail_bracket",(x,.19,.4),(x,.19,.58),.018,STEEL,6)
+    slab(r,"serving_tray",.65,1.05,0,.7,.025,.48,.05,GOLD)
+    bottle(r,.62,1.075,-.08,.33)
+    for x in (.40,.84):
+        vessel(r,"cut_glass_tumbler",x,.14,[(1.075,.048,.048),(1.20,.055,.055),
+               (1.20,.045,.045),(1.09,.04,.04)],GLASS,8)
+    book(r,-.85,1.05,0,.46,.025,.32,mat=DARK)
+
+
+def tactical_gun_cabinet(r):
+    cabinet_frame(r,2.2,2.2,.8)
+    box(r,"armory_divider",.44,1.1,0,.06,1.94,.63,STEEL)
+    for x in (-.78,-.32,.14):
+        box(r,"display_mount",x,1.1,-.30,.24,1.6,.04,ALLOY)
+        # Stylizowane, zamknięte rekwizyty: bez mechanizmów ani wnętrza.
+        panel(r,"inert_carbine_body",x,1.12,.04,.16,.52,.14,.035,STEEL)
+        box(r,"carbine_shroud",x,1.61,.04,.075,.47,.08,DARK)
+        panel(r,"carbine_stock",x,.73,.04,.20,.27,.11,.04,WOOD)
+        beam(r,"angled_grip",(x+.04,1.05,.04),(x+.16,.89,.04),.05,.07,RUBBER)
+        for y in (1.31,1.43,1.55):
+            face(r,"shroud_vent",x,y,.086,.045,.025,INK)
+        box(r,"retaining_clip",x,.94,.13,.26,.035,.035,GOLD)
+    for y in (.43,.92,1.41):
+        box(r,"supply_shelf",.78,y,0,.55,.04,.58,STEEL)
+        slab(r,"sealed_supply_case",.78,y+.02,.04,.40,.18,.36,.035,DARK)
+        face(r,"case_latch",.78,y+.12,.221,.08,.05,GOLD)
+    face(r,"armory_glass",-.31,1.10,.39,1.42,1.91,GLASS)
+    box(r,"door_pull",.32,1.12,.415,.025,.40,.035,STEEL)
+    screen(r,.79,1.91,.405,.36,.20)
+    face(r,"cabinet_strip",-.32,2.02,-.32,1.40,.018,WHITE)
+
+
+def interrogation_lamp(r):
+    drum(r,"ceiling_canopy",0,0,.55,.63,.17,STEEL,12)
+    rod(r,"suspension_stem",(0,.19,0),(0,.55,0),.025,STEEL,8)
+    vessel(r,"vented_bell_shade",0,0,[(.22,.11,.11),(.17,.24,.24),(.06,.43,.43),
+           (.015,.43,.43),(.015,.38,.38),(.07,.33,.33)],DARK,20)
+    drum(r,"opal_diffuser",0,0,.022,.035,.34,WHITE,20)
+    for i in range(8):
+        a=i*math.tau/8
+        rod(r,"shade_rib",(.13*math.cos(a),.20,.13*math.sin(a)),
+            (.40*math.cos(a),.07,.40*math.sin(a)),.008,ALLOY,4)
+
+
+def zen_water_wall(r):
+    slab(r,"catch_basin",0,0,.10,2.6,.24,.85,.12,ENAMEL)
+    slab(r,"architectural_stone",0,.24,-.22,2.40,2.56,.28,.07,STONE)
+    for i in range(9):
+        y=.40+i*.25
+        box(r,"cascade_ledge",0,y,-.035,2.19,.06,.22,ENAMEL)
+        face(r,"falling_water",0,y-.10,.077,2.08,.19,GLASS)
+    for x in (-1.14,1.14):
+        face(r,"concealed_edge_light",x,1.54,-.07,.018,2.25,AMBER)
+    quad(r,"basin_water",(0,.245,.13),2.3,.57,"+y",GLASS)
+    for i in range(7):
+        x=(i-3)*.30
+        form(r,"river_pebble",x,.31,[(.24,.13,.08,0),(.32,.10,.065,0)],ALLOY if i%2 else PAPER,6)
+
+
+def blade_display_pedestal(r):
+    slab(r,"stone_foot",0,0,0,1.2,.10,1.2,.12,ENAMEL)
+    slab(r,"fluted_plinth",0,.10,0,.91,.65,.91,.09,WOOD)
+    for i in range(7):
+        face(r,"plinth_fluting",(i-3)*.115,.42,.456,.014,.54,DARK)
+    slab(r,"display_reveal",0,.75,0,1.10,.02,1.10,.08,AMBER)
+    slab(r,"display_deck",0,.77,0,1.14,.06,1.14,.10,ENAMEL)
+    for x in (-.32,.32):
+        rod(r,"cradle",(x,.83,0),(x,1.02,0),.018,GOLD,6)
+    rod(r,"plasmaBlade_hilt",(-.48,1.04,0),(-.18,1.04,0),.045,STEEL,8)
+    for x in (-.42,-.36,-.30):
+        rod(r,"hilt_band",(x-.01,1.04,0),(x+.01,1.04,0),.05,GOLD,8)
+    pane(r,"ceremonial_blade",[(-.18,1.01,0),(.43,1.03,0),(.49,1.07,0),(-.18,1.09,0)],ALLOY)
+    for z in (-.53,.53):
+        face(r,"display_glazing",0,1.14,z,1.06,.62,GLASS)
+    for x in (-.53,.53):
+        quad(r,"side_glazing",(x,1.14,0),1.06,.62,"+x",GLASS)
+    quad(r,"glass_lid",(0,1.45,0),1.06,1.06,"+y",GLASS)
+    panel(r,"museum_plaque",0,.89,.54,.34,.09,.018,.012,GOLD)
+
+
+def coat_closet(r):
+    cabinet_frame(r,1.8,2.4,.72)
+    box(r,"open_bay_divider",.32,1.2,0,.06,2.12,.59,WOOD)
+    panel(r,"reeded_door",.62,1.2,.32,.50,2.10,.07,.025,WOOD)
+    for i in range(6):
+        face(r,"door_reed",.40+i*.087,1.2,.356,.012,1.98,DARK)
+    box(r,"closet_handle",.40,1.13,.38,.018,.32,.025,GOLD)
+    rod(r,"coat_rail",(-.74,2.05,0),(.25,2.05,0),.018,GOLD,8)
+    for x in (-.56,-.17):
+        tube(r,"hanger",[(x-.17,1.90,0),(x,2.01,0),(x+.17,1.90,0),(x-.17,1.90,0)],.009,GOLD,5)
+        prism(r,"long_coat",[(x-.13,1.90),(x+.13,1.90),(x+.18,1.67),(x+.14,.65),(x-.14,.65),(x-.18,1.67)],"z",-.06,.06,FELT)
+        face(r,"coat_lapel",x,1.69,.061,.023,.30,ALLOY)
+    box(r,"shoe_shelf",-.25,.32,0,1.03,.035,.56,WOOD)
+    for x in (-.55,-.33):
+        slab(r,"shoe",x,.34,.08,.15,.10,.33,.06,DARK)
+    face(r,"rail_light",-.25,2.22,-.28,1,.018,WHITE)
+
+
+def dining_credenza(r):
+    feet(r,2.9,.65,.20)
+    slab(r,"walnut_case",0,.20,0,3,.62,.72,.06,WOOD)
+    for x in (-.99,0,.99):
+        panel(r,"inset_door",x,.51,.37,.94,.53,.025,.025,WOOD)
+        face(r,"finger_recess",x,.73,.385,.62,.018,INK)
+    slab(r,"stone_top",0,.82,0,3.08,.055,.80,.06,ENAMEL)
+    marble_veins(r,0,.876,0,3,.75)
+    face(r,"lower_light",0,.215,.364,2.75,.012,AMBER)
+    for y in (.88,.895,.91):
+        drum(r,"stacked_porcelain",-.95,.02,y,y+.012,.21,PAPER,12)
+    form(r,"crystal_decanter",.82,-.04,[(.875,.10,.10,0),(1.08,.12,.12,0),(1.14,.035,.035,0),(1.22,.035,.035,0)],GLASS,8)
+    drum(r,"decanter_stopper",.82,-.04,1.22,1.27,.055,GOLD,8)
+    for x in (.43,1.16):
+        stem_glass(r,x,.875,.12)
+
+
+def drone_charging_dock(r):
+    slab(r,"charging_plinth",0,0,0,1.7,.14,1.2,.16,ENAMEL)
+    box(r,"dock_spine",0,.72,-.43,.30,1.2,.22,STEEL)
+    for y in (.33,.94):
+        slab(r,"landing_shelf",0,y,0,1.52,.055,.94,.12,DARK)
+        ring(r,"charge_target",(0,y+.058,0),.36,.27,.018,AMBER, sides=16)
+        form(r,"patrol_drone_shell",0,0,[(y+.08,.19,.16,0),(y+.19,.25,.20,0),(y+.27,.13,.12,0)],ENAMEL,8)
+        for x in (-.48,.48):
+            rod(r,"drone_arm",(0,y+.16,0),(x,y+.16,0),.025,STEEL,6)
+            ring(r,"ducted_rotor",(x,y+.18,0),.20,.20,.04,STEEL,sides=12)
+            rod(r,"rotor_blade",(x-.15,y+.18,0),(x+.15,y+.18,0),.012,ALLOY,4)
+        face(r,"optical_sensor",0,y+.17,.203,.09,.035,WHITE)
+    screen(r,0,1.44,-.27,.42,.23)
+    for x in (-.62,.62):
+        face(r,"charge_status",x,.08,.59,.15,.02,GREEN)
+
+
+def ev_charger_pillar(r):
+    slab(r,"charger_foot",0,0,0,.72,.10,.57,.10,ENAMEL)
+    panel(r,"charger_pillar",0,.82,0,.48,1.44,.32,.09,STEEL)
+    panel(r,"glass_control_face",0,1.21,.17,.39,.49,.035,.04,INK)
+    screen(r,0,1.28,.191,.30,.28)
+    face(r,"charge_light",0,.52,.162,.018,.65,AMBER)
+    tube(r,"looped_charge_cable",[(.23,1.10,0),(.42,.94,.03),(.46,.25,.03),(.32,.14,.07),
+         (.13,.22,.11),(.15,.69,.16),(.28,.96,.16)],.027,RUBBER,8)
+    beam(r,"holstered_connector",(.28,.96,.16),(.22,1.13,.16),.065,.085,ENAMEL)
+    for i in range(5):
+        face(r,"lower_vent",-.10,.26+i*.04,.163,.08,.012,INK)
+
+
+def floor_drain_grate(r):
+    for x in (-.67,.67):
+        box(r,"grate_frame",x,.03,0,.06,.06,1.4,STEEL)
+    for z in (-.67,.67):
+        box(r,"grate_frame",0,.03,z,1.28,.06,.06,STEEL)
+    for i in range(15):
+        box(r,"drain_bar",(i-7)*.085,.04,0,.025,.04,1.28,ALLOY)
+    for z in (-.42,0,.42):
+        box(r,"cross_support",0,.015,z,1.28,.03,.025,STEEL)
+    for x in (-.67,.67):
+        for z in (-.60,.60):
+            drum(r,"countersunk_screw",x,z,.058,.06,.016,DARK,6)
+
+
+def foyer_console(r):
+    for x in (-.78,.78):
+        prism(r,"sculptural_console_leg",[(x-.20,0),(x+.20,0),(x+.07,.78),(x-.07,.78)],"z",-.20,.20,STONE)
+    slab(r,"floating_drawer",0,.74,0,2,.15,.48,.075,WOOD)
+    slab(r,"stone_console_top",0,.89,0,2.10,.05,.55,.06,ENAMEL)
+    face(r,"drawer_gap",0,.81,.241,.012,.10,INK)
+    face(r,"concealed_console_led",0,.745,.242,1.75,.012,AMBER)
+    marble_veins(r,0,.941,0,2,.5)
+    vessel(r,"ceramic_vase",-.66,0,[(.94,.09,.09),(1.10,.15,.15),(1.26,.07,.07),
+           (1.26,.055,.055),(1.11,.12,.12),(.96,.07,.07)],PAPER,12)
+    for dx,h in ((-.12,1.65),(.06,1.77),(.15,1.54)):
+        rod(r,"decorative_branch",(-.66,1.20,0),(-.66+dx,h,.02),.009,WOOD,5)
+        pane(r,"branch_leaf",[(-.66+dx,h-.15,.02),(-.51+dx,h-.08,.02),(-.59+dx,h-.02,.04)],LEAF)
+    vessel(r,"key_bowl",.64,0,[(.94,.12,.09),(.98,.19,.14),(1.01,.19,.14),(1.01,.17,.12),(.95,.10,.07)],GOLD,12)
+
+
+def kitchen_cabinet_bank(r):
+    cabinet_frame(r,3.6,2.4,.68)
+    for x in (-1.18,1.18):
+        panel(r,"tall_walnut_door",x,1.2,.30,1.08,2.08,.06,.025,WOOD)
+        box(r,"recessed_pull",x-.38,1.19,.34,.018,.63,.018,STEEL)
+        for y in (.72,1.73):
+            face(r,"joinery_seam",x,y,.331,1.02,.012,INK)
+    for y in (.58,1.29):
+        panel(r,"oven_surround",0,y,.29,1.11,.64,.12,.035,STEEL)
+        face(r,"oven_window",0,y-.06,.351,.91,.39,INK)
+        box(r,"oven_handle",0,y+.16,.39,.75,.028,.05,GOLD)
+        for x in (-.35,.35):
+            rod(r,"oven_dial",(x,y+.25,.35),(x,y+.25,.37),.035,ALLOY,8)
+        face(r,"oven_indicator",0,y+.25,.352,.21,.025,AMBER)
+    box(r,"open_niche_back",0,1.93,-.25,1.14,.57,.04,ENAMEL)
+    box(r,"niche_shelf",0,1.66,0,1.14,.035,.56,WOOD)
+    face(r,"niche_led",0,2.16,-.22,1.03,.015,WHITE)
+    for x in (-.3,0,.3):
+        form(r,"storage_jar",x,0,[(1.68,.10,.10,0),(1.92,.10,.10,0)],PAPER,10)
+        drum(r,"jar_lid",x,0,1.92,1.95,.105,WOOD,10)
+
+
+def luxury_watch_case(r):
+    feet(r,1.5,.67,.65)
+    slab(r,"watch_drawer",0,.61,0,1.65,.14,.78,.07,WOOD)
+    slab(r,"velvet_tray",0,.75,0,1.55,.025,.68,.04,FELT)
+    for x in (-.50,0,.50):
+        cushion(r,x,.775,0,.32,.075,.36)
+        box(r,"watch_strap",x,.856,0,.065,.012,.27,DARK)
+        ring(r,"watch_bezel",(x,.87,0),.067,.067,.012,GOLD,sides=12)
+        drum(r,"watch_dial",x,0,.86,.866,.053,INK,12)
+        beam(r,"watch_hand",(x,.872,0),(x+.031,.872,.025),.005,.003,PAPER)
+    for z in (-.37,.37):
+        face(r,"watch_case_glass",0,.97,z,1.61,.40,GLASS)
+    for x in (-.805,.805):
+        quad(r,"case_side",(x,.97,0),.74,.40,"+x",GLASS)
+        rod(r,"case_edge",(x,.77,-.37),(x,1.17,-.37),.012,GOLD,5)
+    quad(r,"case_lid",(0,1.17,0),1.61,.74,"+y",GLASS)
+    face(r,"drawer_pull",0,.69,.391,.48,.015,GOLD)
+    face(r,"case_led",0,.79,-.35,1.44,.012,WHITE)
+
+
+def marble_vanity(r):
+    for x in (-1.12,1.12):
+        slab(r,"vanity_pier",x,0,-.07,.30,.70,.58,.04,WOOD)
+    slab(r,"floating_vanity",0,.38,0,2.72,.39,.69,.06,WOOD)
+    for x in (-.68,.68):
+        face(r,"drawer_recess",x,.68,.346,1.20,.018,INK)
+    slab(r,"marble_counter",0,.77,0,2.8,.06,.75,.05,ENAMEL)
+    for x in (-.71,.71):
+        vessel(r,"carved_basin",x,.04,[(.83,.25,.19),(.96,.39,.27),(.99,.39,.27),
+               (.99,.35,.23),(.86,.21,.15)],PAPER,16)
+        drum(r,"basin_drain",x,.04,.861,.864,.027,GOLD,8)
+        tube(r,"basin_mixer",[(x,.83,-.28),(x,1.12,-.28),(x,1.12,-.05),(x,1.06,-.05)],.018,GOLD,6)
+    panel(r,"mirror_back",0,1.63,-.34,2.65,.94,.05,.10,DARK)
+    face(r,"mirror_surface",0,1.63,-.309,2.52,.81,ALLOY)
+    face(r,"mirror_glaze",0,1.63,-.307,2.52,.81,GLASS)
+    for x in (-1.24,1.24):
+        face(r,"mirror_light",x,1.63,-.305,.025,.69,WHITE)
+    face(r,"vanity_underglow",0,.40,.347,2.5,.015,AMBER)
+    box(r,"folded_hand_towel",0,.85,.10,.30,.04,.32,FELT)
+
+
+def oneway_mirror(r):
+    panel(r,"recessed_mirror_frame",0,1,0,3.2,2,.18,.065,STEEL)
+    face(r,"smoked_silver_backing",0,1,.091,2.99,1.79,ALLOY)
+    face(r,"oneway_glazing",0,1,.093,2.99,1.79,GLASS)
+    for x in (-1.53,1.53):
+        face(r,"concealed_side_diffuser",x,1,.094,.015,1.75,WHITE)
+    for x in (-1.1,1.1):
+        box(r,"glazing_clip",x,.095,.095,.11,.04,.025,DARK)
+    face(r,"lower_reveal",0,.058,.093,2.9,.012,INK)
+
+
+def security_console(r):
+    for x in (-1.15,1.15):
+        panel(r,"console_pedestal",x,.40,-.1,.40,.8,.75,.09,STEEL)
+        for y in (.24,.31,.38):
+            face(r,"pedestal_vent",x,y,.276,.24,.015,INK)
+    outline=[(-1.6,-.56),(-1.34,-.70),(1.34,-.70),(1.6,-.56),(1.6,.30),
+             (1.25,.65),(.70,.48),(-.70,.48),(-1.25,.65),(-1.6,.30)]
+    prism(r,"curved_control_desk",outline,"y",.78,.87,ENAMEL)
+    for x,z in ((-1.02,-.20),(0,-.35),(1.02,-.20)):
+        rod(r,"monitor_arm",(x,.87,z-.10),(x,1.10,z-.10),.025,STEEL,6)
+        screen(r,x,1.13,z,.88,.44,RADAR)
+        slab(r,"key_deck",x,.873,z+.40,.68,.018,.22,.025,DARK)
+        for j in range(3):
+            quad(r,"keyboard_row",(x,.893,z+.34+j*.055),.57,.012,"+y",ALLOY)
+    tube(r,"console_headset",[(1.28,.88,.22),(1.32,1.03,.22),(1.49,1.03,.22),(1.54,.88,.22)],.015,STEEL,6)
+    for x in (1.28,1.54):
+        box(r,"ear_cup",x,.89,.22,.055,.10,.08,RUBBER)
+    vessel(r,"monitoring_mug",-.52,.23,[(.87,.045,.045),(1.01,.055,.055),(1.01,.044,.044),(.89,.035,.035)],PAPER,10)
+    ring(r,"mug_handle",(-.45,.94,.23),.035,.045,.012,PAPER,"z",8)
+    print_on(r,"mat_label_residence_mug",-.52,.94,.286,.07,.08)
+
+
+def tasting_island(r):
+    for x in (-1.05,1.05):
+        slab(r,"oak_trestle",x,0,0,.36,.78,1.15,.09,WOOD)
+        face(r,"trestle_inlay",x,.39,.576,.025,.61,GOLD)
+    box(r,"trestle_stretcher",0,.24,0,2.12,.12,.12,STEEL)
+    slab(r,"tasting_counter",0,.78,0,3.4,.085,1.6,.15,ENAMEL)
+    marble_veins(r,0,.866,0,3.3,1.5)
+    slab(r,"oak_serving_board",0,.866,0,1.30,.025,.44,.09,WOOD)
+    bottle(r,-.33,.891,0,.35)
+    form(r,"wide_decanter",.32,0,[(.891,.12,.12,0),(.96,.19,.16,0),(1.05,.07,.06,0),(1.14,.04,.04,0)],GLASS,12)
+    for x,z in ((-1.1,.38),(1.1,.38),(-1.1,-.38),(1.1,-.38)):
+        stem_glass(r,x,.866,z)
+    book(r,.75,.866,-.32,.31,.015,.24,mat=PAPER)
+
+
+def wine_barrel_rack(r):
+    for x in (-1.13,1.13):
+        box(r,"rack_upright",x,.825,0,.10,1.65,1.0,STEEL)
+    for y in (.08,.86):
+        box(r,"rack_crossbar",0,y,.40,2.4,.09,.09,WOOD)
+        box(r,"rear_crossbar",0,y,-.40,2.4,.09,.09,WOOD)
+    for x in (-.56,.56):
+        for y in (.45,1.23):
+            # Obrót profilu zachowuje klepkowy, wybrzuszony przekrój beczki.
+            before=set(r.children)
+            form(r,"oak_barrel",0,0,[(-.47,.30,.30,0),(-.32,.34,.34,0),
+                 (0,.37,.37,0),(.32,.34,.34,0),(.47,.30,.30,0)],WOOD,12)
+            bpy.context.view_layer.update()
+            transform=Matrix.Translation(ba._city_point((x,y,0))) @ Matrix.Rotation(math.pi/2,4,"X")
+            for obj in set(r.children)-before:
+                obj.matrix_world=transform @ obj.matrix_world
+            for z,rad in ((-.40,.325),(.40,.325),(-.17,.36),(.17,.36)):
+                ring(r,"barrel_hoop",(x,y,z),rad,rad,.024,STEEL,"z",12)
+            for dx in (-.14,0,.14):
+                face(r,"end_stave",x+dx,y,.472,.008,.49,INK)
+            rod(r,"barrel_bung",(x,y,.472),(x,y,.495),.035,GOLD,8)
+    face(r,"rack_light",0,.09,.449,2.14,.015,AMBER)
+
+
+def side_table(r):
+    drum(r,"stone_base",0,0,0,.055,.30,ENAMEL,20)
+    for s in (-1,1):
+        beam(r,"offset_table_support",(s*.15,.055,0),(s*.08,.48,0),.04,.08,GOLD)
+    drum(r,"walnut_table_edge",0,0,.48,.51,.38,WOOD,24)
+    drum(r,"stone_tabletop",0,0,.51,.54,.37,ENAMEL,24)
+    marble_veins(r,0,.541,0,.60,.60)
+    book(r,-.06,.54,0,.31,.025,.25)
+
+
+def arc_floor_lamp(r):
+    drum(r,"weighted_marble_base",-.52,0,0,.09,.32,ENAMEL,20)
+    arc=[(-.52+1.16*(i/20)**2,
+          1.12*(1-i/20)**2+4.70*(i/20)*(1-i/20)+1.78*(i/20)**2,0) for i in range(21)]
+    tube(r,"arched_brass_stem",[(-.52,.09,0)]+arc,.022,GOLD,8)
+    vessel(r,"spun_metal_shade",.64,0,[(1.79,.08,.08),(1.69,.24,.24),(1.56,.29,.29),
+           (1.55,.27,.27),(1.67,.21,.21)],ENAMEL,20)
+    drum(r,"warm_lamp_diffuser",.64,0,1.56,1.57,.245,WHITE,20)
+    drum(r,"foot_switch",-.52,.20,.09,.11,.025,STEEL,8)
+
+
+def table_lamp(r):
+    drum(r,"lamp_foot",0,0,0,.035,.18,ENAMEL,16)
+    form(r,"sculpted_walnut_stem",0,0,[(.035,.08,.08,0),(.15,.11,.11,0),(.37,.045,.045,0)],WOOD,12)
+    drum(r,"brass_collar",0,0,.34,.39,.051,GOLD,12)
+    vessel(r,"opal_shade",0,0,[(.38,.25,.25),(.60,.14,.14),(.63,.07,.07),
+           (.61,.06,.06),(.58,.12,.12),(.39,.23,.23)],PAPER,20)
+    drum(r,"shade_diffuser",0,0,.381,.386,.23,WHITE,20)
+    rod(r,"pull_chain",(.13,.15,0),(.13,.38,0),.005,GOLD,5)
+
+
+def nightstand(r):
+    for x in (-.22,.22):
+        box(r,"nightstand_sled",x,.06,0,.025,.12,.42,STEEL)
+    slab(r,"nightstand_case",0,.12,0,.64,.42,.50,.065,WOOD)
+    for y in (.23,.43):
+        panel(r,"drawer_front",0,y,.252,.57,.17,.025,.02,WOOD)
+        face(r,"finger_pull",0,y+.04,.266,.22,.012,INK)
+    slab(r,"nightstand_top",0,.54,0,.68,.04,.54,.07,ENAMEL)
+    marble_veins(r,0,.581,0,.60,.46)
+    ring(r,"wireless_charge_inlay",(.13,.582,0),.085,.085,.006,GOLD,sides=12)
+    box(r,"resting_tablet",-.12,.59,0,.14,.014,.23,DARK)
+    face(r,"drawer_led",0,.135,.251,.50,.008,AMBER)
+
+
+def bar_stool(r):
+    for x in (-.22,.22):
+        for z in (-.22,.22):
+            beam(r,"tapered_stool_leg",(x*1.2,0,z*1.2),(x,.70,z),.028,.028,STEEL)
+    ring(r,"footrest",(0,.28,0),.26,.26,.022,GOLD,sides=12)
+    slab(r,"stool_shell",0,.70,0,.52,.045,.49,.07,WOOD)
+    cushion(r,0,.745,.02,.47,.08,.43)
+    for x in (-.21,.21):
+        beam(r,"low_back_stile",(x,.72,-.20),(x,.98,-.25),.025,.025,WOOD)
+    panel(r,"low_wrap_back",0,.95,-.24,.50,.17,.065,.05,WOOD)
+    panel(r,"stool_back_pad",0,.95,-.201,.43,.12,.025,.035,FELT)
+
+
+def tv_acoustic_wall(r):
+    box(r,"acoustic_backing",0,1.35,-.08,3.6,2.7,.10,FELT)
+    for i in range(27):
+        box(r,"walnut_acoustic_fin",(i-13)*.131,1.35,0,.045,2.7,.08,WOOD)
+    panel(r,"ultrathin_display",0,1.65,.09,2.45,1.38,.055,.035,ENAMEL)
+    face(r,"dark_display_glass",0,1.65,.12,2.35,1.28,INK)
+    face(r,"standby_mark",1.08,1.03,.121,.025,.008,AMBER)
+    slab(r,"floating_media_drawer",0,.28,.12,2.80,.23,.48,.05,ENAMEL)
+    face(r,"media_drawer_seam",0,.40,.361,.012,.17,INK)
+    panel(r,"soundbar",0,.59,.13,1.80,.12,.13,.04,STEEL)
+    for x in (-.70,0,.70):
+        face(r,"speaker_grille",x,.59,.196,.26,.055,INK)
+    face(r,"media_underglow",0,.29,.362,2.55,.012,WHITE)
+
+
+def ficus_planter(r):
+    vessel(r,"concrete_planter",0,0,[(0,.25,.25),(.48,.36,.36),(.53,.36,.36),
+           (.53,.32,.32),(.40,.30,.30)],STONE,16)
+    drum(r,"soil",0,0,.405,.412,.30,INK,16)
+    trunk=[Vector(p) for p in ((0,.41,0),(-.07,.94,.02),(.03,1.43,0),(.01,1.88,0))]
+    tube(r,"ficus_trunk",[tuple(p) for p in trunk],.025,WOOD,7)
+    for i in range(12):
+        a=i*2.4
+        h=.90+i*.078
+        x,z=.32*math.cos(a),.32*math.sin(a)
+        center=Vector((x,h+.08,z))
+        along=Vector((math.cos(a)*.29,.10,math.sin(a)*.29))
+        across=Vector((-math.sin(a)*.16,0,math.cos(a)*.16))
+        lower,upper=next((p,q) for p,q in zip(trunk,trunk[1:]) if p.y<=h-.15<=q.y)
+        junction=lower.lerp(upper,(h-.15-lower.y)/(upper.y-lower.y))
+        rod(r,"leaf_branch",tuple(junction),tuple(center-along),.009,WOOD,5)
+        outline=[center-along,center-along*.35+across,center+along*.40+across*.85,
+                 center+along,center+along*.40-across*.85,center-along*.35-across]
+        # Zamknięta, cienka blaszka jest widoczna także od spodu w grze.
+        vertices=[tuple(p) for p in outline]+[tuple(center+Vector((0,.035,0)))]
+        vertices += [tuple(Vector(p)-Vector((0,.003,0))) for p in vertices]
+        faces=[(i,(i+1)%6,6) for i in range(6)]
+        faces += [(i+7,13,(i+1)%6+7) for i in range(6)]
+        faces += [(i,i+7,(i+1)%6+7,(i+1)%6) for i in range(6)]
+        surface(r,"folded_ficus_leaf",vertices,faces,LEAF)
+        rod(r,"leaf_midrib",tuple(center-along),tuple(center+along),.003,WOOD,4)
+
+
+def abstract_sculpture(r):
+    slab(r,"sculpture_plinth",0,0,0,.76,.68,.76,.075,STONE)
+    slab(r,"plinth_top",0,.68,0,.80,.035,.80,.08,ENAMEL)
+    rod(r,"sculpture_anchor",(0,.715,0),(0,.93,0),.035,GOLD,8)
+    for j in range(2):
+        points=[]
+        for i in range(19):
+            a=i*math.tau/18
+            points.append((.39*math.cos(a),1.28+.49*math.sin(a),.17*math.sin(a*2+j*math.pi)+j*.045))
+        tube(r,"interlocking_bronze_loop",points,.045,GOLD if j==0 else STEEL,6)
+    face(r,"sculpture_caption",0,.59,.381,.28,.055,GOLD)
+
+
+def ottoman(r):
+    drum(r,"recessed_ottoman_foot",0,0,0,.065,.32,STEEL,16)
+    form(r,"rounded_upholstery",0,0,[(.065,.37,.37,0),(.13,.43,.43,0),(.37,.43,.43,0),(.43,.36,.36,0)],FELT,20)
+    ring(r,"upholstery_piping",(0,.39,0),.413,.413,.007,ALLOY,sides=20)
+    for x in (-.11,.11):
+        drum(r,"tuft_button",x,0,.431,.434,.012,DARK,6)
+    box(r,"leather_carry_tab",.432,.25,0,.012,.10,.09,WOOD)
+
+
+def decor_shelf(r):
+    for x in (-.85,.85):
+        box(r,"open_shelf_upright",x,1.1,-.05,.045,2.2,.40,STEEL)
+    for y in (.12,.66,1.20,1.74,2.18):
+        slab(r,"walnut_shelf",0,y,0,1.9,.04,.50,.045,WOOD)
+    for x in (-.35,.35):
+        box(r,"asymmetric_divider",x,1.47,-.05,.035,.50,.40,GOLD)
+    for i in range(5):
+        book(r,-.63+i*.13,.70,-.02,.10,.29+(i%3)*.04,.26,True,DARK if i%2 else WOOD)
+    vessel(r,"shelf_ceramic",.55,0,[(.16,.11,.11),(.37,.16,.16),(.52,.06,.06),
+           (.52,.045,.045),(.38,.13,.13),(.18,.08,.08)],PAPER,10)
+    for i in range(3):
+        book(r,-.50,.16+i*.055,.02,.40,.045,.31,mat=WOOD if i%2 else DARK)
+    ring(r,"objet_ring",(.05,1.45,0),.16,.17,.032,GOLD,"z",12)
+    slab(r,"objet_base",.05,1.24,0,.22,.035,.16,.02,ENAMEL)
+    panel(r,"photo_frame",-.54,1.98,-.03,.28,.35,.035,.02,GOLD)
+    face(r,"photo_silhouette",-.54,1.98,-.01,.22,.28,INK)
+    bottle(r,.58,1.78,0,.32)
+    face(r,"shelf_light",0,2.165,-.18,1.67,.012,WHITE)
+
+
+# Pierwsza partia: dosłowny kontrakt §4.1; nie zależy od kamery podglądu.
 CATALOG = {
     forest_glass_facade: ((4,4.8,.36),380,(.45,.3,1)),
     interior_door_frame: ((4,3.6,.28),420,(.45,.3,1)),
@@ -766,6 +1300,43 @@ CATALOG = {
     wine_rack_wall: ((3.2,2.8,.65),880,(.4,.25,1)),
     cctv_monitor_wall: ((4,2.4,.25),440,(.25,.18,1)),
 }
+
+# Partia 2: jawne wymiary z §3.5; pozostałe dobrane do skali mebli w willi.
+# Niezależny kontrakt walidacji: artifacts/models/residence/batch2-specs.json.
+BATCH2 = {
+    dining_chair: ((.62,.96,.66),520,(.7,.5,1)),
+    lounge_armchair: ((1.12,1.02,1.08),700,(.75,.55,1)),
+    freestanding_tub: ((2.2,.85,1.2),980,(.65,.9,1)),
+    whisky_bar_counter: ((3.2,1.42,1.2),1100,(.6,.6,1)),
+    tactical_gun_cabinet: ((2.2,2.2,.8),1120,(.3,.25,1)),
+    interrogation_lamp: ((.86,.63,.86),620,(.5,-.65,1)),
+    zen_water_wall: ((2.6,2.8,.85),760,(.5,.4,1)),
+    blade_display_pedestal: ((1.2,1.45,1.2),700,(.55,.55,1)),
+    coat_closet: ((1.8,2.4,.72),760,(.4,.3,1)),
+    dining_credenza: ((3.08,1.27,.80),1120,(.5,.55,1)),
+    drone_charging_dock: ((1.7,1.6,1.2),980,(.65,.55,1)),
+    ev_charger_pillar: ((.9,1.6,.57),760,(.65,.3,1)),
+    floor_drain_grate: ((1.4,.06,1.4),480,(.5,1.2,1)),
+    foyer_console: ((2.1,1.77,.55),760,(.5,.4,1)),
+    kitchen_cabinet_bank: ((3.6,2.4,.68),1000,(.4,.3,1)),
+    luxury_watch_case: ((1.65,1.17,.78),980,(.5,.8,1)),
+    marble_vanity: ((2.8,2.1,.75),1100,(.5,.6,1)),
+    oneway_mirror: ((3.2,2,.18),240,(.25,.2,1)),
+    security_console: ((3.2,1.35,1.4),1120,(.6,.7,1)),
+    tasting_island: ((3.4,1.1,1.6),1240,(.55,.75,1)),
+    wine_barrel_rack: ((2.4,1.65,1.1),1240,(.5,.35,1)),
+    side_table: ((.76,.57,.76),700,(.5,.75,1)),
+    arc_floor_lamp: ((1.80,2,.64),980,(.4,.3,1)),
+    table_lamp: ((.5,.63,.5),760,(.5,.4,1)),
+    nightstand: ((.68,.60,.54),480,(.6,.7,1)),
+    bar_stool: ((.56,1.04,.58),560,(.7,.5,1)),
+    tv_acoustic_wall: ((3.6,2.7,.55),760,(.4,.3,1)),
+    ficus_planter: ((1.25,1.90,1.25),1000,(.6,.4,1)),
+    abstract_sculpture: ((.90,1.82,.8),1100,(.65,.35,1)),
+    ottoman: ((.88,.44,.86),420,(.6,.7,1)),
+    decor_shelf: ((1.9,2.22,.5),980,(.4,.35,1)),
+}
+CATALOG.update(BATCH2)
 
 
 def fit_dimensions(root, size):
@@ -835,12 +1406,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--only",nargs="+",choices=["res_"+b.__name__ for b in CATALOG])
     parser.add_argument("--no-preview",action="store_true")
+    parser.add_argument("--batch2",action="store_true",help="Eksportuj wyłącznie 31 nowych modeli")
     opts = parser.parse_args(sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else [])
     report = []
     for builder in CATALOG:
+        if opts.batch2 and builder not in BATCH2:
+            continue
         if not opts.only or "res_"+builder.__name__ in opts.only:
             report.append(export(builder,not opts.no_preview))
-    if not opts.only:
+    if not opts.only and not opts.batch2:
         target = REPO/"artifacts/models/residence/manifest.json"
         target.parent.mkdir(parents=True,exist_ok=True)
         target.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf8")

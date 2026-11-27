@@ -1,7 +1,8 @@
-// Niezależny pomiar wyeksportowanych GLB względem docs/maps/run6.md §4.1.
+// Niezależny pomiar GLB: §4.1 run6 (partia 1) i batch2-specs.json (partia 2).
 // node artifacts/models/residence/validate.mjs [--write-bounds]
 import assert from 'node:assert/strict';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { Box3, Vector3, Raycaster, SRGBColorSpace } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
@@ -11,6 +12,22 @@ const source = await readFile('docs/maps/run6.md', 'utf8');
 const specs = [...source.matchAll(/\| \d+ \| `(res_\w+)` \| `([\d.]+) × ([\d.]+) × ([\d.]+)`[^\n]+?≤ (\d+) \|/g)]
   .map((match) => ({ model: match[1], size: match.slice(2, 5).map(Number), budget: Number(match[5]) }));
 assert.equal(specs.length, 38);
+const originalHashes = JSON.parse(await readFile(`${output}/batch1-sha256.json`, 'utf8'));
+assert.equal(Object.keys(originalHashes).length, 38);
+for (const spec of specs) {
+  const file = await readFile(`${directory}/${spec.model}.glb`);
+  assert.equal(createHash('sha256').update(file).digest('hex'), originalHashes[spec.model + '.glb'], spec.model + ': original geometry/file changed');
+}
+const additionalSpecs = JSON.parse(await readFile(`${output}/batch2-specs.json`, 'utf8'));
+assert.equal(additionalSpecs.length, 31);
+for (const spec of additionalSpecs) {
+  assert(/^res_\w+$/.test(spec.model), 'batch 2: model id');
+  assert.equal(spec.size.length, 3, spec.model + ': XYZ dimensions');
+  assert(spec.size.every((n) => Number.isFinite(n) && n > 0), spec.model + ': dimensions');
+  assert(Number.isInteger(spec.budget) && spec.budget > 0 && spec.budget <= 1240, spec.model + ': budget');
+}
+specs.push(...additionalSpecs);
+assert.equal(new Set(specs.map((spec) => spec.model)).size, 69);
 assert.deepEqual((await readdir(directory)).filter((file) => /^res_.*\.glb$/.test(file)).sort(), specs.map((spec) => spec.model + '.glb').sort());
 const boundsPath = 'src/data/render/mapModelBounds.json';
 const boundsSource = await readFile(boundsPath, 'utf8');
@@ -33,6 +50,8 @@ for (const spec of specs) {
   assert.equal(file.readUInt32LE(4), 2);
   assert.equal(file.readUInt32LE(8), file.length);
   const json = JSON.parse(file.subarray(20, 20 + file.readUInt32LE(12)).toString());
+  assert.equal(json.cameras?.length ?? 0, 0, model + ': cameras');
+  assert.equal(json.extensions?.KHR_lights_punctual?.lights?.length ?? 0, 0, model + ': lights');
   assert.equal(json.images?.length ?? 0, 0, model + ': embedded images');
   assert.equal(json.animations?.length ?? 0, 0, model + ': animations');
   const { scene } = await new GLTFLoader().parseAsync(file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength), '');

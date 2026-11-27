@@ -1,0 +1,281 @@
+[
+  {
+    "model": "res_dining_chair",
+    "size": [
+      0.62,
+      0.96,
+      0.66
+    ],
+    "budget": 520
+  },
+  {
+    "model": "res_lounge_armchair",
+    "size": [
+      1.12,
+      1.02,
+      1.08
+    ],
+    "budget": 700
+  },
+  {
+    "model": "res_freestanding_tub",
+    "size": [
+      2.2,
+      0.85,
+      1.2
+    ],
+    "budget": 980
+  },
+  {
+    "model": "res_whisky_bar_counter",
+    "size": [
+      3.2,
+      1.42,
+      1.2
+    ],
+    "budget": 1100
+  },
+  {
+    "model": "res_tactical_gun_cabinet",
+    "size": [
+      2.2,
+      2.2,
+      0.8
+    ],
+    "budget": 1120
+  },
+  {
+    "model": "res_interrogation_lamp",
+    "size": [
+      0.86,
+      0.63,
+      0.86
+    ],
+    "budget": 620
+  },
+  {
+    "model": "res_zen_water_wall",
+    "size": [
+      2.6,
+      2.8,
+      0.85
+    ],
+    "budget": 760
+  },
+  {
+    "model": "res_blade_display_pedestal",
+    "size": [
+      1.2,
+      1.45,
+      1.2
+    ],
+    "budget": 700
+  },
+  {
+    "model": "res_coat_closet",
+    "size": [
+      1.8,
+      2.4,
+      0.72
+    ],
+    "budget": 760
+  },
+  {
+    "model": "res_dining_credenza",
+    "size": [
+      3.08,
+      1.27,
+      0.8
+    ],
+    "budget": 1120
+  },
+  {
+    "model": "res_drone_charging_dock",
+    "size": [
+      1.7,
+      1.6,
+      1.2
+    ],
+    "budget": 980
+  },
+  {
+    "model": "res_ev_charger_pillar",
+    "size": [
+      0.9,
+      1.6,
+      0.57
+    ],
+    "budget": 760
+  },
+  {
+    "model": "res_floor_drain_grate",
+    "size": [
+      1.4,
+      0.06,
+      1.4
+    ],
+    "budget": 480
+  },
+  {
+    "model": "res_foyer_console",
+    "size": [
+      2.1,
+      1.77,
+      0.55
+    ],
+    "budget": 760
+  },
+  {
+    "model": "res_kitchen_cabinet_bank",
+    "size": [
+      3.6,
+      2.4,
+      0.68
+    ],
+    "budget": 1000
+  },
+  {
+    "model": "res_luxury_watch_case",
+    "size": [
+      1.65,
+      1.17,
+      0.78
+    ],
+    "budget": 980
+  },
+  {
+    "model": "res_marble_vanity",
+    "size": [
+      2.8,
+      2.1,
+      0.75
+    ],
+    "budget": 1100
+  },
+  {
+    "model": "res_oneway_mirror",
+    "size": [
+      3.2,
+      2,
+      0.18
+    ],
+    "budget": 240
+  },
+  {
+    "model": "res_security_console",
+    "size": [
+      3.2,
+      1.35,
+      1.4
+    ],
+    "budget": 1120
+  },
+  {
+    "model": "res_tasting_island",
+    "size": [
+      3.4,
+      1.1,
+      1.6
+    ],
+    "budget": 1240
+  },
+  {
+    "model": "res_wine_barrel_rack",
+    "size": [
+      2.4,
+      1.65,
+      1.1
+    ],
+    "budget": 1240
+  },
+  {
+    "model": "res_side_table",
+    "size": [
+      0.76,
+      0.57,
+      0.76
+    ],
+    "budget": 700
+  },
+  {
+    "model": "res_arc_floor_lamp",
+    "size": [
+      1.8,
+      2,
+      0.64
+    ],
+    "budget": 980
+  },
+  {
+    "model": "res_table_lamp",
+    "size": [
+      0.5,
+      0.63,
+      0.5
+    ],
+    "budget": 760
+  },
+  {
+    "model": "res_nightstand",
+    "size": [
+      0.68,
+      0.6,
+      0.54
+    ],
+    "budget": 480
+  },
+  {
+    "model": "res_bar_stool",
+    "size": [
+      0.56,
+      1.04,
+      0.58
+    ],
+    "budget": 560
+  },
+  {
+    "model": "res_tv_acoustic_wall",
+    "size": [
+      3.6,
+      2.7,
+      0.55
+    ],
+    "budget": 760
+  },
+  {
+    "model": "res_ficus_planter",
+    "size": [
+      1.25,
+      1.9,
+      1.25
+    ],
+    "budget": 1000
+  },
+  {
+    "model": "res_abstract_sculpture",
+    "size": [
+      0.9,
+      1.82,
+      0.8
+    ],
+    "budget": 1100
+  },
+  {
+    "model": "res_ottoman",
+    "size": [
+      0.88,
+      0.44,
+      0.86
+    ],
+    "budget": 420
+  },
+  {
+    "model": "res_decor_shelf",
+    "size": [
+      1.9,
+      2.22,
+      0.5
+    ],
+    "budget": 980
+  }
+]
