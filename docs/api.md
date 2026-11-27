@@ -2682,3 +2682,19 @@ EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `ele
 ## Chimera
 
 Snapshot wroga udostępnia widokowi tryb ruchu `chimeraMode` (skradanie, sprint, dezorientacja) i wariant ciosu `claw`. AI wybiera pobliskie cele z `getNeighbors()` według listy typów Kurogane z danych. Dostęp do sojuszniczych hurtboksów i tag `#friendly_fire` dotyczą wyłącznie zamachu na wybraną jednostkę.
+
+## Kosmetyczne set pieces pokoju — reaktor fuzyjny
+
+`RoomDefinition.setPieces?: { kind: 'fusionReactor'; position: Vec3;
+yaw?: number; scale?: number }[]`: współrzędne podstawy w metrach, obrót Y
+w radianach, dodatnia skala (domyślnie 1). Pole nie tworzy kolizji ani stanu
+symulacji; podstawę zabezpieczają bloki generatora mapy.
+
+`FusionReactor` (`src/render/fusionReactor.ts`): konstruktor przyjmuje definicję,
+`root: Group`, `lightDefs: CityLightDef[]`, `update(timeS, flashes?)`,
+`dispose()`. Czas absolutny pochodzi wyłącznie z renderu; ten sam czas i tuning
+dają ten sam stan. `CityDressing` tworzy i zwalnia reaktory, dodaje ich światła
+do wspólnej puli `CityLights` (bez zwiększenia limitu) i aktualizuje emisję.
+`AudioSystem.setFusionReactors(positions | null)` ustawia niezależne od pogody,
+proceduralne źródła buczenia; wspólny kontekst, master/SFX, pauza i odblokowanie
+audio pozostają w `AudioSystem`. Źródła mają tłumienie i panoramę względem słuchacza.
