@@ -1400,6 +1400,36 @@
     "bytes": 11136
   },
   {
+    "id": "floor_lane_line",
+    "category": "decals",
+    "path": "decals/floor_lane_line.webp",
+    "width": 512,
+    "height": 112,
+    "dominantColor": "#fdfdfd",
+    "description": "Linia korytarza transportowego na posadzce magazynu",
+    "bytes": 5456
+  },
+  {
+    "id": "floor_sector_k09",
+    "category": "decals",
+    "path": "decals/floor_sector_k09.webp",
+    "width": 512,
+    "height": 171,
+    "dominantColor": "#fdfdfd",
+    "description": "Szablon oznaczenia strefy K09 na posadzce magazynu",
+    "bytes": 15668
+  },
+  {
+    "id": "floor_pallet_bay",
+    "category": "decals",
+    "path": "decals/floor_pallet_bay.webp",
+    "width": 512,
+    "height": 505,
+    "dominantColor": "#fdfdfd",
+    "description": "Koperta odkładcza palety na posadzce magazynu",
+    "bytes": 33060
+  },
+  {
     "id": "mall_new_collection",
     "category": "signs",
     "path": "signs/mall_new_collection.webp",
@@ -1968,6 +1998,616 @@
     "dominantColor": "#583c23",
     "description": "Pionowe lamele z ciemnego orzecha na czarnym filcu.",
     "bytes": 40064
+  },
+  {
+    "id": "med_resin_floor",
+    "category": "surfaces",
+    "path": "surfaces/med_resin_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#5d687c",
+    "description": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami",
+    "bytes": 9312
+  },
+  {
+    "id": "med_wall_panel",
+    "category": "surfaces",
+    "path": "surfaces/med_wall_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#58637b",
+    "description": "Lakierowane panele ścienne ze stalową listwą",
+    "bytes": 5252
+  },
+  {
+    "id": "med_atrium_terrazzo",
+    "category": "surfaces",
+    "path": "surfaces/med_atrium_terrazzo.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3a424c",
+    "description": "Grafitowe lastryko Atrium z mosiężną siatką",
+    "bytes": 120420
+  },
+  {
+    "id": "med_sign_rejestracja",
+    "category": "signs",
+    "path": "signs/med_sign_rejestracja.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff4db",
+    "description": "Drogowskaz Helixy „REJESTRACJA”",
+    "bytes": 3446
+  },
+  {
+    "id": "med_sign_apteka",
+    "category": "signs",
+    "path": "signs/med_sign_apteka.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#ffffeb",
+    "description": "Drogowskaz Helixy „APTEKA 24H”",
+    "bytes": 3766
+  },
+  {
+    "id": "med_sign_zabiegowe",
+    "category": "signs",
+    "path": "signs/med_sign_zabiegowe.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fefee6",
+    "description": "Drogowskaz Helixy „GABINETY ZABIEGOWE”",
+    "bytes": 4106
+  },
+  {
+    "id": "med_sign_diagnostyka",
+    "category": "signs",
+    "path": "signs/med_sign_diagnostyka.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fcf4e0",
+    "description": "Drogowskaz Helixy „DIAGNOSTYKA”",
+    "bytes": 3992
+  },
+  {
+    "id": "med_sign_blok_operacyjny",
+    "category": "signs",
+    "path": "signs/med_sign_blok_operacyjny.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff4d9",
+    "description": "Drogowskaz Helixy „BLOK OPERACYJNY”",
+    "bytes": 4046
+  },
+  {
+    "id": "med_sign_kalibracja",
+    "category": "signs",
+    "path": "signs/med_sign_kalibracja.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffde2",
+    "description": "Drogowskaz Helixy „KALIBRACJA AKORDU”",
+    "bytes": 4464
+  },
+  {
+    "id": "med_sign_regeneracja",
+    "category": "signs",
+    "path": "signs/med_sign_regeneracja.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff7e1",
+    "description": "Drogowskaz Helixy „REGENERACJA”",
+    "bytes": 4084
+  },
+  {
+    "id": "med_sign_atrium",
+    "category": "signs",
+    "path": "signs/med_sign_atrium.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff4de",
+    "description": "Drogowskaz Helixy „ATRIUM”",
+    "bytes": 2730
+  },
+  {
+    "id": "med_sign_winda",
+    "category": "signs",
+    "path": "signs/med_sign_winda.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fef4dd",
+    "description": "Drogowskaz Helixy „WINDA”",
+    "bytes": 2536
+  },
+  {
+    "id": "med_screen_vitals",
+    "category": "decals",
+    "path": "decals/med_screen_vitals.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#232d3d",
+    "description": "Monitor parametrów życiowych",
+    "bytes": 86540
+  },
+  {
+    "id": "med_screen_scan",
+    "category": "decals",
+    "path": "decals/med_screen_scan.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#1c2637",
+    "description": "Skan sylwetki z implantem przy skroni",
+    "bytes": 74550
+  },
+  {
+    "id": "med_poster_helixa_care",
+    "category": "decals",
+    "path": "decals/med_poster_helixa_care.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e3ddd0",
+    "description": "Plakat firmowy Helixa Dynamics",
+    "bytes": 39430
+  },
+  {
+    "id": "med_floor_helix_logo",
+    "category": "decals",
+    "path": "decals/med_floor_helix_logo.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#ddd7c8",
+    "description": "Okrągła inkrustacja Atrium",
+    "bytes": 115594
+  },
+  {
+    "id": "med_floor_cross",
+    "category": "decals",
+    "path": "decals/med_floor_cross.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#59f230",
+    "description": "Zielony krzyż posadzkowy",
+    "bytes": 35298
+  },
+  {
+    "id": "med_floor_wayline",
+    "category": "decals",
+    "path": "decals/med_floor_wayline.webp",
+    "width": 1024,
+    "height": 128,
+    "dominantColor": "#fa9a11",
+    "description": "Cztery pasy prowadzące",
+    "bytes": 21812
+  },
+  {
+    "id": "med_quarantine_tape",
+    "category": "decals",
+    "path": "decals/med_quarantine_tape.webp",
+    "width": 1024,
+    "height": 128,
+    "dominantColor": "#f79501",
+    "description": "Taśma kwarantanny",
+    "bytes": 29020
+  },
+  {
+    "id": "med_screen_queue_404",
+    "category": "decals",
+    "path": "decals/med_screen_queue_404.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#242b3a",
+    "description": "Tablica numerków przy rejestracji",
+    "bytes": 49994
+  },
+  {
+    "id": "med_poster_akord_free",
+    "category": "decals",
+    "path": "decals/med_poster_akord_free.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#f0ead9",
+    "description": "Plakat z ofertą Akordu i warunkiem kontraktu",
+    "bytes": 47906
+  },
+  {
+    "id": "med_card_tymon",
+    "category": "decals",
+    "path": "decals/med_card_tymon.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#dfd8c6",
+    "description": "Karta pacjenta Tymona",
+    "bytes": 20752
+  },
+  {
+    "id": "med_poster_pills",
+    "category": "decals",
+    "path": "decals/med_poster_pills.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#f0e8cf",
+    "description": "Plakat z niebieską i bursztynową kapsułką",
+    "bytes": 49070
+  },
+  {
+    "id": "med_note_pin_1234",
+    "category": "decals",
+    "path": "decals/med_note_pin_1234.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#fba208",
+    "description": "Bursztynowa karteczka z PIN-em chłodni",
+    "bytes": 15788
+  },
+  {
+    "id": "med_eye_chart",
+    "category": "decals",
+    "path": "decals/med_eye_chart.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e0dccd",
+    "description": "Tablica okulistyczna z ukrytą wiadomością",
+    "bytes": 26454
+  },
+  {
+    "id": "med_label_mug_lind",
+    "category": "decals",
+    "path": "decals/med_label_mug_lind.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#0f182b",
+    "description": "Nadruk na kubek dr Lind",
+    "bytes": 21950
+  },
+  {
+    "id": "med_plaque_scratch",
+    "category": "decals",
+    "path": "decals/med_plaque_scratch.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#d6a45b",
+    "description": "Tabliczka działu protetyki",
+    "bytes": 16872
+  },
+  {
+    "id": "med_plaque_k112",
+    "category": "decals",
+    "path": "decals/med_plaque_k112.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#f0c879",
+    "description": "Tabliczka kołyski kamertonu K-112",
+    "bytes": 15952
+  },
+  {
+    "id": "med_scratch_ida",
+    "category": "decals",
+    "path": "decals/med_scratch_ida.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#8b7f7f",
+    "description": "Wydrapany napis Idy i cztery pęczki kresek",
+    "bytes": 19680
+  },
+  {
+    "id": "med_nameplate_wolan",
+    "category": "decals",
+    "path": "decals/med_nameplate_wolan.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#e6dcc7",
+    "description": "Wizytówka dr Wolan z taśmą",
+    "bytes": 9146
+  },
+  {
+    "id": "med_plaque_donor",
+    "category": "decals",
+    "path": "decals/med_plaque_donor.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#f9dc9e",
+    "description": "Mosiężna tabliczka Dawcy Roku",
+    "bytes": 23674
+  },
+  {
+    "id": "targ_wet_pavers",
+    "category": "surfaces",
+    "path": "surfaces/targ_wet_pavers.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3b4657",
+    "description": "Mokry bruk z płyt i kostki",
+    "bytes": 73160
+  },
+  {
+    "id": "targ_wood_planks",
+    "category": "surfaces",
+    "path": "surfaces/targ_wood_planks.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#564837",
+    "description": "Podłoga herbaciarni z desek",
+    "bytes": 46028
+  },
+  {
+    "id": "targ_fish_tiles",
+    "category": "surfaces",
+    "path": "surfaces/targ_fish_tiles.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#49556c",
+    "description": "Kafle hali rybnej z kratką odpływu",
+    "bytes": 34316
+  },
+  {
+    "id": "targ_sign_brama",
+    "category": "signs",
+    "path": "signs/targ_sign_brama.webp",
+    "width": 1024,
+    "height": 256,
+    "dominantColor": "#fff4d9",
+    "description": "Ręcznie gięty neon „NOCNY TARG”",
+    "bytes": 12602
+  },
+  {
+    "id": "targ_sign_garkuchnie",
+    "category": "signs",
+    "path": "signs/targ_sign_garkuchnie.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fef7de",
+    "description": "Ręcznie gięty neon „GARKUCHNIE”",
+    "bytes": 5002
+  },
+  {
+    "id": "targ_sign_ryby",
+    "category": "signs",
+    "path": "signs/targ_sign_ryby.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff2d6",
+    "description": "Ręcznie gięty neon „HALA RYBNA”",
+    "bytes": 4194
+  },
+  {
+    "id": "targ_sign_czesci",
+    "category": "signs",
+    "path": "signs/targ_sign_czesci.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffae1",
+    "description": "Ręcznie gięty neon „CZĘŚCI I NAPRAWY”",
+    "bytes": 5890
+  },
+  {
+    "id": "targ_sign_gabinet",
+    "category": "signs",
+    "path": "signs/targ_sign_gabinet.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff6dc",
+    "description": "Ręcznie gięty neon „GABINET — BEZ PYTAŃ”",
+    "bytes": 9906
+  },
+  {
+    "id": "targ_sign_herbaciarnia",
+    "category": "signs",
+    "path": "signs/targ_sign_herbaciarnia.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff5dc",
+    "description": "Ręcznie gięty neon „HERBACIARNIA”",
+    "bytes": 8916
+  },
+  {
+    "id": "targ_sign_dostawy",
+    "category": "signs",
+    "path": "signs/targ_sign_dostawy.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffbe4",
+    "description": "Ręcznie gięty neon „DOSTAWY”",
+    "bytes": 5730
+  },
+  {
+    "id": "targ_sign_scena",
+    "category": "signs",
+    "path": "signs/targ_sign_scena.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff8de",
+    "description": "Ręcznie gięty neon „POKAZ AKORDU — DZIŚ”",
+    "bytes": 8070
+  },
+  {
+    "id": "targ_sign_winda",
+    "category": "signs",
+    "path": "signs/targ_sign_winda.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fff2da",
+    "description": "Ręcznie gięty neon „WINDA”",
+    "bytes": 4308
+  },
+  {
+    "id": "targ_screen_show",
+    "category": "decals",
+    "path": "decals/targ_screen_show.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#1e2634",
+    "description": "Pionowy ekran pokazu Akordu",
+    "bytes": 12240
+  },
+  {
+    "id": "targ_menu_board",
+    "category": "decals",
+    "path": "decals/targ_menu_board.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#262a31",
+    "description": "Kredowa tablica z menu garkuchni",
+    "bytes": 34898
+  },
+  {
+    "id": "targ_price_tags",
+    "category": "decals",
+    "path": "decals/targ_price_tags.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#d09146",
+    "description": "Rząd kartonowych cenówek",
+    "bytes": 14682
+  },
+  {
+    "id": "targ_poster_wall",
+    "category": "decals",
+    "path": "decals/targ_poster_wall.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#debe94",
+    "description": "Warstwy zdartych plakatów i ogłoszeń",
+    "bytes": 91370
+  },
+  {
+    "id": "targ_floor_stall_marks",
+    "category": "decals",
+    "path": "decals/targ_floor_stall_marks.webp",
+    "width": 1024,
+    "height": 256,
+    "dominantColor": "#f59702",
+    "description": "Wytarte oznaczenia stanowisk 12, 13, 14",
+    "bytes": 38080
+  },
+  {
+    "id": "targ_tarp_pattern",
+    "category": "decals",
+    "path": "decals/targ_tarp_pattern.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#b65a09",
+    "description": "Łaty i ściegi ochrowej plandeki",
+    "bytes": 43044
+  },
+  {
+    "id": "targ_ee_zupa",
+    "category": "decals",
+    "path": "decals/targ_ee_zupa.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#202327",
+    "description": "Tablica z zupą dnia",
+    "bytes": 51304
+  },
+  {
+    "id": "targ_ee_pokaz",
+    "category": "decals",
+    "path": "decals/targ_ee_pokaz.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#fff6d2",
+    "description": "Plakat polowego pokazu Akordu",
+    "bytes": 62124
+  },
+  {
+    "id": "targ_ee_list_gonczy",
+    "category": "decals",
+    "path": "decals/targ_ee_list_gonczy.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e7c9a3",
+    "description": "List gończy za Iskrą",
+    "bytes": 40938
+  },
+  {
+    "id": "targ_ee_nadia",
+    "category": "decals",
+    "path": "decals/targ_ee_nadia.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#f4d7ae",
+    "description": "Karteczka Nadii dla Iskry",
+    "bytes": 10558
+  },
+  {
+    "id": "targ_ee_cennik",
+    "category": "decals",
+    "path": "decals/targ_ee_cennik.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#de8317",
+    "description": "Cennik naprawy protez",
+    "bytes": 36150
+  },
+  {
+    "id": "targ_ee_origami",
+    "category": "decals",
+    "path": "decals/targ_ee_origami.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#fff5d7",
+    "description": "Etykieta obok jednorożca z origami",
+    "bytes": 6380
+  },
+  {
+    "id": "targ_ee_herbata",
+    "category": "decals",
+    "path": "decals/targ_ee_herbata.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#2a2e34",
+    "description": "Tabliczka herbaty dnia",
+    "bytes": 13446
+  },
+  {
+    "id": "targ_ee_kamienna",
+    "category": "decals",
+    "path": "decals/targ_ee_kamienna.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#1b375a",
+    "description": "Emaliowany drogowskaz metra Kamienna",
+    "bytes": 15308
+  },
+  {
+    "id": "targ_ee_dyplom",
+    "category": "decals",
+    "path": "decals/targ_ee_dyplom.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#e3d5b6",
+    "description": "Dyplom w ramce",
+    "bytes": 31112
+  },
+  {
+    "id": "targ_ee_ulotka",
+    "category": "decals",
+    "path": "decals/targ_ee_ulotka.webp",
+    "width": 512,
+    "height": 768,
+    "dominantColor": "#e8cdae",
+    "description": "Podarta ulotka Helixy z dopiskiem sprayem",
+    "bytes": 55460
+  },
+  {
+    "id": "targ_ee_kot",
+    "category": "decals",
+    "path": "decals/targ_ee_kot.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#f8d9a7",
+    "description": "Ostrzeżenie przy kapliczce kota",
+    "bytes": 16060
+  },
+  {
+    "id": "targ_ee_parasolki",
+    "category": "decals",
+    "path": "decals/targ_ee_parasolki.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#373b43",
+    "description": "Szablon na blaszanym kontenerze",
+    "bytes": 20356
   },
   {
     "id": "res_iskra_investigation_board",

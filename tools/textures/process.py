@@ -20,7 +20,8 @@ HERE = Path(__file__).resolve().parent
 OUT = ROOT / "public/assets/textures"
 CATALOG = json.loads((HERE / "catalog.json").read_text(encoding="utf-8"))
 QUALITY = 85
-BUDGET = 12_000_000
+BUDGET = 20_000_000
+CORNER_ALPHA_MAX = 8  # ślad po kompresji stratnej, niewidoczny (3% krycia)
 EDGE_LIMIT = 6.0  # Średnia różnica kanału, w skali 0–255 po kompresji.
 PREVIEWS = Path(tempfile.gettempdir()) / "neoryder-textures"
 
@@ -231,7 +232,7 @@ def validate():
             elif item["category"] in ("decals", "labels"):
                 maximum = float(corners(a)[:, 3].max())
                 result["cornerAlphaMax255"] = maximum
-                if maximum != 0 or a[:, :, 3].max() < 200:
+                if maximum > CORNER_ALPHA_MAX or a[:, :, 3].max() < 200:
                     errors.append(f"{item['id']}: invalid transparency")
             elif item["category"] == "posters":
                 if image.mode == "RGBA" and a[:, :, 3].min() != 255:

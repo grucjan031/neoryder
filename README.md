@@ -12,7 +12,7 @@ Gra działa w przeglądarce (TypeScript, Three.js, Rapier).
 - **Drużyna:** do dwóch towarzyszy (Nadia, Szron) w misjach i runach.
 - **Run 15–25 minut:** mapa sektora z wyborem ścieżki, pokoje walki i elit, sklep, odpoczynek, boss. Dzielnicę wybiera się na tablicy misji:
   - **Kurogane Arms**: magazyn i galeria handlowa,
-  - **Bulwar · Helixa Dynamics** (po misji „Nocny dyżur”): bezpłatna przychodnia, nocny targ pod estakadą i taras nad Niecką; trudniejsze walki, wyższa wypłata.
+  - **Bulwar · Helixa Dynamics** (po misji „Nocny dyżur”): bezpłatna przychodnia na 61. piętrze, z blokiem operacyjnym i przeszklonym atrium oraz nocny targ pod estakadą z kładkami, herbaciarnią i dokiem maglevu. Trudniejsze walki, wyższa wypłata.
 - **Wrogowie** od szturmowców i dronów po ochroniarzy i sanitariuszy Helixy (mgła spowalniająca ze strzykawki).
 - **Implanty na czas runu** i **trwały postęp:** poziom postaci, drzewka talentów, odblokowania broni, mocy i modułów.
 - **Kryjówka** w nieczynnej stacji metra: terminal drzewek, warsztat, tablica misji z Poziomem zagrożenia i wyborem dzielnicy, poligon.

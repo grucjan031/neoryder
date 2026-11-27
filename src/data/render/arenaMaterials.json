@@ -227,6 +227,60 @@
     "bump": 0.45,
     "wetness": 0
   },
+  "targ_wet_pavers": {
+    "texture": "targ_wet_pavers",
+    "tint": "#3c4658",
+    "scale": 0.35,
+    "roughness": 0.7,
+    "metalness": 0.05,
+    "bump": 0.45,
+    "wetness": 0.45
+  },
+  "targ_wood_planks": {
+    "texture": "targ_wood_planks",
+    "tint": "#443a32",
+    "scale": 0.4,
+    "roughness": 0.9,
+    "metalness": 0,
+    "bump": 0.4,
+    "wetness": 0.1
+  },
+  "targ_fish_tiles": {
+    "texture": "targ_fish_tiles",
+    "tint": "#56627a",
+    "scale": 0.5,
+    "roughness": 0.85,
+    "metalness": 0.02,
+    "bump": 0.3,
+    "wetness": 0.15
+  },
+  "med_resin_floor": {
+    "texture": "med_resin_floor",
+    "tint": "#56627a",
+    "scale": 0.4,
+    "roughness": 0.82,
+    "metalness": 0.05,
+    "bump": 0.2,
+    "wetness": 0.3
+  },
+  "med_wall_panel": {
+    "texture": "med_wall_panel",
+    "tint": "#5a667c",
+    "scale": 0.5,
+    "roughness": 0.96,
+    "metalness": 0.0,
+    "bump": 0.25,
+    "wetness": 0.0
+  },
+  "med_atrium_terrazzo": {
+    "texture": "med_atrium_terrazzo",
+    "tint": "#3a4458",
+    "scale": 0.3,
+    "roughness": 0.7,
+    "metalness": 0.05,
+    "bump": 0.15,
+    "wetness": 0.35
+  },
   "lab_epoxy_floor": {
     "texture": "lab_epoxy_floor",
     "tint": "#465466",

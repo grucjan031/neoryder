@@ -7,6 +7,26 @@ import { isCityModelFile } from '../../src/render/cityModels';
 import { applyStyle } from '../../src/render/materials';
 
 const sizes = {
+  bw_targ_gate: [8, 6, 1],
+  bw_targ_noodle_cart: [2.6, 2.5, 1.5],
+  bw_targ_wok_station: [1.8, 2.1, 0.9],
+  bw_targ_stool_set: [1.6, 0.5, 1.6],
+  bw_targ_tarp_canopy: [4, 3.6, 3],
+  bw_targ_fish_table: [2.4, 1.1, 1.2],
+  bw_targ_hanging_rack: [2.4, 1.6, 0.3],
+  bw_targ_cold_door: [2.4, 2.6, 0.3],
+  bw_targ_parts_stall: [3, 2.6, 1.4],
+  bw_targ_drawer_wall: [3, 2.8, 0.5],
+  bw_targ_implant_chair: [1.2, 2.3, 2.1],
+  bw_targ_curtain_screen: [2.4, 2.1, 0.3],
+  bw_targ_tea_table: [1.8, 0.7, 1.8],
+  bw_targ_tea_counter: [3.6, 2.4, 1],
+  bw_targ_paper_lantern: [0.5, 0.9, 0.5],
+  bw_targ_paper_lantern_amber: [0.5, 0.9, 0.5],
+  bw_targ_crate_stack: [1.2, 1.5, 0.9],
+  bw_targ_stage: [8, 5.2, 5],
+  bw_targ_neon_totem: [1, 6, 0.6],
+  bw_targ_shrine: [1, 1.6, 0.7],
   bw_reception_counter: [4, 1.15, 0.95],
   bw_waiting_seats: [2.8, 0.95, 0.75],
   bw_entry_scanner: [3.8, 3.1, 0.8],
@@ -14,6 +34,24 @@ const sizes = {
   bw_treatment_bed: [0.85, 1.05, 2],
   bw_sample_fridge: [1.2, 2.15, 0.95],
   bw_freight_lift_frame: [5, 4.2, 1.1],
+  bw_door_portal: [4.6, 3.7, 0.6],
+  bw_curtain_wall_frame: [4, 5, 0.3],
+  bw_glass_balustrade: [4, 1.1, 0.12],
+  bw_ceiling_panel: [2.4, 0.3, 1.2],
+  bw_operating_table: [0.9, 1, 2.2],
+  bw_surgical_robot: [2.4, 2.9, 1.6],
+  bw_resonance_scanner: [2.8, 2.5, 3.4],
+  bw_regen_pod: [1.3, 2.5, 1.3],
+  bw_regen_pod_open: [1.3, 2.5, 1.6],
+  bw_calibration_chair: [1.1, 2.2, 2],
+  bw_kamerton_cradle: [2.6, 3.3, 2.6],
+  bw_pharmacy_dispenser: [2.4, 2.4, 0.9],
+  bw_implant_showcase: [1, 2.1, 1],
+  bw_lab_analyzer_bench: [2.4, 1.5, 0.8],
+  bw_med_cart: [0.6, 1, 0.9],
+  bw_info_totem: [0.8, 2.2, 0.3],
+  bw_planter_bio: [2.4, 1.9, 2.4],
+  bw_helix_sculpture: [3, 8, 3],
 } as const;
 
 it.each(Object.keys(sizes) as (keyof typeof sizes)[])(
@@ -51,20 +89,55 @@ it.each(Object.keys(sizes) as (keyof typeof sizes)[])(
     });
     expect(names.has('mat_world')).toBe(false);
     expect([...names].sort()).toEqual(bounds[id].materials);
-    if (id === 'bw_treatment_screen' || id === 'bw_sample_fridge')
+    if (
+      [
+        'bw_treatment_screen',
+        'bw_targ_parts_stall',
+        'bw_sample_fridge',
+        'bw_door_portal',
+        'bw_glass_balustrade',
+        'bw_regen_pod',
+        'bw_regen_pod_open',
+        'bw_implant_showcase',
+        'bw_pharmacy_dispenser',
+        'bw_lab_analyzer_bench',
+        'bw_med_cart',
+      ].includes(id)
+    )
       expect(names.has('mat_clinic_glass')).toBe(true);
-    if (id === 'bw_entry_scanner' || id === 'bw_freight_lift_frame') {
+    if (id === 'bw_regen_pod' || id === 'bw_regen_pod_open')
+      expect(names.has('mat_neon_green')).toBe(id === 'bw_regen_pod');
+    if (id === 'bw_targ_gate') {
+      for (const x of [-2.999, -1, 0, 1, 2.999]) {
+        for (const y of [0.01, 0.2, 2, 4.199]) {
+          const ray = new Raycaster(
+            new Vector3(x, y, 2),
+            new Vector3(0, 0, -1),
+          );
+          expect(
+            ray.intersectObject(scene),
+            `prześwit ${x}, ${y}`,
+          ).toHaveLength(0);
+        }
+      }
+    }
+    if (
+      id === 'bw_entry_scanner' ||
+      id === 'bw_freight_lift_frame' ||
+      id === 'bw_door_portal'
+    ) {
       const half = id === 'bw_entry_scanner' ? 1.5 : 2;
+      const height = id === 'bw_door_portal' ? 3.4 : 3;
       const hit = (x: number, y: number) =>
         new Raycaster(
           new Vector3(x, y, 2),
           new Vector3(0, 0, -1),
         ).intersectObject(scene).length;
       for (const x of [0, half - 0.001, -half + 0.001])
-        for (const y of [0.002, 1.5, 2.999]) expect(hit(x, y)).toBe(0);
+        for (const y of [0.002, 1.5, height - 0.001]) expect(hit(x, y)).toBe(0);
       for (const x of [half + 0.12, -half - 0.12])
         expect(hit(x, 1.5)).toBeGreaterThan(0);
-      expect(hit(0, 3.05)).toBeGreaterThan(0);
+      expect(hit(0, height + 0.05)).toBeGreaterThan(0);
     }
   },
 );

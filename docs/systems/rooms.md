@@ -246,6 +246,10 @@ Punkt w powietrzu, poza podestem albo w bloku jest odrzucany. Osiągalność tak
 
 `node tools/screens/mapAudit.mjs bossRoom --tag before` uruchamia serwer i zapisuje dziesięć ujęć PNG. Użycie `--tag after` zapisuje drugą serię w sąsiednim katalogu. Scena audytu korzysta z renderu gry, zatrzymanej symulacji i osobnego zapisu w pamięci. Metodę pomiaru modeli, progi i ręcznie sprawdzone przykłady opisuje [raport audytu](../audits/mapAudit-report.md).
 
+## Bulwar
+
+Walki i elity w obu sektorach (Kurogane i Bulwar) losują z jednej puli `run1`–`run7`: magazyn, galeria, laboratorium, biurowiec, przychodnia (`run5`), nocny targ (`run6`) i rezydencja pułkownika (`run7`). Kolejne sąsiadujące walki z tej puli zmieniają mapę. Targ ma 18 miejsc posiłków, w tym dwa na wysokości 4,2 m. Do sprawdzenia trzech zejść i przejść między poziomami służy `?scene=map-walk&map=run6&debug=1`.
+
 ## Wnętrza przemysłowe
 
 Każdy pokój z `arena` buduje `ArenaNavigation`. Gdy choć jeden blok ma `walkable: true`, siatka powstaje wyłącznie z oznaczonych powierzchni. Oznacz także posadzkę i stopnie albo rampy łączące piętra. W takim układzie `arena.navigationMaxRiseM` określa dopuszczalną różnicę wysokości między sąsiednimi komórkami, a `arena.navigationHeadroomM` wymagany prześwit. Zwykli przeciwnicy naziemni korzystają z trasy do celu podczas pościgu. Przejęcie, Szturm i Kradzież rdzenia używają własnych celów i punktów odrodzenia.

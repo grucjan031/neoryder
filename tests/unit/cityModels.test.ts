@@ -831,6 +831,116 @@ async function loadSet(name: string): Promise<Object3D> {
   return gltf.scene;
 }
 
+describe('przychodnia Helixy w run5', () => {
+  const budgets = {
+    bw_door_portal: 6000,
+    bw_curtain_wall_frame: 6000,
+    bw_glass_balustrade: 6000,
+    bw_ceiling_panel: 6000,
+    bw_operating_table: 6000,
+    bw_surgical_robot: 12000,
+    bw_resonance_scanner: 12000,
+    bw_regen_pod: 6000,
+    bw_regen_pod_open: 6000,
+    bw_calibration_chair: 6000,
+    bw_kamerton_cradle: 12000,
+    bw_pharmacy_dispenser: 6000,
+    bw_implant_showcase: 6000,
+    bw_lab_analyzer_bench: 6000,
+    bw_med_cart: 6000,
+    bw_info_totem: 6000,
+    bw_planter_bio: 6000,
+    bw_helix_sculpture: 12000,
+  };
+
+  it.each(Object.entries(budgets))(
+    '%s zachowuje budżet geometrii i paletę kliniki',
+    async (id, budget) => {
+      const scene = await loadSet(id);
+      let triangles = 0;
+      scene.traverse((node) => {
+        if (!(node instanceof Mesh)) return;
+        const geometry = node.geometry;
+        triangles +=
+          (geometry.index?.count ?? geometry.getAttribute('position').count) /
+          3;
+        for (const mat of [node.material].flat()) {
+          expect(reserved(mat.color)).toBe(false);
+          if (mat.emissive.getHex() === 0) continue;
+          expect(mat.name).toMatch(
+            /^mat_(light_panel|neon_(green|blue|violet|amber))$/,
+          );
+          expect(reserved(mat.emissive)).toBe(false);
+        }
+      });
+      expect(triangles).toBeGreaterThan(0);
+      expect(triangles).toBeLessThanOrEqual(budget);
+    },
+  );
+});
+
+describe('nocny targ w run6', () => {
+  const budgets = {
+    bw_targ_gate: 10000,
+    bw_targ_noodle_cart: 5000,
+    bw_targ_wok_station: 5000,
+    bw_targ_stool_set: 1500,
+    bw_targ_tarp_canopy: 5000,
+    bw_targ_fish_table: 5000,
+    bw_targ_hanging_rack: 5000,
+    bw_targ_cold_door: 5000,
+    bw_targ_parts_stall: 10000,
+    bw_targ_drawer_wall: 5000,
+    bw_targ_implant_chair: 5000,
+    bw_targ_curtain_screen: 5000,
+    bw_targ_tea_table: 5000,
+    bw_targ_tea_counter: 5000,
+    bw_targ_paper_lantern: 400,
+    bw_targ_paper_lantern_amber: 400,
+    bw_targ_crate_stack: 1500,
+    bw_targ_stage: 10000,
+    bw_targ_neon_totem: 5000,
+    bw_targ_shrine: 5000,
+  };
+
+  it.each(Object.entries(budgets))(
+    '%s ma podglądy, paletę i budżet targu',
+    async (id, budget) => {
+      const scene = await loadSet(id);
+      for (const view of ['front', 'side', 'top']) {
+        expect(
+          existsSync(
+            join(
+              __dirname,
+              `../../tools/blender/previews/bulwar/${id}-${view}.png`,
+            ),
+          ),
+        ).toBe(true);
+      }
+      let triangles = 0;
+      const luminous = new Set<string>();
+      scene.traverse((mesh) => {
+        if (!(mesh instanceof Mesh)) return;
+        triangles +=
+          (mesh.geometry.index?.count ??
+            mesh.geometry.getAttribute('position').count) / 3;
+        for (const mat of [mesh.material].flat()) {
+          expect(reserved(mat.color), mat.name).toBe(false);
+          if (!mat.emissive.getHex()) continue;
+          luminous.add(mat.name);
+          expect(reserved(mat.emissive), mat.name).toBe(false);
+        }
+      });
+      expect(triangles).toBeGreaterThan(0);
+      expect(triangles).toBeLessThanOrEqual(budget);
+      if (id.startsWith('bw_targ_paper_lantern'))
+        expect([...luminous]).toEqual([
+          id.endsWith('_amber') ? 'mat_neon_amber' : 'mat_light_panel',
+        ]);
+    },
+  );
+});
+
 describe('magazyn Kurogane', () => {
   const sizes = {
     wh_pallet_rack: [4, 6, 1.2],

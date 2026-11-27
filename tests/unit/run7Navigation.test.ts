@@ -210,12 +210,14 @@ it('run7: osłony w salonie nie zostawiają pustego kwadratu większego niż 8 m
   expect(largest * step).toBeLessThanOrEqual(8);
 });
 
-it('run7: mapa jest w puli walk i elit sektora Kurogane', () => {
+it('run7: pula walk i elit sektora Kurogane to run1–run7', () => {
   expect(sector.roomPools.combat).toEqual([
     'run1',
     'run2',
     'run3',
     'run4',
+    'run5',
+    'run6',
     'run7',
   ]);
   expect(sector.roomPools.elite).toEqual(sector.roomPools.combat);

@@ -18,16 +18,16 @@
   },
   "fog": {
     "color": "#141a26",
-    "density": 0.006,
+    "density": 0.004,
     "heightM": 6,
-    "strength": 0.22,
+    "strength": 0.1,
     "nearM": 60,
     "farM": 160
   },
-  "surface": { "gloss": 0.25, "reflections": 0.65, "puddles": 0.5 },
+  "surface": { "gloss": 0.1, "reflections": 0.7, "puddles": 0.45 },
   "lighting": {
-    "hemiIntensity": 3.6,
-    "keyIntensity": 1.8,
+    "hemiIntensity": 4,
+    "keyIntensity": 1.6,
     "panoramaEnabled": true
   },
   "sky": { "horizonColor": "#2b1f3d" },
@@ -47,7 +47,7 @@
     "lifeS": 8
   },
   "ambience": [
-    { "kind": "rain", "gain": 0.35, "radiusM": 100 },
-    { "kind": "crowd", "gain": 0.08, "radiusM": 100 }
+    { "kind": "rain", "gain": 0.3, "radiusM": 100 },
+    { "kind": "crowd", "gain": 0.06, "radiusM": 100 }
   ]
 }

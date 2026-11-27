@@ -795,16 +795,22 @@ kamerę od grupy; mixery poza kadrem mają przestać aktualizować kości.
 
 Trafienie z odrzutem `knockback >= tuning.enemies.stunKnockback` u humanoidów
 chodzących (assaulter, gunner, sniper, shielder, executor; bez dronów, hakera,
-wieżyczki i bossa) zapisuje w snapshocie `knockdown` (kierunek odrzutu). Czas
-ogłuszenia (`stunOnHeavyS`) i obrażenia bez zmian. `EnemyView` obraca korzeń modelu
-wokół bioder (`enemyKnockdown.ts`): upadek na plecy 0,22 s, leżenie (reszta ogłuszenia),
-kip-up 0,32 s z podskokiem 0,34 m i lądowaniem w `Sword_Idle` / `Pistol_Idle_Loop`
-oraz czerwonymi iskrami. Przy krótszym ogłuszeniu ruchy skalują się, nic się nie wydłuża.
+wieżyczki i bossa) zapisuje w snapshocie `knockdown` (kierunek odrzutu).
+Całe ogłuszenie po przewróceniu
+trwa 1,10 s (`tuning.enemies.knockdownStunS`) i daje czas na kolejne trafienie.
+Po upadku (0,22 s) wróg leży 0,26 s. Przez kolejne 0,62 s zarzuca nogi za głowę,
+wybija się z łopatek, ląduje w przysiadzie i wraca do pozy bojowej. Przy kontakcie stóp
+z podłożem pojawiają się iskry. Tarczownik opuszcza tarczę na cały czas ogłuszenia.
 Poza z `tuning.vfx.enemyKnockdown` przesuwa i obraca hurtboxy tak, by można było
 trafić leżącego wroga. Kapsuła ruchu zachowuje swój kształt. Blisko ściany
 wspólne przesunięcie modelu i hurtboxów odsuwa głowę od powierzchni.
-Ogłuszenie bez mocnego odrzutu (`PIERCE_BLOCK_TAG`, status) — jak dotąd `Hit_Chest`.
-Kontrola: `?scene=ai-test&debug=1`, `spawn assaulter 3`, `knock` (`timescale 0.1` zwalnia).
+Ciężki cios bez przewrócenia (`PIERCE_BLOCK_TAG`) ogłusza na czas z definicji
+wroga (`stunOnHeavyS`). Przy ogłuszeniu od takiego ciosu lub od statusu
+widok odtwarza `Hit_Chest`.
+
+W `?scene=ai-test&debug=1` użyj `spawn assaulter 3` i `knock`, aby odrzucić
+wrogów od gracza. `knock 90` kieruje odrzut wzdłuż osi +X świata.
+`timescale 0.1` spowalnia ruch.
 
 ## Reakcja widoku na trafienie
 

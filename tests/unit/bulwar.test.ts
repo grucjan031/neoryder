@@ -50,10 +50,28 @@ it('generuje powtarzalną mapę Bulwaru ze sklepem i elitami', () => {
 });
 
 it('rozwiązuje pule i mierzy większą presję przy tym samym czasie trasy', () => {
+  expect(bulwarSector.roomPools?.combat).toEqual([
+    'run1',
+    'run2',
+    'run3',
+    'run4',
+    'run5',
+    'run6',
+    'run7',
+  ]);
+  expect(bulwarSector.roomPools?.elite).toEqual([
+    'run1',
+    'run2',
+    'run3',
+    'run4',
+    'run5',
+    'run6',
+    'run7',
+  ]);
   for (const [type, ids] of Object.entries(bulwarSector.roomPools!))
     for (const id of ids!)
       expect(roomDefinitions.get(id)?.type).toBe(
-        type === 'elite' && id === 'bulwar1' ? 'combat' : type,
+        type === 'elite' ? 'combat' : type,
       );
   for (const pool of Object.values(bulwarSector.threat!.pools))
     for (const id of Object.keys(pool!))
@@ -68,7 +86,7 @@ it('rozwiązuje pule i mierzy większą presję przy tym samym czasie trasy', ()
 
 it('elita Bulwaru gwarantuje ochroniarza Helixy zamiast egzekutora', () => {
   expect(bulwarSector.eliteGuarantee).toBe('helixGuard');
-  const room = roomDefinitions.get('bulwar1')!;
+  const room = roomDefinitions.get('run5')!;
   for (let seed = 0; seed < 20; seed++) {
     const plan = planWaves(
       room,

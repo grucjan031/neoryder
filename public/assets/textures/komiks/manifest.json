@@ -260,6 +260,66 @@
     "bytes": 160988
   },
   {
+    "id": "komiks_med_resin_floor",
+    "category": "surfaces",
+    "path": "surfaces/komiks_med_resin_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#656565",
+    "description": "Żywica szpitalna z drobnym kruszywem i wąskimi dylatacjami — wersja komiksowa",
+    "bytes": 44150
+  },
+  {
+    "id": "komiks_med_wall_panel",
+    "category": "surfaces",
+    "path": "surfaces/komiks_med_wall_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#636363",
+    "description": "Lakierowane panele ścienne ze stalową listwą — wersja komiksowa",
+    "bytes": 25648
+  },
+  {
+    "id": "komiks_med_atrium_terrazzo",
+    "category": "surfaces",
+    "path": "surfaces/komiks_med_atrium_terrazzo.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#414141",
+    "description": "Grafitowe lastryko Atrium z mosiężną siatką — wersja komiksowa",
+    "bytes": 84060
+  },
+  {
+    "id": "komiks_targ_wet_pavers",
+    "category": "surfaces",
+    "path": "surfaces/komiks_targ_wet_pavers.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#565656",
+    "description": "Mokry bruk z płyt i kostki — wersja komiksowa",
+    "bytes": 77202
+  },
+  {
+    "id": "komiks_targ_wood_planks",
+    "category": "surfaces",
+    "path": "surfaces/komiks_targ_wood_planks.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#4d4d4d",
+    "description": "Podłoga herbaciarni z desek — wersja komiksowa",
+    "bytes": 55462
+  },
+  {
+    "id": "komiks_targ_fish_tiles",
+    "category": "surfaces",
+    "path": "surfaces/komiks_targ_fish_tiles.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#666666",
+    "description": "Kafle hali rybnej z kratką odpływu — wersja komiksowa",
+    "bytes": 51826
+  },
+  {
     "id": "komiks_res_arch_concrete",
     "category": "surfaces",
     "path": "surfaces/komiks_res_arch_concrete.webp",

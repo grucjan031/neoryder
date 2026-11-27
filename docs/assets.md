@@ -411,9 +411,9 @@ Szyby używają dwustronnego `mat_glass_clear` o kryciu 0,22. Białe dyfuzory i 
 | [`off_office_server_rack`](../artifacts/models/office/off_office_server_rack.png) | 1.20 × 2.30 × 1.00 | 694 | 740 |
 
 
-## Przychodnia Helixy na Bulwarze (bulwar1)
+## Przychodnia Helixy na Bulwarze (run5)
 
-Siedem modeli własnych `bw_*` ma początek na środku podstawy, przód w +Z i wymiary w metrach. Generator zapisuje GLB w `public/assets/models/city/` i trzy podglądy każdego modelu w `tools/blender/previews/bulwar/<id>-{front,side,top}.png`.
+Zestaw obejmuje siedem pierwotnych modeli i osiemnaście modeli wyposażenia run5. Modele mają początek na środku podstawy, przód w +Z i wymiary w metrach. Generator zapisuje GLB w `public/assets/models/city/` i trzy podglądy każdego modelu w `tools/blender/previews/bulwar/<id>-{front,side,top}.png`.
 
 ```bash
 "C:/Program Files/Blender Foundation/Blender 5.1/blender.exe" -b --factory-startup --python-exit-code 1 -P tools/blender/sets/bulwar_clinic.py
@@ -421,6 +421,29 @@ node tools/levels/mapModelBounds.mjs
 ```
 
 Opcje po `--` to `--only bw_treatment_screen,bw_sample_fridge` (wybór modeli) i `--no-preview` (sam eksport). Ladę, ławę, panel boksu, leżankę i chłodnię montuj jako pełne bryły według pomiarów w `src/data/render/mapModelBounds.json`. Panel blokuje ruch i strzały na całe 1,55 m, choć powyżej cokołu na 0,85 m widać przez szybę. Skaner i portal windy montuj jako dekoracje z osobnymi koliderami obu słupów i nadproża. Zachowaj otwór 3 × 3 m w skanerze i 4 × 3 m w windzie. Drzwi wyjściowe są osobnym blokiem. Znak rejestracji korzysta z tekstury `holo_helixa` (1024 × 512, przezroczystość z luminancji w shaderze hologramu).
+
+Wymiary poniżej pochodzą z obwiedni gotowych GLB, a liczby trójkątów z ich siatek po eksporcie.
+
+| Model | X × Y × Z [m] | Trójkąty | Opis |
+|---|---|---:|---|
+| `bw_door_portal` | 4,6 × 3,7 × 0,6 | 616 | Ościeża mieszczą mleczne skrzydła po bokach przejścia 4,0 × 3,4 m. |
+| `bw_curtain_wall_frame` | 4 × 5 × 0,3 | 528 | Moduł stalowej fasady łączy dwa słupki trzema ryglami. |
+| `bw_glass_balustrade` | 4 × 1,1 × 0,12 | 708 | Szklana tafla stoi w czterech stopkach pod okrągłym pochwytem. |
+| `bw_ceiling_panel` | 2,4 × 0,3 × 1,2 | 2208 | Cztery krótkie zawiesia podtrzymują oprawę z dwoma dyfuzorami. |
+| `bw_operating_table` | 0,9 × 0,9994 × 2,1974 | 1316 | Kolumna teleskopowa podpiera cztery segmenty blatu i boczne szyny. |
+| `bw_surgical_robot` | 2,4 × 2,8984 × 1,6108 | 4072 | Cztery ramiona narzędziowe i oddzielna lampa są skierowane do stołu po stronie +Z. |
+| `bw_resonance_scanner` | 2,8 × 2,5 × 3,4 | 2994 | Wysuwany stół wchodzi w otwór gantry o średnicy 1,1 m. |
+| `bw_regen_pod` | 1,3 × 2,5 × 1,3 | 4402 | Zielone obręcze oświetlają krawędzie szklanej kapsuły z pionowym leżem. |
+| `bw_regen_pod_open` | 1,3 × 2,5 × 1,6 | 4586 | Odsunięta szyba odsłania rozpięte pasy, a obręcze są wygaszone. |
+| `bw_calibration_chair` | 1,106 × 2,2 × 1,9828 | 2112 | Fotel ma otwarte obejmy nadgarstków i fioletową obręcz nad zagłówkiem. |
+| `bw_kamerton_cradle` | 2,6 × 3,3 × 2,6 | 5028 | Trzy pylony otaczają puste leże, z przodu stoi ramka tabliczki 0,5 × 0,25 m. |
+| `bw_pharmacy_dispenser` | 2,4 × 2,4 × 0,9 | 2542 | Za szybą widać podajnik i półki dawek, a pod nimi trzy szuflady. |
+| `bw_implant_showcase` | 1 × 2,1 × 1 | 2560 | Proteza dłoni i przedramienia stoi pod kloszem nad podświetlanym cokołem. |
+| `bw_lab_analyzer_bench` | 2,4 × 1,4996 × 0,8 | 2328 | Na blacie stoją karuzela próbek pod pokrywą, mikroskop i stojak fiolek. |
+| `bw_med_cart` | 0,6 × 0,9991 × 0,8992 | 1128 | Wózek ma trzy szuflady, uchwyt i statyw z workiem kroplówki. |
+| `bw_info_totem` | 0,8 × 2,2 × 0,3 | 352 | Płyta na stalowym cokole mieści ekran, czytnik i linię statusu. |
+| `bw_planter_bio` | 2,4 × 1,9049 × 2,4 | 4324 | Segmenty siedziska otaczają misę z paprociami i krzewem. |
+| `bw_helix_sculpture` | 3 × 8 × 3 | 11656 | Dwie stalowe wstęgi wykonują po dwa skręty wokół masztu, spięte szesnastoma szczeblami. |
 
 ## Port kontenerowy (arena Przejęcie)
 
@@ -1259,6 +1282,33 @@ kciuka, lamówkę i proporcje FPP. Podgląd ostrza kadruje rękojeść i dłoń,
 koniec pełnego ostrza jest poza kadrem. Sprawdzono też przecięcia powierzchni
 rękawicy z ostrzem, pistoletem, blasterem i karabinem (`gripGun`, `gripGunFire`)
 oraz dłoń podpierającą: pomiar dla wszystkich broni jest w `docs/systems/hands.md`.
+
+## Nocny targ (run6)
+
+Zestaw `tools/blender/sets/bulwar_market.py` zapisuje GLB w `public/assets/models/city/` i trzy rzuty każdego modelu w `tools/blender/previews/bulwar/`. Wymiary poniżej zmierzono na wyeksportowanej geometrii. Środek podstawy wypada w początku układu, a front jest skierowany ku +Z.
+
+| ID | X × Y × Z [m] | Trójkąty | Opis |
+|---|---|---:|---|
+| `bw_targ_gate` | 8 × 6 × 1 | 4456 | Dwa obłożone deskami słupy kratowe niosą szyld, sześć lampionów i blaszany dach z podgiętymi końcami. |
+| `bw_targ_noodle_cart` | 2,6 × 2,5 × 1,5 | 3564 | Wózek ma dwa przykryte gary, jeden otwarty, chochlę i tablicę menu pod falistym daszkiem. |
+| `bw_targ_wok_station` | 1,8 × 2,1 × 0,9 | 1316 | Dwa woki stoją pod metalowym okapem, a wąż łączy palenisko z ochrową butlą. |
+| `bw_targ_stool_set` | 1,6 × 0,5 × 1,6 | 1196 | Cztery rozstawione stołki otaczają skrzynkę z miskami i pałeczkami. |
+| `bw_targ_tarp_canopy` | 4 × 3,6 × 3 | 3640 | Oliwkowe płótno ugina się między czterema rurami z odciągami, nad pojedynczym lampionem. |
+| `bw_targ_fish_table` | 2,4 × 1,1 × 1,2 | 2456 | Dziewięć ryb leży w pochylonej wannie z kruszonym lodem obok wagi i pojemnika. |
+| `bw_targ_hanging_rack` | 2,4 × 1,6 × 0,3 | 1716 | Na hakach pod szyną wiszą cztery suszone ryby i dwie mechaniczne dłonie. |
+| `bw_targ_cold_door` | 2,4 × 2,6 × 0,3 | 624 | Izolowane drzwi na rolkach odsłaniają paski PCV, a nad dźwignią świeci błękitna dioda. |
+| `bw_targ_parts_stall` | 3 × 2,6 × 1,4 | 3784 | Przeszklona lada pokazuje protezy i moduły pod półkami z pojemnikami oraz trzema ekranami. |
+| `bw_targ_drawer_wall` | 3 × 2,8 × 0,5 | 3800 | W drewnianej ramie mieszczą się 42 opisane szufladki, z których kilka pozostawiono wysuniętych. |
+| `bw_targ_implant_chair` | 1,2 × 2,3 × 2,1 | 1772 | Połatany fotel ma trzy przegubowe narzędzia, klosz, tackę i wiadro. |
+| `bw_targ_curtain_screen` | 2,4 × 2,1 × 0,3 | 3640 | Oliwkowa zasłona zwisa w fałdach z rurowej ramy na kółkach. |
+| `bw_targ_tea_table` | 1,8 × 0,7 × 1,8 | 2072 | Cztery poduchy otaczają niski stół z tacą, czajnikiem i trzema czarkami. |
+| `bw_targ_tea_counter` | 3,6 × 2,4 × 1 | 4412 | Dwa samowary z kranikami stoją przed oświetlonym regałem z puszkami herbaty. |
+| `bw_targ_paper_lantern` | 0,5 × 0,9 × 0,5 | 388 | Ciepłobiały papierowy klosz ma żebra, ciemne obręcze, zawiesie i chwost. |
+| `bw_targ_paper_lantern_amber` | 0,5 × 0,9 × 0,5 | 388 | Bursztynowy wariant zachowuje takie samo zawiesie i profil jak biały lampion. |
+| `bw_targ_crate_stack` | 1,2 × 1,5 × 0,9 | 1416 | Trzy przesunięte względem siebie ażurowe skrzynki mieszczą oliwkowe i ochrowe warzywa. |
+| `bw_targ_stage` | 8 × 5,2 × 5 | 3340 | Na podeście z desek stoi mównica między głośnikami i ekranami, pod kratownicą z czterema reflektorami. |
+| `bw_targ_neon_totem` | 1 × 6 × 0,6 | 912 | Pięć podświetlonych kasetonów wystaje na przemian po obu stronach masztu z antenami. |
+| `bw_targ_shrine` | 1 × 1,6 × 0,7 | 1928 | Drewniana kapliczka mieści kota z uniesioną łapą, miseczki i dwie bursztynowe świeczki. |
 
 ## Splasharty ekranów ładowania
 

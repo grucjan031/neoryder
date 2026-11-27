@@ -96,6 +96,7 @@ describe('pogoda z danych', () => {
       'bulwarNightMarket',
       'clearNight',
       'drizzleWind',
+      'helixaClinic',
       'indoorIndustrial',
       'kuroganeForestResidence',
       'kuroganeOfficeTower',
@@ -119,18 +120,34 @@ describe('pogoda z danych', () => {
       expect(weatherSchema.safeParse(invalid).success).toBe(false);
     expect(() => loadWeatherDefinitions([rain, rain])).toThrow('Powtórzona');
   });
-  it('Bulwar ma spokojny deszcz, włączoną panoramę i wyłączone błyskawice', () => {
-    const profile = weatherSchema.parse(
-      weatherDefinitions.get('bulwarNightMarket'),
-    );
+  it('Helixa ma spokojny deszcz, włączoną panoramę i wyłączone błyskawice', () => {
+    const profile = weatherSchema.parse(weatherDefinitions.get('helixaClinic'));
     expect(profile.precipitation.kind).toBe('rain');
     expect(profile.lightning.enabled).toBe(false);
     expect(profile.lighting?.panoramaEnabled).toBe(true);
     expect(profile.fog.nearM).toBeGreaterThan(Math.hypot(36, 44));
     expect(profile.ambience.map((source) => source.kind)).toEqual([
       'rain',
-      'crowd',
+      'generator',
     ]);
+  });
+  it('nocny targ ma deszcz, mokre powierzchnie i panoramę bez wyładowań', () => {
+    const profile = weatherSchema.parse(
+      weatherDefinitions.get('bulwarNightMarket'),
+    );
+    expect(profile).toMatchObject({
+      title: 'Nocny targ na Bulwarze',
+      precipitation: { kind: 'rain', density: 0.36 },
+      fog: { density: 0.004 },
+      surface: { gloss: 0.1, reflections: 0.7, puddles: 0.45 },
+      lighting: { panoramaEnabled: true },
+      sky: { horizonColor: '#2b1f3d' },
+      lightning: { enabled: false },
+      ambience: [
+        { kind: 'rain', gain: 0.3, radiusM: 100 },
+        { kind: 'crowd', gain: 0.06, radiusM: 100 },
+      ],
+    });
   });
   it('Biurowiec Kurogane ma deszcz za szybą, włączoną panoramę, zerową mgłę i brak błyskawic', () => {
     const profile = weatherSchema.parse(

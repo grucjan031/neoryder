@@ -7,6 +7,9 @@ import { activeLook } from './lookPresets';
  * powierzchnie zestawów (kontenery, dźwigi) nie mają odpowiedników i zostają bez zmian.
  */
 export const COMIC_SURFACES = new Set([
+  'targ_wet_pavers',
+  'targ_wood_planks',
+  'targ_fish_tiles',
   'off_carpet_tile',
   'res_arch_concrete',
   'res_dark_walnut',
@@ -14,6 +17,9 @@ export const COMIC_SURFACES = new Set([
   'res_plush_carpet',
   'off_polished_granite',
   'off_wood_slat_wall',
+  'med_resin_floor',
+  'med_wall_panel',
+  'med_atrium_terrazzo',
   'lab_epoxy_floor',
   'lab_bunker_concrete',
   'lab_cleanroom_wall',

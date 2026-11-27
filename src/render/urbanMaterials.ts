@@ -39,6 +39,18 @@ export const arenaKinds = [
   'market_tarp',
 ] as const;
 
+const targKinds = [
+  'targ_wet_pavers',
+  'targ_wood_planks',
+  'targ_fish_tiles',
+] as const;
+
+const medKinds = [
+  'med_resin_floor',
+  'med_wall_panel',
+  'med_atrium_terrazzo',
+] as const;
+
 const labKinds = [
   'lab_epoxy_floor',
   'lab_bunker_concrete',
@@ -135,6 +147,8 @@ const portLooks = z
       ...labKinds,
       ...offKinds,
       ...residenceKinds,
+      ...medKinds,
+      ...targKinds,
       ...constructionPowerKinds,
       ...portRailKinds,
       ...overpassRoofsDocksKinds,
@@ -160,6 +174,8 @@ const portLooks = z
         ...labKinds,
         ...offKinds,
         ...residenceKinds,
+        ...medKinds,
+        ...targKinds,
         'asphalt',
         ...constructionPowerKinds,
         ...portRailKinds,
@@ -198,6 +214,8 @@ export const urbanKinds = [
   ...labKinds,
   ...offKinds,
   ...residenceKinds,
+  ...medKinds,
+  ...targKinds,
   ...constructionPowerKinds,
   ...portRailKinds,
   ...overpassRoofsDocksKinds,
