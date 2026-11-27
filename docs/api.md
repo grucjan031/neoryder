@@ -2678,3 +2678,19 @@ EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `ele
 `skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.
 
 `ownedSkins(meta, weaponId)` zwraca pasujące, posiadane definicje. `skinSource(skinId)` wskazuje ofertę sklepu, naszywkę albo brak źródła. `equipSkin(meta, weaponId, skinId | null)` zwraca nowy `LoadoutChoice` do przekazania do `MetaManager.setLoadout`. Przymiarka w warsztacie korzysta bezpośrednio z renderera i nie zapisuje zmiany wyposażenia.
+
+## Kosmetyczne set pieces pokoju — reaktor fuzyjny
+
+`RoomDefinition.setPieces?: { kind: 'fusionReactor'; position: Vec3;
+yaw?: number; scale?: number }[]`: współrzędne podstawy w metrach, obrót Y
+w radianach, dodatnia skala (domyślnie 1). Pole nie tworzy kolizji ani stanu
+symulacji; podstawę zabezpieczają bloki generatora mapy.
+
+`FusionReactor` (`src/render/fusionReactor.ts`): konstruktor przyjmuje definicję,
+`root: Group`, `lightDefs: CityLightDef[]`, `update(timeS, flashes?)`,
+`dispose()`. Czas absolutny pochodzi wyłącznie z renderu; ten sam czas i tuning
+dają ten sam stan. `CityDressing` tworzy i zwalnia reaktory, dodaje ich światła
+do wspólnej puli `CityLights` (bez zwiększenia limitu) i aktualizuje emisję.
+`AudioSystem.setFusionReactors(positions | null)` ustawia niezależne od pogody,
+proceduralne źródła buczenia; wspólny kontekst, master/SFX, pauza i odblokowanie
+audio pozostają w `AudioSystem`. Źródła mają tłumienie i panoramę względem słuchacza.

@@ -28,8 +28,12 @@ import { frameProfiler } from '../frameProfiler';
 import type { AudioSystem } from '../../audio/audioSystem';
 import { weatherDefinitions } from '../weatherSchema';
 import { urbanUniforms } from '../urbanMaterials';
+import { FusionReactor } from '../fusionReactor';
+import type { SetPieceDefinition } from '../../world/roomSchema';
+import { loadSettings } from '../../core/save';
 
 export interface DressingLayout {
+  setPieces?: readonly SetPieceDefinition[];
   weather?: string;
   signs?: readonly SignDef[];
   lights?: readonly CityLightDef[];
@@ -85,6 +89,8 @@ export function lightSpotFloors(
  * otoczenia i deszcz z motywu. Czas świata (Skupienie) z `step`, czas klatki z `render`.
  */
 export class CityDressing {
+  private readonly reactors: FusionReactor[] = [];
+  private renderTimeS = 0;
   private readonly signs?: SignRenderer;
   private readonly lights?: CityLights;
   private readonly lamps: LampCones[] = [];
@@ -111,9 +117,19 @@ export class CityDressing {
     private readonly audio?: Pick<
       AudioSystem,
       'setAmbience' | 'updateAmbienceSource'
-    >,
+    > &
+      Partial<Pick<AudioSystem, 'setFusionReactors' | 'updateAmbience'>>,
   ) {
     const roots: Object3D[] = [];
+    for (const def of layout.setPieces ?? []) {
+      const reactor = new FusionReactor(def);
+      this.reactors.push(reactor);
+      roots.push(reactor.root);
+    }
+    if (this.reactors.length)
+      audio?.setFusionReactors?.(
+        this.reactors.map((reactor) => reactor.root.position),
+      );
     if (layout.signs?.length) {
       this.signs = new SignRenderer(
         layout.signs,
@@ -124,7 +140,11 @@ export class CityDressing {
       roots.push(this.signs.root);
     }
     const fixtures = lampFixtures(layout.decor);
-    const lightDefs = [...(layout.lights ?? []), ...lampLightDefs(fixtures)];
+    const lightDefs = [
+      ...(layout.lights ?? []),
+      ...lampLightDefs(fixtures),
+      ...this.reactors.flatMap((reactor) => reactor.lightDefs),
+    ];
     const floors = lightSpotFloors(lightDefs, floorY, layout.blocks);
     if (lightDefs.length) {
       this.lights = new CityLights(lightDefs, floors, `${seed}:lights`);
@@ -267,7 +287,8 @@ export class CityDressing {
       this.lanterns ||
       this.decals ||
       this.ambient ||
-      this.weather
+      this.weather ||
+      this.reactors.length
     );
   }
 
@@ -277,7 +298,15 @@ export class CityDressing {
   }
 
   render(frameDt: number, camera: Camera | undefined): void {
-    if (this.disposed || !camera) return;
+    if (this.disposed) return;
+    if (this.reactors.length) {
+      this.renderTimeS += Math.max(0, frameDt);
+      const flashes = loadSettings().flashes;
+      for (const reactor of this.reactors)
+        reactor.update(this.renderTimeS, flashes);
+      this.audio?.updateAmbience?.();
+    }
+    if (!camera) return;
     frameProfiler?.begin('city');
     try {
       this.update(frameDt, camera);
@@ -317,6 +346,8 @@ export class CityDressing {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    for (const reactor of this.reactors) reactor.dispose();
+    if (this.reactors.length) this.audio?.setFusionReactors?.(null);
     this.signs?.dispose();
     this.lights?.dispose();
     for (const lamps of this.lamps) lamps.dispose();
