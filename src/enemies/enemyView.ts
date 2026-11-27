@@ -33,7 +33,11 @@ import { loadSettings } from '../core/save';
 import { PIERCE_BLOCK_TAG } from '../combat/damage';
 import { gaitWeights, rifleman, selectEnemyAnimation } from './enemyAnimation';
 import { angleDelta } from './locomotion';
-import { knockdownFrame, knockdownOffset } from './enemyKnockdown';
+import {
+  knockdownFrame,
+  knockdownOffset,
+  type KnockdownPose,
+} from './enemyKnockdown';
 import { EnemyFlinch } from './enemyFlinch';
 import { deathPose } from './enemyDeath';
 import type { EventBus } from '../core/events';
@@ -45,6 +49,109 @@ import {
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
+
+type JointAngle =
+  'hipFlexDeg' | 'kneeFlexDeg' | 'spineArchDeg' | 'shoulderDeg' | 'elbowDeg';
+
+class KipJoint {
+  private readonly animated = new Quaternion();
+
+  constructor(
+    private node: Object3D,
+    private neutral: Quaternion,
+    private hinge: Vector3,
+    private angle: JointAngle,
+    private share: number,
+    private spread?: Vector3,
+  ) {}
+
+  restore(): void {
+    this.node.quaternion.copy(this.animated);
+  }
+
+  apply(pose: KnockdownPose): void {
+    this.animated.copy(this.node.quaternion);
+    this.node.quaternion.slerp(this.neutral, pose.neutralWeight);
+    if (this.spread)
+      this.node.rotateOnAxis(this.spread, (pose.armSpreadDeg * Math.PI) / 180);
+    this.node.rotateOnAxis(
+      this.hinge,
+      (pose[this.angle] * this.share * Math.PI) / 180,
+    );
+  }
+}
+
+/** Rama anatomiczna w pozie wiązania. GLTFLoader usuwa kropki z nazw Rigify. */
+export function kipJoints(model: Object3D): KipJoint[] {
+  const find = (name: string) => model.getObjectByName(name);
+  const left = find('DEF-thighL');
+  const right = find('DEF-thighR');
+  const point = (node: Object3D) => node.getWorldPosition(new Vector3());
+  const lateral =
+    left && right
+      ? point(left).sub(point(right)).normalize()
+      : new Vector3(1, 0, 0);
+  const hips = find('DEF-hips');
+  const neck = find('DEF-neck');
+  const vertical =
+    hips && neck
+      ? point(neck).sub(point(hips)).normalize()
+      : new Vector3(0, 1, 0);
+  const forward = new Vector3().crossVectors(lateral, vertical).normalize();
+  const joints: KipJoint[] = [];
+  function add(
+    node: Object3D | undefined,
+    angle: JointAngle,
+    share: number,
+    spreadSign?: number,
+  ) {
+    if (!node) return;
+    const inverse = node.getWorldQuaternion(new Quaternion()).invert();
+    joints.push(
+      new KipJoint(
+        node,
+        node.quaternion.clone(),
+        lateral.clone().applyQuaternion(inverse),
+        angle,
+        share,
+        spreadSign === undefined
+          ? undefined
+          : forward.clone().multiplyScalar(spreadSign).applyQuaternion(inverse),
+      ),
+    );
+  }
+  for (const side of ['L', 'R']) {
+    const arm = find('DEF-upper_arm' + side) ?? find('arm_upper_' + side);
+    const elbow = find('DEF-forearm' + side) ?? find('arm_lower_' + side);
+    const bind = arm?.quaternion.clone();
+    if (arm && elbow && bind) {
+      // W GLB pozycja wiązania ma ręce poziomo. Opuść je do neutralnej podstawy zawiasów.
+      const inv = arm.getWorldQuaternion(new Quaternion()).invert();
+      const along = point(elbow)
+        .sub(point(arm))
+        .normalize()
+        .applyQuaternion(inv);
+      const down = vertical.clone().negate().applyQuaternion(inv);
+      arm.quaternion.multiply(new Quaternion().setFromUnitVectors(along, down));
+    }
+    add(arm, 'shoulderDeg', -1, side === 'L' ? 1 : -1);
+    add(elbow, 'elbowDeg', -1);
+    if (arm && bind) arm.quaternion.copy(bind);
+    add(
+      find('DEF-thigh' + side) ?? find('leg_upper_' + side),
+      'hipFlexDeg',
+      -1,
+    );
+    add(find('DEF-shin' + side) ?? find('leg_lower_' + side), 'kneeFlexDeg', 1);
+  }
+  const spine = ['001', '002', '003']
+    .map((suffix) => find('DEF-spine' + suffix))
+    .filter((bone): bone is Object3D => !!bone);
+  if (spine.length)
+    for (const bone of spine) add(bone, 'spineArchDeg', -1 / spine.length);
+  else add(find('torso'), 'spineArchDeg', -1);
+  return joints;
+}
 
 const laserLocal = new Vector3();
 /** Boss: przezroczystość tarczy energetycznej i grubość jej ramy [m]. */
@@ -123,6 +230,9 @@ export class EnemyView {
   readonly root = new Group();
   private model = new Group();
   private disposed = false;
+  private joints: KipJoint[];
+  private articulated = false;
+  private knockPose: KnockdownPose | null = null;
   private mixer?: AnimationMixer;
   private action?: AnimationAction;
   private gait?: AnimationAction[];
@@ -297,6 +407,7 @@ export class EnemyView {
         -body.centerY / 8,
       );
     }
+    this.joints = kipJoints(this.model);
     this.equipBlade();
     this.captureRest();
     this.root.add(this.model);
@@ -349,6 +460,8 @@ export class EnemyView {
         this.model = new Group();
         this.model.scale.setScalar(enemy.definition.boss?.modelScale ?? 1);
         const instance = clone(source);
+        this.articulated = false;
+        this.joints = kipJoints(instance);
         this.spine = instance.getObjectByName('DEF-spine003');
         this.flinch.restore();
         this.flinchBones = {
@@ -656,8 +769,11 @@ export class EnemyView {
         Math.PI) /
       180;
     this.foldHead = this.flinch.headshot;
-    if (!this.mixer) this.flinch.restore();
-    this.applyKnockdown();
+    if (!this.mixer) {
+      this.restoreArticulation();
+      this.flinch.restore();
+    }
+    this.applyKnockdown(t);
     if (!b.knockdown && !b.controlled)
       this.model.rotation.z +=
         (a.lean ?? 0) + ((b.lean ?? 0) - (a.lean ?? 0)) * t;
@@ -691,7 +807,10 @@ export class EnemyView {
     const anim = definition.animation;
     if (this.mixer) this.prepareAnimation(t);
     if (!anim) {
-      if (!this.mixer) this.applyFlinch();
+      if (!this.mixer) {
+        this.applyFlinch();
+        this.articulate();
+      }
       return;
     }
     for (const [node, rest] of this.rest) {
@@ -768,7 +887,9 @@ export class EnemyView {
         anim.swingAngle *
           Math.max(0, 1 - time / Math.max(definition.recoveryS, 1e-6)),
       );
-    } else if (b.state === 'stunned') rotate('pelvis', 'z', anim.stunAngle);
+    } else if (b.state === 'stunned' && !this.knockPose)
+      rotate('pelvis', 'z', anim.stunAngle);
+    if (!this.mixer) this.articulate();
     // Zapowiedź: rozbłysk wizjera i broni (skala), widoczny także z daleka.
     for (const name of rifleman(definition)
       ? ['muzzle', 'visor']
@@ -862,10 +983,22 @@ export class EnemyView {
    * (upadek na plecy), obniżenie do ziemi, potem kip-up z podskokiem i lądowaniem. Poza
    * przewróceniem model wraca do pozy bazowej.
    */
-  private applyKnockdown(): void {
+  private applyKnockdown(alpha: number): void {
     const { current: b, definition } = this.enemy;
     const k = tuning.vfx.enemyKnockdown;
-    const pose = knockdownFrame(definition, b, k);
+    const a = this.enemy.previous;
+    const sample =
+      b.knockdown &&
+      a.knockdown &&
+      a.state === b.state &&
+      b.stateTimeS >= a.stateTimeS
+        ? {
+            ...b,
+            stateTimeS: a.stateTimeS + (b.stateTimeS - a.stateTimeS) * alpha,
+          }
+        : b;
+    const pose = knockdownFrame(definition, sample, k);
+    this.knockPose = pose;
     const baseScale = definition.boss?.modelScale ?? 1;
     if (!pose || !b.knockdown) {
       this.model.position.set(0, 0, 0);
@@ -876,6 +1009,11 @@ export class EnemyView {
       return;
     }
     // Kierunek odrzutu w układzie korzenia (korzeń obrócony o yaw).
+    this.root.rotation.y +=
+      angleDelta(
+        this.root.rotation.y,
+        Math.atan2(-b.knockdown.x, -b.knockdown.z),
+      ) * pose.neutralWeight;
     const yaw = this.root.rotation.y;
     const c = Math.cos(yaw),
       s = Math.sin(yaw);
@@ -1099,22 +1237,36 @@ export class EnemyView {
       );
   }
 
+  private articulate(): void {
+    if (!this.knockPose) return;
+    for (const joint of this.joints) joint.apply(this.knockPose);
+    this.articulated = true;
+  }
+
+  private restoreArticulation(): void {
+    if (!this.articulated) return;
+    for (const joint of this.joints) joint.restore();
+    this.articulated = false;
+  }
+
   private advanceAnimation(): void {
     if (!this.animationPending || !this.mixer) return;
     this.animationPending = false;
     this.flinch.restore();
+    this.restoreArticulation();
     if (this.spine && this.appliedAim)
       this.spine.quaternion.copy(this.spinePose);
     this.mixer.update(this.pendingAnimationS);
     if (this.spine) {
       this.spinePose.copy(this.spine.quaternion);
-      if (this.torsoYaw) {
+      if (this.torsoYaw && !this.knockPose) {
         this.spine.getWorldQuaternion(spineWorld).invert();
         aimAxis.copy(up).applyQuaternion(spineWorld);
         this.spine.rotateOnAxis(aimAxis, this.torsoYaw);
       }
       this.appliedAim = true;
     }
+    this.articulate();
     this.applyFlinch();
     this.model.updateWorldMatrix(true, true);
     this.heldShield?.update();

@@ -1,12 +1,18 @@
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
 import { ColliderDesc, Ray } from '@dimforge/rapier3d-compat';
-import { DamageSystem, Hurtboxes } from '../../src/combat/damage';
+import { PerspectiveCamera, Scene as ThreeScene } from 'three';
+import {
+  DamageSystem,
+  Hurtboxes,
+  PIERCE_BLOCK_TAG,
+} from '../../src/combat/damage';
 import { PlayerEnergy } from '../../src/combat/powers/energy';
 import { pushDefinition, ResonancePush } from '../../src/combat/powers/push';
 import { ProjectileSystem } from '../../src/combat/weapons/projectiles';
 import { EntityRegistry } from '../../src/core/entities';
 import { EventBus } from '../../src/core/events';
-import { SIM_DT } from '../../src/core/loop';
+import type { GameEvents } from '../../src/core/events';
+import { GameLoop, SIM_DT } from '../../src/core/loop';
 import { Rng } from '../../src/core/rng';
 import { Stats } from '../../src/core/stats';
 import { tuning } from '../../src/core/tuning';
@@ -18,6 +24,8 @@ import {
   initPhysics,
   interactionGroups,
 } from '../../src/physics';
+import { AiTest } from '../../src/scenes/aiTest';
+import { CommandRegistry } from '../../src/ui/debugCommands';
 import { DebrisSystem } from '../../src/vfx/debris';
 import { EnemyShatter } from '../../src/vfx/enemyShatter';
 import { PropPhysicsSystem } from '../../src/world/propPhysics';
@@ -183,8 +191,10 @@ it('lifts the enemy, moves its head hurtbox into the prone pose and restores it 
     (collider) => f.hurtboxes.get(collider.handle)?.headshot,
   )!;
   f.hit(14, { ...east, y: 0.15 });
+  const proneStep = Math.ceil(f.settings.vfx.enemyKnockdown.fallS / SIM_DT) + 1;
+  const recoveryStep = Math.ceil(f.settings.enemies.knockdownStunS / SIM_DT);
   let peak = 0;
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < proneStep; i++) {
     f.step();
     peak = Math.max(peak, f.enemy.current.position.y);
   }
@@ -193,9 +203,78 @@ it('lifts the enemy, moves its head hurtbox into the prone pose and restores it 
   expect(head.translation().x - f.enemy.current.position.x).toBeGreaterThan(
     0.4,
   );
-  for (let i = 0; i < 30; i++) f.step();
+  for (let i = proneStep; i < recoveryStep - 1; i++) f.step();
+  expect(f.enemy.current.state).toBe('stunned');
+  f.step();
+  expect(f.enemy.current.state).toBe('idle');
   expect(head.translation().y).toBeCloseTo(f.enemy.definition.body!.headY, 1);
   expect(head.translation().x).toBeCloseTo(f.enemy.current.position.x, 3);
+});
+
+it.each(['assaulter', 'gunner'])(
+  '%s uses stunOnHeavyS for a heavy hit without knockdown',
+  (kind) => {
+    const f = combat(kind);
+    const stunned = vi.fn();
+    f.bus.on('enemy_stunned', stunned);
+    const durationS = f.enemy.definition.stunOnHeavyS;
+    f.damage.deal(f.enemy.id, {
+      amount: 1,
+      source: f.playerId,
+      tags: [PIERCE_BLOCK_TAG],
+      dir: east,
+      knockback: f.settings.enemies.stunKnockback / 2,
+    });
+    expect(stunned).toHaveBeenCalledExactlyOnceWith({
+      id: f.enemy.id,
+      durationS,
+    });
+    expect(f.enemy.current.state).toBe('stunned');
+    expect(f.enemy.current.knockdown).toBeUndefined();
+    const recoveryStep = Math.ceil(durationS / SIM_DT);
+    for (let i = 0; i < recoveryStep - 1; i++) f.step();
+    expect(f.enemy.current.state).toBe('stunned');
+    f.step();
+    expect(f.enemy.current.state).toBe('idle');
+  },
+);
+
+it('knock accepts an optional world-space angle and rejects invalid arguments', async () => {
+  const scene = new AiTest(false);
+  cleanup.push(() => scene.dispose());
+  const bus = new EventBus();
+  const commands = new CommandRegistry();
+  await scene.init(
+    {
+      bus,
+      commands,
+      rng: new Rng('knock-command'),
+      tuning: structuredClone(tuning),
+      debug: false,
+      loop: new GameLoop({ step() {}, render() {} }),
+      camera: new PerspectiveCamera(),
+    },
+    new ThreeScene(),
+  );
+  const hit = vi.fn<(event: GameEvents['damage_dealt']) => void>();
+  bus.on('damage_dealt', hit);
+  for (const invalid of ['knock east', 'knock Infinity', 'knock 90 0'])
+    expect(commands.execute(invalid)).toBe('Uzycie: knock [kątDeg]');
+  expect(hit).not.toHaveBeenCalled();
+
+  expect(commands.execute('knock 90')).toBe('Odrzut zadany.');
+  expect(hit).toHaveBeenCalledTimes(3);
+  for (const [event] of hit.mock.calls) {
+    expect(event.dir).toEqual({ x: 1, y: 0, z: expect.closeTo(0, 12) });
+    expect(event.knockback).toBeGreaterThan(tuning.enemies.stunKnockback);
+  }
+
+  hit.mockClear();
+  expect(commands.execute('knock')).toBe('Odrzut zadany.');
+  expect(hit).toHaveBeenCalledTimes(3);
+  const directions = hit.mock.calls.map(([event]) => event.dir!.x);
+  expect(Math.min(...directions)).toBeLessThan(0);
+  expect(Math.max(...directions)).toBeGreaterThan(0);
 });
 
 it.each(['assaulter', 'gunner', 'drone', 'turret', 'securityChief'])(
