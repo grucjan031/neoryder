@@ -1,5 +1,29 @@
 # API między modułami (kontrakty)
 
+## Cywile Kurogane Arms
+
+- `RoomDefinition.civilians?: { id: string; position: Vec3; yaw?: number }[]`
+  wskazuje definicje `src/data/civilians/*.json`; pozycja to stopy, yaw w radianach
+  (model patrzy w +Z). `hideSpots?: Vec3[]` podaje kryjówki; brak uruchamia
+  wybór z geometrii bloków. Każda instancja ma osobny `EntityId`.
+- `CivilianPopulation` (`src/civilians/population.ts`) tworzy neutralne encje,
+  `Stats`, `Health` i hurtboxy. `step(dt, playerFeet | null)` działa w stałym
+  kroku; `snapshots()` zwraca serializowalne pozycje, yaw, HP, stan,
+  kryjówkę, czas śmierci i kierunek upadku. `targets()` udostępnia żywych
+  cywilów wyłącznie jawnym zapytaniom mocy gracza. `dispose()` zwalnia zasoby.
+- Cywile nie należą do `EnemyManager`, list celów wrogów, dyrektora,
+  aim assist ani warunku ukończenia pokoju. Hurtbox używa grupy Enemy
+  wyłącznie dla zgodności z zapytaniami broni/ostrza; rejestr ma team neutral.
+  Obrażenia przez `DamageSystem`; strażnik przyjmuje tylko źródło gracza
+  (także jego odbite pociski/statusy). Śmierć nie emituje `enemy_killed`.
+- `GameEvents.civilianPanicked: { id: EntityId }` — jednokrotnie po reakcji
+  na widocznego gracza; `civilianKilled: { id: EntityId; by: EntityId | null }`
+  — jednokrotnie po śmiertelnym trafieniu. Brak nagród i kar.
+- Render `CivilianView` interpoluje stan, odtwarza Idle/Jog/Crouch i przewraca
+  zamrożoną pozę w kierunku trafienia. Ciało pozostaje do `dispose()` pokoju.
+- Scena `?scene=scientist-test`, zapytanie `query('civilians')`, komenda
+  `civilian spawn scientist` (przed graczem) służą sprawdzeniu mechaniki.
+
 ## Tło leśne rezydencji — run7 F-01–F-04
 
 - `WeatherProfile.lighting.panoramaKind?: 'city' | 'forest'` wybiera tło; brak oznacza `city`.

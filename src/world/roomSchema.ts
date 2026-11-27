@@ -213,6 +213,16 @@ export const roomSchema = z
     arena: arenaSchema.optional(),
     blocks: z.array(roomBlockSchema),
     setPieces: z.array(setPieceSchema).optional(),
+    civilians: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          position: vec3Schema,
+          yaw: finite.optional(),
+        }),
+      )
+      .optional(),
+    hideSpots: z.array(vec3Schema).optional(),
     elevators: z.array(elevatorSchema).optional(),
     spawnPoints: z.array(roomSpawnPointSchema),
     doors: z.array(roomDoorSchema),

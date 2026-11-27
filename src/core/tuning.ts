@@ -1,6 +1,22 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  civilians: {
+    bodyHeightM: 1.75,
+    crouchHeightM: 1,
+    radiusM: 0.35,
+    eyeHeightM: 1.55,
+    crouchEyeHeightM: 0.8,
+    arrivalM: 0.15,
+    hideInsetM: 1.2,
+    hideSeparationM: 1.4,
+    controllerOffsetM: 0.02,
+    fallDurationS: 0.7,
+    corpseHeightM: 0.16,
+    fallSlideM: 0.35,
+    animFadeS: 0.18,
+    debugSpawnDistanceM: 3,
+  },
   gamepad: {
     innerDeadzone: 0.16,
     outerDeadzone: 0.04,
