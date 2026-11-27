@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "src/data/sectors/kurogane.json": {
-    "mtime": 1795799077.4687927,
-    "seen": 1795799156.9610653,
-    "ast_hash": "70bbf1a92c8db1006ba0b6780d36fb59",
+    "mtime": 1795812936.5783913,
+    "seen": 1795813039.9165535,
+    "ast_hash": "0f7fba6743b833df0b0c1db43832318d",
     "semantic_hash": ""
   },
   "src/data/statuses/burning.json": {
@@ -1446,9 +1446,9 @@
     "semantic_hash": ""
   },
   "src/data/waves/arena.json": {
-    "mtime": 1794822885.9509542,
-    "seen": 1795445710.6166277,
-    "ast_hash": "63a512be049ad4efb21264afddc89ddb",
+    "mtime": 1795812936.5803916,
+    "seen": 1795813039.916662,
+    "ast_hash": "eaaffa13fe548d8fb7a5d6767ae3e0f6",
     "semantic_hash": ""
   },
   "src/data/waves/m01Approach.json": {
@@ -1590,9 +1590,9 @@
     "semantic_hash": ""
   },
   "src/enemies/assaulter.ts": {
-    "mtime": 1795799077.4707925,
-    "seen": 1795799156.9612591,
-    "ast_hash": "9fa435b891f140b9f8d65978ad1a1054",
+    "mtime": 1795812936.581391,
+    "seen": 1795813039.9167693,
+    "ast_hash": "b30724a646a90318c150f2fecb5b053e",
     "semantic_hash": ""
   },
   "src/enemies/boss.ts": {
@@ -1620,9 +1620,9 @@
     "semantic_hash": ""
   },
   "src/enemies/enemyAnimation.ts": {
-    "mtime": 1795799077.4707925,
-    "seen": 1795799156.9612644,
-    "ast_hash": "2291e8e3fd44c97dbefa3942e932e749",
+    "mtime": 1795812936.5833945,
+    "seen": 1795813039.9167771,
+    "ast_hash": "318415bd672a07fd9e940ff6e61bbc3e",
     "semantic_hash": ""
   },
   "src/enemies/enemyBody.ts": {
@@ -1638,15 +1638,15 @@
     "semantic_hash": ""
   },
   "src/enemies/enemySchema.ts": {
-    "mtime": 1795611443.4970899,
-    "seen": 1795611512.5297258,
-    "ast_hash": "f8f04d25dac78f325f60a5034fbefd5c",
+    "mtime": 1795812936.5843923,
+    "seen": 1795813039.9167836,
+    "ast_hash": "9b931590534a239600fac1a8914c6a56",
     "semantic_hash": ""
   },
   "src/enemies/enemyView.ts": {
-    "mtime": 1795799077.4717922,
-    "seen": 1795799156.9612708,
-    "ast_hash": "2f84a553bf57ea1b934bf27423990b4f",
+    "mtime": 1795812936.5903916,
+    "seen": 1795813039.916785,
+    "ast_hash": "da59a546a200dac7939800ebeaf6620f",
     "semantic_hash": ""
   },
   "src/enemies/gunner.ts": {
@@ -1674,9 +1674,9 @@
     "semantic_hash": ""
   },
   "src/enemies/registry.ts": {
-    "mtime": 1795611443.4990902,
-    "seen": 1795611512.5297363,
-    "ast_hash": "083074e4ff9e201d455b0d7d73b7d00c",
+    "mtime": 1795812936.5913925,
+    "seen": 1795813039.9167964,
+    "ast_hash": "8465610944f0351ec0cd0bc96b2c3d4b",
     "semantic_hash": ""
   },
   "src/enemies/turret.ts": {
@@ -1692,9 +1692,9 @@
     "semantic_hash": ""
   },
   "src/enemies/types.ts": {
-    "mtime": 1795766287.936109,
-    "seen": 1795766374.8142793,
-    "ast_hash": "b91f83bce1250efffaabf6067613804b",
+    "mtime": 1795812936.5923917,
+    "seen": 1795813039.916803,
+    "ast_hash": "46c68f630b7f3c9b045acb76a28b90f3",
     "semantic_hash": ""
   },
   "src/enemies/views.ts": {
@@ -2214,9 +2214,9 @@
     "semantic_hash": ""
   },
   "src/scenes/aiTest.ts": {
-    "mtime": 1795799077.4807925,
-    "seen": 1795799156.9614098,
-    "ast_hash": "8ece6163bcbef8f5a02ce14c290b4d90",
+    "mtime": 1795812936.5933917,
+    "seen": 1795813039.9169526,
+    "ast_hash": "2504ee0ff25c84a2f177807a26b634e4",
     "semantic_hash": ""
   },
   "src/scenes/arena.ts": {
@@ -2304,9 +2304,9 @@
     "semantic_hash": ""
   },
   "src/scenes/index.ts": {
-    "mtime": 1795766287.943109,
-    "seen": 1795766374.814499,
-    "ast_hash": "f7b5442c056e5c9e4ff00506122970e7",
+    "mtime": 1795812936.5943913,
+    "seen": 1795813039.9169765,
+    "ast_hash": "b4021437124da46ecc3943052990130f",
     "semantic_hash": ""
   },
   "src/scenes/mapTest.ts": {
@@ -3438,9 +3438,9 @@
     "semantic_hash": ""
   },
   "tests/unit/enemies.test.ts": {
-    "mtime": 1795799077.4883046,
-    "seen": 1795799156.9618037,
-    "ast_hash": "55c5ba183a50027c4a22cbc40d11f110",
+    "mtime": 1795812936.5973938,
+    "seen": 1795813039.9173906,
+    "ast_hash": "aa8e55f74a2eb22dbfca2adb957a9e36",
     "semantic_hash": ""
   },
   "tests/unit/enemiesZ16.test.ts": {
@@ -3474,9 +3474,9 @@
     "semantic_hash": ""
   },
   "tests/unit/enemySkeleton.test.ts": {
-    "mtime": 1795426091.6351817,
-    "seen": 1795445710.617382,
-    "ast_hash": "731f1f0faa8e891ca27a0e50450d40d6",
+    "mtime": 1795812936.5983918,
+    "seen": 1795813039.9174025,
+    "ast_hash": "dc703cbe641e32f1a65a23b12eb136ae",
     "semantic_hash": ""
   },
   "tests/unit/enemyStride.test.ts": {
@@ -4548,9 +4548,9 @@
     "semantic_hash": ""
   },
   "docs/api.md": {
-    "mtime": 1795799077.3517637,
-    "seen": 1795799156.9622843,
-    "ast_hash": "20820708328743a20f10a587f067d948",
+    "mtime": 1795812936.551873,
+    "seen": 1795813039.9179502,
+    "ast_hash": "9b3a24b77a162540ff8374f074c9d146",
     "semantic_hash": ""
   },
   "docs/assets.md": {
@@ -4572,9 +4572,9 @@
     "semantic_hash": ""
   },
   "docs/balance.md": {
-    "mtime": 1795685912.932056,
-    "seen": 1795685974.4651952,
-    "ast_hash": "d511c14c61302c611e2f72f4b0d0b220",
+    "mtime": 1795812936.5528736,
+    "seen": 1795813039.9179695,
+    "ast_hash": "956c035d4772db19dca8b664a637965b",
     "semantic_hash": ""
   },
   "docs/fabula/misje.md": {
@@ -4938,9 +4938,9 @@
     "semantic_hash": ""
   },
   "docs/systems/enemies.md": {
-    "mtime": 1795799077.3567634,
-    "seen": 1795799156.9623775,
-    "ast_hash": "6af1c64e759efe494bace97543bf714a",
+    "mtime": 1795812936.5633912,
+    "seen": 1795813039.9180617,
+    "ast_hash": "25b9a16433d8dde3f947e2e0907bfe8d",
     "semantic_hash": ""
   },
   "docs/systems/hands.md": {
@@ -8094,9 +8094,9 @@
     "semantic_hash": ""
   },
   "src/data/ui/defeat.pl.json": {
-    "mtime": 1795611443.4870915,
-    "seen": 1795611512.5296035,
-    "ast_hash": "12d4f55f86f5496b8887bc1ea7e8ce8e",
+    "mtime": 1795812936.5793922,
+    "seen": 1795813039.9166358,
+    "ast_hash": "89381ba370bcfa6849e878d6ba8201ce",
     "semantic_hash": ""
   },
   "src/data/ui/descriptions.pl.json": {
@@ -21747,6 +21747,24 @@
     "mtime": 1795799077.6188529,
     "seen": 1795799156.9643366,
     "ast_hash": "4b251832a148e2f9329d3026ec1ad34d",
+    "semantic_hash": ""
+  },
+  "src/data/enemies/chimera.json": {
+    "mtime": 1795812936.5773916,
+    "seen": 1795813039.9161606,
+    "ast_hash": "3db0ce22bd90136e6366365d9b94e77b",
+    "semantic_hash": ""
+  },
+  "src/enemies/chimera.ts": {
+    "mtime": 1795812936.5823925,
+    "seen": 1795813039.9167717,
+    "ast_hash": "5115c1d67d27c08d1ef24857d0f20bf6",
+    "semantic_hash": ""
+  },
+  "tools/blender/chimera.py": {
+    "mtime": 1795812936.5993915,
+    "seen": 1795813039.9178529,
+    "ast_hash": "2ca722d1d77ebc31119a989f9a05da8d",
     "semantic_hash": ""
   },
   "package-lock.json": {
