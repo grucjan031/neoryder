@@ -125,20 +125,22 @@ export class EnemyBody {
     const retreatM = hit ? extent - hit.timeOfImpact : 0;
     snapshot.knockdown = { ...dir, retreatM };
     const shift = forward - retreatM;
-    const local = (y: number): Vec3 => ({
+    const local = (y: number, verticalRadius: number): Vec3 => ({
       x: dir.x * (shift + y * sin),
-      y: up + y * cos - centerY,
+      y: Math.max(verticalRadius, up + y * cos) - centerY,
       z: dir.z * (shift + y * sin),
     });
     this.torso.setHalfHeight(halfHeight);
-    this.torso.setTranslationWrtParent(local(torsoY));
+    this.torso.setTranslationWrtParent(
+      local(torsoY, Math.abs(cos) * halfHeight + g.radius),
+    );
     this.torso.setRotationWrtParent({
       x: dir.z * Math.sin(tilt / 2),
       y: 0,
       z: -dir.x * Math.sin(tilt / 2),
       w: Math.cos(tilt / 2),
     });
-    this.head.setTranslationWrtParent(local(headY));
+    this.head.setTranslationWrtParent(local(headY, g.headRadius));
     this.knockdownHurtboxes = true;
   }
 
