@@ -1231,6 +1231,33 @@ koniec pełnego ostrza jest poza kadrem. Sprawdzono też przecięcia powierzchni
 rękawicy z ostrzem, pistoletem, blasterem i karabinem (`gripGun`, `gripGunFire`)
 oraz dłoń podpierającą: pomiar dla wszystkich broni jest w `docs/systems/hands.md`.
 
+## Nocny targ (run6)
+
+Zestaw `tools/blender/sets/bulwar_market.py` zapisuje GLB w `public/assets/models/city/` i trzy rzuty każdego modelu w `tools/blender/previews/bulwar/`. Wymiary poniżej zmierzono na wyeksportowanej geometrii. Środek podstawy wypada w początku układu, a front jest skierowany ku +Z.
+
+| ID | X × Y × Z [m] | Trójkąty | Opis |
+|---|---|---:|---|
+| `bw_targ_gate` | 8 × 6 × 1 | 4456 | Dwa obłożone deskami słupy kratowe niosą szyld, sześć lampionów i blaszany dach z podgiętymi końcami. |
+| `bw_targ_noodle_cart` | 2,6 × 2,5 × 1,5 | 3564 | Wózek ma dwa przykryte gary, jeden otwarty, chochlę i tablicę menu pod falistym daszkiem. |
+| `bw_targ_wok_station` | 1,8 × 2,1 × 0,9 | 1316 | Dwa woki stoją pod metalowym okapem, a wąż łączy palenisko z ochrową butlą. |
+| `bw_targ_stool_set` | 1,6 × 0,5 × 1,6 | 1196 | Cztery rozstawione stołki otaczają skrzynkę z miskami i pałeczkami. |
+| `bw_targ_tarp_canopy` | 4 × 3,6 × 3 | 3640 | Oliwkowe płótno ugina się między czterema rurami z odciągami, nad pojedynczym lampionem. |
+| `bw_targ_fish_table` | 2,4 × 1,1 × 1,2 | 2456 | Dziewięć ryb leży w pochylonej wannie z kruszonym lodem obok wagi i pojemnika. |
+| `bw_targ_hanging_rack` | 2,4 × 1,6 × 0,3 | 1716 | Na hakach pod szyną wiszą cztery suszone ryby i dwie mechaniczne dłonie. |
+| `bw_targ_cold_door` | 2,4 × 2,6 × 0,3 | 624 | Izolowane drzwi na rolkach odsłaniają paski PCV, a nad dźwignią świeci błękitna dioda. |
+| `bw_targ_parts_stall` | 3 × 2,6 × 1,4 | 3784 | Przeszklona lada pokazuje protezy i moduły pod półkami z pojemnikami oraz trzema ekranami. |
+| `bw_targ_drawer_wall` | 3 × 2,8 × 0,5 | 3800 | W drewnianej ramie mieszczą się 42 opisane szufladki, z których kilka pozostawiono wysuniętych. |
+| `bw_targ_implant_chair` | 1,2 × 2,3 × 2,1 | 1772 | Połatany fotel ma trzy przegubowe narzędzia, klosz, tackę i wiadro. |
+| `bw_targ_curtain_screen` | 2,4 × 2,1 × 0,3 | 3640 | Oliwkowa zasłona zwisa w fałdach z rurowej ramy na kółkach. |
+| `bw_targ_tea_table` | 1,8 × 0,7 × 1,8 | 2072 | Cztery poduchy otaczają niski stół z tacą, czajnikiem i trzema czarkami. |
+| `bw_targ_tea_counter` | 3,6 × 2,4 × 1 | 4412 | Dwa samowary z kranikami stoją przed oświetlonym regałem z puszkami herbaty. |
+| `bw_targ_paper_lantern` | 0,5 × 0,9 × 0,5 | 388 | Ciepłobiały papierowy klosz ma żebra, ciemne obręcze, zawiesie i chwost. |
+| `bw_targ_paper_lantern_amber` | 0,5 × 0,9 × 0,5 | 388 | Bursztynowy wariant zachowuje takie samo zawiesie i profil jak biały lampion. |
+| `bw_targ_crate_stack` | 1,2 × 1,5 × 0,9 | 1416 | Trzy przesunięte względem siebie ażurowe skrzynki mieszczą oliwkowe i ochrowe warzywa. |
+| `bw_targ_stage` | 8 × 5,2 × 5 | 3340 | Na podeście z desek stoi mównica między głośnikami i ekranami, pod kratownicą z czterema reflektorami. |
+| `bw_targ_neon_totem` | 1 × 6 × 0,6 | 912 | Pięć podświetlonych kasetonów wystaje na przemian po obu stronach masztu z antenami. |
+| `bw_targ_shrine` | 1 × 1,6 × 0,7 | 1928 | Drewniana kapliczka mieści kota z uniesioną łapą, miseczki i dwie bursztynowe świeczki. |
+
 ## Splasharty ekranów ładowania
 
 `public/assets/splash/*.webp` to zoptymalizowane kopie ilustracji Gracjana z `docs/fabula/splash` (oryginały zostają nietknięte; max 1600 px szerokości, WebP jakość ~78, budżet ≤ 180 KB na plik). Wygeneruj je ponownie: `python tools/splash/optimize.py` (wymaga Pillow). Lista tytułów i przypisań do motywów/pokoi: `src/data/ui/splash.json`.

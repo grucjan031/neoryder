@@ -7,6 +7,26 @@ import { isCityModelFile } from '../../src/render/cityModels';
 import { applyStyle } from '../../src/render/materials';
 
 const sizes = {
+  bw_targ_gate: [8, 6, 1],
+  bw_targ_noodle_cart: [2.6, 2.5, 1.5],
+  bw_targ_wok_station: [1.8, 2.1, 0.9],
+  bw_targ_stool_set: [1.6, 0.5, 1.6],
+  bw_targ_tarp_canopy: [4, 3.6, 3],
+  bw_targ_fish_table: [2.4, 1.1, 1.2],
+  bw_targ_hanging_rack: [2.4, 1.6, 0.3],
+  bw_targ_cold_door: [2.4, 2.6, 0.3],
+  bw_targ_parts_stall: [3, 2.6, 1.4],
+  bw_targ_drawer_wall: [3, 2.8, 0.5],
+  bw_targ_implant_chair: [1.2, 2.3, 2.1],
+  bw_targ_curtain_screen: [2.4, 2.1, 0.3],
+  bw_targ_tea_table: [1.8, 0.7, 1.8],
+  bw_targ_tea_counter: [3.6, 2.4, 1],
+  bw_targ_paper_lantern: [0.5, 0.9, 0.5],
+  bw_targ_paper_lantern_amber: [0.5, 0.9, 0.5],
+  bw_targ_crate_stack: [1.2, 1.5, 0.9],
+  bw_targ_stage: [8, 5.2, 5],
+  bw_targ_neon_totem: [1, 6, 0.6],
+  bw_targ_shrine: [1, 1.6, 0.7],
   bw_reception_counter: [4, 1.15, 0.95],
   bw_waiting_seats: [2.8, 0.95, 0.75],
   bw_entry_scanner: [3.8, 3.1, 0.8],
@@ -72,6 +92,7 @@ it.each(Object.keys(sizes) as (keyof typeof sizes)[])(
     if (
       [
         'bw_treatment_screen',
+        'bw_targ_parts_stall',
         'bw_sample_fridge',
         'bw_door_portal',
         'bw_glass_balustrade',
@@ -86,6 +107,20 @@ it.each(Object.keys(sizes) as (keyof typeof sizes)[])(
       expect(names.has('mat_clinic_glass')).toBe(true);
     if (id === 'bw_regen_pod' || id === 'bw_regen_pod_open')
       expect(names.has('mat_neon_green')).toBe(id === 'bw_regen_pod');
+    if (id === 'bw_targ_gate') {
+      for (const x of [-2.999, -1, 0, 1, 2.999]) {
+        for (const y of [0.01, 0.2, 2, 4.199]) {
+          const ray = new Raycaster(
+            new Vector3(x, y, 2),
+            new Vector3(0, 0, -1),
+          );
+          expect(
+            ray.intersectObject(scene),
+            `prześwit ${x}, ${y}`,
+          ).toHaveLength(0);
+        }
+      }
+    }
     if (
       id === 'bw_entry_scanner' ||
       id === 'bw_freight_lift_frame' ||
