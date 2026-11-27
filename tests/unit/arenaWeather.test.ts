@@ -93,9 +93,9 @@ describe('pogoda z danych', () => {
   it('waliduje profile, limity i kolory wyładowań', () => {
     expect([...weatherDefinitions.keys()].sort()).toEqual([
       'ashfall',
-      'bulwarNightMarket',
       'clearNight',
       'drizzleWind',
+      'helixaClinic',
       'indoorIndustrial',
       'kuroganeSecretLab',
       'kuroganeWarehouse',
@@ -118,16 +118,14 @@ describe('pogoda z danych', () => {
     expect(() => loadWeatherDefinitions([rain, rain])).toThrow('Powtórzona');
   });
   it('Bulwar ma spokojny deszcz, włączoną panoramę i wyłączone błyskawice', () => {
-    const profile = weatherSchema.parse(
-      weatherDefinitions.get('bulwarNightMarket'),
-    );
+    const profile = weatherSchema.parse(weatherDefinitions.get('helixaClinic'));
     expect(profile.precipitation.kind).toBe('rain');
     expect(profile.lightning.enabled).toBe(false);
     expect(profile.lighting?.panoramaEnabled).toBe(true);
     expect(profile.fog.nearM).toBeGreaterThan(Math.hypot(36, 44));
     expect(profile.ambience.map((source) => source.kind)).toEqual([
       'rain',
-      'crowd',
+      'generator',
     ]);
   });
   it.each(['snow', 'ashfall'])(
