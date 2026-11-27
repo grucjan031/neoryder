@@ -17,6 +17,8 @@ export interface InputDevice {
 type ConquestPointId = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface GameEvents {
+  civilianPanicked: { id: EntityId };
+  civilianKilled: { id: EntityId; by: EntityId | null };
   elevatorCalled: { id: string; stop: number };
   elevatorArrived: { id: string; stop: number };
   elevatorDeparted: { id: string; from: number; to: number };
