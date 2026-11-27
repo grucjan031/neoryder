@@ -316,6 +316,11 @@ Mgła wnętrza ma density/strength 0, zakres 80–220 m; lokalną mgłę między
 rysuje wyłącznie `ForestPanorama` poza obrysem budynku. Całe wnętrze nadal wymaga
 `rainShelters`. Audio: deszcz 0,11, wiatr 0,10, generator 0,06.
 
+W r2 korony sosen zaczynają się wyżej na pniu niż korony świerków.
+Poszczególne piętra składają się z opadających gałęzi, między którymi widać niebo.
+Podszyt rośnie na tej samej rzeźbie terenu co drzewa. Lokalna mgła odległościowa
+narasta między 65 i 240 m, a światło księżyca podkreśla krawędzie koron.
+
 Podgląd: `?scene=horizonTest&profile=kuroganeForestResidence&debug=1`.
 Przełącz pogodę na `kuroganeOfficeTower` i z powrotem: tło powinno zmieniać się
 miasto/las bez przebudowy pokoju. Test `forestLayout.test.ts` sprawdza walidację,

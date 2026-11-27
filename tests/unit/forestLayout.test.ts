@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { Box3, InstancedMesh, Scene, Vector3 } from 'three';
+import { Box3, InstancedMesh, Raycaster, Scene, Vector3 } from 'three';
 import { tuning } from '../../src/core/tuning';
-import { buildForestLayout } from '../../src/render/forestLayout';
+import {
+  buildForestLayout,
+  forestTerrainHeight,
+} from '../../src/render/forestLayout';
+import { worldEnvelope } from '../../src/render/horizon';
 import { ForestPanorama } from '../../src/render/forestPanorama';
 import { SceneAtmosphere } from '../../src/render/sceneAtmosphere';
 import { CityDressing } from '../../src/render/city/dressing';
@@ -163,6 +167,80 @@ describe('tło lasu rezydencji', () => {
       panorama.dispose();
       tuning.render.panoramaEnabled = previous;
       t.crownLayers = previousLayers;
+    }
+  });
+
+  it('ściółka ma relief i nie zasłania piwnicy, a rośliny wyrastają z terenu', () => {
+    const layout = buildForestLayout('run6', options);
+    for (const tree of [
+      ...layout.conifers,
+      ...layout.deciduous,
+      ...layout.undergrowth,
+    ]) {
+      expect(tree.y).toBe(forestTerrainHeight(tree, layout.hills, 0));
+    }
+    const previous = tuning.render.panoramaEnabled;
+    tuning.render.panoramaEnabled = 1;
+    const panorama = new ForestPanorama(
+      'run6',
+      0,
+      new Box3(new Vector3(-30, -5.4, -43), new Vector3(30, 10, 33)),
+    );
+    try {
+      panorama.sync(0);
+      panorama.updateMatrixWorld(true);
+      const ground = panorama.getObjectByName('forest-ground') as InstancedMesh;
+      const ray = new Raycaster(new Vector3(0, 10, 24), new Vector3(0, -1, 0));
+      const belowCellar = ray.intersectObject(ground)[0];
+      expect(belowCellar).toBeDefined();
+      expect(belowCellar!.point.y).toBeLessThan(-5.4);
+      const heights = [-5, 5, 15].map((x) => {
+        ray.set(new Vector3(x, 40, -50), new Vector3(0, -1, 0));
+        const hit = ray.intersectObject(ground)[0];
+        expect(hit).toBeDefined();
+        return hit!.point.y;
+      });
+      expect(Math.max(...heights) - Math.min(...heights)).toBeGreaterThan(0.1);
+      expect(heights.every((height) => height >= 0)).toBe(true);
+    } finally {
+      panorama.dispose();
+      tuning.render.panoramaEnabled = previous;
+    }
+  });
+
+  it('las dużej mapy zastępuje płaskie podłoże panoramy miasta', () => {
+    const scene = new Scene();
+    const room = horizonTestLayout('?profile=kuroganeForestResidence');
+    const atmosphere = new SceneAtmosphere(
+      scene,
+      room.theme,
+      'run6',
+      0,
+      undefined,
+      worldEnvelope(
+        [{ position: { x: 0, y: 0, z: 0 }, size: { x: 600, y: 10, z: 600 } }],
+        room.playerSpawn,
+      ),
+    );
+    const dressing = new CityDressing(
+      scene,
+      {},
+      resolveTheme(room.theme),
+      0,
+      'run6',
+    );
+    try {
+      dressing.setWeather('kuroganeOfficeTower');
+      atmosphere.sync(0);
+      const ground = scene.getObjectByName('outer-ground');
+      expect(ground?.visible).toBe(true);
+      dressing.setWeather('kuroganeForestResidence');
+      atmosphere.sync(0);
+      expect(ground?.visible).toBe(false);
+      expect(scene.getObjectByName('forest-ground')).toBeDefined();
+    } finally {
+      dressing.dispose();
+      atmosphere.dispose();
     }
   });
 

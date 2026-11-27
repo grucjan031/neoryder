@@ -4,6 +4,45 @@ Status: **Projekt referencyjny jakości (wzorzec 8+/10) + specyfikacja modułu t
 Docelowy plik danych mapy: `src/data/rooms/run6.json` (generator: `tools/arenas/run/run6.mjs` + moduły pomocnicze `_run6Kit.mjs`, `_run6Rooms.mjs`, `_run6Dress.mjs`)  
 Kierunek artystyczny: **Neon Noir** (`AGENTS.md`, `docs/adr/0006-neon-noir.md`)
 
+**Wersja r2.** Rezydencja należy do puli walk i elit Kurogane. Sufity części
+mieszkalnej mają beton architektoniczny, a oba biegi schodów salonowych —
+bursztynowe listwy LED. W scenie
+`?scene=map-walk&map=run6` spod wejścia do salonu widać korony przez górne
+przeszklenia. Oba biegi schodów prowadzą na antresolę, a za biurkiem w R8
+można podejść do podświetlonej tablicy Iskry. Od strony holu winda zjeżdża
+do winiarni. Ocena wizualna r2 wymaga sprawdzenia tych kadrów w grze.
+
+| Pomieszczenie | Zmiana widoczna w r2 |
+| --- | --- |
+| R1 Hol | Cieplejszy beton i marmur Nero, orzechowa konsola, bonsai i obraz lasu zamiast heksagonalnych paneli. |
+| R2 Salon i antresola | Dwa żyrandole nad strefą wypoczynku, dywan nad posadzką, barek z regałem na wino i jedna warstwa szkła w pełnych modułach fasady. |
+| R3 Jadalnia | Przy stole pozostało dziesięć krzeseł z modelu rezydencji. Nad nim wisi pojedynczy żyrandol, za nim stoi orzechowy kredens z kamiennym blatem. |
+| R4 Kuchnia | Szafki z orzecha z marmurowymi blatami zastąpiły aneksy biurowe. Światło wpada również przez przeszklenie przy zielniku. |
+| R5 Basen | Ciemny marmur wokół niecki, wąskie oprawy nad leżankami i pojedyncze szyby od strony lasu. |
+| R6 Garaż | Wpuszczone światło nad limuzyną. Skrzynie przy stanowisku serwisowym zachowują funkcję osłon i chwytanych przedmiotów. |
+| R7 Ochrona | Wąskie lampy nad konsolami monitoringu odsłaniają wyposażenie z góry. Jedna mała skrzynia pozostaje w strefie zbrojowni. |
+| R8 Biuro | Tekstura Iskry leży przed licem tablicy, na wysokości oczu. Ciepłe światło, pojedynczy żyrandol, dywan i szafy z orzecha wydzielają gabinet. |
+| R9 Biblioteka | Dywan wyznacza kącik czytelniczy. Orzechowa zabudowa i donice rezydencji zastąpiły część wyposażenia biurowego. |
+| R10 Sala trofeów | Dwie gabloty rezydencji zastąpiły laboratoryjne stojaki na wschodniej ścianie. Marmur i dyskretne lampy obramowują ekspozycję. |
+| R11 Sypialnia | Orzechowa ława w garderobie, widoczny dywan pod łóżkiem oraz obraz na licu tryptyku od strony sypialni. |
+| R12 Spa | Marmur Nero przy wannie i umywalkach, szyld nad lustrem i czystszy widok przez północne okno. |
+| R13 Sala przesłuchań | Wpuszczone lampy obwodowe zostawiają wiszącą oprawę nad fotelem jako główne światło. |
+| R14 Winiarnia | Podświetlony szyld między regałami i skrócona zabudowa pod schodami odsłaniają przejście od stołu do windy. |
+| R15 Bunkier | Dyskretne oświetlenie sufitu i mniej skrzyń przed śluzą ułatwiają odczyt stref CCTV, UPS i wyjścia. |
+
+**Las r2:** sosny i świerki mają siedem postrzępionych pięter z osobnych
+opadających gałęzi, odsłonięte pnie i zróżnicowane sylwetki. Liściaste korony
+składają się z siedmiu nieregularnych brył, a podszyt z rozłożystych paproci.
+Ciemna ściółka z plamami mchu odwzorowuje pagórki i drobny relief; teren
+pozostaje poniżej piwnicy wewnątrz obrysu budynku. Mgła jest rzadsza,
+księżyc podkreśla krawędzie koron, a pełne moduły okien mają jedną szybę.
+Panorama lasu wyłącza płaskie podłoże panoramy miejskiej.
+
+Testy `run6Navigation.test.ts` obejmują także prześwit kapsuły na 20 spawnach
+i gęstość osłon salonu. `forestLayout.test.ts` sprawdza relief, odsłonięcie
+piwnicy i zmianę podłoża przy przełączaniu panoramy. Odbiór wizualny r2
+i pomiar wywołań renderu pozostają do wykonania na nowych zrzutach.
+
 ---
 
 ## 1. Analiza silnika i nauczki z `run1`–`run4` oraz `bulwar1`
@@ -65,7 +104,7 @@ Aby zastąpić miasto za oknami **prawdziwym, żywym, deszczowym lasem nocą**, 
 
 | ID | Co trzeba dodać | Gdzie w zasobach / danych | Szczegóły |
 |---|---|---|---|
-| **F-03** | **4 materiały wykończeniowe luksusowej rezydencji w `arenaMaterials.json` i tekstury `surfaces/`:**<br>1. `res_arch_concrete` — gładki beton architektoniczny z subtelnym rysunkiem szalunku, otworami po ściągach i satynową impregnacją odbijającą listwy LED (`scale: 0.35, roughness: 0.42, metalness: 0.08, bump: 0.38, wetness: 0.25, tint: "#343e4f"`) — monolityczne ściany Salonu `R2`, Holu `R1`, Biura `R8`, Sali Trofeów `R10` i Piwnicy `R13`/`R15`;<br>2. `res_dark_walnut` — wielkoformatowe fornirowane panele i parkiet z ciemnego, wędzonego orzecha amerykańskiego z czarnymi mikroszczelinami (`scale: 0.45, roughness: 0.36, metalness: 0.10, bump: 0.40, wetness: 0.35, tint: "#46382e"`) — ciepła, luksusowa posadzka Salonu `R2`, Jadalni `R3`, Biura `R8`, Biblioteki `R9` i Sypialni `R11`;<br>3. `res_nero_marble` — polerowany czarny marmur Nero Marquina ze złoto-bursztynowym i białym żyłkowaniem o wysokim połysku odbić (`scale: 0.38, roughness: 0.16, metalness: 0.18, bump: 0.22, wetness: 0.78, tint: "#262f3f"`) — posadzka Holu `R1`, Kuchni `R4`, Ogrodu Zimowego/Basenu `R5`, Sali Trofeów `R10` i Łazienki/Spa `R12`;<br>4. `res_plush_carpet` — gęsty, miękki dywan wełniano-jedwabny w odcieniu głębokiego grafitu z geometrycznym tkanym obrysem (`scale: 0.55, roughness: 0.86, metalness: 0.03, bump: 0.45, wetness: 0.04, tint: "#2e3648"`) — strefa wypoczynkowa Salonu `R2`, Biblioteka `R9` i Sypialnia Pułkownika `R11`. | `src/data/render/arenaMaterials.json`, `src/render/urbanMaterials.ts`, `src/render/surfaceTextures.ts`, `src/world/dressingSchema.ts`, `public/assets/textures/surfaces/res_*.webp` (+ wersje `komiks_res_*.webp`) | 4 tekstury `.webp` (`1024×1024`) + 4 odpowiedniki komiksowe + wpisy w `BLOCK_MATERIALS` |
+| **F-03** | **4 materiały wykończeniowe luksusowej rezydencji w `arenaMaterials.json` i tekstury `surfaces/`:**<br>1. `res_arch_concrete` — gładki beton architektoniczny z subtelnym rysunkiem szalunku, otworami po ściągach i satynową impregnacją odbijającą listwy LED (`scale: 0.35, roughness: 0.42, metalness: 0.08, bump: 0.38, wetness: 0.25, tint: "#77766c"`) — monolityczne ściany Salonu `R2`, Holu `R1`, Biura `R8`, Sali Trofeów `R10` i Piwnicy `R13`/`R15`;<br>2. `res_dark_walnut` — wielkoformatowe fornirowane panele i parkiet z ciemnego, wędzonego orzecha amerykańskiego z czarnymi mikroszczelinami (`scale: 0.45, roughness: 0.36, metalness: 0.10, bump: 0.40, wetness: 0.35, tint: "#493425"`) — ciepła, luksusowa posadzka Salonu `R2`, Jadalni `R3`, Biura `R8`, Biblioteki `R9` i Sypialni `R11`;<br>3. `res_nero_marble` — polerowany czarny marmur Nero Marquina ze złoto-bursztynowym i białym żyłkowaniem o wysokim połysku odbić (`scale: 0.38, roughness: 0.16, metalness: 0.18, bump: 0.22, wetness: 0.78, tint: "#242520"`) — posadzka Holu `R1`, Kuchni `R4`, Ogrodu Zimowego/Basenu `R5`, Sali Trofeów `R10` i Łazienki/Spa `R12`;<br>4. `res_plush_carpet` — gęsty, miękki dywan wełniano-jedwabny w odcieniu głębokiego grafitu z geometrycznym tkanym obrysem (`scale: 0.55, roughness: 0.86, metalness: 0.03, bump: 0.45, wetness: 0.04, tint: "#38372f"`) — strefa wypoczynkowa Salonu `R2`, Biblioteka `R9` i Sypialnia Pułkownika `R11`. | `src/data/render/arenaMaterials.json`, `src/render/urbanMaterials.ts`, `src/render/surfaceTextures.ts`, `src/world/dressingSchema.ts`, `public/assets/textures/surfaces/res_*.webp` (+ wersje `komiks_res_*.webp`) | 4 tekstury `.webp` (`1024×1024`) + 4 odpowiedniki komiksowe + wpisy w `BLOCK_MATERIALS` |
 | **F-04** | **Profil pogody `src/data/weather/kuroganeForestResidence.json` („Rezydencja Pułkownika Kurogane w Nocnym Lesie”):**<br>- `precipitation`: `{ kind: "rain", density: 0.52, speed: 18.5, color: "#8ca0be", opacity: 0.32, exposureS: 0.026, widthM: 0.014 }` — w połączeniu z `rainShelters` obejmującymi całe wnętrze willi deszcz zacina gęsto w lesie za szybami i nad świetlikiem tarasu, podczas gdy we wnętrzu jest 100% sucho;<br>- `wind`: `{ direction: { x: 0.85, z: -0.52 }, strength: 0.90, gustStrength: 0.32, gustPeriodS: 6.5 }` — kołysze koronami sosen i świerków za oknami Salonu;<br>- `lighting`: `{ hemiIntensity: 4.3, keyIntensity: 1.5, panoramaEnabled: true, panoramaKind: "forest" }` — włącza moduł tła leśnego `ForestPanorama` i zapewnia czytelność ciemnych mebli oraz osłon (`#2a3344–#56627a`);<br>- `fog`: `{ color: "#0b111c", density: 0, heightM: 16, strength: 0, nearM: 80, farM: 220 }` — **mgła post-procesu we wnętrzu wyzerowana (`density: 0, strength: 0`)**, zero zamglenia szyb i zero smug pod lampami (mgła między pniami drzew liczona wyłącznie w shaderach `ForestPanorama` poza obrysem willi!);<br>- `dust`: `{ density: 0, sizeM: 0.08, opacity: 0, color: "#9aa8c0", lifeS: 10 }`;<br>- `surface`: `{ gloss: 0.68, reflections: 0.84, puddles: 0.14 }` — głębokie odbicia kominka, listew LED i księżycowego lasu w czarnym marmurze `res_nero_marble` oraz wodzie basenu `R5`;<br>- `sky`: `{ horizonColor: "#1d2238" }`, `lightning`: `{ enabled: false, minIntervalS: 30, maxIntervalS: 60, brightness: 0, color: "#fff1d6", decayS: 0.2 }`;<br>- `ambience`: `[{ kind: "rain", gain: 0.11, radiusM: 110 }, { kind: "wind", gain: 0.10, radiusM: 120 }, { kind: "generator", gain: 0.06, radiusM: 90 }]` (szum nocnej ulewy i wiatru w koronach drzew za oknami + cichy pomruk klimatyzacji i filtracji basenu). | `src/data/weather/kuroganeForestResidence.json` | 1 plik JSON |
 | **F-05** | **Zestaw 32 tekstur rezydencji (`signs/`, `screens/`, `decals/`, `labels/`, `surfaces/`):** tablica śledcza „Iskra”, 12 easter eggów, obrazy na ścianach, szyldy stref, ekrany monitoringu i powierzchnie — pełna specyfikacja w **sekcji 4.2**. | `public/assets/textures/{signs,screens,decals,labels,surfaces}/`, `tools/textures/catalog.json` | 10 `signs`, 14 `decals`, 3 `screens`, 1 `labels`, 4+4 `surfaces` |
 

@@ -33,7 +33,7 @@ export const MAT_GLASS = 'glass_clear';
 export const MAT_BUNKER = 'lab_bunker_concrete';
 export const MAT_GRANITE = 'off_polished_granite';
 export const MAT_WOOD_SLAT = 'off_wood_slat_wall';
-export const MAT_CEIL = 'mall_acoustic_ceiling';
+export const MAT_CEIL = MAT_CONCRETE;
 export const MAT_INLAY = 'mall_terrazzo_inlay';
 export const MAT_GRATING = 'steel_grating';
 
@@ -41,7 +41,7 @@ export const MAT_GRATING = 'steel_grating';
 export const ROOMS = {
   R1: R(-10, 10, 4, 16), // Hol Wejściowy i Foyer z Szatnią (L0)
   R2: R(-16, 16, -18, 4), // Wielki Dwukondygnacyjny Salon z Antresolą i Panoramą Lasu (L0 + L1)
-  R2_MEZZ_N: R(-16, 16, -18, -14.8), // Galeria Północna Antresoli Salonu (L1)
+  R2_MEZZ_N: R(-16, 16, -18, -15), // Galeria Północna Antresoli Salonu (L1)
   R2_MEZZ_W: R(-16, -12.8, -14.8, 4), // Galeria Zachodnia Antresoli Salonu (L1)
   R2_MEZZ_E: R(12.8, 16, -14.8, 4), // Galeria Wschodnia Antresoli Salonu (L1)
   R3: R(-30, -16, -6, 4), // Jadalnia Reprezentacyjna „Stół Koalicji” (L0 W)
@@ -149,17 +149,36 @@ export function prop(k, model, x, z, y = 0, turn = 0, opts = {}) {
   });
 }
 
+/** Zabudowa orzechowa o obrysie zastępowanego mebla, z kamiennym blatem. */
+export function residenceCabinet(k, placer, model, x, z, y, turn = 0) {
+  const d = dims(model);
+  const odd = Math.abs(turn) % 2 === 1;
+  const w = odd ? d.d : d.w,
+    depth = odd ? d.w : d.d;
+  placer.reserve(R(x - w / 2, x + w / 2, z - depth / 2, z + depth / 2), y);
+  const body = d.h - 0.12;
+  box(k, x, y + 0.035, z, w * 0.9, 0.07, depth * 0.9, 'trim');
+  box(k, x, y + 0.07 + body / 2, z, w - 0.04, body, depth - 0.04, MAT_WALNUT);
+  box(k, x, y + d.h - 0.025, z, w, 0.05, depth, MAT_MARBLE);
+}
+
 /** Dekoracja bez kolizji z punktem zaczepienia (x, y, z). */
 export function deco(k, model, x, y, z, yaw = 0, scale) {
   return k.deco(model, x, y, z, yaw, scale);
 }
 
 /**
- * Wpuszczana oprawa sufitowa LED `res_recessed_led_strip` (`3.0 × 0.25 × 0.4 m`, `CEILING_FIXTURES`):
- * montowana 0.25 m poniżej spodu stropu `ceilingY` (`mat_light_panel`, zero bloomu).
+ * Wąska szczelina w suficie. Audyt z góry ukrywa ją razem ze stropem.
  */
 export function recessedLedStrip(k, x, ceilingY, z, yaw = 0) {
-  return deco(k, 'res_recessed_led_strip', x, ceilingY - 0.25, z, yaw);
+  return ceilingCovePanel(
+    k,
+    x,
+    ceilingY,
+    z,
+    yaw ? 0.06 : 1.4,
+    yaw ? 1.4 : 0.06,
+  );
 }
 
 /**
@@ -240,17 +259,10 @@ export function interiorDoorFrame(k, placer, x, y, z, turn = 0) {
       walkable: false,
     });
   }
-  box(
-    k,
-    x,
-    y + 3.4,
-    z,
-    odd ? 0.28 : 4.0,
-    0.4,
-    odd ? 4.0 : 0.28,
-    'metal',
-    { visible: false, walkable: false },
-  );
+  box(k, x, y + 3.4, z, odd ? 0.28 : 4.0, 0.4, odd ? 4.0 : 0.28, 'metal', {
+    visible: false,
+    walkable: false,
+  });
 }
 
 /**
@@ -271,17 +283,10 @@ export function holdingCageBars(k, placer, x, y, z, turn = 0) {
       walkable: false,
     });
   }
-  box(
-    k,
-    x,
-    y + 3.25,
-    z,
-    odd ? 0.22 : 4.0,
-    0.3,
-    odd ? 4.0 : 0.22,
-    'metal',
-    { visible: false, walkable: false },
-  );
+  box(k, x, y + 3.25, z, odd ? 0.22 : 4.0, 0.3, odd ? 4.0 : 0.22, 'metal', {
+    visible: false,
+    walkable: false,
+  });
 }
 
 /** Odcinki [a, b] z wyciętymi przerwami `gaps` (lista [od, do]). */
@@ -360,19 +365,28 @@ export function forestGlassFacade(
   outwardSign,
   openings = [],
 ) {
-  segmentedWall(k, axis, at, start, end, yBottom, yTop, MAT_GLASS, openings, 0.16);
+  const glassOpenings = [...openings];
   const yaw =
-    axis === 'x'
-      ? outwardSign < 0
-        ? 0
-        : PI
-      : outwardSign < 0
-        ? Q
-        : -Q;
+    axis === 'x' ? (outwardSign < 0 ? 0 : PI) : outwardSign < 0 ? Q : -Q;
   const gaps = openings.map(([a, b]) => [a, b]);
   for (const [s0, s1] of spans(start, end, gaps)) {
     const len = s1 - s0;
     const count = Math.floor(len / 4 + 1e-6);
+    const coveredTop =
+      yBottom + Math.floor((yTop - yBottom) / 4.8 + 1e-6) * 4.8;
+    if (count && coveredTop > yBottom) {
+      // Model ma własną szybę. Pełne moduły potrzebują tylko niewidocznej kolizji.
+      const end = s0 + count * 4;
+      glassOpenings.push([s0, end, yBottom, coveredTop]);
+      const rect =
+        axis === 'x'
+          ? R(s0, end, at - 0.08, at + 0.08)
+          : R(at - 0.08, at + 0.08, s0, end);
+      solid(k, rect, yBottom, coveredTop, MAT_GLASS, {
+        visible: false,
+        walkable: false,
+      });
+    }
     for (let y = yBottom; y + 4.8 <= yTop + 1e-5; y += 4.8) {
       for (let i = 0; i < count; i++) {
         const c = s0 + i * 4 + 2;
@@ -382,6 +396,18 @@ export function forestGlassFacade(
       }
     }
   }
+  segmentedWall(
+    k,
+    axis,
+    at,
+    start,
+    end,
+    yBottom,
+    yTop,
+    MAT_GLASS,
+    glassOpenings,
+    0.16,
+  );
 }
 
 /**

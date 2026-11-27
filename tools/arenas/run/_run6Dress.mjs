@@ -1,17 +1,7 @@
 // Oprawa wizualna Rezydencji Pułkownika Kurogane Arms — Willa Kuroyama (run6):
 // tekstury, Tablica Śledcza „Iskra”, 12 Easter Eggów, 5 zagrożeń środowiskowych,
 // skrzynie, szyldy, 26 źródeł światła i 20 punktów spawnu na 3 kondygnacjach.
-import {
-  COLOR,
-  PI,
-  Q,
-  R,
-  Y_B,
-  Y_L0,
-  Y_L1,
-  box,
-  vec,
-} from './_run6Kit.mjs';
+import { COLOR, PI, Q, R, Y_B, Y_L0, Y_L1, box, vec } from './_run6Kit.mjs';
 
 const C = COLOR;
 
@@ -124,65 +114,21 @@ export const SPAWNS = [
   [19, Y_B, 29], // 20: R15 Podziemny Bunkier Ochrony — przed śluzą exit
 ];
 
-/** Skrzynie zniszczalne `crate` i dynamiczne `crate_small` (do Chwytu Rezonansem) na wszystkich 3 kondygnacjach. */
+/** Equipment cases stay in the garage and security rooms. */
 function crates(k, p) {
-  const big = [
-    // Parter (L0)
-    [-5.5, Y_L0, 6.4],
-    [-10.8, Y_L0, -1.2],
-    [10.8, Y_L0, -1.2],
-    [-28.2, Y_L0, -14.8],
-    [-26.2, Y_L0, 14.2],
-    [11.4, Y_L0, 14.6],
-    // Piętro (L1)
-    [-6.8, Y_L1, -28.6],
-    [-18.2, Y_L1, -19.4],
-    [13.4, Y_L1, -28.4],
-    [-19.5, Y_L1, -31.6],
-    // Piwnica (B)
-    [-26.2, Y_B, 20.2],
-    [-2.6, Y_B, 29.2],
-    [12.5, Y_B, 21.2],
-    [13.5, Y_B, 27.2],
-  ];
-  for (const [x, y, z] of big) {
-    p.reserve(R(x - 0.5, x + 0.5, z - 0.5, z + 0.5), y);
+  for (const [x, y, z, size] of [
+    [-26.2, Y_L0, 14.2, 1],
+    [-16, Y_L0, 13, 0.5],
+    [21.2, Y_L0, 8, 0.5],
+    [12.5, Y_B, 21.2, 1],
+    [18, Y_B, 23, 0.5],
+  ]) {
+    const half = size / 2;
+    p.reserve(R(x - half, x + half, z - half, z + half), y);
     k.arena.block({
-      position: vec(x, y + 0.5, z),
-      size: vec(1, 1, 1),
-      model: 'crate',
-    });
-  }
-
-  const small = [
-    // Parter (L0)
-    [-2.2, Y_L0, 6.2],
-    [2.2, Y_L0, 6.2],
-    [-5.2, Y_L0, -11.0],
-    [1.8, Y_L0, -11.0],
-    [-19.5, Y_L0, -3.2],
-    [18.2, Y_L0, -12.0],
-    [-16.0, Y_L0, 13.0],
-    [21.2, Y_L0, 8.0],
-    // Piętro (L1)
-    [-8.2, Y_L1, -15.6],
-    [8.2, Y_L1, -15.6],
-    [3.8, Y_L1, -23.5],
-    [-18.2, Y_L1, -27.2],
-    [18.0, Y_L1, -21.2],
-    [9.5, Y_L1, -35.5],
-    // Piwnica (B)
-    [-15.0, Y_B, 21.5],
-    [-2.6, Y_B, 20.5],
-    [2.6, Y_B, 20.5],
-    [18.0, Y_B, 23.0],
-  ];
-  for (const [x, y, z] of small) {
-    p.reserve(R(x - 0.25, x + 0.25, z - 0.25, z + 0.25), y);
-    k.arena.block({
-      position: vec(x, y + 0.25, z),
-      size: vec(0.5, 0.5, 0.5),
-      model: 'crate_small',
+      position: vec(x, y + half, z),
+      size: vec(size, size, size),
+      model: size === 1 ? 'crate' : 'crate_small',
     });
   }
 }
@@ -277,7 +223,7 @@ function decalsAndEasterEggs(k) {
     'res_iskra_investigation_board',
     0,
     Y_L1 + 1.95,
-    -29.78,
+    -29.56,
     3.0,
     1.5,
     0,
@@ -468,9 +414,14 @@ function signage(k) {
   // R1 Hol Wejściowy i R2 Wielki Salon
   neon('res_villa_kuroyama', 0, Y_L0 + 4.35, 4.23, 3.2, 0);
   neon('res_villa_kuroyama', 0, Y_L0 + 4.35, 3.77, 3.2, PI);
-  neon('res_art_neon_forest', -7.5, Y_L0 + 2.45, 3.68, 2.8, PI);
-  neon('res_art_neon_forest', 7.5, Y_L0 + 2.45, 3.68, 2.8, PI);
-  neon('res_art_neon_forest', -16.3, Y_L0 + 2.4, -3.5, 2.6, -Q);
+  neon('res_art_neon_forest', -7.5, Y_L0 + 2.45, 3.6, 2.8, PI);
+  neon('res_art_neon_forest', 7.5, Y_L0 + 2.45, 3.6, 2.8, PI);
+  neon('res_art_neon_forest', -16.4, Y_L0 + 2.4, -3.5, 2.6, -Q);
+
+  neon('res_art_neon_forest', -9.77, Y_L0 + 2.2, 6.0, 2.6, Q);
+  neon('res_art_neon_forest', -10.0, Y_L1 + 2.4, -30.4, 2.8, PI);
+  neon('res_winter_pool', 12.0, Y_L1 + 3.15, -30.23, 2.1, PI);
+  neon('res_wine_cellar', 0, Y_B + 2.2, 31.77, 2.5, PI);
 
   // R5 Kryty Basen, R6 Garaż Pancerny, R7 Pokój Ochrony Parteru
   neon('res_winter_pool', 15.77, Y_L0 + 4.0, 1.0, 2.6, -Q);
@@ -533,7 +484,7 @@ function lights(k) {
   // --- PIĘTRO (L1, 8 źródeł, floorY: 4.8) ---
   // R8 Biuro Pułkownika (2 — nad biurkiem i przed Tablicą Śledczą „Iskra”)
   k.light(0.0, Y_L1 + 2.5, -23.5, C.warm, 20, 13, { floorY: Y_L1 });
-  k.light(0.0, Y_L1 + 2.4, -28.5, C.amber, 20, 11, { floorY: Y_L1 });
+  k.light(0.0, Y_L1 + 2.4, -28.5, C.warm, 26, 8, { floorY: Y_L1 });
   // R9 Biblioteka i Archiwum (1)
   k.light(-21.0, Y_L1 + 2.5, -24.0, C.amber, 18, 13, { floorY: Y_L1 });
   // R10 Sala Trofeów (2)

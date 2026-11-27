@@ -287,7 +287,7 @@
     "metalness": 0.08,
     "bump": 0.38,
     "wetness": 0.25,
-    "tint": "#343e4f",
+    "tint": "#77766c",
     "texture": "res_arch_concrete"
   },
   "res_dark_walnut": {
@@ -296,7 +296,7 @@
     "metalness": 0.1,
     "bump": 0.4,
     "wetness": 0.35,
-    "tint": "#46382e",
+    "tint": "#493425",
     "texture": "res_dark_walnut"
   },
   "res_nero_marble": {
@@ -305,7 +305,7 @@
     "metalness": 0.18,
     "bump": 0.22,
     "wetness": 0.78,
-    "tint": "#262f3f",
+    "tint": "#242520",
     "texture": "res_nero_marble"
   },
   "res_plush_carpet": {
@@ -314,7 +314,7 @@
     "metalness": 0.03,
     "bump": 0.45,
     "wetness": 0.04,
-    "tint": "#2e3648",
+    "tint": "#38372f",
     "texture": "res_plush_carpet"
   }
 }

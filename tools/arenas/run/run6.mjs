@@ -69,12 +69,12 @@ function structure(k, placer) {
 
   // Antresola Dwukondygnacyjnego Salonu R2-M (y = +4.80 m) z otworami nad Klatkami #3 i #4 (X ∈ [±12.0, ±15.2], Z ∈ [-14.8, -1.8]):
   deck(k, ROOMS.R2_MEZZ_N, Y_L1, MAT_WALNUT);
-  deck(k, R(-16, -9.8, -1.8, 4), Y_L1, MAT_WALNUT);
-  deck(k, R(-12.0, -9.8, -14.8, -1.8), Y_L1, MAT_WALNUT);
-  deck(k, R(-16, -15.2, -14.8, -1.8), Y_L1, MAT_WALNUT);
-  deck(k, R(9.8, 16, -1.8, 4), Y_L1, MAT_WALNUT);
-  deck(k, R(9.8, 12.0, -14.8, -1.8), Y_L1, MAT_WALNUT);
-  deck(k, R(15.2, 16, -14.8, -1.8), Y_L1, MAT_WALNUT);
+  deck(k, R(-16, -9.8, -2, 4), Y_L1, MAT_WALNUT);
+  deck(k, R(-12.0, -9.8, -15, -2), Y_L1, MAT_WALNUT);
+  deck(k, R(-16, -15.2, -15, -2), Y_L1, MAT_WALNUT);
+  deck(k, R(9.8, 16, -2, 4), Y_L1, MAT_WALNUT);
+  deck(k, R(9.8, 12.0, -15, -2), Y_L1, MAT_WALNUT);
+  deck(k, R(15.2, 16, -15, -2), Y_L1, MAT_WALNUT);
 
   // 3. Skarpa leśna, rygle i słupy konstrukcyjne pod wystającym na północ Piętrem L1 (konsola nad lasem Z ∈ [-42, -18]):
   solid(k, R(-30.4, 30.4, -30.2, -18), -1.4, -0.4, 'excavation_dirt', {
@@ -119,14 +119,49 @@ function structure(k, placer) {
   // Strop/taras nad Piwnicą B (Z ∈ [16, 32], y = 0.00..0.40 m), z wycięciem nad Klatkami #1 i #2 oraz szybem windy.
   ceilingSlab(k, ROOMS.R13, Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
   ceilingSlab(k, ROOMS.R15, Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
-  ceilingSlab(k, R(16.6, 21.4, 32, 33.2), Y_B + 3.6, MAT_BUNKER, SLAB, Y_B - 0.5);
+  ceilingSlab(
+    k,
+    R(16.6, 21.4, 32, 33.2),
+    Y_B + 3.6,
+    MAT_BUNKER,
+    SLAB,
+    Y_B - 0.5,
+  );
   ceilingSlab(k, R(-10, -8.6, 16, 32), Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
   ceilingSlab(k, R(8.6, 10, 16, 32), Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
-  ceilingSlab(k, R(-8.6, -5.0, 24.2, 32), Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
-  ceilingSlab(k, R(5.0, 8.6, 24.2, 32), Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
-  ceilingSlab(k, R(-5.0, -1.6, 16, 32), Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
+  ceilingSlab(
+    k,
+    R(-8.6, -5.0, 24.2, 32),
+    Y_B_CEIL,
+    MAT_CONCRETE,
+    SLAB,
+    Y_B - 0.5,
+  );
+  ceilingSlab(
+    k,
+    R(5.0, 8.6, 24.2, 32),
+    Y_B_CEIL,
+    MAT_CONCRETE,
+    SLAB,
+    Y_B - 0.5,
+  );
+  ceilingSlab(
+    k,
+    R(-5.0, -1.6, 16, 32),
+    Y_B_CEIL,
+    MAT_CONCRETE,
+    SLAB,
+    Y_B - 0.5,
+  );
   ceilingSlab(k, R(1.6, 5.0, 16, 32), Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
-  ceilingSlab(k, R(-1.6, 1.6, 16.6, 32), Y_B_CEIL, MAT_CONCRETE, SLAB, Y_B - 0.5);
+  ceilingSlab(
+    k,
+    R(-1.6, 1.6, 16.6, 32),
+    Y_B_CEIL,
+    MAT_CONCRETE,
+    SLAB,
+    Y_B - 0.5,
+  );
   // Strop nad obudowami Klatek #1 i #2 oraz południową częścią szybu windy (y = 4.80..5.20 m).
   ceilingSlab(k, R(-8.6, -5.0, 16, 24.2), Y_L0_CEIL, MAT_CEIL, SLAB, Y_B - 0.5);
   ceilingSlab(k, R(5.0, 8.6, 16, 24.2), Y_L0_CEIL, MAT_CEIL, SLAB, Y_B - 0.5);
@@ -257,11 +292,31 @@ function structure(k, placer) {
     [-16, -12, Y_L0, Y_L0 + 3.6],
     [-1, 3, Y_L0, Y_L0 + 3.6],
   ];
-  segmentedWall(k, 'z', -16, -18, 4, Y_L0, Y_L0_CEIL, MAT_WALNUT, salonSideOpenings);
+  segmentedWall(
+    k,
+    'z',
+    -16,
+    -18,
+    4,
+    Y_L0,
+    Y_L0_CEIL,
+    MAT_WALNUT,
+    salonSideOpenings,
+  );
   interiorDoorFrame(k, placer, -16, Y_L0, -14, 1);
   interiorDoorFrame(k, placer, -16, Y_L0, 1, 1);
 
-  segmentedWall(k, 'z', 16, -18, 4, Y_L0, Y_L0_CEIL, MAT_CONCRETE, salonSideOpenings);
+  segmentedWall(
+    k,
+    'z',
+    16,
+    -18,
+    4,
+    Y_L0,
+    Y_L0_CEIL,
+    MAT_CONCRETE,
+    salonSideOpenings,
+  );
   interiorDoorFrame(k, placer, 16, Y_L0, -14, 1);
   interiorDoorFrame(k, placer, 16, Y_L0, 1, 1);
 
@@ -341,17 +396,17 @@ function circulation(k, placer) {
   placer.reserve(R(5.1, 8.5, 28.6, 29.8), Y_B);
 
   // 3. Klatka #3: Schody Salonowe Zachodnie (L0 <-> L1, X ∈ [-15.2, -12.0], Z: -1.8 -> -6.8 -> -9.8 -> -14.8).
-  stairFlightWithRails(k, -13.6, 3.2, Y_L0, -1.8, Y_M01, -6.8, 'neon_amber');
-  deck(k, R(-15.2, -12.0, -9.8, -6.8), Y_M01, MAT_WALNUT);
-  stairFlightWithRails(k, -13.6, 3.2, Y_M01, -9.8, Y_L1, -14.8, 'neon_amber');
+  stairFlightWithRails(k, -13.6, 3.2, Y_L0, -2.0, Y_M01, -7.0, 'neon_amber');
+  deck(k, R(-15.2, -12.0, -10.0, -7.0), Y_M01, MAT_WALNUT);
+  stairFlightWithRails(k, -13.6, 3.2, Y_M01, -10.0, Y_L1, -15.0, 'neon_amber');
   placer.reserve(R(-15.3, -11.9, -4.8, -1.4), Y_L0);
   placer.reserve(R(-15.3, -11.9, -10.0, -6.6), Y_M01);
   placer.reserve(R(-15.3, -11.9, -15.6, -14.6), Y_L1);
 
   // 4. Klatka #4: Schody Salonowe Wschodnie (L0 <-> L1, X ∈ [+12.0, +15.2], Z: -1.8 -> -6.8 -> -9.8 -> -14.8).
-  stairFlightWithRails(k, 13.6, 3.2, Y_L0, -1.8, Y_M01, -6.8, 'neon_violet');
-  deck(k, R(12.0, 15.2, -9.8, -6.8), Y_M01, MAT_WALNUT);
-  stairFlightWithRails(k, 13.6, 3.2, Y_M01, -9.8, Y_L1, -14.8, 'neon_violet');
+  stairFlightWithRails(k, 13.6, 3.2, Y_L0, -2.0, Y_M01, -7.0, 'neon_amber');
+  deck(k, R(12.0, 15.2, -10.0, -7.0), Y_M01, MAT_WALNUT);
+  stairFlightWithRails(k, 13.6, 3.2, Y_M01, -10.0, Y_L1, -15.0, 'neon_amber');
   placer.reserve(R(11.9, 15.3, -4.8, -1.4), Y_L0);
   placer.reserve(R(11.9, 15.3, -10.0, -6.6), Y_M01);
   placer.reserve(R(11.9, 15.3, -15.6, -14.6), Y_L1);
@@ -454,7 +509,11 @@ export default function generate() {
     zones: [
       ['Parter — Wielki Salon, Basen i Foyer', R(-30, 30, -18, 16), 'interior'],
       ['Piętro — Biuro Pułkownika i Apartamenty', R(-30, 30, -42, 4), 'high'],
-      ['Piwnica — Winiarnia, Sala Tortur i Bunkier', R(-28, 28, 16, 32), 'open'],
+      [
+        'Piwnica — Winiarnia, Sala Tortur i Bunkier',
+        R(-28, 28, 16, 32),
+        'open',
+      ],
     ],
     maxAlive: 10,
     minSpawnDistance: 10,

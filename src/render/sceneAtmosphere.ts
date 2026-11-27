@@ -85,7 +85,9 @@ export class SceneAtmosphere {
     }
     this.scene.userData.horizon = horizon?.expanded ? horizon : undefined;
     const elevated = this.panoramaDropM >= tuning.horizon.elevated.minDropM;
-    const showGround = !!(horizon && (horizon.expanded || elevated));
+    const showGround =
+      tuning.render.panoramaKind !== 'forest' &&
+      !!(horizon && (horizon.expanded || elevated));
     if (showGround) {
       if (!this.ground) {
         this.ground = new Mesh(

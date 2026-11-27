@@ -2,7 +2,10 @@ import {
   Box3,
   BoxGeometry,
   CylinderGeometry,
-  ConeGeometry,
+  DoubleSide,
+  PlaneGeometry,
+  BufferGeometry,
+  Float32BufferAttribute,
   SphereGeometry,
   Group,
   Euler,
@@ -13,9 +16,9 @@ import {
   Vector3,
   Mesh,
 } from 'three';
-import type { BufferGeometry, Material } from 'three';
+import type { Material } from 'three';
 import { tuning } from '../core/tuning';
-import { buildForestLayout } from './forestLayout';
+import { buildForestLayout, forestTerrainHeight } from './forestLayout';
 import type { ForestPoint, ForestRoute } from './forestLayout';
 import {
   createForestMaterial,
@@ -149,40 +152,49 @@ export class ForestPanorama extends Group {
     const minZ = bounds.min.z - t.clearanceM,
       maxZ = bounds.max.z + t.clearanceM;
     const extent = t.skyRadiusM;
-    this.batch('forest-ground', new BoxGeometry(1, 1, 1), solid(t.ground), [
-      {
-        x: (minX + maxX) / 2,
-        y: this.floorY - t.fenceWidthM,
-        z: minZ - extent / 2,
-        sx: maxX - minX + extent * 2,
-        sy: t.fenceWidthM,
-        sz: extent,
-      },
-      {
-        x: (minX + maxX) / 2,
-        y: this.floorY - t.fenceWidthM,
-        z: maxZ + extent / 2,
-        sx: maxX - minX + extent * 2,
-        sy: t.fenceWidthM,
-        sz: extent,
-      },
-      {
-        x: minX - extent / 2,
-        y: this.floorY - t.fenceWidthM,
-        z: (minZ + maxZ) / 2,
-        sx: extent,
-        sy: t.fenceWidthM,
-        sz: maxZ - minZ,
-      },
-      {
-        x: maxX + extent / 2,
-        y: this.floorY - t.fenceWidthM,
-        z: (minZ + maxZ) / 2,
-        sx: extent,
-        sy: t.fenceWidthM,
-        sz: maxZ - minZ,
-      },
-    ]);
+    // Concentric rectangles share their corner vertices and leave the cellar open.
+    // Put most samples at the forest edge, where players look through the glass.
+    const sides = 4,
+      segments = Math.max(1, Math.floor(t.terrainSegments / sides));
+    const rings = Math.max(1, Math.floor(t.terrainSegments / 2));
+    const ground = new PlaneGeometry(1, 1, sides * segments, rings + 2);
+    const positions = ground.getAttribute('position');
+    for (let row = 0; row <= rings + 2; row++) {
+      const offset = extent * (Math.max(0, row - 2) / rings) ** 2;
+      const corners = [
+        [minX - offset, minZ - offset],
+        [maxX + offset, minZ - offset],
+        [maxX + offset, maxZ + offset],
+        [minX - offset, maxZ + offset],
+      ] as const;
+      for (let col = 0; col <= sides * segments; col++) {
+        const side = Math.floor(col / segments) % sides;
+        const a = corners[side]!,
+          b = corners[(side + 1) % sides]!;
+        const f = (col % segments) / segments;
+        const x = row === 0 ? (minX + maxX) / 2 : a[0] + (b[0] - a[0]) * f;
+        const z = row === 0 ? (minZ + maxZ) / 2 : a[1] + (b[1] - a[1]) * f;
+        const y =
+          row < 2
+            ? bounds.min.y - t.clearanceM
+            : forestTerrainHeight({ x, y: 0, z }, layout.hills, this.floorY);
+        positions.setXYZ(row * (sides * segments + 1) + col, x, y, z);
+      }
+    }
+    // The plane index winds inward on a ring; reverse it to face the sky.
+    const index = ground.getIndex()!;
+    for (let i = 0; i < index.count; i += 3) {
+      const a = index.getX(i);
+      index.setX(i, index.getX(i + 1));
+      index.setX(i + 1, a);
+    }
+    ground.computeVertexNormals();
+    this.batch(
+      'forest-ground',
+      ground,
+      createForestMaterial(this.uniforms, t.ground, 'ground'),
+      [{ x: 0, y: 0, z: 0, sx: 1, sy: 1, sz: 1 }],
+    );
     const trunk: Part[] = [],
       cones: Part[] = [],
       leaves: Part[] = [],
@@ -210,11 +222,12 @@ export class ForestPanorama extends Group {
       };
     };
     for (const tree of [...layout.conifers, ...layout.deciduous]) {
+      const trunkHeight = tree.height * 0.82;
       trunk.push({
         ...tree,
-        y: tree.y + tree.height / 2,
+        y: tree.y + trunkHeight / 2,
         sx: tree.height * t.trunkRadiusShare,
-        sy: tree.height,
+        sy: trunkHeight,
         sz: tree.height * t.trunkRadiusShare,
       });
       for (let i = 0; i < t.branchesPerTree; i++) {
@@ -238,18 +251,25 @@ export class ForestPanorama extends Group {
     }
     for (const tree of layout.conifers) {
       for (let i = 0; i < t.crownLayers; i++) {
-        const f = i / t.crownLayers;
-        const h = tree.height * t.crownHeightShare;
-        const w = tree.width * (1 - f * 0.7);
+        const f = i / Math.max(1, t.crownLayers - 1);
+        const pine = Math.sin(tree.phase) > 0;
+        const h = tree.height * t.crownHeightShare * (1 - f * 0.55);
+        const w = tree.width * (1 - f * (pine ? 0.52 : 0.84));
         cones.push({
           ...tree,
+          x: tree.x + Math.sin(tree.phase + i * 2.4) * w * 0.06,
+          z: tree.z + Math.cos(tree.phase + i * 2.4) * w * 0.06,
           y:
             tree.y +
-            tree.height * (t.crownBaseShare + f * (1 - t.crownBaseShare)) +
+            tree.height *
+              (t.crownBaseShare + (pine ? 0.18 : 0) + f * (pine ? 0.4 : 0.58)) +
             h / 2,
           sx: w,
           sy: h,
-          sz: w,
+          sz: w * (pine ? 0.85 : 1),
+          rotation: new Quaternion().setFromEuler(
+            new Euler(0, tree.phase + i, 0),
+          ),
           bend: 1,
         });
       }
@@ -262,9 +282,9 @@ export class ForestPanorama extends Group {
           x: tree.x + (Math.sin(a) * tree.width) / 3,
           y: tree.y + tree.height * (0.7 + (i % 2) * 0.12),
           z: tree.z + (Math.cos(a) * tree.width) / 3,
-          sx: tree.width * 0.65,
-          sy: tree.height * 0.4,
-          sz: tree.width * 0.65,
+          sx: tree.width * (0.5 + 0.12 * Math.sin(a * 3)),
+          sy: tree.height * (0.22 + 0.08 * Math.sin(a)),
+          sz: tree.width * (0.5 + 0.12 * Math.cos(a * 3)),
           bend: 1,
         });
       }
@@ -275,12 +295,10 @@ export class ForestPanorama extends Group {
         ferns.push({
           ...shrub,
           y: shrub.y + shrub.height / 2,
-          sx: shrub.width * 0.18,
+          sx: shrub.width,
           sy: shrub.height,
-          sz: shrub.width * 0.18,
-          rotation: new Quaternion().setFromEuler(
-            new Euler(Math.sin(a), a, Math.cos(a)),
-          ),
+          sz: shrub.width,
+          rotation: new Quaternion().setFromEuler(new Euler(0, a, 0)),
           bend: 0.5,
         });
       }
@@ -291,35 +309,80 @@ export class ForestPanorama extends Group {
       solid(t.bark),
       trunk,
     );
-    this.batch(
-      'forest-conifers',
-      new ConeGeometry(0.5, 1, 9, 3),
-      solid(t.needles),
-      cones,
-    );
+    // Each whorl has separate drooping sprays. Gaps show the trunk and sky even side-on.
+    const tips: number[] = [];
+    for (let i = 0; i < 11; i++) {
+      const angle = (i * Math.PI * 2) / 11;
+      const vertex = (radius: number, delta: number, y: number) => [
+        Math.cos(angle + delta) * radius,
+        y,
+        Math.sin(angle + delta) * radius,
+      ];
+      const root = vertex(0.02, 0, 0.45);
+      const left = vertex(0.29, -0.32, -0.12);
+      const right = vertex(0.29, 0.32, -0.16);
+      const ridge = vertex(0.33, 0, 0.02);
+      const tip = vertex(
+        0.47 + 0.04 * Math.sin(i * 5),
+        0.05,
+        -0.32 - 0.12 * Math.cos(i),
+      );
+      tips.push(
+        ...root,
+        ...ridge,
+        ...left,
+        ...root,
+        ...right,
+        ...ridge,
+        ...ridge,
+        ...tip,
+        ...left,
+        ...ridge,
+        ...right,
+        ...tip,
+        ...root,
+        ...left,
+        ...tip,
+        ...root,
+        ...tip,
+        ...right,
+      );
+    }
+    const bough = new BufferGeometry();
+    bough.setAttribute('position', new Float32BufferAttribute(tips, 3));
+    bough.computeVertexNormals();
+    this.batch('forest-conifers', bough, solid(t.needles), cones);
     this.batch(
       'forest-deciduous',
       new SphereGeometry(0.5, 9, 6),
       solid(t.leaves),
       leaves,
     );
-    this.batch(
-      'forest-ferns',
-      new ConeGeometry(0.5, 1, 4),
-      solid(t.leaves),
-      ferns,
-    );
-    this.batch(
-      'forest-hills',
-      new SphereGeometry(1, 16, 10),
-      solid(t.ground),
-      layout.hills.map((h) => ({
-        ...h,
-        sx: h.radius,
-        sy: h.height,
-        sz: h.radius,
-      })),
-    );
+    const leaflets: number[] = [];
+    for (let i = 0; i < 7; i++) {
+      const f = i / 7,
+        z = f * 0.64;
+      const y = -0.5 + f * (1.8 - f);
+      const width = 0.035 + 0.1 * Math.sin(f * Math.PI);
+      for (const side of [-1, 1])
+        leaflets.push(
+          0,
+          y,
+          z,
+          side * width,
+          y + 0.06,
+          z + 0.14,
+          0,
+          y + 0.12 * (1 - f),
+          z + 0.1,
+        );
+    }
+    const frond = new BufferGeometry();
+    frond.setAttribute('position', new Float32BufferAttribute(leaflets, 3));
+    frond.computeVertexNormals();
+    const frondMaterial = solid(t.leaves);
+    frondMaterial.side = DoubleSide;
+    this.batch('forest-ferns', frond, frondMaterial, ferns);
     this.batch(
       'forest-mist',
       new SphereGeometry(0.5, 12, 6),

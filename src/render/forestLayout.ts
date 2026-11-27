@@ -28,6 +28,25 @@ export interface ForestRoute {
   phase: number;
 }
 
+export function forestTerrainHeight(
+  p: ForestPoint,
+  hills: readonly ForestHill[],
+  floorY: number,
+): number {
+  const t = tuning.forest;
+  const relief =
+    t.terrainReliefM *
+    (0.5 +
+      0.25 * Math.sin(p.x / t.terrainWaveM) +
+      0.25 * Math.cos(p.z / t.terrainWaveM + Math.sin(p.x / t.terrainWaveM)));
+  return hills.reduce((height, h) => {
+    const d = Math.hypot(p.x - h.x, p.z - h.z) / h.radius;
+    return d < 1
+      ? Math.max(height, h.y + h.height * Math.sqrt(1 - d * d))
+      : height;
+  }, floorY + relief);
+}
+
 /** World-space data only. Each footprint, including its animation, stays outside the house. */
 export function buildForestLayout(
   seed: string,
@@ -88,12 +107,7 @@ export function buildForestLayout(
     },
   );
   function terrain(p: ForestPoint): number {
-    return hills.reduce((height, h) => {
-      const d = Math.hypot(p.x - h.x, p.z - h.z) / h.radius;
-      return d < 1
-        ? Math.max(height, h.y + h.height * Math.sqrt(1 - d * d))
-        : height;
-    }, floor);
+    return forestTerrainHeight(p, hills, floor);
   }
   function trees(count: number, leafy = false, shrub = false): ForestTree[] {
     return Array.from({ length: Math.floor(count) }, (_, i) => {
@@ -106,10 +120,16 @@ export function buildForestLayout(
       const width = shrub
         ? rng.float(t.shrubMinHeightM, t.shrubMaxHeightM)
         : rng.float(t.crownMinM, t.crownMaxM);
+      const angle = rng.float(0, Math.PI * 2);
+      const footprint = width + t.swayM;
+      // Sample from the actual edge of the clearing. Clamping a whole band
+      // to the rectangular exclusion used to line the windows with a hedge.
+      const edge = point(angle, 0, footprint);
+      const inner = Math.max(ranges[0]!, Math.hypot(edge.x - cx, edge.z - cz));
       let p = point(
-        rng.float(0, Math.PI * 2),
-        rng.float(ranges[0]!, ranges[1]!),
-        width + t.swayM,
+        angle,
+        inner + rng.float(0, ranges[1]! - ranges[0]!),
+        footprint,
       );
       // Keep the lit landing pad readable through the trees.
       if (

@@ -11,6 +11,8 @@
   liściaste, podszyt, pagórki, mgłę, słupy, światła, lądowisko, maszt, drony, przeloty i oczy.
   Całe bryły wraz z marginesem z `tuning.forest` omijają obrys; strumień `Rng.fork('forest')`
   jest niezależny od symulacji. Limity i parametry oprawy znajdują się w `tuning.forest` (GUI).
+- `forestTerrainHeight(point, hills, floorY)` w `forestLayout.ts` podaje wysokość gruntu w metrach.
+  Panorama próbkuje tę funkcję przy budowie siatki terenu i rozmieszczaniu roślin.
 - `ForestPanorama(seed, floorY, exclusion?: Box3)` ma `sync(dt, horizon?)` i `dispose()` jak
   miejska `Panorama`; nie tworzy fizyki ani świateł punktowych. Wyłącznie tło renderu.
 - Modele `res_*` obsługuje loader miasta. Materiały bloków i GLB `mat_res_*`:

@@ -29,6 +29,7 @@ import {
   deco,
   holdingCageBars,
   recessedLedStrip,
+  residenceCabinet,
   solid,
   waistDivider,
 } from './_run6Kit.mjs';
@@ -85,21 +86,14 @@ function buildRoomR1(k, p) {
 
   // Wschodnia strefa konsoli wejściowej i foyer (poza wejściem R7 Z ∈ [8, 12] i Klatką #2 X ∈ [5.2, 8.4], Z = 16).
   p.prop('res_wardrobe_glass', 7.6, 4.7, Y_L0, 0);
-  p.prop('off_executive_desk', 7.6, 6.7, Y_L0, 0);
-  p.prop('off_office_chair', 7.6, 5.6, Y_L0, 0);
+  residenceCabinet(k, p, 'off_executive_desk', 7.6, 6.7, Y_L0, 0);
+  p.prop('res_bonsai_pedestal', 5.2, 6.5, Y_L0, 0);
   p.prop('off_lounge_sofa', 3.6, 11.6, Y_L0, -1);
   p.prop('res_coffee_table_marble', 2.1, 11.6, Y_L0, 1);
   p.prop('res_winter_garden_planter', 9.1, 13.6, Y_L0, -1);
-  p.prop('mall_directory', 2.6, 14.8, Y_L0, 2);
+  residenceCabinet(k, p, 'mall_directory', 2.6, 14.8, Y_L0, 2);
 
   // Detale ścienne i oświetlenie sufitu Holu R1 (mat_light_panel, zero stożków).
-  for (const sx of [-1, 1]) {
-    const xWall = sx * 9.78;
-    const yaw = sx > 0 ? -Q : Q;
-    deco(k, 'off_acoustic_wall_panel', xWall, Y_L0 + 1.1, 6.0, yaw);
-    deco(k, 'wh_wall_terminal', xWall, Y_L0 + 1.2, 13.0, yaw);
-    deco(k, 'mall_security_fixture', xWall, Y_L0 + 1.25, 4.8, yaw);
-  }
   chandelierLinear(k, 0, Y_L0_CEIL, 9.5, 0);
   for (const x of [-6.0, 0, 6.0]) {
     recessedLedStrip(k, x, Y_L0_CEIL, 5.8, 0);
@@ -119,8 +113,8 @@ function buildRoomR2(k, p) {
 
   // 2. Centralna strefa wypoczynkowa na dywanie `res_plush_carpet` (X ∈ [-7.4, 3.2], Z ∈ [-9.6, -0.4]):
   // 3 narożne sofy `res_luxury_sofa_l`, 2 marmurowe stoliki `res_coffee_table_marble` i fotele/sofy boczne.
-  box(k, -2.0, Y_L0 - 0.021, -5.0, 10.8, 0.04, 9.2, MAT_CARPET, {
-    walkable: false,
+  box(k, -2.0, Y_L0 - 0.013, -5.0, 10.8, 0.04, 9.2, MAT_CARPET, {
+    walkable: true,
   });
   p.prop('res_luxury_sofa_l', -5.2, -4.4, Y_L0, 1);
   p.prop('res_luxury_sofa_l', -1.2, -1.6, Y_L0, 2);
@@ -140,20 +134,19 @@ function buildRoomR2(k, p) {
   p.prop('res_winter_garden_planter', -10.2, -11.5, Y_L0, 0);
 
   // 4. Strefa Barku Whisky i Cygar NE (poza spawnem #4 (9, 0, -14)):
-  p.prop('off_kitchenette_counter', 9.2, -9.8, Y_L0, 0);
+  residenceCabinet(k, p, 'off_kitchenette_counter', 9.2, -9.8, Y_L0, 0);
   waistDivider(k, p, 9.2, Y_L0, -7.8, 2.8, 0.38);
-  for (const x of [8.2, 9.2, 10.2])
-    p.prop('off_office_chair', x, -7.0, Y_L0, 0);
+  p.prop('res_wine_rack_wall', 9.2, -10.85, Y_L0, 0);
   p.prop('res_winter_garden_planter', 5.2, -14.2, Y_L0, 0);
 
   // 5. Zabudowa pod spocznikami i wyższymi biegami Klatek Schodowych #3 i #4 (Z ∈ [-9.8, -5.0], wys. 1.9 m)
   // oraz boczne osłony zbijające puste przestrzenie Salonu poniżej 8 m (z pełną drożnością bram).
   p.reserve(R(-15.3, -11.9, -9.9, -4.9), Y_L0);
-  solid(k, R(-15.2, -12.0, -9.8, -5.0), Y_L0, 1.9, MAT_WALNUT, {
+  solid(k, R(-15.2, -12.0, -9.8, -7.0), Y_L0, 1.5, MAT_WALNUT, {
     walkable: false,
   });
   p.reserve(R(11.9, 15.3, -9.9, -4.9), Y_L0);
-  solid(k, R(12.0, 15.2, -9.8, -5.0), Y_L0, 1.9, MAT_WALNUT, {
+  solid(k, R(12.0, 15.2, -9.8, -7.0), Y_L0, 1.5, MAT_WALNUT, {
     walkable: false,
   });
 
@@ -162,8 +155,8 @@ function buildRoomR2(k, p) {
   p.prop('off_lounge_sofa', -7.8, 2.3, Y_L0, 2);
   waistDivider(k, p, 8.2, Y_L0, -1.2, 2.4, 0.36);
   p.prop('off_lounge_sofa', 8.2, 2.3, Y_L0, 2);
-  p.prop('off_office_planter', -13.8, -16.8, Y_L0, 0);
-  p.prop('off_office_planter', 13.8, -16.8, Y_L0, 0);
+  p.prop('res_winter_garden_planter', -13.8, -16.8, Y_L0, 0);
+  p.prop('res_winter_garden_planter', 13.8, -16.8, Y_L0, 0);
 
   // Obrazy `res_wall_art_triptych` na południowej ścianie Salonu (Z = +3.80, X = -7.5 z EE-11 oraz X = +7.5).
   deco(k, 'res_wall_art_triptych', -7.5, Y_L0 + 1.55, 3.74, PI);
@@ -172,10 +165,10 @@ function buildRoomR2(k, p) {
   // 6. Wyposażenie Antresoli Salonu `R2-M` (y = +4.80 m, poza spawnami (-14.4,4.8,-1) i (14.4,4.8,-1)):
   p.prop('off_lounge_sofa', -6.8, -17.1, Y_L1, 0);
   p.prop('off_lounge_sofa', 6.8, -17.1, Y_L1, 0);
-  p.prop('off_office_planter', -4.0, -17.2, Y_L1, 0);
-  p.prop('off_office_planter', 4.0, -17.2, Y_L1, 0);
-  p.prop('mall_bench', -9.6, -17.2, Y_L1, 0);
-  p.prop('mall_bench', 9.6, -17.2, Y_L1, 0);
+  p.prop('res_winter_garden_planter', -4.0, -17.2, Y_L1, 0);
+  p.prop('res_winter_garden_planter', 4.0, -17.2, Y_L1, 0);
+  residenceCabinet(k, p, 'mall_bench', -9.6, -17.2, Y_L1, 0);
+  residenceCabinet(k, p, 'mall_bench', 9.6, -17.2, Y_L1, 0);
 
   p.prop('off_lounge_sofa', -13.0, 2.8, Y_L1, 2);
   p.prop('res_coffee_table_marble', -11.2, 1.0, Y_L1, 1);
@@ -183,10 +176,7 @@ function buildRoomR2(k, p) {
   p.prop('res_coffee_table_marble', 11.2, 1.0, Y_L1, -1);
 
   // 7. Oprawy sufitowe pod wysokim stropem Salonu (y = 9.60 m) i pod płytą Antresoli (y = 4.40 m).
-  for (const x of [-6.0, 0, 6.0]) {
-    for (const z of [-13.0, -7.0, -1.0])
-      chandelierLinear(k, x, Y_SALON_CEIL, z, 0);
-  }
+  for (const x of [-5.0, 5.0]) chandelierLinear(k, x, Y_SALON_CEIL, -7, 0);
   for (const x of [-12.0, -4.0, 4.0, 12.0])
     recessedLedStrip(k, x, Y_SALON_CEIL, -16.4, 0);
   for (const z of [-12.0, -6.0, 0.0]) {
@@ -202,25 +192,20 @@ function buildRoomR2(k, p) {
 function buildRoomR3(k, p) {
   // Długi 12-osobowy Stół Jadalniany `res_dining_table_long` (2.0 × 1.05 × 5.2 m)
   // przy zachodnim przeszkleniu na las (X = -26.5, Z = -1.0 — poza spawnem #5 (-23, 0, -1) i osią bram X = -23!).
-  box(k, -26.5, Y_L0 - 0.021, -1.0, 4.4, 0.04, 6.8, MAT_CARPET, {
-    walkable: false,
+  box(k, -26.5, Y_L0 - 0.013, -1.0, 4.4, 0.04, 6.8, MAT_CARPET, {
+    walkable: true,
   });
   p.prop('res_dining_table_long', -26.5, -1.0, Y_L0, 0);
-  for (const z of [-2.8, -1.6, -0.4, 0.8]) {
-    p.prop('off_office_chair', -28.0, z, Y_L0, 1);
-    p.prop('off_office_chair', -25.0, z, Y_L0, -1);
-  }
 
   // Wschodnia strefa bufetowa i kredens (X ∈ [-20.5, -16.8], poza bramą R3<->R2 na Z ∈ [-1, 3]).
-  p.prop('off_kitchenette_counter', -18.6, -4.8, Y_L0, 0);
+  residenceCabinet(k, p, 'off_kitchenette_counter', -18.6, -4.8, Y_L0, 0);
   waistDivider(k, p, -19.5, Y_L0, -2.2, 2.4, 0.38);
   p.prop('res_winter_garden_planter', -28.4, 2.8, Y_L0, 0);
-  p.prop('off_office_planter', -18.8, 3.2, Y_L0, 0);
+  p.prop('res_winter_garden_planter', -18.8, 3.2, Y_L0, 0);
 
   // Obraz ścienny i oprawy sufitowe w Jadalni R3.
   deco(k, 'res_wall_art_triptych', -16.22, Y_L0 + 1.5, -3.5, -Q);
   chandelierLinear(k, -26.5, Y_L0_CEIL, -1.0, Q);
-  chandelierLinear(k, -20.0, Y_L0_CEIL, -1.0, Q);
   recessedLedStrip(k, -23.0, Y_L0_CEIL, -4.5, 0);
   recessedLedStrip(k, -23.0, Y_L0_CEIL, 2.5, 0);
   ceilingCovePanel(k, -28.8, Y_L0_CEIL, -1.0, 0.45, 8.4);
@@ -237,17 +222,16 @@ function buildRoomR4(k, p) {
   p.prop('res_smart_fridge', -19.2, -16.8, Y_L0, 0);
 
   // Ciągi zabudowy kuchennej, ekspresy i zielnik hydroponiczny przy oknie NW.
-  p.prop('off_kitchenette_counter', -27.8, -11.5, Y_L0, 1);
-  p.prop('off_kitchenette_counter', -17.0, -8.8, Y_L0, -1);
+  residenceCabinet(k, p, 'off_kitchenette_counter', -27.8, -11.5, Y_L0, 1);
+  residenceCabinet(k, p, 'off_kitchenette_counter', -17.0, -8.8, Y_L0, -1);
   p.prop('off_coffee_machine', -19.2, -7.0, Y_L0, 2);
   p.prop('mall_trash_bin', -20.6, -7.0, Y_L0, 2);
   p.prop('res_winter_garden_planter', -26.8, -16.8, Y_L0, 0);
   box(k, -26.8, Y_L0 + 2.4, -17.1, 2.6, 0.08, 0.16, 'neon_green', {
     walkable: false,
   });
-  p.prop('off_office_planter', -28.4, -7.4, Y_L0, 1);
+  p.prop('res_winter_garden_planter', -28.4, -7.4, Y_L0, 1);
 
-  deco(k, 'wh_wall_terminal', -16.22, Y_L0 + 1.2, -10.8, -Q);
   for (const x of [-26.5, -20.0]) {
     recessedLedStrip(k, x, Y_L0_CEIL, -15.0, 0);
     recessedLedStrip(k, x, Y_L0_CEIL, -9.0, 0);
@@ -283,7 +267,7 @@ function buildRoomR5(k, p) {
   p.prop('res_winter_garden_planter', 27.6, -16.8, Y_L0, 0);
   p.prop('res_winter_garden_planter', 18.4, -16.8, Y_L0, 0);
   p.prop('res_winter_garden_planter', 28.4, 1.8, Y_L0, -1);
-  p.prop('off_office_planter', 18.0, 2.8, Y_L0, 0);
+  p.prop('res_winter_garden_planter', 18.0, 2.8, Y_L0, 0);
 
   // Kaskadowa Ściana Wodna Zen przy ścianie zachodniej (X = +16.6, Z = -7.0, między bramami Z = -14 i Z = +1).
   p.reserve(R(16.2, 17.1, -9.2, -4.8), Y_L0);
@@ -392,7 +376,7 @@ function buildRoomR7(k, p) {
 function buildRoomR8(k, p) {
   // 1. GŁÓWNA TABLICA ŚLEDCZA „OPERACJA ISKRA” `res_investigation_board_iskra` (3.2 × 1.8 × 0.22 m)
   // na centralnej ścianie północnej gabinetu (X = 0.0, Y = 5.85, Z = -29.78).
-  deco(k, 'res_investigation_board_iskra', 0, Y_L1 + 1.05, -29.78, 0);
+  p.prop('res_investigation_board_iskra', 0, -29.69, Y_L1 + 1.05);
   // Dedykowana listwa oświetleniowa `light_panel` nad Tablicą Śledczą „Iskra”.
   box(k, 0, Y_L1 + 3.05, -29.72, 3.6, 0.08, 0.18, 'light_panel', {
     walkable: false,
@@ -407,27 +391,25 @@ function buildRoomR8(k, p) {
   biometricArch(k, p, 0, Y_L1, -19.2, 0);
 
   // 3. Zachodnia strefa gabinetowa VIP (X ∈ [-10.5, -3.5]):
-  box(k, -7.2, Y_L1 - 0.021, -23.5, 5.6, 0.04, 6.2, MAT_CARPET, {
-    walkable: false,
+  box(k, -7.2, Y_L1 - 0.013, -23.5, 5.6, 0.04, 6.2, MAT_CARPET, {
+    walkable: true,
   });
   p.prop('res_coffee_table_marble', -7.2, -23.5, Y_L1, 0);
   p.prop('off_lounge_sofa', -7.2, -21.3, Y_L1, 2);
   p.prop('off_lounge_sofa', -7.2, -25.7, Y_L1, 0);
   p.prop('res_bookshelf_wall', -9.2, -29.3, Y_L1, 0);
-  p.prop('off_office_planter', -10.4, -19.4, Y_L1, 0);
+  p.prop('res_winter_garden_planter', -10.4, -19.4, Y_L1, 0);
 
   // 4. Wschodnia strefa odpraw taktycznych i tajnych akt (X ∈ [3.5, 10.5]):
   p.prop('res_holo_globe_stand', 6.5, -23.5, Y_L1, 0);
   p.prop('res_trophy_case_tall', 9.2, -19.2, Y_L1, 2);
-  p.prop('lab_classified_cabinet', 3.4, -29.2, Y_L1, 0);
-  p.prop('lab_classified_cabinet', 10.8, -28.0, Y_L1, -1);
+  residenceCabinet(k, p, 'lab_classified_cabinet', 3.4, -29.2, Y_L1, 0);
+  residenceCabinet(k, p, 'lab_classified_cabinet', 10.8, -28.0, Y_L1, -1);
   p.prop('off_lounge_sofa', 6.5, -20.2, Y_L1, 2);
-  p.prop('off_office_planter', 10.4, -21.2, Y_L1, 0);
+  p.prop('res_winter_garden_planter', 10.4, -21.2, Y_L1, 0);
 
   // Oprawy sufitowe pod stropem Biura R8 (y = 9.60 m).
   chandelierLinear(k, 0, Y_L1_CEIL, -24.0, 0);
-  chandelierLinear(k, -7.2, Y_L1_CEIL, -24.0, 0);
-  chandelierLinear(k, 6.8, Y_L1_CEIL, -24.0, 0);
   for (const x of [-7.2, 0, 7.2]) {
     recessedLedStrip(k, x, Y_L1_CEIL, -20.2, 0);
     recessedLedStrip(k, x, Y_L1_CEIL, -27.8, 0);
@@ -439,8 +421,8 @@ function buildRoomR8(k, p) {
 function buildRoomR9(k, p) {
   // Dywan biblioteczny i 4 dwustronne podświetlane Regały Biblioteczne `res_bookshelf_wall` (3.2 × 2.8 × 0.75 m)
   // tworzące labirynt osłon CQB wokół spawnu #14 (-21, 4.8, -24).
-  box(k, -22.5, Y_L1 - 0.021, -24.0, 12.0, 0.04, 9.0, MAT_CARPET, {
-    walkable: false,
+  box(k, -26.25, Y_L1 - 0.013, -24.0, 5.2, 0.04, 7.2, MAT_CARPET, {
+    walkable: true,
   });
   p.prop('res_bookshelf_wall', -21.0, -27.2, Y_L1, 0);
   p.prop('res_bookshelf_wall', -21.0, -20.8, Y_L1, 0);
@@ -451,11 +433,11 @@ function buildRoomR9(k, p) {
   p.prop('res_holo_globe_stand', -25.8, -24.5, Y_L1, 0);
   p.prop('res_coffee_table_marble', -25.0, -21.2, Y_L1, 0);
   p.prop('off_lounge_sofa', -28.2, -24.0, Y_L1, 1);
-  p.prop('off_executive_desk', -16.0, -24.0, Y_L1, 1);
+  residenceCabinet(k, p, 'off_executive_desk', -16.0, -24.0, Y_L1, 1);
   p.prop('off_office_chair', -17.3, -24.0, Y_L1, 1);
-  p.prop('lab_classified_cabinet', -13.2, -28.8, Y_L1, 0);
-  p.prop('off_office_planter', -28.4, -19.6, Y_L1, 1);
-  p.prop('off_office_planter', -28.4, -28.4, Y_L1, 1);
+  residenceCabinet(k, p, 'lab_classified_cabinet', -13.2, -28.8, Y_L1, 0);
+  p.prop('res_winter_garden_planter', -28.4, -19.6, Y_L1, 1);
+  p.prop('res_winter_garden_planter', -28.4, -28.4, Y_L1, 1);
 
   for (const x of [-26.0, -21.0, -16.0]) {
     recessedLedStrip(k, x, Y_L1_CEIL, -21.0, 0);
@@ -506,9 +488,9 @@ function buildRoomR10(k, p) {
   });
 
   // Dodatkowe stojaki prototypów przy ścianie wschodniej (X = +29.1).
-  p.prop('lab_prototype_weapon_rack', 29.1, -21.8, Y_L1, -1);
-  p.prop('lab_prototype_weapon_rack', 29.1, -26.2, Y_L1, -1);
-  p.prop('mall_kurogane_display', 18.0, -18.8, Y_L1, 2);
+  p.prop('res_trophy_case_tall', 29.1, -21.8, Y_L1, -1);
+  p.prop('res_trophy_case_tall', 29.1, -26.2, Y_L1, -1);
+  residenceCabinet(k, p, 'mall_kurogane_display', 18.0, -18.8, Y_L1, 2);
 
   chandelierLinear(k, 21.0, Y_L1_CEIL, -24.0, 0);
   for (const x of [16.0, 21.0, 26.0]) {
@@ -522,8 +504,8 @@ function buildRoomR10(k, p) {
 function buildRoomR11(k, p) {
   // 1. Strefa sypialniana (X ∈ [-24, -8], poza spawnem #16 (-14, 4.8, -39)):
   // Łoże Platformowe King-Size `res_master_bed_king` (2.8 × 1.25 × 2.6 m) na X = -14.0, Z = -35.2.
-  box(k, -14.0, Y_L1 - 0.021, -35.2, 5.2, 0.04, 4.8, MAT_CARPET, {
-    walkable: false,
+  box(k, -14.0, Y_L1 - 0.013, -35.2, 5.2, 0.04, 4.8, MAT_CARPET, {
+    walkable: true,
   });
   p.prop('res_master_bed_king', -14.0, -35.2, Y_L1, 0);
 
@@ -531,16 +513,16 @@ function buildRoomR11(k, p) {
   p.prop('res_luxury_sofa_l', -20.8, -35.5, Y_L1, 1);
   p.prop('res_coffee_table_marble', -18.2, -35.5, Y_L1, 1);
   p.prop('res_bonsai_pedestal', -21.5, -40.2, Y_L1, 0);
-  p.prop('off_office_planter', -22.2, -31.5, Y_L1, 0);
-  deco(k, 'res_wall_art_triptych', -10.0, Y_L1 + 1.5, -30.22, 0);
+  p.prop('res_winter_garden_planter', -22.2, -31.5, Y_L1, 0);
+  deco(k, 'res_wall_art_triptych', -10.0, Y_L1 + 1.5, -30.25, PI);
 
   // 2. Przeszklona Garderoba Walk-In (X ∈ [-8, 4]):
   // 2 szafy `res_wardrobe_glass` (3.2 × 2.4 × 0.85 m), ścianka ekspozycyjna na X = +1.5, Z = -36.0 (nośnik EE-02!)
   // oraz gablota zegarków `mall_kurogane_display`.
   p.prop('res_wardrobe_glass', -6.8, -40.8, Y_L1, 0);
   p.prop('res_wardrobe_glass', -1.8, -40.8, Y_L1, 0);
-  p.prop('mall_kurogane_display', -8.8, -35.5, Y_L1, 1);
-  p.prop('lab_locker_bench', -4.2, -36.0, Y_L1, 0);
+  residenceCabinet(k, p, 'mall_kurogane_display', -8.8, -35.5, Y_L1, 1);
+  residenceCabinet(k, p, 'lab_locker_bench', -4.2, -36.0, Y_L1, 0);
 
   p.reserve(R(1.25, 1.75, -37.4, -34.6), Y_L1);
   box(k, 1.5, Y_L1 + 1.4, -36.0, 0.36, 2.8, 2.6, MAT_WALNUT, {
@@ -592,7 +574,7 @@ function buildRoomR12(k, p) {
   p.prop('res_pool_lounger', 8.2, -39.2, Y_L1, 0);
   p.prop('res_pool_lounger', 19.6, -39.2, Y_L1, 0);
   p.prop('res_winter_garden_planter', 22.2, -36.5, Y_L1, -1);
-  p.prop('off_office_planter', 5.6, -40.6, Y_L1, 0);
+  p.prop('res_winter_garden_planter', 5.6, -40.6, Y_L1, 0);
 
   for (const x of [8.5, 14.0, 19.5]) {
     recessedLedStrip(k, x, Y_L1_CEIL, -33.0, 0);
@@ -624,8 +606,7 @@ function buildRoomR13(k, p) {
   p.prop('res_instrument_trolley', -19.0, 20.8, Y_B, 0);
 
   // 3. Klatka Przetrzymywania Więźniów `res_holding_cage_bars` (4.0 × 3.4 × 0.22 m × 3) wzdłuż ściany południowej (Z = +28.8):
-  for (const x of [-24.0, -20.0, -16.0])
-    holdingCageBars(k, p, x, Y_B, 28.8, 0);
+  for (const x of [-24.0, -20.0, -16.0]) holdingCageBars(k, p, x, Y_B, 28.8, 0);
   // Belka nadprożowa nad kratami celi (y = -1.4..0.0 m) i boczne domknięcie celi na X = -14.0.
   box(k, -20.0, -0.7, 28.8, 12.0, 1.4, 0.32, MAT_BUNKER, {
     walkable: false,
@@ -704,11 +685,11 @@ function buildRoomR14(k, p) {
     });
   }
   p.reserve(R(-8.4, -5.2, 21.5, 26.2), Y_B);
-  solid(k, R(-8.4, -5.2, 21.5, 26.2), Y_B, Y_B + 1.7, MAT_WALNUT, {
+  solid(k, R(-8.4, -5.2, 21.5, 24.0), Y_B, Y_B + 1.55, MAT_WALNUT, {
     walkable: false,
   });
   p.reserve(R(5.2, 8.4, 21.5, 26.2), Y_B);
-  solid(k, R(5.2, 8.4, 21.5, 26.2), Y_B, Y_B + 1.7, MAT_WALNUT, {
+  solid(k, R(5.2, 8.4, 21.5, 24.0), Y_B, Y_B + 1.55, MAT_WALNUT, {
     walkable: false,
   });
 
