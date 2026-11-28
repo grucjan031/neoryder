@@ -73,6 +73,11 @@ wybrany promieniem w zasięgu. Ruch worka nie ma collidera.
 
 `neonTexts[].flicker` używa `FlickerDef`, identycznie jak napisy stacji.
 
+`DecalDef.textureFolder?: 'screens' | 'labels'` pozwala umieścić na ścianie
+lub podłodze ten sam nadruk co na modelu. Bez tego pola renderer czyta `decals/`.
+Opcjonalne `textureBand: [top, bottom]` wybiera poziomy wycinek obrazu.
+Obie granice liczy się od góry w przedziale 0–1, a `bottom` musi być większe od `top`.
+
 ## Migotanie oprawy
 
 `FlickerDef` (`src/world/dressingSchema.ts`): `{ pattern: 'buzz' | 'fail' |

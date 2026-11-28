@@ -142,7 +142,7 @@
   },
   "blocks": [
     {
-      "material": "paving",
+      "material": "fus_reactor_floor",
       "position": {
         "x": 0,
         "y": -0.3,
@@ -156,7 +156,7 @@
       "walkable": true
     },
     {
-      "material": "paving",
+      "material": "fus_reactor_floor",
       "position": {
         "x": 0,
         "y": -0.3,
@@ -170,7 +170,7 @@
       "walkable": true
     },
     {
-      "material": "paving",
+      "material": "fus_reactor_floor",
       "position": {
         "x": -30,
         "y": -0.3,
@@ -184,7 +184,7 @@
       "walkable": true
     },
     {
-      "material": "paving",
+      "material": "fus_reactor_floor",
       "position": {
         "x": -30,
         "y": -0.3,
@@ -198,7 +198,7 @@
       "walkable": true
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": -0.3,
@@ -212,7 +212,7 @@
       "walkable": true
     },
     {
-      "material": "mall_stone_floor",
+      "material": "fus_control_tile",
       "position": {
         "x": 30,
         "y": -0.3,
@@ -226,7 +226,7 @@
       "walkable": true
     },
     {
-      "material": "paving",
+      "material": "fus_reactor_floor",
       "position": {
         "x": 0,
         "y": -0.3,
@@ -240,7 +240,7 @@
       "walkable": true
     },
     {
-      "material": "mall_stone_floor",
+      "material": "fus_control_tile",
       "position": {
         "x": -8,
         "y": 4.6,
@@ -254,7 +254,7 @@
       "walkable": true
     },
     {
-      "material": "mall_stone_floor",
+      "material": "fus_control_tile",
       "position": {
         "x": 14,
         "y": 4.6,
@@ -268,7 +268,7 @@
       "walkable": true
     },
     {
-      "material": "mall_stone_floor",
+      "material": "fus_control_tile",
       "position": {
         "x": -8,
         "y": 4.6,
@@ -282,7 +282,7 @@
       "walkable": true
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 1.8999999999999997,
@@ -441,7 +441,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 5,
@@ -456,7 +456,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -7.2,
         "y": 4.62,
@@ -471,7 +471,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -2.4000000000000004,
         "y": 4.62,
@@ -486,7 +486,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 2.4000000000000004,
         "y": 4.62,
@@ -501,7 +501,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 7.199999999999999,
         "y": 4.62,
@@ -546,7 +546,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 4.62,
@@ -561,7 +561,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -11.8,
         "y": 4.62,
@@ -606,7 +606,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 4.62,
@@ -621,7 +621,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 11.8,
         "y": 4.62,
@@ -666,7 +666,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 3.8,
@@ -681,7 +681,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 19.4,
@@ -696,7 +696,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -13.2,
         "y": 19.02,
@@ -711,7 +711,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -4.399999999999999,
         "y": 19.02,
@@ -726,7 +726,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 4.399999999999999,
         "y": 19.02,
@@ -741,7 +741,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 13.200000000000003,
         "y": 19.02,
@@ -816,7 +816,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 19.02,
@@ -831,7 +831,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -21.8,
         "y": 19.02,
@@ -876,7 +876,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 19.02,
@@ -891,7 +891,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 21.8,
         "y": 19.02,
@@ -936,7 +936,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -8,
         "y": 9.8,
@@ -951,7 +951,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -17.333333333333332,
         "y": 9.42,
@@ -966,7 +966,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -12.666666666666666,
         "y": 9.42,
@@ -981,7 +981,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -8,
         "y": 9.42,
@@ -996,7 +996,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -3.333333333333332,
         "y": 9.42,
@@ -1011,7 +1011,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 1.3333333333333321,
         "y": 9.42,
@@ -1056,7 +1056,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -8,
         "y": 9.42,
@@ -1071,7 +1071,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -21.8,
         "y": 9.42,
@@ -1116,7 +1116,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -8,
         "y": 9.42,
@@ -1131,7 +1131,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 5.8,
         "y": 9.42,
@@ -1176,7 +1176,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -8,
         "y": 8.600000000000001,
@@ -1191,7 +1191,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 5.8,
@@ -1206,7 +1206,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -34,
         "y": 5.42,
@@ -1221,7 +1221,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 5.42,
@@ -1236,7 +1236,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -26,
         "y": 5.42,
@@ -1311,7 +1311,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 5.42,
@@ -1326,7 +1326,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -37.8,
         "y": 5.42,
@@ -1371,7 +1371,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 5.42,
@@ -1386,7 +1386,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22.2,
         "y": 5.42,
@@ -1431,7 +1431,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 7.4,
@@ -1446,7 +1446,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -34,
         "y": 7.0200000000000005,
@@ -1461,7 +1461,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 7.0200000000000005,
@@ -1476,7 +1476,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -26,
         "y": 7.0200000000000005,
@@ -1551,7 +1551,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 7.0200000000000005,
@@ -1566,7 +1566,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -37.8,
         "y": 7.0200000000000005,
@@ -1611,7 +1611,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 7.0200000000000005,
@@ -1626,7 +1626,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22.2,
         "y": 7.0200000000000005,
@@ -1671,7 +1671,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 8.2,
@@ -1686,7 +1686,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 26,
         "y": 7.82,
@@ -1701,7 +1701,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 7.82,
@@ -1716,7 +1716,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 34,
         "y": 7.82,
@@ -1806,7 +1806,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 7.82,
@@ -1821,7 +1821,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22.2,
         "y": 7.82,
@@ -1866,7 +1866,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 7.82,
@@ -1881,7 +1881,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 37.8,
         "y": 7.82,
@@ -1926,7 +1926,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 5.8,
@@ -1941,7 +1941,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 26,
         "y": 5.42,
@@ -1956,7 +1956,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 5.42,
@@ -1971,7 +1971,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 34,
         "y": 5.42,
@@ -2031,7 +2031,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 5.42,
@@ -2046,7 +2046,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22.2,
         "y": 5.42,
@@ -2091,7 +2091,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 5.42,
@@ -2106,7 +2106,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 37.8,
         "y": 5.42,
@@ -2151,7 +2151,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 14,
         "y": 9.8,
@@ -2166,7 +2166,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 10,
         "y": 9.42,
@@ -2181,7 +2181,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 14,
         "y": 9.42,
@@ -2196,7 +2196,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 18,
         "y": 9.42,
@@ -2241,7 +2241,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 14,
         "y": 9.42,
@@ -2256,7 +2256,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 6.2,
         "y": 9.42,
@@ -2301,7 +2301,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 14,
         "y": 9.42,
@@ -2316,7 +2316,7 @@
     },
     {
       "ceiling": true,
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 21.8,
         "y": 9.42,
@@ -2360,7 +2360,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -7,
         "y": 2.4,
@@ -2374,7 +2374,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 4,
@@ -2388,7 +2388,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 7,
         "y": 2.4,
@@ -2402,7 +2402,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -2.2,
         "y": 1.8,
@@ -2416,7 +2416,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 2.2,
         "y": 1.8,
@@ -2430,7 +2430,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 1.8,
@@ -2444,7 +2444,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -12,
         "y": 2.4,
@@ -2458,7 +2458,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 12,
         "y": 2.4,
@@ -2472,7 +2472,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -17,
         "y": 9.6,
@@ -2486,7 +2486,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 17,
         "y": 9.6,
@@ -2500,7 +2500,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -11,
         "y": 2.4,
@@ -2514,7 +2514,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -8.5,
         "y": 4.1,
@@ -2528,7 +2528,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -5.5,
         "y": 2.4,
@@ -2542,7 +2542,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 4.3,
@@ -2556,7 +2556,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 5.5,
         "y": 2.4,
@@ -2570,7 +2570,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 8.5,
         "y": 4.1,
@@ -2584,7 +2584,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 11,
         "y": 2.4,
@@ -2598,7 +2598,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 12,
@@ -2612,7 +2612,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 2.8,
@@ -2626,7 +2626,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 4.699999999999999,
@@ -2640,7 +2640,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 2.8,
@@ -2654,7 +2654,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 5,
@@ -2668,7 +2668,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 2.8,
@@ -2682,7 +2682,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 4.699999999999999,
@@ -2696,7 +2696,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 2.8,
@@ -2755,7 +2755,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -22,
         "y": 0.525,
@@ -2830,7 +2830,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 12.399999999999999,
@@ -2844,7 +2844,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 3.6,
@@ -2858,7 +2858,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 5.5,
@@ -2872,7 +2872,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 3.6,
@@ -2886,7 +2886,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 5.5,
@@ -2900,7 +2900,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 3.6,
@@ -3004,7 +3004,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -22,
         "y": 13.2,
@@ -3018,7 +3018,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 2.8,
@@ -3032,7 +3032,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -38,
         "y": 2.8,
@@ -3046,7 +3046,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -35,
         "y": 2.8,
@@ -3060,7 +3060,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 4.699999999999999,
@@ -3074,7 +3074,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -25,
         "y": 2.8,
@@ -3133,7 +3133,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 6.4,
@@ -3147,7 +3147,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -38,
         "y": 3.6,
@@ -3161,7 +3161,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": -30,
         "y": 3.6,
@@ -3175,7 +3175,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 22,
         "y": 2.8,
@@ -3189,7 +3189,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 22,
         "y": 4.699999999999999,
@@ -3203,7 +3203,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 22,
         "y": 2.8,
@@ -3217,7 +3217,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 22,
         "y": 5,
@@ -3231,7 +3231,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 22,
         "y": 2.8,
@@ -3290,7 +3290,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 22,
         "y": 0.525,
@@ -3320,7 +3320,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22,
         "y": 12.399999999999999,
@@ -3334,7 +3334,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22,
         "y": 4,
@@ -3348,7 +3348,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22,
         "y": 5.9,
@@ -3362,7 +3362,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22,
         "y": 4,
@@ -3376,7 +3376,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22,
         "y": 5.9,
@@ -3390,7 +3390,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22,
         "y": 4,
@@ -3494,7 +3494,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 22,
         "y": 13.6,
@@ -3508,7 +3508,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 30,
         "y": 2.8,
@@ -3522,7 +3522,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 38,
         "y": 2.8,
@@ -3536,7 +3536,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 25,
         "y": 2.8,
@@ -3550,7 +3550,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 4.699999999999999,
@@ -3564,7 +3564,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 35,
         "y": 2.8,
@@ -3623,7 +3623,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 6.8,
@@ -3637,7 +3637,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 38,
         "y": 4,
@@ -3651,7 +3651,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 30,
         "y": 4,
@@ -3665,7 +3665,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 2.4,
@@ -3679,7 +3679,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -21,
         "y": 7.199999999999999,
@@ -3693,7 +3693,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -18,
         "y": 9.1,
@@ -3707,7 +3707,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -15.5,
         "y": 7.199999999999999,
@@ -3721,7 +3721,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -7.5,
         "y": 9.399999999999999,
@@ -3735,7 +3735,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 0.5,
         "y": 7.199999999999999,
@@ -3749,7 +3749,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 3,
         "y": 9.1,
@@ -3763,7 +3763,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 6.5,
         "y": 7.199999999999999,
@@ -3777,7 +3777,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 10.5,
         "y": 9.399999999999999,
@@ -3791,7 +3791,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 14,
         "y": 7.199999999999999,
@@ -3805,7 +3805,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 17,
         "y": 9.1,
@@ -3819,7 +3819,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 20.5,
         "y": 7.199999999999999,
@@ -3878,7 +3878,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -12.5,
         "y": 5.325,
@@ -3908,7 +3908,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -7.5,
         "y": 5.325,
@@ -3938,7 +3938,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -2.5,
         "y": 5.325,
@@ -4013,7 +4013,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 10.5,
         "y": 5.325,
@@ -4088,7 +4088,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 14.399999999999999,
@@ -4102,7 +4102,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -16,
         "y": 7.199999999999999,
@@ -4116,7 +4116,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -8,
         "y": 8.8,
@@ -4130,7 +4130,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 0,
         "y": 7.199999999999999,
@@ -4144,7 +4144,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -10.2,
         "y": 6.6,
@@ -4158,7 +4158,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -5.8,
         "y": 6.6,
@@ -4172,7 +4172,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -8,
         "y": 6.6,
@@ -4186,7 +4186,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 14,
         "y": 7.199999999999999,
@@ -4200,7 +4200,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": -22,
         "y": 7.199999999999999,
@@ -4214,7 +4214,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 22,
         "y": 7.199999999999999,
@@ -4228,7 +4228,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 6,
         "y": 7.199999999999999,
@@ -4242,7 +4242,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 6,
         "y": 9.1,
@@ -4256,7 +4256,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 6,
         "y": 7.199999999999999,
@@ -4270,7 +4270,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 6,
         "y": 5.324999999999999,
@@ -4284,7 +4284,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 6,
         "y": 9,
@@ -4298,7 +4298,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 6,
         "y": 7.199999999999999,
@@ -6485,7 +6485,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 0,
         "y": 1.2,
@@ -6499,7 +6499,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 0,
         "y": 1.2,
@@ -6513,7 +6513,7 @@
       "walkable": false
     },
     {
-      "material": "concrete",
+      "material": "fus_reactor_concrete",
       "position": {
         "x": 0,
         "y": 1.2,
@@ -6569,7 +6569,7 @@
       "walkable": false
     },
     {
-      "material": "plaster",
+      "material": "fus_shield_panel",
       "position": {
         "x": 0,
         "y": 6,
@@ -11189,7 +11189,7 @@
         "w": 2.4
       },
       "surface": "floor",
-      "texture": "off_kurogane_floor_crest",
+      "texture": "fus_dielectric_floor_mat",
       "tint": "#ffffff",
       "yaw": 0
     },
@@ -11205,25 +11205,9 @@
         "w": 2.2
       },
       "surface": "floor",
-      "texture": "off_kurogane_floor_crest",
+      "texture": "fus_dielectric_floor_mat",
       "tint": "#ffffff",
       "yaw": 0
-    },
-    {
-      "opacity": 0.9,
-      "position": {
-        "x": 11.77,
-        "y": 1.65,
-        "z": 29
-      },
-      "size": {
-        "h": 1.35,
-        "w": 1.35
-      },
-      "surface": "wall",
-      "texture": "off_kurogane_floor_crest",
-      "tint": "#ffffff",
-      "yaw": -1.5707963267948966
     },
     {
       "opacity": 0.92,
@@ -11233,12 +11217,12 @@
         "z": 9.75
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -11249,12 +11233,12 @@
         "z": 6.89
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 0.7853981633974483
     },
     {
@@ -11265,12 +11249,12 @@
         "z": 0
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
@@ -11281,12 +11265,12 @@
         "z": -6.89
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 2.356194490192345
     },
     {
@@ -11297,12 +11281,12 @@
         "z": -9.75
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {
@@ -11313,12 +11297,12 @@
         "z": -6.89
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 3.9269908169872414
     },
     {
@@ -11329,12 +11313,12 @@
         "z": 0
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 4.71238898038469
     },
     {
@@ -11345,12 +11329,12 @@
         "z": 6.89
       },
       "size": {
-        "h": 0.78,
-        "w": 4.6
+        "h": 1.8,
+        "w": 1.8
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 5.497787143782138
     },
     {
@@ -11361,12 +11345,12 @@
         "z": 15.5
       },
       "size": {
-        "h": 0.85,
-        "w": 3.8
+        "h": 1.6,
+        "w": 1.6
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -11377,12 +11361,12 @@
         "z": -15.5
       },
       "size": {
-        "h": 0.85,
-        "w": 3.8
+        "h": 1.6,
+        "w": 1.6
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {
@@ -11393,12 +11377,12 @@
         "z": 0
       },
       "size": {
-        "h": 0.85,
-        "w": 3.8
+        "h": 1.6,
+        "w": 1.6
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
@@ -11409,12 +11393,12 @@
         "z": 0
       },
       "size": {
-        "h": 0.85,
-        "w": 3.8
+        "h": 1.6,
+        "w": 1.6
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
@@ -11425,12 +11409,12 @@
         "z": -11
       },
       "size": {
-        "h": 0.85,
-        "w": 3.8
+        "h": 1.6,
+        "w": 1.6
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -11441,12 +11425,12 @@
         "z": 11
       },
       "size": {
-        "h": 0.85,
-        "w": 3.8
+        "h": 1.6,
+        "w": 1.6
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -11457,27 +11441,31 @@
         "z": 9
       },
       "size": {
-        "h": 0.85,
-        "w": 3.8
+        "h": 1.6,
+        "w": 1.6
       },
       "surface": "floor",
-      "texture": "floor_hazard",
-      "tint": "#ffae1a",
+      "texture": "fus_floor_magnetic_hazard",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
       "opacity": 0.96,
       "position": {
         "x": -30,
-        "y": 1.55,
+        "y": 3.05,
         "z": 21.77
       },
       "size": {
-        "h": 1.1,
-        "w": 1.1
+        "h": 0.91,
+        "w": 1.45
       },
       "surface": "wall",
-      "texture": "res_ee_run1_forklift_memo",
+      "texture": "fus_ee_run1_run2_logistics",
+      "textureBand": [
+        0,
+        0.625
+      ],
       "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
@@ -11489,11 +11477,15 @@
         "z": 13
       },
       "size": {
-        "h": 1.1,
-        "w": 1.1
+        "h": 0.545,
+        "w": 1.45
       },
       "surface": "wall",
-      "texture": "res_ee_run2_atrium_vip",
+      "texture": "fus_ee_run1_run2_logistics",
+      "textureBand": [
+        0.625,
+        1
+      ],
       "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
@@ -11509,23 +11501,23 @@
         "w": 1.1
       },
       "surface": "wall",
-      "texture": "res_ee_run3_cocoon04_alert",
+      "texture": "fus_ee_run3_run4_directives",
       "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
       "opacity": 0.96,
       "position": {
-        "x": 13.2,
-        "y": 5.962,
-        "z": -29.4
+        "x": 13.55,
+        "y": 5.6659999999999995,
+        "z": -29.24
       },
       "size": {
         "h": 0.52,
         "w": 0.52
       },
       "surface": "floor",
-      "texture": "res_ee_run4_penthouse_invoice",
+      "texture": "fus_ee_run3_run4_directives",
       "tint": "#ffffff",
       "yaw": 0.15
     },
@@ -11534,14 +11526,18 @@
       "position": {
         "x": -11.77,
         "y": 1.6,
-        "z": 29
+        "z": 23.45
       },
       "size": {
-        "h": 1.1,
-        "w": 1.1
+        "h": 0.675,
+        "w": 1.3
       },
       "surface": "wall",
-      "texture": "res_ee_helixa_akord_dossier",
+      "texture": "fus_ee_run5_run6_coalition",
+      "textureBand": [
+        0,
+        0.52
+      ],
       "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
@@ -11553,35 +11549,39 @@
         "z": 6
       },
       "size": {
-        "h": 1.1,
-        "w": 1.1
+        "h": 0.62,
+        "w": 1.3
       },
       "surface": "wall",
-      "texture": "res_ee_helixa_akord_dossier",
+      "texture": "fus_ee_run5_run6_coalition",
+      "textureBand": [
+        0.52,
+        1
+      ],
       "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
       "opacity": 0.96,
       "position": {
-        "x": 14.8,
-        "y": 5.962,
-        "z": -29.4
+        "x": 14.2,
+        "y": 5.6659999999999995,
+        "z": -29.24
       },
       "size": {
         "h": 0.52,
         "w": 0.52
       },
       "surface": "floor",
-      "texture": "res_ee_orbis_grid_firewall",
+      "texture": "fus_ee_run7_vane_memo",
       "tint": "#ffffff",
       "yaw": -0.18
     },
     {
-      "opacity": 0.98,
+      "opacity": 1,
       "position": {
-        "x": 21.77,
-        "y": 6.699999999999999,
+        "x": 21.72,
+        "y": 6.7299999999999995,
         "z": -29.5
       },
       "size": {
@@ -11589,88 +11589,83 @@
         "w": 3
       },
       "surface": "wall",
-      "texture": "res_iskra_investigation_board",
+      "texture": "fus_director_resonance_board",
       "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
-      "opacity": 0.96,
-      "position": {
-        "x": 21.77,
-        "y": 6.4,
-        "z": -33.2
-      },
-      "size": {
-        "h": 1.1,
-        "w": 1.1
-      },
-      "surface": "wall",
-      "texture": "res_ee_run3_cocoon04_alert",
-      "tint": "#ffffff",
-      "yaw": -1.5707963267948966
-    },
-    {
-      "opacity": 0.96,
-      "position": {
-        "x": -15.5,
-        "y": 6.5,
-        "z": -35.77
-      },
-      "size": {
-        "h": 1.2,
-        "w": 1.2
-      },
-      "surface": "wall",
-      "texture": "res_ee_orbis_grid_firewall",
-      "tint": "#ffffff",
-      "yaw": 0
-    },
-    {
-      "opacity": 0.96,
+      "opacity": 1,
       "position": {
         "x": 37.77,
-        "y": 1.65,
-        "z": -13
+        "y": 1.75,
+        "z": 11.8
       },
       "size": {
-        "h": 1.1,
-        "w": 1.1
+        "h": 0.95,
+        "w": 0.95
       },
       "surface": "wall",
-      "texture": "res_ee_orbis_grid_firewall",
+      "texture": "screen_fus_grid",
+      "textureFolder": "screens",
       "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
-      "opacity": 0.96,
+      "opacity": 1,
       "position": {
-        "x": 17.5,
-        "y": 6.4,
-        "z": -35.77
+        "x": -37.77,
+        "y": 1.75,
+        "z": 11.5
       },
       "size": {
-        "h": 0.5,
+        "h": 1,
         "w": 1
       },
       "surface": "wall",
-      "texture": "res_ee_mira_blade_trophy",
+      "texture": "screen_fus_tritium",
+      "textureFolder": "screens",
+      "tint": "#ffffff",
+      "yaw": 1.5707963267948966
+    },
+    {
+      "opacity": 1,
+      "position": {
+        "x": 17.8,
+        "y": 7.48,
+        "z": -35.77
+      },
+      "size": {
+        "h": 0.15,
+        "w": 1.9
+      },
+      "surface": "wall",
+      "texture": "fus_director_resonance_board",
+      "textureBand": [
+        0.79,
+        0.94
+      ],
       "tint": "#ffffff",
       "yaw": 0
     },
     {
-      "opacity": 0.96,
+      "opacity": 1,
       "position": {
         "x": -21.77,
-        "y": 6.25,
-        "z": -26.5
+        "y": 6.35,
+        "z": -28.8
       },
       "size": {
-        "h": 0.55,
-        "w": 0.55
+        "h": 0.21,
+        "w": 1.15
       },
       "surface": "wall",
-      "texture": "sticky_code_0451",
-      "tint": "#ffae1a",
+      "texture": "label_tritium_cask",
+      "textureBand": [
+        0.73,
+        0.91
+      ],
+      "textureFolder": "labels",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
@@ -13332,7 +13327,7 @@
     {
       "model": "fus_whiteboard_equations",
       "position": {
-        "x": 21.71,
+        "x": 21.74,
         "y": 5.85,
         "z": -29.5
       },
@@ -14121,8 +14116,8 @@
         "h": 1.7,
         "w": 3.4
       },
-      "texture": "lab_restricted_omega",
-      "tint": "#ffae1a",
+      "texture": "fus_helios_reactor_hall",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -14137,8 +14132,8 @@
         "h": 1.7,
         "w": 3.4
       },
-      "texture": "lab_restricted_omega",
-      "tint": "#ffae1a",
+      "texture": "fus_helios_reactor_hall",
+      "tint": "#ffffff",
       "yaw": 3.141592653589793
     },
     {
@@ -14153,8 +14148,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "off_kurogane_hq",
-      "tint": "#3d7bff",
+      "texture": "fus_main_control_room",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -14169,8 +14164,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "off_kurogane_hq",
-      "tint": "#3d7bff",
+      "texture": "fus_main_control_room",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {
@@ -14185,8 +14180,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_sector_x51",
-      "tint": "#8a5cff",
+      "texture": "fus_plasma_lab",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
@@ -14201,8 +14196,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_sector_x51",
-      "tint": "#8a5cff",
+      "texture": "fus_plasma_lab",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
@@ -14217,8 +14212,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_decon_lockers",
-      "tint": "#ffae1a",
+      "texture": "fus_fuel_storage_dt",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
@@ -14233,8 +14228,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_decon_lockers",
-      "tint": "#6dff4a",
+      "texture": "fus_fuel_storage_dt",
+      "tint": "#ffffff",
       "yaw": 1.5707963267948966
     },
     {
@@ -14249,8 +14244,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_prototype_armory",
-      "tint": "#ffae1a",
+      "texture": "fus_turbine_exchanger_hall",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
@@ -14265,8 +14260,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_prototype_armory",
-      "tint": "#fff1d6",
+      "texture": "fus_turbine_exchanger_hall",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
@@ -14281,8 +14276,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_data_vault",
-      "tint": "#3d7bff",
+      "texture": "fus_quantum_diagnostics",
+      "tint": "#ffffff",
       "yaw": -1.5707963267948966
     },
     {
@@ -14297,8 +14292,8 @@
         "h": 1.4,
         "w": 2.8
       },
-      "texture": "lab_data_vault",
-      "tint": "#ffae1a",
+      "texture": "fus_quantum_diagnostics",
+      "tint": "#ffffff",
       "yaw": 0
     },
     {

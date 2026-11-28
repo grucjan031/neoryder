@@ -18,56 +18,6 @@ import {
 
 const C = COLOR;
 
-/**
- * Mapa tekstur szyldów i naklejek elektrowni fuzyjnej (§6.2 docs/maps/run8.md).
- *
- * TODO-tekstury (sekcja 6.2 docs/maps/run8.md — docelowe 22 tekstury `fus_*` z Etapu C):
- * Po wygenerowaniu nowych plików `.webp` w `public/assets/textures/` podmień poniższe identyfikatory
- * zastępcze (z run1 / run3 / run4 / run7) na docelowe klucze:
- *  1. `signs/fus_helios_reactor_hall.webp`   -> FUSION_TEXTURES.fus_helios_reactor_hall   (R1/R2 nad Portalem Głównym do Hali Reaktora)
- *  2. `signs/fus_main_control_room.webp`     -> FUSION_TEXTURES.fus_main_control_room     (R3 Sterownia Główna nad portalami z G1-N)
- *  3. `signs/fus_plasma_lab.webp`            -> FUSION_TEXTURES.fus_plasma_lab            (R4 Laboratorium Fizyki Plazmy)
- *  4. `signs/fus_fuel_storage_dt.webp`       -> FUSION_TEXTURES.fus_fuel_storage_dt       (R5 Magazyn Paliwa Fuzyjnego Deuter/Tryt)
- *  5. `signs/fus_turbine_exchanger_hall.webp`-> FUSION_TEXTURES.fus_turbine_exchanger_hall(R6 Hala Turbin MHD i Wymienników Ciepła)
- *  6. `signs/fus_quantum_diagnostics.webp`   -> FUSION_TEXTURES.fus_quantum_diagnostics   (R7 Serwerownia Diagnostyczna i R8 Biuro Kierownika)
- *  7. `screens/screen_fus_tokamak.webp`      -> materiał modeli `fus_diagnostic_console`, `fus_main_control_desk`, `fus_telemetry_screen_wall`, `fus_director_desk`
- *  8. `screens/screen_fus_grid.webp`         -> materiał modeli `fus_main_control_desk`, `fus_telemetry_screen_wall`
- *  9. `screens/screen_fus_tritium.webp`      -> materiał modelu `fus_decon_shower_arch`
- * 10. `screens/screen_fus_iskra_alert.webp`  -> materiał modelu `fus_telemetry_screen_wall` + FUSION_TEXTURES.screen_fus_iskra_alert (EE-10 w R3 i R7)
- * 11. `decals/fus_director_resonance_board.webp` -> FUSION_TEXTURES.fus_director_resonance_board (R8 tablica dr. Moriego: EE-08, EE-09, EE-11)
- * 12. `decals/fus_ee_run1_run2_logistics.webp`   -> FUSION_TEXTURES.fus_ee_run1_run2_logistics   (R5 manifest K-09 EE-01 + R6 blackout Atrium Nova EE-02)
- * 13. `decals/fus_ee_run3_run4_directives.webp`  -> FUSION_TEXTURES.fus_ee_run3_run4_directives  (R4 zasilanie X-51 EE-03 + R8 ponaglenie z Piętra 62 EE-04)
- * 14. `decals/fus_ee_run5_run6_coalition.webp`   -> FUSION_TEXTURES.fus_ee_run5_run6_coalition   (R1 skierowanie Helixa EE-05 + R5 kontrabanda He-3 EE-06)
- * 15. `decals/fus_ee_run7_vane_memo.webp`        -> FUSION_TEXTURES.fus_ee_run7_vane_memo        (R8 rozkaz Pułkownika Vane'a z Willi Kuroyama EE-07)
- * 16. `decals/fus_floor_magnetic_hazard.webp`    -> FUSION_TEXTURES.fus_floor_magnetic_hazard    (R2, R4, R5 oznakowanie posadzki 16 T)
- * 17. `decals/fus_dielectric_floor_mat.webp`     -> FUSION_TEXTURES.fus_dielectric_floor_mat     (R3 maty dielektryczne, R8 dywan gabinetowy jako płaski decal!)
- * 18. `labels/label_tritium_cask.webp`           -> materiał modeli `fus_tritium_cask_pallet` i `fus_director_desk` + EE-12
- * 19–22. `surfaces/fus_reactor_floor.webp`, `fus_reactor_concrete.webp`, `fus_shield_panel.webp`, `fus_control_tile.webp` (+ `komiks_fus_*.webp`) -> `_run8Kit.mjs`
- */
-export const FUSION_TEXTURES = {
-  // --- Szyldy (public/assets/textures/signs/) ---
-  fus_helios_reactor_hall: 'lab_restricted_omega',
-  fus_main_control_room: 'off_kurogane_hq',
-  fus_plasma_lab: 'lab_sector_x51',
-  fus_fuel_storage_dt: 'lab_decon_lockers',
-  fus_turbine_exchanger_hall: 'lab_prototype_armory',
-  fus_quantum_diagnostics: 'lab_data_vault',
-
-  // --- Dekale, Easter Eggi i maty podłogowe (public/assets/textures/decals/) ---
-  fus_director_resonance_board: 'res_iskra_investigation_board',
-  fus_ee_run1_run2_logistics: 'res_ee_run1_forklift_memo',
-  fus_ee_run2_blackout: 'res_ee_run2_atrium_vip',
-  fus_ee_run3_run4_directives: 'res_ee_run3_cocoon04_alert',
-  fus_ee_run4_directive: 'res_ee_run4_penthouse_invoice',
-  fus_ee_run5_run6_coalition: 'res_ee_helixa_akord_dossier',
-  fus_ee_run7_vane_memo: 'res_ee_orbis_grid_firewall',
-  screen_fus_iskra_alert: 'res_ee_orbis_grid_firewall',
-  fus_ee_code_0451: 'sticky_code_0451',
-  fus_ee_prototype_plaque: 'res_ee_mira_blade_trophy',
-  fus_floor_magnetic_hazard: 'floor_hazard',
-  fus_dielectric_floor_mat: 'off_kurogane_floor_crest',
-};
-
 /** Pomocnik dodający naklejkę podłogową lub ścienną z `tint`. */
 function mark(
   k,
@@ -81,10 +31,14 @@ function mark(
   tint = C.warm,
   opacity = 0.85,
   surface = 'floor',
+  textureFolder,
+  textureBand,
 ) {
   k.decals.push({
     texture,
     surface,
+    ...(textureFolder && { textureFolder }),
+    ...(textureBand && { textureBand }),
     position: vec(x, y, z),
     yaw,
     size: { w, h },
@@ -280,15 +234,14 @@ function hazards(k, p) {
 
 /**
  * 12 Easter Eggów (`EE-01..EE-12`, §6.3 docs/maps/run8.md) oraz oznakowanie posadzkowe i maty dielektryczne.
- * Wszystkie naklejki ścienne (`surface: "wall"`) leżą dokładnie `0.03 m <= 0.10 m` od lica ściany nośnej (nauczka #3).
+ * Wszystkie naklejki ścienne (`surface: "wall"`) leżą najwyżej 0,10 m od lica ściany nośnej (nauczka #3).
  * Dywan w R8 oraz maty dielektryczne w R3 są płaskimi `decals` (`surface: "floor"`), więc żaden spawn nie jest w bloku (nauczka #5).
  */
 function decalsAndEasterEggs(k) {
-  // 1. Płaskie maty dielektryczne w Sterowni Głównej R3 i dywan gabinetowy w Biurze Kierownika R8 (`surface: "floor"`),
-  // oraz mniejsze logo Kurogane Arms na ścianie wschodniej Szatni R1 (`surface: "wall"`, 0.03 m od ściany X = +11.8).
+  // Maty podłogowe w sterowni i gabinecie.
   mark(
     k,
-    FUSION_TEXTURES.fus_dielectric_floor_mat,
+    'fus_dielectric_floor_mat',
     -8.0,
     Y_G1 + 0.012,
     -28.5,
@@ -300,7 +253,7 @@ function decalsAndEasterEggs(k) {
   );
   mark(
     k,
-    FUSION_TEXTURES.fus_dielectric_floor_mat,
+    'fus_dielectric_floor_mat',
     14.0,
     Y_G1 + 0.012,
     -26.5,
@@ -310,34 +263,20 @@ function decalsAndEasterEggs(k) {
     '#ffffff',
     0.75,
   );
-  mark(
-    k,
-    FUSION_TEXTURES.fus_dielectric_floor_mat,
-    11.77,
-    Y_L0 + 1.65,
-    29.0,
-    1.35,
-    1.35,
-    -Q,
-    '#ffffff',
-    0.9,
-    'wall',
-  );
-
   // 2. Żółto-czarne pasy ostrzegawcze wokół podstawy Tokamaka (R = 9.7 m oraz R = 15.5 m) w Hali Reaktora R2 oraz w R4, R5 i R6.
   for (let i = 0; i < 8; i++) {
     const a = (i * PI) / 4;
     const r = 9.75;
     mark(
       k,
-      FUSION_TEXTURES.fus_floor_magnetic_hazard,
+      'fus_floor_magnetic_hazard',
       Math.round(r * Math.sin(a) * 100) / 100,
       Y_L0 + 0.012,
       Math.round(r * Math.cos(a) * 100) / 100,
-      4.6,
-      0.78,
+      1.8,
+      1.8,
       a,
-      C.amber,
+      '#ffffff',
       0.92,
     );
   }
@@ -352,14 +291,14 @@ function decalsAndEasterEggs(k) {
   ]) {
     mark(
       k,
-      FUSION_TEXTURES.fus_floor_magnetic_hazard,
+      'fus_floor_magnetic_hazard',
       x,
       Y_L0 + 0.012,
       z,
-      3.8,
-      0.85,
+      1.6,
+      1.6,
       yaw,
-      C.amber,
+      '#ffffff',
       0.86,
     );
   }
@@ -367,37 +306,41 @@ function decalsAndEasterEggs(k) {
   // EE-01 (`run1` Magazyn K-09): manifest dostawy cewek w R5 Magazynie Paliwa (0.03 m od ściany S Z = +21.8).
   mark(
     k,
-    FUSION_TEXTURES.fus_ee_run1_run2_logistics,
+    'fus_ee_run1_run2_logistics',
     -30.0,
-    Y_L0 + 1.55,
+    Y_L0 + 3.05,
     21.77,
-    1.1,
-    1.1,
+    1.45,
+    0.91,
     PI,
     '#ffffff',
     0.96,
     'wall',
+    undefined,
+    [0, 0.625],
   );
 
   // EE-02 (`run2` Galeria Atrium Nova): wykres zrzutu mocy 400 MW w R6 Hali Turbin (0.03 m od ściany E X = +37.8).
   mark(
     k,
-    FUSION_TEXTURES.fus_ee_run2_blackout,
+    'fus_ee_run1_run2_logistics',
     37.77,
     Y_L0 + 1.6,
     13.0,
-    1.1,
-    1.1,
+    1.45,
+    0.545,
     -Q,
     '#ffffff',
     0.96,
     'wall',
+    undefined,
+    [0.625, 1],
   );
 
   // EE-03 (`run3` Sektor X-51): pilny telegram o zasilaniu Komory Kokonów nr 04 w R4 Lab Plazmy (0.03 m od ściany W X = -37.8).
   mark(
     k,
-    FUSION_TEXTURES.fus_ee_run3_run4_directives,
+    'fus_ee_run3_run4_directives',
     -37.77,
     Y_L0 + 1.65,
     -15.0,
@@ -412,10 +355,10 @@ function decalsAndEasterEggs(k) {
   // EE-04 (`run4` Piętro 62 Kurogane Tower): okólnik Zarządu na biurku `fus_director_desk` w R8 (14.0, 4.8, -29.5).
   mark(
     k,
-    FUSION_TEXTURES.fus_ee_run4_directive,
-    13.2,
-    Y_G1 + 1.162,
-    -29.4,
+    'fus_ee_run3_run4_directives',
+    13.55,
+    Y_G1 + 0.866,
+    -29.24,
     0.52,
     0.52,
     0.15,
@@ -426,40 +369,44 @@ function decalsAndEasterEggs(k) {
   // EE-05 (`run5` Klinika Helixa): skierowanie na kalibrację Akordu w R1 Szatni-Dekontaminacji (0.03 m od ściany W X = -11.8).
   mark(
     k,
-    FUSION_TEXTURES.fus_ee_run5_run6_coalition,
+    'fus_ee_run5_run6_coalition',
     -11.77,
     Y_L0 + 1.6,
-    29.0,
-    1.1,
-    1.1,
+    23.45,
+    1.3,
+    0.675,
     Q,
     '#ffffff',
     0.96,
     'wall',
+    undefined,
+    [0, 0.52],
   );
 
   // EE-06 (`run6` Nocny Targ): protokół konfiskaty Helu-3 i zupy rybnej w R5 Magazynie Paliwa (0.03 m od ściany W X = -37.8).
   mark(
     k,
-    FUSION_TEXTURES.fus_ee_run5_run6_coalition,
+    'fus_ee_run5_run6_coalition',
     -37.77,
     Y_L0 + 1.55,
     6.0,
-    1.1,
-    1.1,
+    1.3,
+    0.62,
     Q,
     '#ffffff',
     0.96,
     'wall',
+    undefined,
+    [0.52, 1],
   );
 
   // EE-07 (`run7` Rezydencja Pułkownika Vane'a „Willa Kuroyama”): osobisty rozkaz Pułkownika Vane'a na biurku dr. Moriego w R8.
   mark(
     k,
-    FUSION_TEXTURES.fus_ee_run7_vane_memo,
-    14.8,
-    Y_G1 + 1.162,
-    -29.4,
+    'fus_ee_run7_vane_memo',
+    14.20,
+    Y_G1 + 0.866,
+    -29.24,
     0.52,
     0.52,
     -0.18,
@@ -467,93 +414,24 @@ function decalsAndEasterEggs(k) {
     0.96,
   );
 
-  // EE-08 & EE-09 (Główna tablica fabularna dr. Moriego w R8: sygnatura „Kuriera” + anomalia poboru mocy na stacji metra „Kamienna”,
-  // 0.03 m od ściany E X = +21.8).
-  mark(
-    k,
-    FUSION_TEXTURES.fus_director_resonance_board,
-    21.77,
-    Y_G1 + 1.9,
-    -29.5,
-    3.0,
-    1.5,
-    -Q,
-    '#ffffff',
-    0.98,
-    'wall',
-  );
-  mark(
-    k,
-    FUSION_TEXTURES.fus_ee_run3_run4_directives,
-    21.77,
-    Y_G1 + 1.6,
-    -33.2,
-    1.1,
-    1.1,
-    -Q,
-    '#ffffff',
-    0.96,
-    'wall',
-  );
+  // EE-08, 09 i 11: Kurier, stacja Kamienna i rdzeń Akord-Helios na tablicy Moriego.
+  // Po odsunięciu przez DecalRenderer naklejka leży nad kreskami tablicy.
+  mark(k, 'fus_director_resonance_board', 21.72, Y_G1 + 1.93, -29.5,
+    3.0, 1.5, -Q, '#ffffff', 1, 'wall');
 
-  // EE-10 (Sabotaż Bajta, Miry, Doktor Wolan i Szrona): alerty Orbis Grid w R3 Sterowni Głównej (0.03 m od ściany N Z = -35.8)
-  // oraz w R7 Serwerowni Diagnostycznej (0.03 m od ściany E X = +37.8).
-  mark(
-    k,
-    FUSION_TEXTURES.screen_fus_iskra_alert,
-    -15.5,
-    Y_G1 + 1.7,
-    -35.77,
-    1.2,
-    1.2,
-    0,
-    '#ffffff',
-    0.96,
-    'wall',
-  );
-  mark(
-    k,
-    FUSION_TEXTURES.screen_fus_iskra_alert,
-    37.77,
-    Y_L0 + 1.65,
-    -13.0,
-    1.1,
-    1.1,
-    -Q,
-    '#ffffff',
-    0.96,
-    'wall',
-  );
+  // EE-10 wyświetlają modele ścian telemetrii w R3, R7 i R8.
+  mark(k, 'screen_fus_grid', 37.77, Y_L0 + 1.75, 11.8,
+    0.95, 0.95, -Q, '#ffffff', 1, 'wall', 'screens');
+  mark(k, 'screen_fus_tritium', -37.77, Y_L0 + 1.75, 11.5,
+    1.0, 1.0, Q, '#ffffff', 1, 'wall', 'screens');
 
-  // EE-11 (Projekt Sztucznych Implantów Rezonansu — tabliczka przy komorze `fus_plasma_test_chamber` w R8, 0.03 m od ściany N Z = -35.8).
-  mark(
-    k,
-    FUSION_TEXTURES.fus_ee_prototype_plaque,
-    17.5,
-    Y_G1 + 1.6,
-    -35.77,
-    1.0,
-    0.5,
-    0,
-    '#ffffff',
-    0.96,
-    'wall',
-  );
+  // EE-11: podpis prototypu nad komorą, z dolnego wiersza tablicy Moriego.
+  mark(k, 'fus_director_resonance_board', 17.8, Y_G1 + 2.68, -35.77,
+    1.9, 0.15, 0, '#ffffff', 1, 'wall', undefined, [0.79, 0.94]);
 
-  // EE-12 (Kod awaryjnego zrzutu plazmy `0451` — karteczka w R3 Sterowni Głównej, 0.03 m od ściany W X = -21.8).
-  mark(
-    k,
-    FUSION_TEXTURES.fus_ee_code_0451,
-    -21.77,
-    Y_G1 + 1.45,
-    -26.5,
-    0.55,
-    0.55,
-    Q,
-    C.amber,
-    0.96,
-    'wall',
-  );
+  // EE-12: kod 0451 przy zachodniej konsoli sterowni.
+  mark(k, 'label_tritium_cask', -21.77, Y_G1 + 1.55, -28.8,
+    1.15, 0.21, Q, '#ffffff', 1, 'wall', 'labels', [0.73, 0.91]);
 
   // Oznaczenie wyjścia ewakuacyjnego EXIT przed północną śluzą w Sterowni Głównej R3 (X = -8.0, Z = -34.4).
   mark(
@@ -572,32 +450,32 @@ function decalsAndEasterEggs(k) {
 
 /** Szyldy neonowe stref technologicznych (`kind: "neon"`, 0 stożków `holo`!) na kondygnacjach L0 i G1 (§6.2). */
 function signage(k) {
-  const neon = (texture, x, y, z, w, yaw, tint = '#ffffff') =>
-    k.neon(texture, x, y, z, w, w / 2, yaw, tint, 0);
+  const neon = (texture, x, y, z, w, yaw) =>
+    k.neon(texture, x, y, z, w, w / 2, yaw, '#ffffff', 0);
 
   // R1 / R2: nad Portalem Głównym do Hali Reaktora (Z = +22, X = 0)
-  neon(FUSION_TEXTURES.fus_helios_reactor_hall, 0, Y_L0 + 4.25, 22.24, 3.4, 0, C.amber);
-  neon(FUSION_TEXTURES.fus_helios_reactor_hall, 0, Y_L0 + 4.25, 21.76, 3.4, PI, C.amber);
+  neon('fus_helios_reactor_hall', 0, Y_L0 + 4.25, 22.24, 3.4, 0);
+  neon('fus_helios_reactor_hall', 0, Y_L0 + 4.25, 21.76, 3.4, PI);
 
   // R3 Sterownia Główna (nad portalami z Galerii Północnej G1-N, Z = -22, y = +4.8 m)
-  neon(FUSION_TEXTURES.fus_main_control_room, -18.0, Y_G1 + 4.15, -21.76, 2.8, 0, C.blue);
-  neon(FUSION_TEXTURES.fus_main_control_room, 3.0, Y_G1 + 4.15, -21.76, 2.8, 0, C.blue);
+  neon('fus_main_control_room', -18.0, Y_G1 + 4.15, -21.76, 2.8, 0);
+  neon('fus_main_control_room', 3.0, Y_G1 + 4.15, -21.76, 2.8, 0);
 
   // R4 Laboratorium Fizyki Plazmy (X = -22, nad portalami Z = -14 i Z = -3)
-  neon(FUSION_TEXTURES.fus_plasma_lab, -21.76, Y_L0 + 4.2, -14.0, 2.8, Q, C.violet);
-  neon(FUSION_TEXTURES.fus_plasma_lab, -21.76, Y_L0 + 4.2, -3.0, 2.8, Q, C.violet);
+  neon('fus_plasma_lab', -21.76, Y_L0 + 4.2, -14.0, 2.8, Q);
+  neon('fus_plasma_lab', -21.76, Y_L0 + 4.2, -3.0, 2.8, Q);
 
   // R5 Magazyn Paliwa Fuzyjnego Deuter / Tryt (X = -22, nad portalami Z = +5 i Z = +15)
-  neon(FUSION_TEXTURES.fus_fuel_storage_dt, -21.76, Y_L0 + 4.2, 5.0, 2.8, Q, C.amber);
-  neon(FUSION_TEXTURES.fus_fuel_storage_dt, -21.76, Y_L0 + 4.2, 15.0, 2.8, Q, C.green);
+  neon('fus_fuel_storage_dt', -21.76, Y_L0 + 4.2, 5.0, 2.8, Q);
+  neon('fus_fuel_storage_dt', -21.76, Y_L0 + 4.2, 15.0, 2.8, Q);
 
   // R6 Hala Turbin i Wymienników Ciepła (X = +22, nad portalami Z = +3 i Z = +15)
-  neon(FUSION_TEXTURES.fus_turbine_exchanger_hall, 21.76, Y_L0 + 4.2, 3.0, 2.8, -Q, C.amber);
-  neon(FUSION_TEXTURES.fus_turbine_exchanger_hall, 21.76, Y_L0 + 4.2, 15.0, 2.8, -Q, C.warm);
+  neon('fus_turbine_exchanger_hall', 21.76, Y_L0 + 4.2, 3.0, 2.8, -Q);
+  neon('fus_turbine_exchanger_hall', 21.76, Y_L0 + 4.2, 15.0, 2.8, -Q);
 
   // R7 Serwerownia Diagnostyczna (X = +22, nad portalem Z = -14) oraz R8 Biuro Kierownika Naukowego (Z = -22, X = +17)
-  neon(FUSION_TEXTURES.fus_quantum_diagnostics, 21.76, Y_L0 + 4.2, -14.0, 2.8, -Q, C.blue);
-  neon(FUSION_TEXTURES.fus_quantum_diagnostics, 17.0, Y_G1 + 4.15, -21.76, 2.8, 0, C.amber);
+  neon('fus_quantum_diagnostics', 21.76, Y_L0 + 4.2, -14.0, 2.8, -Q);
+  neon('fus_quantum_diagnostics', 17.0, Y_G1 + 4.15, -21.76, 2.8, 0);
 
   // Portal wyjścia ewakuacyjnego EXIT na północnej ścianie Sterowni Głównej R3 (X = -8.0, Y = +8.25, Z = -35.76).
   k.neon('arrow', -8.0, Y_G1 + 3.55, -35.76, 2.6, 0.9, 0, C.green, 0);

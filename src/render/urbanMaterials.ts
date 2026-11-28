@@ -57,6 +57,13 @@ const labKinds = [
   'lab_cleanroom_wall',
 ] as const;
 
+const fusionKinds = [
+  'fus_reactor_floor',
+  'fus_reactor_concrete',
+  'fus_shield_panel',
+  'fus_control_tile',
+] as const;
+
 const residenceKinds = [
   'res_arch_concrete',
   'res_dark_walnut',
@@ -147,6 +154,7 @@ const portLooks = z
       ...labKinds,
       ...offKinds,
       ...residenceKinds,
+      ...fusionKinds,
       ...medKinds,
       ...targKinds,
       ...constructionPowerKinds,
@@ -174,6 +182,7 @@ const portLooks = z
         ...labKinds,
         ...offKinds,
         ...residenceKinds,
+        ...fusionKinds,
         ...medKinds,
         ...targKinds,
         'asphalt',
@@ -214,6 +223,7 @@ export const urbanKinds = [
   ...labKinds,
   ...offKinds,
   ...residenceKinds,
+  ...fusionKinds,
   ...medKinds,
   ...targKinds,
   ...constructionPowerKinds,

@@ -25,19 +25,10 @@ export const Y_HALL_CEIL = 19.2; // R2 Główna Hala Reaktora Fuzyjnego (H = 19.
 export const SLAB = 0.4;
 export const WALL_T = 0.4;
 
-/**
- * Materiały wykończeniowe elektrowni fuzyjnej (F-04, §2.1.B).
- * TODO-tekstury (Etap C — surfaces/fus_*.webp): po dodaniu wpisów fus_* do arenaMaterials.json
- * i dressingSchema.ts przełączyć stałe na:
- *   MAT_FLOOR = 'fus_reactor_floor'
- *   MAT_CONCRETE = 'fus_reactor_concrete'
- *   MAT_SHIELD = 'fus_shield_panel'
- *   MAT_TILE = 'fus_control_tile'
- */
-export const MAT_FLOOR = 'paving';
-export const MAT_CONCRETE = 'concrete';
-export const MAT_SHIELD = 'plaster';
-export const MAT_TILE = 'mall_stone_floor';
+export const MAT_FLOOR = 'fus_reactor_floor';
+export const MAT_CONCRETE = 'fus_reactor_concrete';
+export const MAT_SHIELD = 'fus_shield_panel';
+export const MAT_TILE = 'fus_control_tile';
 export const MAT_GLASS = 'glass_clear';
 export const MAT_GRATING = 'steel_grating';
 export const MAT_CEIL = MAT_CONCRETE;

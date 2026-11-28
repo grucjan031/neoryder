@@ -575,8 +575,8 @@ function buildRoomR8(k, p) {
   p.prop('fus_wall_power_busbar', 21.52, -33.0, Y_G1, -1);
 
   // 4. Tablica Schematu Zasilania Sztucznych Implantów Rezonansu `fus_whiteboard_equations` (3.2 × 1.75 × 0.18 m)
-  // na ścianie wschodniej (X = +21.71, Y = 4.8 + 1.05 = 5.85, Z = -29.5), ekran telemetrii na ścianie północnej oraz rury.
-  deco(k, 'fus_whiteboard_equations', 21.71, Y_G1 + 1.05, -29.5, -Q);
+  // Rama częściowo wpuszczona w ścianę wschodnią, pod dekalem z wynikami badań.
+  deco(k, 'fus_whiteboard_equations', 21.74, Y_G1 + 1.05, -29.5, -Q);
   deco(k, 'fus_telemetry_screen_wall', 14.5, Y_G1 + 1.1, -35.66, 0);
   deco(k, 'city_pipe_run', 6.22, Y_G1, -33.5, Q);
   deco(k, 'wh_wall_terminal', 20.2, Y_G1 + 1.25, -35.75, 0);

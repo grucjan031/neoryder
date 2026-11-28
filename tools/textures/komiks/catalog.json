@@ -339,5 +339,49 @@
     "prompt": "Use case: stylized-concept. Seamless square comic-book game material, comic plush graphite carpet with inked woven geometric border. No red, cyan, magenta, watermark or scene.",
     "set": "run7",
     "lossless": false
+  },
+  {
+    "id": "komiks_fus_reactor_floor",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Wariant komiksowy. Posadzka epoksydowo-bazaltowa hali i stref roboczych.",
+    "subject": "Heavy deep steel graphite anti-static basalt-epoxy floor. Satin aggregate, thin expansion micro-grid, subtle tiny stone flecks. No grilles, stripes, metal plates or symbols. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+    "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Heavy deep steel graphite anti-static basalt-epoxy floor. Satin aggregate, thin expansion micro-grid, subtle tiny stone flecks. No grilles, stripes, metal plates or symbols. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks.",
+    "set": "run8",
+    "lossless": false
+  },
+  {
+    "id": "komiks_fus_reactor_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Wariant komiksowy. Żebrowany beton radiacyjny ścian i kasetonów.",
+    "subject": "Dense cool grey radiation shielding concrete. Low vertical flutes, satin formwork, slight pores, very dark slab joints. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+    "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Dense cool grey radiation shielding concrete. Low vertical flutes, satin formwork, slight pores, very dark slab joints. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks.",
+    "set": "run8",
+    "lossless": false
+  },
+  {
+    "id": "komiks_fus_shield_panel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Wariant komiksowy. Tytanowe płyty ekranowania ścian i konstrukcji.",
+    "subject": "Modular magnetic shielding panels in brushed cool titanium and gunmetal. Recessed service screws and flush stepped seams in a subdued stagger. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+    "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Modular magnetic shielding panels in brushed cool titanium and gunmetal. Recessed service screws and flush stepped seams in a subdued stagger. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks.",
+    "set": "run8",
+    "lossless": false
+  },
+  {
+    "id": "komiks_fus_control_tile",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Wariant komiksowy. Podniesiona podłoga techniczna sterowni, serwerowni i biura.",
+    "subject": "Raised technical floor of four graphite-blue square composite panels. Fine aluminum flush access frames, tiny lifting notches, low contrast surface grain. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+    "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Raised technical floor of four graphite-blue square composite panels. Fine aluminum flush access frames, tiny lifting notches, low contrast surface grain. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks.",
+    "set": "run8",
+    "lossless": false
   }
 ]

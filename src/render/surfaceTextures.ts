@@ -2,6 +2,10 @@ import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 import { resolveTextureKey } from './comicSurfaces';
 
 export type SurfaceTexture =
+  | 'fus_reactor_floor'
+  | 'fus_reactor_concrete'
+  | 'fus_shield_panel'
+  | 'fus_control_tile'
   | 'res_arch_concrete'
   | 'res_dark_walnut'
   | 'res_nero_marble'

@@ -1,0 +1,241 @@
+{
+  "set": "run8",
+  "tool": "built-in imagegen",
+  "sequential": true,
+  "textures": [
+    {
+      "id": "fus_helios_reactor_hall",
+      "category": "signs",
+      "width": 512,
+      "height": 256,
+      "description": "Szyld głównej komory, portal R1–R2.",
+      "subject": "Amber and warm white. A small stylized torus coil in cross-section on left. Bold stacked condensed stencil letters: TOKAMAK HELIOS-IV // GŁÓWNA KOMORA REAKTORA (POLE 16 T)",
+      "prompt": "Stylized-concept. One wide 2:1 wayfinding sign for an industrial facility. Pure black negative space around luminous flat typography (black-key game shader), visually fill width. Amber and warm white. A small stylized torus coil in cross-section on left. Bold stacked condensed stencil letters: TOKAMAK HELIOS-IV // GŁÓWNA KOMORA REAKTORA (POLE 16 T) Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_main_control_room",
+      "category": "signs",
+      "width": 512,
+      "height": 256,
+      "description": "Szyld sterowni R3 od galerii G1.",
+      "subject": "Cobalt and ivory. Small control-trace icon. Two levels of typography: STEROWNIA GŁÓWNA // MOSTEK KONTROLI PLAZMY",
+      "prompt": "Stylized-concept. One wide 2:1 wayfinding sign for an industrial facility. Pure black negative space around luminous flat typography (black-key game shader), visually fill width. Cobalt and ivory. Small control-trace icon. Two levels of typography: STEROWNIA GŁÓWNA // MOSTEK KONTROLI PLAZMY Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_plasma_lab",
+      "category": "signs",
+      "width": 512,
+      "height": 256,
+      "description": "Oznaczenie laboratorium R4.",
+      "subject": "Violet and cobalt, small beam diagram: LABORATORIUM PLAZMY & INŻEKTORÓW WIĄZKI",
+      "prompt": "Stylized-concept. One wide 2:1 wayfinding sign for an industrial facility. Pure black negative space around luminous flat typography (black-key game shader), visually fill width. Violet and cobalt, small beam diagram: LABORATORIUM PLAZMY & INŻEKTORÓW WIĄZKI Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_fuel_storage_dt",
+      "category": "signs",
+      "width": 512,
+      "height": 256,
+      "description": "Oznaczenie składu paliwa R5.",
+      "subject": "Amber and green, small isotope canister icon: SKŁAD IZOTOPÓW: DEUTER (D₂) / TRYT (T₂) — STREFA SUWNICY",
+      "prompt": "Stylized-concept. One wide 2:1 wayfinding sign for an industrial facility. Pure black negative space around luminous flat typography (black-key game shader), visually fill width. Amber and green, small isotope canister icon: SKŁAD IZOTOPÓW: DEUTER (D₂) / TRYT (T₂) — STREFA SUWNICY Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_turbine_exchanger_hall",
+      "category": "signs",
+      "width": 512,
+      "height": 256,
+      "description": "Oznaczenie maszynowni R6.",
+      "subject": "Amber and warm white; stylized turbine rotor icon: HALA TURBIN MHD & WYMIENNIKÓW CIEPŁA (7,4 GW)",
+      "prompt": "Stylized-concept. One wide 2:1 wayfinding sign for an industrial facility. Pure black negative space around luminous flat typography (black-key game shader), visually fill width. Amber and warm white; stylized turbine rotor icon: HALA TURBIN MHD & WYMIENNIKÓW CIEPŁA (7,4 GW) Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_quantum_diagnostics",
+      "category": "signs",
+      "width": 512,
+      "height": 256,
+      "description": "Oznaczenie wejść do R7 i R8.",
+      "subject": "Cobalt and green. Coil icon: DIAGNOSTYKA KWANTOWA CEWKI // GABINET DR. H. MORI",
+      "prompt": "Stylized-concept. One wide 2:1 wayfinding sign for an industrial facility. Pure black negative space around luminous flat typography (black-key game shader), visually fill width. Cobalt and green. Coil icon: DIAGNOSTYKA KWANTOWA CEWKI // GABINET DR. H. MORI Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "screen_fus_tokamak",
+      "category": "screens",
+      "width": 512,
+      "height": 512,
+      "description": "Telemetria torusa w R2, R3 i R8.",
+      "subject": "Amber and violet poloidal cross section of torus. Large legible Polish copy: TEMP. RDZENIA: 118 MLN K // STABILNOŚĆ MAGNETYCZNA: 99,4%",
+      "prompt": "Stylized-concept. One square edge-to-edge flat technical display graphic, near-black background, no monitor casing. Amber and violet poloidal cross section of torus. Large legible Polish copy: TEMP. RDZENIA: 118 MLN K // STABILNOŚĆ MAGNETYCZNA: 99,4% Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "screen_fus_grid",
+      "category": "screens",
+      "width": 512,
+      "height": 512,
+      "description": "Bilans sieci w R3, R6 i R7.",
+      "subject": "Green and cobalt load graph with three clear branches: MOC WYJŚCIOWA: 14,8 GW // PRIORYTET: SEKTOR X-51 & KUROGANE TOWER",
+      "prompt": "Stylized-concept. One square edge-to-edge flat technical display graphic, near-black background, no monitor casing. Green and cobalt load graph with three clear branches: MOC WYJŚCIOWA: 14,8 GW // PRIORYTET: SEKTOR X-51 & KUROGANE TOWER Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "screen_fus_tritium",
+      "category": "screens",
+      "width": 512,
+      "height": 512,
+      "description": "Dozymetria w śluzie R1 i magazynie R5.",
+      "subject": "Green and amber gauges and small D-T tank diagram: CIŚNIENIE CRYO D-T: 14,2 BAR // DOZYMETRIA: W NORMIE",
+      "prompt": "Stylized-concept. One square edge-to-edge flat technical display graphic, near-black background, no monitor casing. Green and amber gauges and small D-T tank diagram: CIŚNIENIE CRYO D-T: 14,2 BAR // DOZYMETRIA: W NORMIE Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "screen_fus_iskra_alert",
+      "category": "screens",
+      "width": 512,
+      "height": 512,
+      "description": "EE-10. Alarm Orbis Grid w R3, R7 i R8.",
+      "subject": "Amber and violet signal trace. Flat square network alarm display. Exact main copy: ALERT ORBIS GRID / NIEAUTORYZOWANY ODCZYT SCHEMATÓW CEWKI / METRO KAMIENNA / HAKER: BAJT. Four compact incident rows: BAJT — PĘTLA TF-07 / WOLAN — AKTA REZONANTÓW / MIRA — RYKOSZET / SZRON — KORDON",
+      "prompt": "Stylized-concept. One square edge-to-edge flat technical display graphic, near-black background, no monitor casing. Amber and violet signal trace. Flat square network alarm display. Exact main copy: ALERT ORBIS GRID / NIEAUTORYZOWANY ODCZYT SCHEMATÓW CEWKI / METRO KAMIENNA / HAKER: BAJT. Four compact incident rows: BAJT — PĘTLA TF-07 / WOLAN — AKTA REZONANTÓW / MIRA — RYKOSZET / SZRON — KORDON Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_director_resonance_board",
+      "category": "decals",
+      "width": 1024,
+      "height": 512,
+      "description": "EE-08, 09 i 11. Tablica badawcza Moriego w R8.",
+      "subject": "Wide 2:1 board, clipped cream technical drawing, grouped handwritten amber and green lines in deep graphite ink, with small violet spectrogram and metro diagram. Text: HELIOS-IV → REZONANS / 14,8 GJ / KURIER: ODBICIE 150 ms / METRO KAMIENNA: 180 kW / WOLAN + MIRA / SERIA AKORD-HELIOS / SZTUCZNY RDZEŃ KORY RUCHOWEJ DLA KORPUSU EGZEKUTORÓW",
+      "prompt": "Stylized-concept. One wide 2:1 flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Wide 2:1 board, clipped cream technical drawing, grouped handwritten amber and green lines in deep graphite ink, with small violet spectrogram and metro diagram. Text: HELIOS-IV → REZONANS / 14,8 GJ / KURIER: ODBICIE 150 ms / METRO KAMIENNA: 180 kW / WOLAN + MIRA / SERIA AKORD-HELIOS / SZTUCZNY RDZEŃ KORY RUCHOWEJ DLA KORPUSU EGZEKUTORÓW Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_ee_run1_run2_logistics",
+      "category": "decals",
+      "width": 512,
+      "height": 512,
+      "description": "EE-01 i 02. Manifest K-09 w R5 i raport Atrium Nova w R6.",
+      "subject": "Square cream carbon-copy dispatch slip plus darker mustard graph strip. Exact copy: MAGAZYN K-09 / DOSTAWA CEWEK / 48 h OPÓŹNIENIA / KURIER USZKODZIŁ WÓZKI I SUWNICĘ / ATRIUM NOVA / ZRZUT 400 MW / KLIMATYZACJA WYŁĄCZONA",
+      "prompt": "Stylized-concept. One square flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Square cream carbon-copy dispatch slip plus darker mustard graph strip. Exact copy: MAGAZYN K-09 / DOSTAWA CEWEK / 48 h OPÓŹNIENIA / KURIER USZKODZIŁ WÓZKI I SUWNICĘ / ATRIUM NOVA / ZRZUT 400 MW / KLIMATYZACJA WYŁĄCZONA Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_ee_run3_run4_directives",
+      "category": "decals",
+      "width": 512,
+      "height": 512,
+      "description": "EE-03 i 04. Depesza z X-51 w R4 i okólnik zarządu w R8.",
+      "subject": "Square of two graphite and parchment interoffice bulletins with cobalt stamps; large readable copy: PILNE • SEKTOR X-51 / KOMORA KOKONÓW 04 / REZERWA 2,4 GW / OBIEKT ZBIEGŁ SZYBEM / KUROGANE TOWER • PIĘTRO 62 / PO WYBICIU SZYBY NARADY PRZENIESIONO DO HELIOS-IV",
+      "prompt": "Stylized-concept. One square flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Square of two graphite and parchment interoffice bulletins with cobalt stamps; large readable copy: PILNE • SEKTOR X-51 / KOMORA KOKONÓW 04 / REZERWA 2,4 GW / OBIEKT ZBIEGŁ SZYBEM / KUROGANE TOWER • PIĘTRO 62 / PO WYBICIU SZYBY NARADY PRZENIESIONO DO HELIOS-IV Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_ee_run5_run6_coalition",
+      "category": "decals",
+      "width": 512,
+      "height": 512,
+      "description": "EE-05 i 06. Skierowanie do Helixy w R1 i kwit z targu w R5.",
+      "subject": "Square pair of attached papers: sage-green medical referral and ivory requisition ticket. Large readable copy: HELIXA • PIĘTRO 61 / AKORD: KALIBRACJA SŁUCHU / ODDZIAŁ W KWARANTANNIE / NOCNY TARG POD ESTAKADĄ / KONFISKATA: 3 BUTLE HELU-3 / 4 TERMOSY ZUPY RYBNEJ / ZJEDZONE PRZEZ NOCNĄ ZMIANĘ",
+      "prompt": "Stylized-concept. One square flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Square pair of attached papers: sage-green medical referral and ivory requisition ticket. Large readable copy: HELIXA • PIĘTRO 61 / AKORD: KALIBRACJA SŁUCHU / ODDZIAŁ W KWARANTANNIE / NOCNY TARG POD ESTAKADĄ / KONFISKATA: 3 BUTLE HELU-3 / 4 TERMOSY ZUPY RYBNEJ / ZJEDZONE PRZEZ NOCNĄ ZMIANĘ Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_ee_run7_vane_memo",
+      "category": "decals",
+      "width": 512,
+      "height": 512,
+      "description": "EE-07. Rozkaz Vane’a na biurku w R8.",
+      "subject": "Square personal memo, torn ivory stationery, blind-embossed pine tree, graphite typewriting, single amber security band. Exactly: WILLA KUROYAMA / DR MORI! / KURIER ZABRAŁ AKTA ZNAD WINIARNI. PODWAJAM OCHRONĘ TOKAMAKA. / JEŚLI STRACICIE REAKTOR, ZAPROSZĘ PANA NA DOLNY PRZYSTANEK MOJEJ WINDY! / PŁK KENJI VANE",
+      "prompt": "Stylized-concept. One square flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Square personal memo, torn ivory stationery, blind-embossed pine tree, graphite typewriting, single amber security band. Exactly: WILLA KUROYAMA / DR MORI! / KURIER ZABRAŁ AKTA ZNAD WINIARNI. PODWAJAM OCHRONĘ TOKAMAKA. / JEŚLI STRACICIE REAKTOR, ZAPROSZĘ PANA NA DOLNY PRZYSTANEK MOJEJ WINDY! / PŁK KENJI VANE Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_floor_magnetic_hazard",
+      "category": "decals",
+      "width": 512,
+      "height": 512,
+      "description": "Pole 16 T. Oznakowanie posadzki w R2 i strefach R4–R6.",
+      "subject": "Square industrial floor stencil, isolated amber stripes and warm white lettering, horseshoe magnet warning pictogram, no plate backing. Exact text: STREFA SILNEGO POLA MAGNETYCZNEGO / 16 T / ZAKAZ WNOSZENIA NIEZABEZPIECZONYCH IMPLANTÓW",
+      "prompt": "Stylized-concept. One square flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Square industrial floor stencil, isolated amber stripes and warm white lettering, horseshoe magnet warning pictogram, no plate backing. Exact text: STREFA SILNEGO POLA MAGNETYCZNEGO / 16 T / ZAKAZ WNOSZENIA NIEZABEZPIECZONYCH IMPLANTÓW Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_dielectric_floor_mat",
+      "category": "decals",
+      "width": 512,
+      "height": 512,
+      "description": "Mata dielektryczna w R3 i dywan techniczny w R8.",
+      "subject": "Square graphite rubber dielectric floor mat, subtle fine chevron grooves, narrow inlaid amber perimeter and a single tasteful concentric torus insignia in center. Orthographic top-down all four edges visible, no words or text.",
+      "prompt": "Stylized-concept. One square flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Square graphite rubber dielectric floor mat, subtle fine chevron grooves, narrow inlaid amber perimeter and a single tasteful concentric torus insignia in center. Orthographic top-down all four edges visible, no words or text. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "label_tritium_cask",
+      "category": "labels",
+      "width": 256,
+      "height": 256,
+      "description": "EE-12. Etykieta trytu R5, kubka R8 i kod zrzutu R3.",
+      "subject": "Square adhesive engineering label in THREE horizontal bands, legible amber and black on ivory, edges subtly rounded. First band: KUROGANE FUSION / IZOTOP TRYTU T-3 / CHŁODZIĆ PONIŻEJ 20 K. Middle band: KUBEK DR. MORI / FUZYJNA KAWA / 100 MLN STOPNI. Lower amber note: KOD AWARYJNEGO ZRZUTU PLAZMY: 0451 / TEN SAM CO W WINIARNI VANE’A.",
+      "prompt": "Stylized-concept. One square flat decal, genuine transparent alpha immediately outside its silhouette. Fill the canvas with only a small safety margin. Square adhesive engineering label in THREE horizontal bands, legible amber and black on ivory, edges subtly rounded. First band: KUROGANE FUSION / IZOTOP TRYTU T-3 / CHŁODZIĆ PONIŻEJ 20 K. Middle band: KUBEK DR. MORI / FUZYJNA KAWA / 100 MLN STOPNI. Lower amber note: KOD AWARYJNEGO ZRZUTU PLAZMY: 0451 / TEN SAM CO W WINIARNI VANE’A. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_reactor_floor",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Posadzka epoksydowo-bazaltowa hali i stref roboczych.",
+      "subject": "Heavy deep steel graphite anti-static basalt-epoxy floor. Satin aggregate, thin expansion micro-grid, subtle tiny stone flecks. No grilles, stripes, metal plates or symbols. Restrained painterly industrial realism.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Heavy deep steel graphite anti-static basalt-epoxy floor. Satin aggregate, thin expansion micro-grid, subtle tiny stone flecks. No grilles, stripes, metal plates or symbols. Restrained painterly industrial realism. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_reactor_concrete",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Żebrowany beton radiacyjny ścian i kasetonów.",
+      "subject": "Dense cool grey radiation shielding concrete. Low vertical flutes, satin formwork, slight pores, very dark slab joints. Restrained painterly industrial realism.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Dense cool grey radiation shielding concrete. Low vertical flutes, satin formwork, slight pores, very dark slab joints. Restrained painterly industrial realism. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_shield_panel",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Tytanowe płyty ekranowania ścian i konstrukcji.",
+      "subject": "Modular magnetic shielding panels in brushed cool titanium and gunmetal. Recessed service screws and flush stepped seams in a subdued stagger. Restrained painterly industrial realism.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Modular magnetic shielding panels in brushed cool titanium and gunmetal. Recessed service screws and flush stepped seams in a subdued stagger. Restrained painterly industrial realism. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "fus_control_tile",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Podniesiona podłoga techniczna sterowni, serwerowni i biura.",
+      "subject": "Raised technical floor of four graphite-blue square composite panels. Fine aluminum flush access frames, tiny lifting notches, low contrast surface grain. Restrained painterly industrial realism.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Raised technical floor of four graphite-blue square composite panels. Fine aluminum flush access frames, tiny lifting notches, low contrast surface grain. Restrained painterly industrial realism. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "komiks_fus_reactor_floor",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Wariant komiksowy. Posadzka epoksydowo-bazaltowa hali i stref roboczych.",
+      "subject": "Heavy deep steel graphite anti-static basalt-epoxy floor. Satin aggregate, thin expansion micro-grid, subtle tiny stone flecks. No grilles, stripes, metal plates or symbols. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Heavy deep steel graphite anti-static basalt-epoxy floor. Satin aggregate, thin expansion micro-grid, subtle tiny stone flecks. No grilles, stripes, metal plates or symbols. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "komiks_fus_reactor_concrete",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Wariant komiksowy. Żebrowany beton radiacyjny ścian i kasetonów.",
+      "subject": "Dense cool grey radiation shielding concrete. Low vertical flutes, satin formwork, slight pores, very dark slab joints. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Dense cool grey radiation shielding concrete. Low vertical flutes, satin formwork, slight pores, very dark slab joints. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "komiks_fus_shield_panel",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Wariant komiksowy. Tytanowe płyty ekranowania ścian i konstrukcji.",
+      "subject": "Modular magnetic shielding panels in brushed cool titanium and gunmetal. Recessed service screws and flush stepped seams in a subdued stagger. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Modular magnetic shielding panels in brushed cool titanium and gunmetal. Recessed service screws and flush stepped seams in a subdued stagger. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    },
+    {
+      "id": "komiks_fus_control_tile",
+      "category": "surfaces",
+      "width": 1024,
+      "height": 1024,
+      "description": "Wariant komiksowy. Podniesiona podłoga techniczna sterowni, serwerowni i biura.",
+      "subject": "Raised technical floor of four graphite-blue square composite panels. Fine aluminum flush access frames, tiny lifting notches, low contrast surface grain. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching.",
+      "prompt": "Stylized-concept. One square perfectly seamless tileable albedo. Flat even light. Patterns continue at all opposite edges. Raised technical floor of four graphite-blue square composite panels. Fine aluminum flush access frames, tiny lifting notches, low contrast surface grain. Graphic monochrome comic ink with crisp outlines, flat greys and sparse directional hatching. Front-on orthographic game texture for a fictional Neon Noir fusion plant. No scene, perspective, cast shadow, watermark, real logo, red, cyan, turquoise, pink or magenta. Keep all supplied Polish lettering exact; use slash separators as line breaks."
+    }
+  ]
+}
