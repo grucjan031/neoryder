@@ -53,6 +53,7 @@ import type { HazardTarget } from '../world/hazards';
 import { ElevatorCabin, type ElevatorButton } from '../world/elevatorCabin';
 import { ElevatorPassengers } from '../world/elevatorPassengers';
 import { ElevatorView } from '../render/elevatorView';
+import { isElevatorPortalDecor } from '../world/elevatorSchema';
 import { HazardView } from '../render/hazardView';
 import { GrabPuzzle } from '../world/grabPuzzle';
 import { GrabPhysics } from '../physics/grabPhysics';
@@ -501,7 +502,11 @@ export class RoomScene implements Scene {
     const scatterDecor = this.pickScatterDecor();
     await loadDecor(
       decor,
-      (this.layout.decor ?? []).filter((def) => !scatterDecor.includes(def)),
+      (this.layout.decor ?? []).filter(
+        (def) =>
+          !scatterDecor.includes(def) &&
+          !isElevatorPortalDecor(def, this.layout.elevators),
+      ),
       this.loadModels,
     );
     this.pendingScatter = scatterDecor;
@@ -537,7 +542,9 @@ export class RoomScene implements Scene {
           ctx.bus,
         );
         this.cabins.set(def.id, cabin);
-        this.elevatorViews.push(new ElevatorView(cabin, this.root));
+        this.elevatorViews.push(
+          new ElevatorView(cabin, this.root, this.layout.decor),
+        );
       }
       this.platformFloors = [...this.cabins.values()];
       this.passengers = new ElevatorPassengers(this.cabins, this.navigation);
@@ -2034,9 +2041,11 @@ export class RoomScene implements Scene {
           dt,
           occupied ||
             this.passengers?.boardingAt(cabin.def.id, cabin.state.stop),
+          this.state === 'playing' && cabin.holds(feet),
         );
       }
-    }
+    } else if (this.platformFloors)
+      for (const cabin of this.cabins.values()) cabin.hold();
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
     // Powalony sojusznik w zasięgu: klawisz interakcji (Moc 2) podnosi go zamiast rzucać moc.

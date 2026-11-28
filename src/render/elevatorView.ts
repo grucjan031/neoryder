@@ -13,6 +13,7 @@ import type {
 } from '../world/elevatorCabin';
 import {
   cabinHeight,
+  elevatorKit,
   facePoint,
   slab,
   type Side,
@@ -50,6 +51,7 @@ export class ElevatorView {
   private readonly lit = new MeshBasicMaterial({ color: 0xfff1d1 });
   private readonly dim = new MeshBasicMaterial({ color: 0x57514a });
   private readonly panels = new Map<ElevatorButton, Mesh[]>();
+  private readonly plates = new Map<ElevatorButton, Object3D[]>();
   private readonly carShell: Mesh[] = [];
   private readonly leaves: {
     part: CabinPart;
@@ -57,10 +59,16 @@ export class ElevatorView {
     sign: number;
     glb?: boolean;
   }[] = [];
+  private readonly kit: string | undefined;
   constructor(
     private readonly cabin: ElevatorCabin,
     parent: Object3D,
+    private readonly decor: readonly {
+      model: string;
+      position: { x: number; y: number; z: number };
+    }[] = [],
   ) {
+    this.kit = elevatorKit(cabin.def.model);
     this.root.add(this.car);
     parent.add(this.root);
     for (const part of cabin.parts) {
@@ -119,6 +127,7 @@ export class ElevatorView {
       }
       face.add(icon);
       this.panels.set(button, icons);
+      this.plates.set(button, [panel, face]);
     }
     this.render(1);
   }
@@ -129,13 +138,15 @@ export class ElevatorView {
     if (!model) return;
     this.car.add(model);
     for (const mesh of this.carShell) mesh.visible = false;
-    if (modelId !== 'off_elevator_cab') return;
-    for (const leaf of this.leaves) if (leaf.part.cabin) leaf.mesh.visible = false;
+    const kit = this.kit;
+    if (!kit) return;
+    for (const leaf of this.leaves)
+      if (leaf.part.cabin) leaf.mesh.visible = false;
     for (const part of this.cabin.parts) {
       if (part.cabin || part.material !== 'door' || part.stop === undefined)
         continue;
       const stop = this.cabin.def.stops[part.stop]!;
-      const portal = await cloneCityModel('off_elevator_shaft_door');
+      const portal = await cloneCityModel(`${kit}_elevator_shaft_door`);
       if (!portal) continue;
       const at = facePoint(this.cabin.def, stop.doorSide, stop.y, 0);
       portal.position.set(at.x, at.y, at.z);
@@ -155,7 +166,22 @@ export class ElevatorView {
     for (const button of this.cabin.buttons) {
       if (button.stop === undefined) continue;
       const stop = this.cabin.def.stops[button.stop]!;
-      const callPanel = await cloneCityModel('off_elevator_call_panel');
+      // Mapa może mieć własny panel wezwania obok portalu.
+      const own = this.decor.some(
+        (d) =>
+          d.model === `${kit}_elevator_call_panel` &&
+          Math.abs(d.position.y - stop.y) < 0.6 &&
+          Math.hypot(
+            d.position.x - button.position.x,
+            d.position.z - button.position.z,
+          ) < 1.6,
+      );
+      if (own) {
+        for (const plate of this.plates.get(button) ?? [])
+          plate.visible = false;
+        continue;
+      }
+      const callPanel = await cloneCityModel(`${kit}_elevator_call_panel`);
       if (!callPanel) continue;
       callPanel.position.set(button.position.x, stop.y, button.position.z);
       callPanel.rotation.y = sideYaw[button.side];
@@ -172,7 +198,7 @@ export class ElevatorView {
       c.def.z,
     );
     for (const { part, mesh, sign, glb } of this.leaves) {
-      if (part.cabin && c.def.model === 'off_elevator_cab') continue;
+      if (part.cabin && this.kit) continue;
       const before = c.opening(part, c.previousStop, c.previousDoor);
       const after = c.opening(part, s.stop, s.door);
       const fraction = before + (after - before) * alpha;
@@ -184,7 +210,7 @@ export class ElevatorView {
       }
       if (
         !part.cabin &&
-        c.def.model === 'off_elevator_cab' &&
+        this.kit &&
         this.leaves.some((l) => l.part === part && l.glb)
       )
         continue;

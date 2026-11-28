@@ -61,13 +61,17 @@ export class Elevator {
       opening,
     });
   }
-  step(dt: number, doorwayOccupied = false): void {
+  /** `holdOpen`: pasażer stoi w kabinie — bez nowego wezwania drzwi zostają otwarte. */
+  step(dt: number, doorwayOccupied = false, holdOpen = false): void {
     if (dt <= 0) return;
     const s = this.state,
       t = this.tuning;
     switch (s.phase) {
       case 'idle': {
-        if (!s.queue.length) return;
+        if (!s.queue.length) {
+          if (holdOpen) this.doors(true);
+          return;
+        }
         if (!s.queue.some((i) => (i - s.stop) * s.direction > 0))
           s.direction = -s.direction;
         s.target = s.queue
@@ -127,7 +131,8 @@ export class Elevator {
         break;
       case 'open':
         s.dwell = Math.max(0, s.dwell - dt);
-        if (s.dwell <= 0 && !doorwayOccupied) this.doors(false);
+        if (s.dwell <= 0 && !doorwayOccupied && !(holdOpen && !s.queue.length))
+          this.doors(false);
         break;
       case 'doorsClosing':
         if (doorwayOccupied) {

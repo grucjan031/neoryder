@@ -74,9 +74,7 @@ export function validateElevators(
   ctx: z.RefinementCtx,
 ): void {
   const epsilon = 1e-6;
-  const shapes = blocks.map((b) =>
-    orientedBox(b.position, b.size, b.rotation),
-  );
+  const shapes = blocks.map((b) => orientedBox(b.position, b.size, b.rotation));
   const shafts: Box[] = [];
   for (const [i, e] of elevators.entries()) {
     const issue = (message: string) =>
@@ -109,4 +107,31 @@ export function validateElevators(
         issue(`Brak poziomego podestu walkable przy drzwiach na y=${stop.y}.`);
     }
   }
+}
+
+/** Zestaw modeli windy: `<prefiks>_elevator_cab` ma portal i panel o tym samym prefiksie. */
+export function elevatorKit(model: string | undefined): string | undefined {
+  return model?.match(/^([a-z0-9]+)_elevator_cab$/)?.[1];
+}
+
+/** Dekor portalu szybu stojący na przystanku windy z zestawem: rysuje go widok
+ * windy (ruchome skrzydła), więc statyczna kopia z danych mapy jest pomijana. */
+export function isElevatorPortalDecor(
+  decor: { model: string; position: Vec3 },
+  elevators: readonly ElevatorDefinition[] | undefined,
+): boolean {
+  return !!elevators?.some((e) => {
+    const kit = elevatorKit(e.model);
+    return (
+      kit !== undefined &&
+      decor.model === `${kit}_elevator_shaft_door` &&
+      e.stops.some((stop) => {
+        const p = facePoint(e, stop.doorSide, stop.y);
+        return (
+          Math.hypot(decor.position.x - p.x, decor.position.z - p.z) < 0.6 &&
+          Math.abs(decor.position.y - p.y) < 0.6
+        );
+      })
+    );
+  });
 }

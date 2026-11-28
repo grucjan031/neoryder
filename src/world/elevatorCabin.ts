@@ -27,6 +27,7 @@ export interface CabinPart extends HubFocusBox {
 }
 export interface ElevatorButton extends HubFocusBox {
   action: 'up' | 'down' | 'call';
+  reach?: HubFocusBox;
   stop?: number;
   side: Side;
 }
@@ -147,6 +148,11 @@ export class ElevatorCabin extends Elevator {
             length / 2 - 0.19,
           ),
           size: sideSize(side, 0.32, 0.32, slab),
+          // Wezwanie działa po wycelowaniu w dowolne miejsce portalu i paneli obok.
+          reach: {
+            position: facePoint(def, side, stop.y + cabinHeight / 2, slab),
+            size: sideSize(side, length + 1.6, cabinHeight, 2 * slab),
+          },
         });
         bottom = stop.y + cabinHeight;
       }
@@ -175,18 +181,34 @@ export class ElevatorCabin extends Elevator {
       return 0;
     return door;
   }
-  override step(dt: number, occupied = false): void {
+  /** Krok bez upływu czasu (pauza, hitstop): interpolacja stoi w miejscu. */
+  hold(): void {
     this.previousY = this.state.y;
     this.previousDoor = this.state.door;
     this.previousStop = this.state.stop;
-    super.step(dt, occupied);
+  }
+  /** Stopy pasażera wewnątrz obrysu kabiny. */
+  holds(feet: Vec3): boolean {
+    return (
+      Math.abs(feet.x - this.def.x) < this.def.width / 2 &&
+      Math.abs(feet.z - this.def.z) < this.def.depth / 2 &&
+      Math.abs(feet.y - this.state.y) < 0.5
+    );
+  }
+  override step(dt: number, occupied = false, holdOpen = false): void {
+    this.previousY = this.state.y;
+    this.previousDoor = this.state.door;
+    this.previousStop = this.state.stop;
+    super.step(dt, occupied, holdOpen);
     this.body.setNextKinematicTranslation({
       x: this.def.x,
       y: this.state.y,
       z: this.def.z,
     });
     for (const { part, collider } of this.barriers) {
-      const enabled = this.opening(part, this.state.stop, this.state.door) < 1;
+      const enabled =
+        this.opening(part, this.state.stop, this.state.door) <
+        this.tuning.elevatorDoorPassFraction;
       if (collider.isEnabled() !== enabled) collider.setEnabled(enabled);
     }
   }
@@ -219,17 +241,20 @@ export class ElevatorCabin extends Elevator {
         Math.abs(eye.z - this.def.z) < this.def.depth / 2;
       if (
         inside !== (button.stop === undefined) ||
-        this.buttonTarget(button) === undefined
+        this.buttonTarget(button) === undefined ||
+        (button.stop === this.state.stop &&
+          (this.state.phase === 'open' || this.state.phase === 'doorsOpening'))
       )
         continue;
       const position =
         button.stop === undefined
           ? { x: p.x + this.def.x, y: p.y + this.state.y, z: p.z + this.def.z }
           : p;
-      const distance = rayAabbDistance(eye, dir, {
-        position,
-        size: button.size,
-      });
+      const distance = rayAabbDistance(
+        eye,
+        dir,
+        button.reach ?? { position, size: button.size },
+      );
       if (
         distance !== null &&
         distance <= maxM &&

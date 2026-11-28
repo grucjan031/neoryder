@@ -12,6 +12,10 @@ import { ElevatorCabin } from '../../src/world/elevatorCabin';
 import { ElevatorPassengers } from '../../src/world/elevatorPassengers';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { loadRoom } from '../../src/world/roomSchema';
+import {
+  facePoint,
+  isElevatorPortalDecor,
+} from '../../src/world/elevatorSchema';
 import { ElevatorTest } from '../../src/scenes/elevatorTest';
 import data from '../../src/data/scenes/elevatorTest.json';
 
@@ -269,10 +273,7 @@ it('ogranicza liczbę pasażerów w kabinie i po waitTimeoutS odsyła na schody'
       tuning.elevator,
       world,
     );
-    const passengers = new ElevatorPassengers(
-      new Map([[def.id, cabin]]),
-      nav,
-    );
+    const passengers = new ElevatorPassengers(new Map([[def.id, cabin]]), nav);
     const route = nav.elevatorRoute(
       { x: 0, y: 4.8, z: 6 },
       room.playerSpawn,
@@ -294,4 +295,80 @@ it('ogranicza liczbę pasażerów w kabinie i po waitTimeoutS odsyła na schody'
     nav.dispose();
     world.free();
   }
+});
+
+it('pasażer w kabinie trzyma drzwi otwarte, a wezwanie je zamyka i rusza', () => {
+  const car = new Elevator(def, tuning.elevator);
+  car.request(0);
+  until(
+    () => car.step(SIM_DT, false, true),
+    () => car.state.phase === 'open',
+  );
+  for (let i = 0; i < 600; i++) car.step(SIM_DT, false, true);
+  expect(car.state.phase).toBe('open');
+  car.request(1);
+  until(
+    () => car.step(SIM_DT, false, true),
+    () => car.state.stop === 1 && car.state.phase === 'open',
+  );
+  // Bez pasażera drzwi zamykają się po postoju; pasażer w zamkniętej kabinie je otwiera.
+  until(
+    () => car.step(SIM_DT),
+    () => car.state.phase === 'idle',
+  );
+  car.step(SIM_DT, false, true);
+  expect(car.state.phase).toBe('doorsOpening');
+});
+
+it('przejście zwalnia się przy elevatorDoorPassFraction, nie dopiero przy pełnym otwarciu', async () => {
+  const rapier = await initPhysics(),
+    world = new rapier.World({ x: 0, y: 0, z: 0 });
+  const car = new ElevatorCabin(def, tuning.elevator, world);
+  try {
+    const barriers = (
+      car as unknown as {
+        barriers: {
+          part: { stop?: number };
+          collider: { isEnabled(): boolean };
+        }[];
+      }
+    ).barriers;
+    const here = () =>
+      barriers
+        .filter((b) => b.part.stop === undefined || b.part.stop === 0)
+        .filter((b) => !b.collider.isEnabled()).length;
+    car.request(0);
+    until(
+      () => car.step(SIM_DT),
+      () => car.state.door >= tuning.elevator.elevatorDoorPassFraction,
+    );
+    expect(car.state.door).toBeLessThan(1);
+    expect(here()).toBe(2);
+    expect(
+      barriers.filter((b) => (b.part.stop ?? 0) > 0 && !b.collider.isEnabled()),
+    ).toHaveLength(0);
+  } finally {
+    world.free();
+  }
+});
+
+it('statyczny portal z danych mapy na przystanku windy z zestawem modeli jest pomijany', () => {
+  const lift = { ...def, model: 'res_elevator_cab' };
+  const at = facePoint(lift, 's', 4.8);
+  const decor = (model: string, dx = 0) => ({
+    model,
+    position: { x: at.x + dx, y: at.y, z: at.z },
+  });
+  expect(isElevatorPortalDecor(decor('res_elevator_shaft_door'), [lift])).toBe(
+    true,
+  );
+  expect(isElevatorPortalDecor(decor('res_elevator_call_panel'), [lift])).toBe(
+    false,
+  );
+  expect(
+    isElevatorPortalDecor(decor('res_elevator_shaft_door', 3), [lift]),
+  ).toBe(false);
+  expect(isElevatorPortalDecor(decor('res_elevator_shaft_door'), [def])).toBe(
+    false,
+  );
 });

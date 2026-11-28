@@ -49,6 +49,8 @@ export interface PlayerState {
   /** Niska kapsuła bez slide (np. po slide pod przeszkodą). */
   crouched: boolean;
   sprinting: boolean;
+  /** Pionowe przesunięcie w ostatnim kroku wynikające z jazdy na platformie (m). */
+  platformDy?: number;
 }
 
 /** Pozycja oznacza środek kapsuły. Właściciel świata wykonuje world.step po step. */
@@ -297,6 +299,7 @@ export class PlayerController {
           : position.y) + movement.y,
       z: position.z + movement.z,
     };
+    s.platformDy = platform ? platform.state.y - platform.previousY : 0;
     if (this.dashEnded) {
       // Po dashu prędkość spada do dashExitSpeed w kierunku dashu (płynne wyjście).
       const exit = t.dashExitSpeed;

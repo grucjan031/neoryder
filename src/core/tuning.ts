@@ -949,6 +949,8 @@ export const tuning = {
     elevatorAccelMps2: 3.5,
     elevatorDoorOpenS: 0.55,
     elevatorDoorDwellS: 2.5,
+    /** Od tego rozsunięcia (0..1) drzwi przestają blokować przejście. */
+    elevatorDoorPassFraction: 0.7,
     elevatorPanelReachM: 1.6,
     maxEnemies: 2,
     waitTimeoutS: 12,
