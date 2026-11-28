@@ -1,34 +1,34 @@
 # Graph Report - neoryder  (2026-11-28)
 
 ## Corpus Check
-- 1572 files · ~2,886,367 words
+- 1576 files · ~2,889,517 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 443 file(s) not represented in the graph (top: .glb 385, .css 37, (none) 9)
 
 ## Summary
-- 12456 nodes · 42778 edges · 406 communities (322 shown, 84 thin omitted)
-- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 6422 edges (avg confidence: 0.9)
+- 12490 nodes · 42849 edges · 388 communities (312 shown, 76 thin omitted)
+- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 6424 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `62ff1b6d`
+- Built from commit: `52d55022`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - mall_atrium.py
 - _run7Kit.mjs
-- mission.ts
-- DamageSystem
+- Rng
+- Stats
 - Arena
-- sectorMap.ts
+- save.ts
 - events.ts
-- vitest
+- roomScene.ts
 - PlayerController
 - MetaManager
-- cityModels.test.ts
-- arenaNavigation.ts
-- powers/registry.ts
+- cityPropsTest.ts
+- neoryder_sim.js
+- FeelSystem
 - _city_box
 - Arena
 - RunScene
@@ -37,13 +37,13 @@
 - simulator.ts
 - urbanMaterials.ts
 - RunState
-- ADR 0005 — Pętla runu (F3)
+- Zadania
 - HubScene
 - scenes/hubFauna.ts
 - meta.ts
-- main
+- Input
 - build_npc_civilian
-- save.ts
+- gamepad.ts
 - build_assets.py
 - Wyniki według mapy
 - _run3Kit.mjs
@@ -52,14 +52,14 @@
 - RunManager
 - elevatorCabin.ts
 - quad
-- KidsCatEncounter
+- splash.test.ts
 - renderFixes.test.ts
 - scenes/hubNpcs.ts
 - @playwright/test
 - workshopPanel.ts
 - main.ts
 - HtmlRunScreens
-- .step
+- themes.test.ts
 - .off
 - vec
 - kurogane_residence.py
@@ -67,22 +67,22 @@
 - AudioSystem
 - math
 - world/hubMap.ts
-- outline.ts
+- viewmodelLayer.ts
 - run2.mjs
-- RunState
+- FakeRoom
 - Enemy
 - hubScene.test.ts
 - flicker.test.ts
 - SceneAtmosphere
 - Boss
-- EnemyView
+- getMaterial
 - TalentSystem
 - Pełne prompty wysłane do generatora
-- _enemy_fin
-- BossArenaFx
+- build_enemy_cc0
+- bossArenaFx.ts
 - musicSchema.ts
 - numpy
-- KipJoint
+- hubScreens.ts
 - HubPropView
 - ImplantSystem
 - handRig.test.ts
@@ -101,8 +101,8 @@
 - NEORYDER — Game Design Document
 - buildM01.mjs
 - hubStations.ts
-- loadSettings
-- ArenaNavigation
+- renderMusic.mjs
+- .path
 - LayerManager
 - textClarity.test.ts
 - Zarys fabuły — NEORYDER
@@ -110,27 +110,27 @@
 - GrabPower
 - run6.py
 - Poziomy liniowe
-- runTypes.ts
+- implants.ts
 - arenaConstructionSite.mjs
 - Trzeci pakiet (2026-11-15) — prompty końcowe
 - MeleeTest
-- roster.ts
+- squad.ts
 - Prototypy eskorty więźnia i wagonu (S4-03)
 - synergies.ts
-- waitSimSteps
+- allies.spec.ts
 - HubSoundscape
 - Dokument projektowy mapy `run8` — ELEKTROWNIA FUZYJNA KUROGANE ARMS („KOMPLEKS TOKAMAKA HELIOS-IV”)
-- threatLevel.test.ts
-- math.ts
+- run7Navigation.test.ts
+- EventBus
 - HubFaunaRuntime
 - MissionScene
 - extractNpcAnimations.mjs
 - Assety 3D — konwencje i katalog
-- MissionScene
+- .registerCommands
 - hubPowerDip.test.ts
 - Pomiar referencyjny (S1-04)
 - 3. Projekt mapy `run2` — GALERIA HANDLOWA „ATRIUM NOVA”
-- difficulty.ts
+- WaveDirector
 - inputGlyphs.ts
 - weaponPreview.ts
 - crate
@@ -140,7 +140,7 @@
 - ref_node_fs
 - Narzędzia i prompty tekstur NEORYDER
 - MissionObjectives
-- cityPropsTest.ts
+- Tutorial
 - fppInspect.ts
 - metaSim.ts
 - LightningRenderer
@@ -149,66 +149,66 @@
 - Balans misji — fale i eskorta
 - Misja 13 — Kamerton
 - PropPhysicsSystem
-- sectorSchema.ts
+- BloomPass
 - runInventory.ts
 - 3.5. Szczegółowy opis wszystkich 15 pomieszczeń — wyposażenie, osłony, linie strzału i rola w walce
-- DebugHandle
+- Conquest
 - _NpcBody
 - contentZ11.test.ts
-- hud.ts
+- EntityId
 - Pakiet dużych aren — 2026-11-17
-- MissionObjectives
+- Drone
 - Misja 01 — Maszty
 - Misja 02 — Punkt kontrolny
 - misje.md
-- Misja 04 — Ładunek klasy K
+- HazardSystem
 - normalize
 - Misja 06 — Odlewnia
-- missionSchema.ts
+- weaponModuleVisuals.ts
 - Misja 07 — Nocny dyżur
-- bossBar.ts
+- bloom.ts
 - Misja 10 — Archiwum
 - Misja 17 — Przerwa w dostawie
 - Misja 12 — Śluza
 - Ally
-- Zadania
+- EnemyDirector
 - Decyzje
 - Misja 16 — Sala monitorów
 - mall_showcar.py
-- roomTest.ts
-- lamps.ts
+- AllyTest
+- mapInspector.mjs
 - Misja 20 — Cisza
-- SettingsScreen
+- weaponModuleVisuals.test.ts
 - hubCampaign.test.ts
 - fppBlade.ts
 - railPayload.ts
 - Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005)
 - buildM08.mjs
 - Backlog — pomysły „po premierze / poza bieżącą fazą”
-- 3.5. Szczegółowy opis 10 pomieszczeń i Atrium — wyposażenie, przeszklenia, osłony i walka
-- arenaSpawns.ts
+- 3. Projekt architektoniczny mapy `run4` — 10 pomieszczeń + Atrium na 3 kondygnacjach (`L0`, `L1`, `L2`)
+- outline.ts
 - enemyView.ts
 - seed
 - S0 — domknięcie podstaw
-- audioFixes.test.ts
+- ScatterProps
 - 3.5. Szczegółowy opis wszystkich 8 pomieszczeń (`R1`..`R8`) — wyposażenie, osłony, linie strzału i rola w walce
-- roomScene.ts
+- three
 - hubStationMarkers.ts
-- devDependencies
+- package.json
 - allies.test.ts
 - buildM10.mjs
-- AllyEnvironment
+- comicSurfaces.ts
 - NEORYDER — plan rozwoju (etapy po kolei, bez dat)
 - Misja 11 — Nadajnik
-- SquadHud
+- resonanceWaveFx.ts
 - PowerBase
 - PayloadTest
-- RunHud
+- Pipeline stylu
 - .render
-- hub.ts
+- CityDressing
 - Misja 14 — Palacz
 - MissionRadio
-- meta.ts
+- zod
 - Korekty po kontroli podglądów 2×2
 - hubSchema.ts
 - buildM01.mjs
@@ -220,7 +220,7 @@
 - mapAudit.test.ts
 - Łatki definicji i ResolvedLoadout — F4-03
 - NEORYDER
-- HandRig
+- fppViewModel.ts
 - arena
 - EscortTest
 - Balans F2 — symulacja TTK
@@ -228,7 +228,6 @@
 - hud/process.py
 - [F1][Ruch i kamera] Kontroler FPP na character controllerze Rapier
 - [F1][Ruch i kamera] Kamera FPP: FOV i wstrząs
-- rooms.md
 - [F1][Grafika, VFX i audio] Shader: biały świat, czerwoni wrogowie
 - [F1][Bronie] Blaster z przegrzaniem i pociski z poolingiem
 - F1/README.md
@@ -243,16 +242,16 @@
 - missionList.spec.ts
 - S1 — kontrakt misji i kampanii
 - forestPanorama.ts
-- FocusPower
-- HUD — F1 #15, F2-15, nowy HUD
+- Hitbox
+- prototypeViews.ts
 - [F1][Moce] Pchnięcie Rezonansu i pasek energii
 - Zadania fazy F1 — Prototyp walki
-- Tuning
+- math.ts
 - textures/process.py
 - 4.1. Nowe modele 3D (`tools/blender/sets/kurogane_residence.py` → `public/assets/models/city/res_*.glb`)
 - Pakiet grafik HUD
 - Decyzje koordynatora (2026-11-14)
-- Tekstury uliczek NEORYDER — Neon Noir
+- Misja 03 — List przewozowy
 - pull_request_template.md
 - achievements.ts
 - backlog.md
@@ -285,7 +284,7 @@
 - buildM02.mjs
 - Dokument projektowy mapy `run6` — Nocny targ pod estakadą (Bulwar)
 - powerSchema.ts
-- dressing.ts
+- EnemyBatch
 - EscortNpc
 - ArenaSurfaceNavigation
 - UiSounds
@@ -294,47 +293,48 @@
 - [F1][AI wrogów] Archetyp Szturmowiec
 - Rozbudowa kryjówki Iskra — 2026-11-15
 - missionM10.spec.ts
-- EnemyFlinch
+- validate.mjs
 - lib.rs
 - missionBalance.ts
-- cityFx.test.ts
-- simulator.ts
-- Hud
-- prototypes.ts
-- createPower
+- dressing.ts
+- Playtest demo — testy nowych graczy (S5-01, S6-01)
+- hud.ts
+- talents.ts
+- .init
 - Dokument projektowy mapy `run5` — przychodnia Helixa Dynamics („Klinika na 61. piętrze”)
 - Lekcje z historii NEORYDER
-- Misje fabularne
+- weaponSkin.ts
 - S10-02 — przejście dema na jednym zapisie
 - Pakiet kryj?wki Iskra ? 2026-11-15
-- CityLights
+- PrototypeScene
 - hubCutaway.spec.ts
-- missionM04.spec.ts
+- Dokument projektowy mapy `run4` — WIEŻOWIEC KORPORACYJNY KUROGANE ARMS („SEKTOR WYSOKI // PIĘTRA 60–62”)
 - Areny Przejęcia, Szturmu i Kradzieży rdzenia
 - buildM08.mjs
-- roomSchema.ts
+- run8Navigation.test.ts
 - buildM04.mjs
 - SimGraph
-- runScene.test.ts
+- runUiU3.test.ts
 - Sterowanie, zapis i zgłaszanie problemów
+- System interfejsu („Neon Noir console”)
 - ai.mjs
-- arenaSurfaceNavigation.ts
-- Heist
-- Warsztat modułów broni
+- run4Navigation.test.ts
+- 4.1. Nowe modele 3D (`tools/blender/sets/kurogane_office.py` → `public/assets/models/city/off_*.glb`)
+- Łup z elity i wydobycie (zapis v7)
 - prototypes.spec.ts
-- SynergyContext
+- SynergySystem
 - missionM08.spec.ts
 - missionM09.spec.ts
 - fusionReactor.test.ts
 - missionOdlewnia.spec.ts
-- enemyHeldBoss.test.ts
-- enemyHeldBoss.test.ts
+- FakeRoom
+- 6. Kryteria akceptacji i etapy prac (A–E)
 - NEORYDER
 - Oprawa miasta — Neon Noir
-- defeatMessage
+- Playtest F4 — bramka „meta-progres i kryjówka”
 - Zmiany w NEORYDER
-- BossTest
-- Sandbox
+- Łatki definicji i ResolvedLoadout — F4-03
+- ui/hubChatter.ts
 - neoryder-sim
 - memory
 - simgraph_frame
@@ -366,67 +366,51 @@
 - shots
 - shots
 - shots
-- scenes/run.ts
+- AGENTS.md — zasady dla agentów NEORYDER
 - missionM07.spec.ts
-- StatusSystem
+- Weapon
 - Misja liniowa M01 (kontrakt D1–D8)
 - Vec3
 - ADR 0008 — Misje fabularne i postęp kampanii
 - NEORYDER — audyt danych map
 - 1. Ocena ogólna
-- Dokument projektowy mapy `run3` — TAJNE LABORATORIUM KUROGANE ARMS („SEKTOR X-51”)
-- portModels.test.ts
+- labels
+- ADR 0010 — Misje jako liniowe poziomy
 - [F1][Ruch i kamera] Dash i slide
 - patches.ts
 - Misja 15 — Kamienna
-- Synergie buildów (F2-16)
-- 1. Ocena obecnego stanu
+- S5–S6 — testy nowych graczy
+- DebugHandle
 - UiSelect
-- package.json
-- dependencies
-- Tuning
-- disposeCityGroup
-- FppBladeFx
-- achievements.spec.ts
-- missionLinear.spec.ts
-- missionM02.spec.ts
-- ADR 0007 — Meta-progres i kryjówka (F4)
+- ADR 0006 — Neon Noir (kierunek artystyczny)
+- ADR 0012 — wsadowa nawigacja i sąsiedztwo AI
+- StatusVfx
+- S7–S8 — zawartość i zamknięcie zakresu
+- 2. Koncepcja miejsca w świecie gry i różnica wobec `bossRoom`
+- nearRect
+- metaTypes.ts
 - missionM05.spec.ts
-- F1/README.md
-- LevelRuntime
-- windowAtlas.test.ts
-- FppBlade
-- ui/hubGuide.ts
 - Decyzje koordynatora (2026-11-14)
 - Boss — F3-16
-- eslint.config.js
 - pathlib
-- EndlessScreens
-- Sojusznicy
-- missions.md
 - Poziomy trudności i taktyczne AI
 - Przepisy SFX (`sfx.json`, 29 dźwięków)
-- S1 — kontrakt misji i kampanii
-- 4. Katalog zasobów: nowe modele `lab_*`, nowe tekstury, zasoby istniejące i zakazane
-- Tekstury komiksowe NEORYDER
-- vite
-- hudAccessibilityZ12.test.ts
-- BossHealth
-- aboutDemo.spec.ts
 
 ## God Nodes (most connected - your core abstractions)
-1. `Vec3` - 514 edges
-2. `EventBus` - 467 edges
-3. `vitest` - 353 edges
-4. `tuning` - 347 edges
-5. `RoomScene` - 296 edges
-6. `Rng` - 295 edges
-7. `three` - 290 edges
+1. `Vec3` - 516 edges
+2. `EventBus` - 468 edges
+3. `vitest` - 356 edges
+4. `tuning` - 349 edges
+5. `Rng` - 296 edges
+6. `RoomScene` - 296 edges
+7. `three` - 291 edges
 8. `EntityId` - 279 edges
 9. `Stats` - 208 edges
 10. `DamageSystem` - 199 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `Integracja` --references--> `AudioSystem`  [INFERRED]
+  docs/systems/audio.md → src/audio/audioSystem.ts
 - `Blok` --references--> `DamageSystem`  [INFERRED]
   docs/systems/melee.md → src/combat/damage/damageSystem.ts
 - `Obrażenia i wrogowie` --references--> `Health`  [INFERRED]
@@ -435,14 +419,12 @@
   docs/issues/F1/08-ai-szturmowiec.md → src/combat/damage/hurtbox.ts
 - `Decyzje wspólne` --references--> `StatusSystem`  [INFERRED]
   docs/issues/F2/README.md → src/combat/status/statusSystem.ts
-- `Wymagania` --references--> `ProjectileSystem`  [INFERRED]
-  docs/issues/F1/06-blaster-przegrzanie.md → src/combat/weapons/projectiles.ts
 
 ## Import Cycles
 - 2-file cycle: `src/audio/ambience.ts -> src/audio/audioSystem.ts -> src/audio/ambience.ts`
 - 2-file cycle: `src/world/arenaNavigation.ts -> src/world/modeSchema.ts -> src/world/arenaNavigation.ts`
 
-## Communities (406 total, 84 thin omitted)
+## Communities (388 total, 76 thin omitted)
 
 ### Community 0 - "mall_atrium.py"
 Cohesion: 0.06
@@ -450,115 +432,115 @@ Nodes (93): calibration_chair(), casters(), ceiling_panel(), curtain_wall_frame(
 
 ### Community 1 - "_run7Kit.mjs"
 Cohesion: 0.08
-Nodes (79): 5.4. Plan generatora `tools/arenas/run/run7.mjs` i modułów pomocniczych `_run7*.mjs`, circulation(), generate(), rails(), structure(), decalsAndEasterEggs(), dress(), hazards() (+71 more)
+Nodes (83): 5.1. Blok `arena`, dyrektor walki i 20 punktów spawnu wrogów (`spawnPoints` na 3 kondygnacjach), 5.2. Zestawienie zagrożeń środowiskowych (`hazards[]` — 5 hazardów na 3 kondygnacjach), 5.3. Oświetlenie bez smug wolumetrycznych i budżet `CityLights`, 5.4. Plan generatora `tools/arenas/run/run7.mjs` i modułów pomocniczych `_run7*.mjs`, 5. Konfiguracja walki, spawny, hazardy, oświetlenie i plan generatora `run7.mjs`, circulation(), generate(), rails() (+75 more)
 
-### Community 2 - "mission.ts"
+### Community 2 - "Rng"
+Cohesion: 0.02
+Nodes (225): 5. Stan próby (run) a stan kampanii (meta), 1.4. Misje fabularne M01–M10 (`?scene=mission&mission=<id>`), 1.1. Jak dziś działają mapy runów (`rooms`) i poziomy misji (`levels`), M10 — Archiwum, Scena liniowa: start, ziarno i stany, Uszkodzenie i kopie bezpieczeństwa, Zapis runu (`RunSave`, wersja zapisu 6) — F3-06, buildFloorNavigation() (+217 more)
+
+### Community 3 - "Stats"
 Cohesion: 0.04
-Nodes (79): AllyEvent, AllyHostile, AllyLeader, AllyMotion, AllyParams, AllyReviveSource, AllyShot, AllySnapshot (+71 more)
-
-### Community 3 - "DamageSystem"
-Cohesion: 0.03
-Nodes (189): ADR 0003 — Kontrakty fazy F1, Decyzje, Konsekwencje dla zadań F1, Kontrakty, Cywile Kurogane Arms, Zdarzenia (`GameEvents`), Kontrakt (do zatwierdzenia w docs/api.md), Wymagania (+181 more)
+Nodes (129): Konsekwencje dla zadań F1, 4. Każdy pokój = nowy świat Rapier i nowa instancja sceny, Konsekwencje, Cywile Kurogane Arms, Prototypy eskorty więźnia i wagonu (S4-03), Kontrakt (do zatwierdzenia w docs/api.md), Wymagania, Kontrakt (do zatwierdzenia w docs/api.md) (+121 more)
 
 ### Community 4 - "Arena"
-Cohesion: 0.03
-Nodes (71): 3. Budżet zagrożenia i fale pokoju, 4. Każdy pokój = nowy świat Rapier i nowa instancja sceny, Konsekwencje, 5. Łatki definicji (zmiana działania przez dane), Konsekwencje, Arena wyzwań F6, Nieskończona strefa (F6), Talenty (F4-04) — `src/progression/talents.ts`, `src/progression/meta.ts` (+63 more)
+Cohesion: 0.04
+Nodes (29): 5. Łatki definicji (zmiana działania przez dane), Konsekwencje, Arena wyzwań F6, Nieskończona strefa (F6), Z16 — Wieżyczka, Dron-haker i zagłuszenie, Łatki definicji i ResolvedLoadout (F4-03) — `src/progression/patches.ts`, Zestaw „port i zajezdnia” (ADR 0011), Wynikłe z zadań F3 (+21 more)
 
-### Community 5 - "sectorMap.ts"
-Cohesion: 0.06
-Nodes (36): Misje-runy: mapa, pokoje, cele (reguły do odtworzenia), Algorytm, Generator mapy sektora — F3-02, Kolejność losowań `Rng` (determinizm), Mapa misji (`generateMissionMap`), Sprawdzenie ręczne w 30 sekund, Testy, fake-indexeddb (+28 more)
+### Community 5 - "save.ts"
+Cohesion: 0.02
+Nodes (176): 5. Zapis runu, Konsekwencje dla kontraktów (`docs/api.md`, dopisać w F3-01 po akceptacji), Drużyna w runie, trybach i na arenie — `src/allies/roster.ts`, Implanty (F3-09) — `src/progression/implants.ts`, `RunState` i `RunSummary` (rozszerzenie `src/core/runTypes.ts`), 01 Kontrakty F3, 06 Zapis runu, Misje-runy: mapa, pokoje, cele (reguły do odtworzenia) (+168 more)
 
 ### Community 6 - "events.ts"
 Cohesion: 0.04
 Nodes (62): _ballast(), _bellows(), _boom_bottom(), _bow_anchor(), hull_point(), _bow_outline(), box(), build_port_flatcar() (+54 more)
 
-### Community 7 - "vitest"
-Cohesion: 0.02
-Nodes (171): three, vitest, AllyPose, ConquestPointId, Handler, assistAim(), GamepadBinding, gamepadLayout() (+163 more)
+### Community 7 - "roomScene.ts"
+Cohesion: 0.01
+Nodes (216): Pogoda i areny Przejęcia, Strojenie i komendy debug runu (F3-01, zapowiedź F3-07/09/11), 1.1. Co już działa w silniku i jak `run4` z tego korzysta, Silnik dużych map, Determinizm i kolejność kroku (wszystkie tryby), Szturm i Kradzież rdzenia na dużych arenach, Diagnoza, RunState (+208 more)
 
 ### Community 8 - "PlayerController"
-Cohesion: 0.06
-Nodes (29): API między modułami (kontrakty), Debug — `window.__neoryder`, EventBus — `src/core/events.ts`, Fizyka — `src/physics/`, Integracja modeli portu, Kontekst gry i sceny — `src/core/context.ts`, `src/scenes/`, Napisy oprawy kryjówki, RNG — `src/core/rng.ts` (+21 more)
+Cohesion: 0.07
+Nodes (29): API między modułami (kontrakty), Debug — `window.__neoryder`, EventBus — `src/core/events.ts`, Fizyka — `src/physics/`, Kontekst gry i sceny — `src/core/context.ts`, `src/scenes/`, Kontrakty F1 (zatwierdzone, do implementacji w zadaniach F1), Napisy oprawy kryjówki, Nowe typy (+21 more)
 
 ### Community 9 - "MetaManager"
-Cohesion: 0.04
-Nodes (71): 1. Stan meta-progresu, 8. Zapis, Implanty (F3-09) — `src/progression/implants.ts`, Integracja runu z meta (F4-06) — `src/progression/metaSave.ts`, `src/ui/metaCommands.ts`, `src/scenes/run.ts`, Kontrakty F4 (zatwierdzone 2026-11-15, ADR 0007), Naszywki Iskry — osiągnięcia (S4b-01), Poziom zagrożenia (F4-05) — `src/world/threat.ts`, `src/enemies/manager.ts`, `RunState` i `RunSummary` (rozszerzenie `src/core/runTypes.ts`) (+63 more)
+Cohesion: 0.05
+Nodes (47): 1. Stan meta-progresu, 2. Nagrody za run, 6. Odblokowania i ekwipunek z warsztatu, 02 MetaManager, 04 Drzewka talentów, 06 Integracja runu z meta, Bramkowanie zakupów, Dane (+39 more)
 
-### Community 10 - "cityModels.test.ts"
-Cohesion: 0.06
-Nodes (24): CONSTRUCTION_POWER_PROP_MODELS, OVERPASS_ROOFS_DOCKS_PROP_MODELS, PORT_PROP_MODELS, arenaModels, colliders, constructionPowerDecks, constructionPowerModels, floorModels (+16 more)
+### Community 10 - "cityPropsTest.ts"
+Cohesion: 0.03
+Nodes (59): CITY_PROP_MODELS, CONSTRUCTION_POWER_LIGHTS, CONSTRUCTION_POWER_PROP_MODELS, constructionPowerSlots, LIGHT_COLORS, Mount, OVERPASS_ROOFS_DOCKS_BOUNDS, OVERPASS_ROOFS_DOCKS_GROUND (+51 more)
 
-### Community 11 - "arenaNavigation.ts"
-Cohesion: 0.08
-Nodes (26): ADR 0012 — wsadowa nawigacja i sąsiedztwo AI, Pomiar i decyzja, Uruchamianie i powtarzanie pomiaru, Wynik na Windows, Node 22.13.0, binary, cachedTextDecoder, decodeText(), getArrayU32FromWasm0() (+18 more)
+### Community 11 - "neoryder_sim.js"
+Cohesion: 0.15
+Nodes (17): binary, cachedTextDecoder, decodeText(), getArrayU32FromWasm0(), getFloat32ArrayMemory0(), getStringFromWasm0(), getUint32ArrayMemory0(), getUint8ArrayMemory0() (+9 more)
 
-### Community 12 - "powers/registry.ts"
-Cohesion: 0.06
-Nodes (33): ADR-0003, Pchnięcie Rezonansu (`ResonancePush`, klawisz F), PendingSlam, loadPower(), loadPowerDefinitions(), PowerDeps, PowerFactory, PowerInput (+25 more)
+### Community 12 - "FeelSystem"
+Cohesion: 0.18
+Nodes (9): Konsekwencje dla kontraktów (`docs/api.md`, dopisać przy starcie F2), Skupienie: czas gracza — F2-06, Skupienie (`focus.json`, `kind: 'focus'`, F2-06), Testy, FeelSystem, FocusControl, setup(), render() (+1 more)
 
 ### Community 13 - "_city_box"
 Cohesion: 0.06
-Nodes (81): Miasto, build_city_ac_unit(), build_city_ad_screen(), build_city_antenna(), build_city_assets(), build_city_awning(), build_city_barrier(), build_city_cable_span() (+73 more)
+Nodes (83): Miasto, build_city_ac_unit(), build_city_ad_screen(), build_city_antenna(), build_city_assets(), build_city_awning(), build_city_barrier(), build_city_cable_span() (+75 more)
 
 ### Community 14 - "Arena"
-Cohesion: 0.04
-Nodes (84): Bronie i ostrza F2, Punkt podparcia broni, band(), block(), bm_box(), bm_ico(), bm_merge(), bm_prism() (+76 more)
+Cohesion: 0.07
+Nodes (48): Bronie i ostrza F2, Punkt podparcia broni, attach_hand_item(), band(), block(), bm_merge(), build_beam(), build_blade_staff() (+40 more)
 
 ### Community 15 - "RunScene"
-Cohesion: 0.09
-Nodes (12): Host runu (F3-07), Rozliczanie nagród i wznowienie runu (`RunScene`), RunEnded, ApplyRunResult, runIdOf(), RunSavePort, RunScene, AchievementToast (+4 more)
+Cohesion: 0.05
+Nodes (25): Host runu (F3-07), Migracje, Niezawodność sesji i zapisu, Ograniczenia znane, Przechowywanie, Rozgrzewka renderu przy wczytywaniu sceny, Rozliczanie nagród i wznowienie runu (`RunScene`), Weryfikacja (+17 more)
 
 ### Community 16 - "_run4Kit.mjs"
 Cohesion: 0.09
 Nodes (71): 5.4. Plan generatora `tools/arenas/run/run4.mjs` i modułów pomocniczych `_run4*.mjs`, circulation(), generate(), rails(), structure(), crates(), dress(), hazards() (+63 more)
 
 ### Community 17 - "world/hubNpcs.ts"
-Cohesion: 0.05
-Nodes (58): Kryjówka — `src/ui/hubScreens.ts`, `src/world/hubSchema.ts`, `src/world/hubStations.ts` (F4-07), 11 Warianty ostrzy, Skala, trasy i podsłuchane rozmowy, Warianty ostrzy (F2-11), HubSceneOptions, NpcView, HubChatterUi, HubPanelRegistry (+50 more)
+Cohesion: 0.09
+Nodes (33): Kryjówka — `src/ui/hubScreens.ts`, `src/world/hubSchema.ts`, `src/world/hubStations.ts` (F4-07), NPC, Skala, trasy i podsłuchane rozmowy, arriveAtRoutePoint(), createNpcRouteState(), isSeated(), missionIdSchema, NPC_RADIUS_M (+25 more)
 
 ### Community 18 - "simulator.ts"
 Cohesion: 0.05
-Nodes (56): Dane — `src/data/allies/*.json`, Jak sprawdzić w 30 sekund, Komendy gracza, Maszyna stanów — `src/allies/ally.ts`, Ograniczenia MVP, Sojusznicy, Testy, _arch_window() (+48 more)
+Nodes (56): Dane — `src/data/allies/*.json`, Jak sprawdzić w 30 sekund, Komendy gracza, Ograniczenia MVP, Sojusznicy, Testy, Wrogowie widzą sojuszników, _arch_window() (+48 more)
 
 ### Community 19 - "urbanMaterials.ts"
 Cohesion: 0.04
-Nodes (68): A. Zmiany w kodzie silnika (nie da się zrobić samymi danymi JSON), Czytelność wrogów z daleka — poświata krawędzi (`src/render/enemyRim.ts`), addEnemyRim(), emission(), enemyRimAt(), EnemyRimParams, enemyRimParams(), heightFogPerM() (+60 more)
+Nodes (69): Spadek napięcia w kryjówce, Przebudowa lokalna, Tekstury komiksowe NEORYDER, Zasady użycia, Zawartość i skróty promptów, addFloorGrid(), cache, ClinicKind (+61 more)
 
 ### Community 20 - "RunState"
-Cohesion: 0.09
-Nodes (63): Partia C (podstacja, magazyn, złomowisko i pięć elit), Generated, rooms, Generated, rooms, RUN_PROFILE, generate(), p_bridge() (+55 more)
-
-### Community 21 - "ADR 0005 — Pętla runu (F3)"
 Cohesion: 0.08
-Nodes (25): 10. Nowe zdarzenia (propozycja do `docs/api.md`, bez edycji teraz), 1. Mapa sektora: graf warstwowy z seeda, 2. Pokoje: ręcznie zrobione moduły w danych, 6. Implanty per run, `Stats` i synergie na tagach, 7. Nagrody i ekonomia, 8. Boss: Dyrektor Ochrony Kurogane Arms, 9. UI i przepływ ekranów, ADR 0005 — Pętla runu (F3) (+17 more)
+Nodes (63): Katalog, Partia C (podstacja, magazyn, złomowisko i pięć elit), Generated, rooms, Generated, rooms, RUN_PROFILE, generate() (+55 more)
+
+### Community 21 - "Zadania"
+Cohesion: 0.18
+Nodes (11): 03 Format pokoi i loader, 10 Tagi implantów w SynergySystem, 11 Nagrody, Kredyty, sklep i odpoczynek, 13 Menu główne i ekran mapy, 15 HUD runu, 16 Boss: rdzeń, 17 Boss: wezwanie, faza tarczy, pokój bossa, 18 Podsumowanie runu i śmierć (+3 more)
 
 ### Community 22 - "HubScene"
 Cohesion: 0.06
-Nodes (13): Rekwizyty kryjówki, HubStationMarkers, HubScene, CutawayKind, HubCutaway, shotCamera(), HubMapView, HubPrompt (+5 more)
+Nodes (11): Rekwizyty kryjówki, Nakładki (`HubScreens`), Zwierzęta, HubStationMarkers, HubScene, HubDialog, HubPrompt, HubScreens (+3 more)
 
 ### Community 23 - "scenes/hubFauna.ts"
-Cohesion: 0.06
-Nodes (27): ThirdPersonBody, catState(), ease(), intersects(), noodlesState(), Settings, Shot, candidate() (+19 more)
+Cohesion: 0.05
+Nodes (36): gradientMap, setPowerLevel(), ThirdPersonBody, DEFAULT_PANELS, EMPTY_ACTIONS, HubSceneOptions, IDLE_BLADE, META_EVENTS (+28 more)
 
 ### Community 24 - "meta.ts"
-Cohesion: 0.05
-Nodes (45): Schematy zod i dane — `src/progression/`, `src/data/meta/`, 01 Kontrakty F4, Debug i testy, Format łatki, Przykłady, resolveLoadout, Łatki definicji i ResolvedLoadout — F4-03, Ścieżki (+37 more)
+Cohesion: 0.07
+Nodes (41): TREE_IDS, TreeId, talentPoints(), loadTalentTree(), loadTalentTrees(), modules, TalentEffects, talentEffectsSchema (+33 more)
 
-### Community 25 - "main"
-Cohesion: 0.04
-Nodes (28): Pad i urządzenie aktywne, Tuning — `src/core/tuning.ts`, Wejście — `src/core/input/`, Pauza i ustawienia, loadMusic(), InputDevice, GamepadInput, PadFrame (+20 more)
+### Community 25 - "Input"
+Cohesion: 0.12
+Nodes (7): Pad i urządzenie aktywne, Wejście — `src/core/input/`, InputDevice, GamepadInput, stickUsed(), Input, canvas
 
 ### Community 26 - "build_npc_civilian"
 Cohesion: 0.08
 Nodes (35): build_npc_civilian(), _cat_const(), _cat_mesh(), w_body(), _cat_tube(), center_of(), material(), _npc_apron() (+27 more)
 
-### Community 27 - "save.ts"
-Cohesion: 0.04
-Nodes (54): Wyzwanie dnia, beginChallenge(), challengeDateSchema, ChallengeDecoded, ChallengeHistory, ChallengeMigration, challengeMigrations, challengePort() (+46 more)
+### Community 27 - "gamepad.ts"
+Cohesion: 0.16
+Nodes (18): assistAim(), GamepadBinding, gamepadLayout(), GamepadSettings, GamepadTuning, radialStick(), SampledPad, Stick (+10 more)
 
 ### Community 28 - "build_assets.py"
-Cohesion: 0.14
-Nodes (20): export_glb(), _pose(), _preview_camera(), _preview_scene(), render_cat_preview(), render_npc_previews(), render_preview(), reset_scene() (+12 more)
+Cohesion: 0.15
+Nodes (19): export_glb(), _pose(), _preview_camera(), _preview_scene(), render_cat_preview(), render_npc_previews(), render_preview(), _stitch() (+11 more)
 
 ### Community 29 - "Wyniki według mapy"
 Cohesion: 0.04
@@ -566,183 +548,183 @@ Nodes (46): alleyBackstreet, alleyCrossing, alleyMarket, alleyUnderpass, alleyUn
 
 ### Community 30 - "_run3Kit.mjs"
 Cohesion: 0.06
-Nodes (98): circulation(), generate(), rails(), rampSideRails(), structure(), crates(), dress(), easterEggsAndDecals() (+90 more)
+Nodes (101): topAt(), circulation(), generate(), rails(), rampSideRails(), structure(), crates(), dress() (+93 more)
 
 ### Community 31 - "fppBlaster.ts"
-Cohesion: 0.03
-Nodes (68): Łup z elity i wydobycie (zapis v7), Chwyt dopasowany do broni (pole `grip`), Podgląd 3D w warsztacie (runda B), fireProjectile(), ironSightOfModel(), WeaponGrip, weaponGripOfModel(), MODULE_SHAPES_BY_SLOT (+60 more)
+Cohesion: 0.08
+Nodes (21): Chwyt dopasowany do broni (pole `grip`), Model rąk — taktyczna rękawica (szlif 2026-11-18), ironSightOfModel(), WeaponGrip, weaponGripOfModel(), AdsSight, adsSight(), CAMERA_FORWARD (+13 more)
 
 ### Community 32 - "R"
 Cohesion: 0.08
 Nodes (69): 7.4. Plan generatora `tools/arenas/run/run8.mjs` i modułów pomocniczych `_run8*.mjs`, circulation(), generate(), rails(), structure(), CIVILIANS, crates(), decalsAndEasterEggs() (+61 more)
 
 ### Community 33 - "RunManager"
-Cohesion: 0.09
-Nodes (19): Misje (ADR 0008), 05 RunState i RunManager, Sprawdzenie w 30 sekund, Wyniki: pomiar benchmarkiem i parą naprzemienną, Odpowiedzialności, Debug i test ręczny, Host runu — F3-07, Integracje i elementy tymczasowe (+11 more)
+Cohesion: 0.06
+Nodes (23): 05 RunState i RunManager, 07 RunScene, Sprawdzenie w 30 sekund, F3-11: nagrody i ekonomia, F4-06: start z kryjówki i nagrody meta, Odpowiedzialności, Pętla runu (`RunState` i `RunManager`) — F3-05, Weryfikacja (+15 more)
 
 ### Community 34 - "elevatorCabin.ts"
-Cohesion: 0.08
-Nodes (26): Format danych — `RoomDefinition.elevators`, Jak sprawdzić w 30 sekund, Maszyna stanów i fizyka — `src/world/elevator.ts`, `src/world/elevatorCabin.ts`, Nawigacja i AI wrogów — `src/world/elevatorRoutes.ts`, `src/world/elevatorPassengers.ts`, Panele, HUD i render — `src/render/elevatorView.ts`, `src/ui/hud.ts`, Tuning — `tuning.elevator`, Windy pokojowe, ElevatorView (+18 more)
+Cohesion: 0.07
+Nodes (30): Format danych — `RoomDefinition.elevators`, Jak sprawdzić w 30 sekund, Maszyna stanów i fizyka — `src/world/elevator.ts`, `src/world/elevatorCabin.ts`, Nawigacja i AI wrogów — `src/world/elevatorRoutes.ts`, `src/world/elevatorPassengers.ts`, Panele, HUD i render — `src/render/elevatorView.ts`, `src/ui/hud.ts`, Testy, Tuning — `tuning.elevator`, Windy pokojowe (+22 more)
 
 ### Community 35 - "quad"
 Cohesion: 0.08
 Nodes (45): ceiling_coffer_bay(), highbay_light_strip(), acoustic_wall_panel(), reception_desk(), armor_display_stand(), armored_limo(), blade_display_pedestal(), elevator_cab() (+37 more)
 
-### Community 36 - "KidsCatEncounter"
-Cohesion: 0.16
-Nodes (4): Zwierzęta, KidsCatEncounter, kid(), setup()
+### Community 36 - "splash.test.ts"
+Cohesion: 0.09
+Nodes (27): Ekrany ładowania: splasharty i porady, Splasharty i porady ładowania, hashSeed(), getLiteFx(), BootSplash, readSplashAct(), showBootSplash(), getTips() (+19 more)
 
 ### Community 37 - "renderFixes.test.ts"
-Cohesion: 0.26
-Nodes (7): glowLike(), hidden, hideNoOutline(), skipsOutline(), bladeModel(), Internals, run()
+Cohesion: 0.39
+Nodes (4): glowLike(), hidden, hideNoOutline(), skipsOutline()
 
 ### Community 38 - "scenes/hubNpcs.ts"
-Cohesion: 0.05
-Nodes (27): AllyView, inOutfit(), loadBody(), loadClips(), loader, templates, ShotSphere, ACCENT_COLORS (+19 more)
+Cohesion: 0.04
+Nodes (44): `npc_civilian.glb` (mieszkańcy kryjówki), Render i HUD, AllySnapshot, AllyDefinition, AllyPose, AllyView, BASE_PARTS, CLIP (+36 more)
 
 ### Community 39 - "@playwright/test"
-Cohesion: 0.11
-Nodes (4): @playwright/test, builds, LOAD_TIMEOUT, SIM_TIMEOUT
+Cohesion: 0.05
+Nodes (20): Pokaz i weryfikacja, @playwright/test, { version }, Achievements, builds, LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps() (+12 more)
 
 ### Community 40 - "workshopPanel.ts"
-Cohesion: 0.05
-Nodes (86): Dźwięki UI, Ekrany U1, Komponenty (`src/ui/theme/components.css` + `src/ui/components/*.ts`), Kryjówka (U2), Menedżer warstw, Pasek akcji, Run i tryby (U3), Skala interfejsu (+78 more)
+Cohesion: 0.06
+Nodes (72): Komponenty (`src/ui/theme/components.css` + `src/ui/components/*.ts`), Kryjówka (U2), Run i tryby (U3), squadParam(), MIN_REPEAT_S, Note, playUiSound(), recipes (+64 more)
 
 ### Community 41 - "main.ts"
-Cohesion: 0.04
-Nodes (50): Ekrany ładowania: splasharty i porady, Splasharty i porady ładowania, hashSeed(), Settings, addFireShader(), ExplosionOptions, configureFx(), getLiteFx() (+42 more)
+Cohesion: 0.03
+Nodes (59): Tuning — `src/core/tuning.ts`, Zagrożenia w pokojach, Dodanie sceny debug, Menu ulepszeń (Tab w runie), Pauza i utrata fokusu, Mechanizm, Ograniczenia, Podział paczki (leniwe sceny) (+51 more)
 
 ### Community 42 - "HtmlRunScreens"
-Cohesion: 0.06
-Nodes (99): 1.5. Reguły `src/world/mapAudit.ts` (`tools/levels/mapAudit.mjs`), 4.1. Kryteria automatyczne (CLI i testy), 4.2. Kryteria wizualne i kompozycyjne (sprawdzalne na zrzutach PNG i w `?scene=map-walk&map=run1`), 4. Kryteria akceptacji (sprawdzalne w `mapAudit` i na zrzutach), 5.1. Etapy wdrożenia, 5. Poprawki Opusa (przegląd 24 XI) — WIĄŻĄ, mają pierwszeństwo przed sekcjami 1–4, 6. Wdrożenie, Dokument projektowy mapy `run1` — MAGAZYN KUROGANE ARMS (+91 more)
+Cohesion: 0.09
+Nodes (75): 4.1. Kryteria automatyczne (CLI i testy jednostkowe), 4.2. Kryteria wizualne i kompozycyjne (sprawdzalne na zrzutach PNG i w `?scene=map-walk&map=run2`), 4. Kryteria akceptacji (sprawdzalne w `mapAudit` i na zrzutach), Dachy Starego Miasta, alleyCourtDress(), around(), boundary(), BOUNDS (+67 more)
 
-### Community 43 - ".step"
+### Community 43 - "themes.test.ts"
 Cohesion: 0.08
-Nodes (42): state(), steps(), walkTo(), position(), state(), steps(), walkTo(), position() (+34 more)
+Nodes (31): Czytelność wrogów z daleka — poświata krawędzi (`src/render/enemyRim.ts`), Grubość i zanik tuszu z odległością, Koszt i kontrola, Motywy Neon Noir, Styl komiksowy Neon Noir (domyślny od 18 XI 2026), addEnemyRim(), emission(), enemyRimAt() (+23 more)
 
 ### Community 45 - "vec"
 Cohesion: 0.06
-Nodes (73): conquestMode, modeForArena(), roomSchema, blank(), rect(), rect(), syntheticRun(), generate() (+65 more)
+Nodes (78): Elektrownia, blank(), rect(), rect(), syntheticRun(), generate(), ADR-0011, palette (+70 more)
 
 ### Community 46 - "kurogane_residence.py"
 Cohesion: 0.07
 Nodes (66): control_window_wall(), deuterium_cryo_tank(), heat_exchanger_tower(), neutral_beam_injector(), valve(), abstract_sculpture(), arc_floor_lamp(), bar_stool() (+58 more)
 
 ### Community 47 - "vec"
-Cohesion: 0.17
-Nodes (43): Elektrownia, generate(), gantryWalk(), racks(), serviceRoad(), ADR-0011, railYard(), rect() (+35 more)
+Cohesion: 0.23
+Nodes (35): vec(), belt(), bounds, box(), calibration(), chargingStation(), containerYard(), crates() (+27 more)
 
 ### Community 48 - "AudioSystem"
-Cohesion: 0.07
-Nodes (18): Audio, Dźwięki (F1 #14), Integracja, Otoczenie (ambient), Warstwy pogody, Zasady, Ograniczenia, Ambience (+10 more)
+Cohesion: 0.09
+Nodes (13): Audio, Otoczenie (ambient), Warstwy pogody, Zasady, Ograniczenia, Ambience, AmbienceSource, AmbienceGraph (+5 more)
 
 ### Community 49 - "math"
-Cohesion: 0.14
-Nodes (38): Budowa i elektrownia, 1.4. Dostępne modele 3D (`public/assets/models/` i `src/data/render/mapModelBounds.json`), 3.10. Punkty spawnu wrogów (`spawnPoints`) i konfiguracja `director`, 3.11. Pułapki na typowe bugi i jak ich uniknąć, 3.1. Idea i narracja miejsca, 3.2. Układ 4 pomieszczeń — wymiary, współrzędne i rzut z góry (ASCII), 3.3. Połączenia, przepływ walki i linie wzroku, 3.4. Pion (wielopoziomowość) w każdym pomieszczeniu (+30 more)
+Cohesion: 0.09
+Nodes (51): Budowa i elektrownia, 1.2. Decyzja architektoniczna: `run1` jako pokój (`rooms`) czy poziom (`levels`)?, 1.4. Dostępne modele 3D (`public/assets/models/` i `src/data/render/mapModelBounds.json`), 1.5. Reguły `src/world/mapAudit.ts` (`tools/levels/mapAudit.mjs`), 1. Analiza silnika, 3.10. Punkty spawnu wrogów (`spawnPoints`) i konfiguracja `director`, 3.11. Pułapki na typowe bugi i jak ich uniknąć, 3.1. Idea i narracja miejsca (+43 more)
 
 ### Community 50 - "world/hubMap.ts"
-Cohesion: 0.08
-Nodes (25): HubMap, num(), svgEl(), area(), boundsOf(), captionFor(), HUB_MAP_STATION_COLORS, HubMapCaption (+17 more)
+Cohesion: 0.09
+Nodes (24): HubMap, num(), svgEl(), area(), boundsOf(), captionFor(), HUB_MAP_STATION_COLORS, HubMapCaption (+16 more)
 
-### Community 51 - "outline.ts"
-Cohesion: 0.03
-Nodes (85): Gradient nieba w przebiegu koloru, Atmosfera i głębia, Grubość i zanik tuszu z odległością, Kolejność w shaderze kompozycji, Kompozycja końcowa i impulsy, Koszt, Mechanizm, Ograniczenia (+77 more)
+### Community 51 - "viewmodelLayer.ts"
+Cohesion: 0.08
+Nodes (28): Viewmodel zawsze na wierzchu, Kiedy Rust/WASM ma sens, Metoda, Profil wydajności — czy przenosić moduły do Rusta (20 XI 2026), Rekomendacje (kolejność wg zysku do kosztu), Wykonane, Wyniki (przed poprawką), PostFxPass (+20 more)
 
 ### Community 52 - "run2.mjs"
 Cohesion: 0.09
 Nodes (48): circulation(), escalator(), generate(), rails(), shots, SLOPE, stairwell(), structure() (+40 more)
 
-### Community 53 - "RunState"
-Cohesion: 0.04
-Nodes (23): 5. Zapis runu, 2. Nagrody za run, 06 Zapis runu, Decyzje wspólne, Stan (2026-11-14), Tabela zadań, Zadania fazy F3 — Pętla runu, 06 Integracja runu z meta (+15 more)
-
 ### Community 54 - "Enemy"
-Cohesion: 0.07
+Cohesion: 0.06
 Nodes (17): canonical(), POINT_IDS, stableJson(), writeJson(), Issue, Measurement, RunLimits, Bind (+9 more)
 
 ### Community 55 - "hubScene.test.ts"
 Cohesion: 0.07
-Nodes (15): HubScreenActions, active, atSeat(), FakeMap, FakeScreens, handlerCount(), holdInteract, idle (+7 more)
+Nodes (18): HubScreenActions, active, advanceArrival(), atSeat(), FakeMap, FakeScreens, handlerCount(), holdInteract (+10 more)
 
 ### Community 56 - "flicker.test.ts"
 Cohesion: 0.09
-Nodes (23): Układ i dane, Wygląd okładzin, napisów, płomieni i beczek (`HubDecor`, `HubScene.buildBlocks`), flickerIntensity(), noise(), sourceFlicker(), availablePosters, HUB_BATCH_CELL_M, HubDecor (+15 more)
+Nodes (25): Migotanie oprawy, Układ i dane, Wygląd okładzin, napisów, płomieni i beczek (`HubDecor`, `HubScene.buildBlocks`), flickerIntensity(), noise(), sourceFlicker(), SignState, availablePosters (+17 more)
 
 ### Community 57 - "SceneAtmosphere"
-Cohesion: 0.05
-Nodes (59): Tło leśne rezydencji — run7 F-01–F-04, 1.2. Kluczowe nauczki z `run1`–`run3` oraz `bulwar1` zastosowane w `run4`, 6.2. Etapy prac (A–E), A. Zmiany w kodzie silnika (Etap A), 6.2. Etapy prac (A–E), A. Uogólnienie modułu tła (`SceneAtmosphere` / `Panorama`) na tło leśne i rejestracja `res_*` (Etap A), Zajezdnia Maglev — `arenaRailYard`, Horyzont dużych aren (+51 more)
+Cohesion: 0.06
+Nodes (52): Tło leśne rezydencji — run7 F-01–F-04, 1.3. Wnętrza, materiały, oświetlenie, pogoda i instancing — stan obecny w kodzie, 1.2. Kluczowe nauczki z `run1`–`run3` oraz `bulwar1` zastosowane w `run4`, 6.2. Etapy prac (A–E), A. Zmiany w kodzie silnika (Etap A), A. Uogólnienie modułu tła (`SceneAtmosphere` / `Panorama`) na tło leśne i rejestracja `res_*` (Etap A), Horyzont dużych aren, Panorama miasta i niebo (+44 more)
 
 ### Community 58 - "Boss"
-Cohesion: 0.16
-Nodes (6): 5. Wdrożenie, Korekta po przeglądzie zrzutów, Boss, copy(), BossPattern, ShieldPattern
+Cohesion: 0.14
+Nodes (7): 8. Boss: Dyrektor Ochrony Kurogane Arms, Boss (F3-16) — `src/enemies/boss.ts`, Boss, copy(), BossPattern, ShieldPattern, SummonPattern
 
-### Community 59 - "EnemyView"
-Cohesion: 0.12
-Nodes (8): gaitWeights(), rifleman(), knockdownOffset(), defaultModel(), EnemyView, ShieldHeadClearance, view(), fixture()
+### Community 59 - "getMaterial"
+Cohesion: 0.02
+Nodes (74): Boss: wezwanie i tarcza łamana — F3-17, Nawigacja, ruch i animacja, Render i animacja, Snajper i Dron — F2-13, Strzelec — F1 #09, Symulacja i maszyna stanów, Tarczownik i Egzekutor — F2-14, Wrogowie — F1 #08–09 (+66 more)
 
 ### Community 60 - "TalentSystem"
-Cohesion: 0.07
-Nodes (25): 09 Implanty, 05 Poziom zagrożenia, 08 Terminal drzewek (UI), 09 Warsztat (UI), 10 Tablica misji i pasek meta (UI), 12 Bot e2e F4 i playtest, Stan (2026-11-15), Tabela zadań (+17 more)
+Cohesion: 0.11
+Nodes (16): Debug, Drzewka i progi, Hybrydy (`hybrid`, progi [0,0,0,0]), Lista węzłów, Ostrze (`blade`, progi [0,1,4,7]), `resolveTalents` i `TalentSystem`, Rezonans (`resonance`, progi [0,1,4,7]), Strzelec (`gunner`, progi [0,1,4,7]) (+8 more)
 
 ### Community 61 - "Pełne prompty wysłane do generatora"
 Cohesion: 0.06
 Nodes (34): arrow — signs, 512×256, asphalt_puddles — surfaces, 1024×1024, asphalt — surfaces, 1024×1024, bar_24h — signs, 512×256, bar_mleczny — signs, 512×256, brick — surfaces, 1024×1024, cat_cafe — signs, 512×256, concrete — surfaces, 1024×1024 (+26 more)
 
-### Community 63 - "BossArenaFx"
-Cohesion: 0.22
-Nodes (5): Arena bossa bez różu (ADR 0006), Pozostałe parametry `tuning.vfx`, BossArenaFx, clamp01(), easeOut()
+### Community 62 - "build_enemy_cc0"
+Cohesion: 0.06
+Nodes (41): bm_box(), bm_ico(), bm_prism(), build_enemy_cc0(), at(), horn(), piece(), plate() (+33 more)
+
+### Community 63 - "bossArenaFx.ts"
+Cohesion: 0.08
+Nodes (16): Dyrektor Systemów Orbis Grid, Oświetlenie, Arena bossa bez różu (ADR 0006), Pozostałe parametry `tuning.vfx`, BossArenaFx, BossArenaFxOptions, clamp01(), Column (+8 more)
 
 ### Community 64 - "musicSchema.ts"
-Cohesion: 0.08
-Nodes (33): CompiledLoop, MusicSystemOptions, MusicTimer, Run, ScheduledEvent, ALL_MUSIC_LOOPS, CALM_VARIANTS, compileTrack() (+25 more)
+Cohesion: 0.07
+Nodes (38): CompiledLoop, MusicSystemOptions, MusicTimer, Run, ScheduledEvent, ALL_MUSIC_LOOPS, CALM_VARIANTS, compileTrack() (+30 more)
 
 ### Community 65 - "numpy"
-Cohesion: 0.16
+Cohesion: 0.17
 Nodes (15): build(), checker(), color_masks(), destination(), dominant(), green_key(), material_fragments(), minimum_cut() (+7 more)
 
-### Community 66 - "KipJoint"
-Cohesion: 0.33
-Nodes (3): KipJoint, kipJoints(), add()
+### Community 66 - "hubScreens.ts"
+Cohesion: 0.10
+Nodes (13): ActionBarItem, UiScreen, HubPanel, HubPanelContext, HubPanelFactory, HtmlHubScreens, HtmlHubScreensOptions, stationText (+5 more)
 
 ### Community 68 - "ImplantSystem"
-Cohesion: 0.11
-Nodes (13): Nagrody i ekonomia (F3-10/11), `ImplantSystem` i nakładanie na `Stats`, Implanty (F3-09), Pula implantów (24 definicje, 6 łańcuchów ulepszeń), Schemat danych (`ImplantDefinition`), F3-11: nagrody i ekonomia, F4-06: start z kryjówki i nagrody meta, Pętla runu (`RunState` i `RunManager`) — F3-05 (+5 more)
+Cohesion: 0.17
+Nodes (9): `ImplantSystem` i nakładanie na `Stats`, Implanty (F3-09), Integracja z `RoomScene` i sprawdzenie w 30 sekund, Pula implantów (24 definicje, 6 łańcuchów ulepszeń), Schemat danych (`ImplantDefinition`), implantSource(), ImplantSystem, ImplantSystemOptions (+1 more)
 
 ### Community 69 - "handRig.test.ts"
-Cohesion: 0.12
-Nodes (15): angle, bladeGrip, handNodes, handPoses, handPosesSchema, poseSchema, vector, applyHandMaterials() (+7 more)
+Cohesion: 0.09
+Nodes (23): surfaceFor(), CAST, REST, angle, bladeGrip, handNodes, HandPose, handPoses (+15 more)
 
 ### Community 70 - "workshopState.ts"
-Cohesion: 0.04
-Nodes (81): Warsztat, weaponSchema, skinSource(), moddedWeapon(), moduleFitsWeapon(), ModuleSlot, UiTabs, HubPanel (+73 more)
+Cohesion: 0.05
+Nodes (77): Warsztat, equipSkin(), skinSource(), moduleFitsWeapon(), ModuleSlot, sanitizeModules(), skinFitsWeapon(), canCreateWeaponPreview() (+69 more)
 
 ### Community 71 - "AudioBackend"
-Cohesion: 0.15
-Nodes (8): Muzyka, AmbienceKind, AmbienceSynth, MusicSystem, MusicEvent, AudioBackend, playLayers(), sequence()
+Cohesion: 0.16
+Nodes (8): Muzyka, AmbienceKind, AmbienceSynth, MusicSystem, AudioBackend, createNoiseBuffer(), playLayers(), sequence()
 
 ### Community 72 - "build_player_arm"
-Cohesion: 0.05
-Nodes (28): attach_hand_item(), build_player_arm(), finger_plate(), point(), palm_detail(), _finger_point(), _finger_section(), _fpp_band() (+20 more)
+Cohesion: 0.07
+Nodes (23): build_player_arm(), finger_plate(), point(), palm_detail(), _finger_point(), _finger_section(), _fpp_band(), _fpp_hand_part() (+15 more)
 
 ### Community 73 - "frameProfiler"
-Cohesion: 0.12
-Nodes (12): Counter, COUNTERS, FRAME_STAGES, FrameProfile, frameProfiler, FrameSample, setFrameProfiler(), TimerExtension (+4 more)
+Cohesion: 0.19
+Nodes (5): frameProfiler, setFrameProfiler(), fixture(), pipelineFixture(), renderDefaults
 
 ### Community 74 - "box"
 Cohesion: 0.07
 Nodes (79): tritium_cask_pallet(), wall_pipe_manifold(), anomaly_containment_pod(), bio_scanner_gate(), blast_door_frame(), box(), briefing_holotable(), catwalk_rail() (+71 more)
 
 ### Community 75 - "mapAudit.ts"
-Cohesion: 0.09
-Nodes (39): 4.1. Nowe modele 3D (`tools/blender/sets/kurogane_lab.py` → `public/assets/models/city/lab_*.glb`), Tabela 1: Modele Wielkiej Sali Testów Humanoidalnych (`B1`), komunikacji, śluz i szatni (`B2`) — 15 modeli, Tabela 2: Modele wyposażenia tematycznego (`P2`, `P3`, `P4`, `B2`, `B3`) i Easter Eggów — 10 modeli, add(), vec3(), viewpoints(), close(), open() (+31 more)
+Cohesion: 0.10
+Nodes (37): add(), vec3(), viewpoints(), look(), close(), open(), validateElevators(), auditMap() (+29 more)
 
 ### Community 76 - "runScreens.ts"
 Cohesion: 0.07
-Nodes (34): achievementProgress(), ACHIEVEMENT_CATEGORIES, ACHIEVEMENT_COUNTERS, ACHIEVEMENT_ICONS, AchievementCategory, AchievementCounter, achievementDefinitions, AchievementReward (+26 more)
+Nodes (32): achievementProgress(), ACHIEVEMENT_CATEGORIES, ACHIEVEMENT_ICONS, achievementDefinitions, AchievementIconKey, achievementIconKeys(), createAchievementIcon(), hasAchievementIcon() (+24 more)
 
 ### Community 77 - "fppBladeFx.ts"
-Cohesion: 0.15
-Nodes (10): BladeEdge, bladeEdges(), BladeFxItem, BladeUniforms, cachedEdges(), edgeCache, FppBladeFxOptions, Trail (+2 more)
+Cohesion: 0.09
+Nodes (17): BladeEdge, bladeEdges(), BladeFxItem, BladeUniforms, cachedEdges(), edgeCache, FppBladeFx, FppBladeFxOptions (+9 more)
 
 ### Community 78 - "panel"
 Cohesion: 0.10
@@ -757,32 +739,32 @@ Cohesion: 0.08
 Nodes (28): runs-on, steps, timeout-minutes, needs, runs-on, steps, strategy, timeout-minutes (+20 more)
 
 ### Community 81 - "RoomScene"
-Cohesion: 0.03
-Nodes (58): RoomScene (F3-04), 17 Boss: wezwanie, faza tarczy, pokój bossa, 2.1. Priorytet P0 — MUSI BYĆ PRZED `run1`, 1.1. Co już działa w silniku po wdrożeniu `run1`, 1.2. Nawigacja po 3 kondygnacjach, ruchome schody jako `walkable` i ograniczenie `spawnPoints` w `roomSchema`, 3.9. Pułapki techniczne specyficzne dla `run2` i jak ich uniknąć, Etap A — fundamenty kodu (F-01–F-05), 1.1. Co już działa w silniku i jak `run3` z tego korzysta (+50 more)
+Cohesion: 0.04
+Nodes (29): RoomScene (F3-04), Czytelność zagadki (2,0 / 5), Wymagane zmiany kodu (analiza `RoomScene`, `GrabPuzzleView` i dokumentacji), 2.1. Priorytet P0 — MUSI BYĆ PRZED `run1`, 1.1. Co już działa w silniku po wdrożeniu `run1`, Etap A — fundamenty kodu (F-01–F-05), 1.1. Co już działa w silniku i jak `run3` z tego korzysta, 1.1. Co już działa w silniku i jak `run7` z tego korzysta (+21 more)
 
 ### Community 82 - "NEORYDER — Game Design Document"
 Cohesion: 0.07
-Nodes (27): 10. Tryby gry, 11. Styl wizualny i audio, 12. Świat i frakcje (szkic), 13. Zakres demo (F7), 14. Zakres F1 (bieżąca faza), 15. Poza zakresem (nie robimy w demo), 16. Ryzyka i zasady produkcji, 1. Wizja i pitch (+19 more)
+Nodes (26): 10. Tryby gry, 11. Styl wizualny i audio, 12. Świat i frakcje (szkic), 13. Zakres demo (F7), 14. Zakres F1 (bieżąca faza), 15. Poza zakresem (nie robimy w demo), 16. Ryzyka i zasady produkcji, 1. Wizja i pitch (+18 more)
 
 ### Community 83 - "buildM01.mjs"
-Cohesion: 0.11
-Nodes (9): RoomDefinition, ArenaBuilder, ArenaMetadata, Block, Material, Rect, Rng, Vec3 (+1 more)
+Cohesion: 0.10
+Nodes (9): Etap D — generator mapy `run2`, ArenaBuilder, ArenaMetadata, Block, Material, Rect, Rng, Vec3 (+1 more)
 
 ### Community 84 - "hubStations.ts"
-Cohesion: 0.06
-Nodes (32): `npc_civilian.glb` (mieszkańcy kryjówki), Debug, Interfejs stacji (U2), Kryjówka (hub) — F4-07, Menu główne, Miejsca mieszkańców i rezerwacje, Nakładki (`HubScreens`), NPC (+24 more)
-
-### Community 85 - "loadSettings"
-Cohesion: 0.13
-Nodes (23): Skupienie: czas gracza — F2-06, Kontrakt integracji, squadParam(), loadSfx(), defaultGamepadSettings(), defaultSettings(), loadSettings(), saveSettings() (+15 more)
-
-### Community 86 - "ArenaNavigation"
 Cohesion: 0.08
-Nodes (28): Determinizm, Generatory aren — ADR 0011 / D5, Jak czytać SVG i sprawdzić w 30 sekund, Jak dodać arenę, Prymitywy, Walidacja i ograniczenia kontraktu, Szturm i Kradzież rdzenia na dużych arenach, Ryzyka dla wersji produkcyjnej (+20 more)
+Nodes (32): Debug, Interfejs stacji (U2), Kontrola poprawek oprawy kryjówki (bug1–bug6), Kryjówka (hub) — F4-07, Menu główne, Miejsca mieszkańców i rezerwacje, Migotanie i korytarz północny, Naszywki Iskry (zakładka terminalu) (+24 more)
+
+### Community 85 - "renderMusic.mjs"
+Cohesion: 0.08
+Nodes (21): document, folder, root, specs, blocks, bounds(), gap(), local() (+13 more)
+
+### Community 86 - ".path"
+Cohesion: 0.24
+Nodes (5): Maszyna stanów — `src/allies/ally.ts`, reach(), reach(), reach(), reach()
 
 ### Community 88 - "textClarity.test.ts"
 Cohesion: 0.03
-Nodes (24): 14 Ekrany nagrody, sklepu i odpoczynku, Menu i mapa sektora — F3-13, districtName(), MapScreen, HtmlRunScreens, RunScreenActions, RunScreens, RunScreenView (+16 more)
+Nodes (25): Wyzwanie dnia, Menu i mapa sektora — F3-13, ChallengeSavePort, districtName(), MapScreen, text, HtmlRunScreens, RunScreenActions (+17 more)
 
 ### Community 89 - "Zarys fabuły — NEORYDER"
 Cohesion: 0.08
@@ -790,71 +772,67 @@ Nodes (24): 10. Kryjówka zmienia się razem z fabułą, 11. Powiązanie z rozgr
 
 ### Community 90 - "NEORYDER — Roadmapa dla agentów AI"
 Cohesion: 0.08
-Nodes (24): Bronie laserowe (ścieżka Strzelec), F0 — Fundamenty, F1 — Prototyp walki (vertical slice „feel”), F2 — Arsenał i ścieżki buildów, F3 — Pętla runu (roguelite), F4 — Meta-progres i kryjówka, F5 — Misje i fabuła, F6 — Freeplay (+16 more)
-
-### Community 91 - "GrabPower"
-Cohesion: 0.22
-Nodes (3): Chwyt i rzut (`grab.json`, `kind: 'grab'`, F2-09), Scena `grab-test` — kontrola w 30 sekund, GrabPower
+Nodes (23): Bronie laserowe (ścieżka Strzelec), F1 — Prototyp walki (vertical slice „feel”), F2 — Arsenał i ścieżki buildów, F3 — Pętla runu (roguelite), F4 — Meta-progres i kryjówka, F5 — Misje i fabuła, F6 — Freeplay, F7 — Polish, balans i demo (+15 more)
 
 ### Community 92 - "run6.py"
-Cohesion: 0.22
-Nodes (16): build(), optimize(), read(), write(), build(), forbidden_pixels(), manifest_entry(), optimize() (+8 more)
+Cohesion: 0.18
+Nodes (19): build(), optimize(), read(), write(), align_edge_bands(), build(), forbidden_pixels(), manifest_entry() (+11 more)
 
 ### Community 93 - "Poziomy liniowe"
 Cohesion: 0.20
 Nodes (12): Misje liniowe, M02 — Punkt kontrolny, M03 „List przewozowy”, M05 — Adiutant, M06 — Odlewnia, M07 — Nocny dyżur, M08 — Kwarantanna, M09 — Brat (+4 more)
 
-### Community 94 - "runTypes.ts"
-Cohesion: 0.07
-Nodes (51): Konsekwencje dla kontraktów (`docs/api.md`, dopisać w F3-01 po akceptacji), 01 Kontrakty F3, MapNode, NodeType, RARITIES, Rarity, RoomPlanner, ADR-0005 (+43 more)
+### Community 94 - "implants.ts"
+Cohesion: 0.14
+Nodes (21): IMPLANT_SOURCE_PREFIX, ImplantAcquireSource, ImplantSetOptions, isHealthTarget(), isStatsList(), loadImplantDefinitions(), modules, toDefinitionsMap() (+13 more)
 
 ### Community 95 - "arenaConstructionSite.mjs"
 Cohesion: 0.09
-Nodes (38): Katalog, Budowa wieżowca, ATRIUM, BOUNDS, COLOR, COLUMNS_X, COLUMNS_Z, COMPOUND (+30 more)
+Nodes (37): Budowa wieżowca, ATRIUM, BOUNDS, COLOR, COLUMNS_X, COLUMNS_Z, COMPOUND, compound() (+29 more)
 
 ### Community 96 - "Trzeci pakiet (2026-11-15) — prompty końcowe"
 Cohesion: 0.08
 Nodes (25): arcade — sign, 512×256, beer — sign, 512×256, cocktail — sign, 512×512, crack_floor — decal, 512×512, floor_stop — decal, 512×512, graffiti_piece — decal, 512×512, graffiti_tag3 — decal, 512×512, holo_cat — holo, 512×1024 (+17 more)
 
 ### Community 97 - "MeleeTest"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (5): Z3: wykończenia ostrzem, Z8: widoki i kamera debug, ExecuteDeps, ExecuteSystem, MeleeTest
 
-### Community 98 - "roster.ts"
-Cohesion: 0.06
-Nodes (53): Drużyna w runie, trybach i na arenie — `src/allies/roster.ts`, ALLY_BARKS, ALLY_ROLES, AllyBark, AllyDefinition, allyDefinitions, allySchema, AllyWeapon (+45 more)
+### Community 98 - "squad.ts"
+Cohesion: 0.09
+Nodes (27): AllyEvent, AllyLeader, AllyMotion, AllyParams, AllyReviveSource, AllyShot, AllyState, AVOID_OFFSETS (+19 more)
 
 ### Community 99 - "Prototypy eskorty więźnia i wagonu (S4-03)"
-Cohesion: 0.12
-Nodes (13): Cywile — naukowcy Kurogane Arms, Dane i symulacja, Sprawdzenie ręczne (30 sekund), Komendy debug (konsola `` ` ``), Koszt, Liczby (`src/core/tuning.ts`, `prototypes`, widoczne w lil-gui), Obrażenia i wrogowie, Prototypy eskorty więźnia i wagonu (S4-03) (+5 more)
+Cohesion: 0.14
+Nodes (14): Jak uruchomić (30 s), Komendy debug (konsola `` ` ``), Koszt, Liczby (`src/core/tuning.ts`, `prototypes`, widoczne w lil-gui), Obrażenia i wrogowie, Prototypy eskorty więźnia i wagonu (S4-03), Testy, Wagon — `src/world/railPayload.ts` (+6 more)
 
 ### Community 100 - "synergies.ts"
-Cohesion: 0.11
-Nodes (17): STAT_IDS, EventFacts, files, positive, SYNERGY_EVENTS, SYNERGY_TAG, SynergyEffect, SynergyEvent (+9 more)
+Cohesion: 0.05
+Nodes (35): Cel, [F1][Architekt] Model obrażeń i komponenty Health / Hitbox / Hurtbox, Kryteria akceptacji, Poza zakresem, Model danych, DamageTargetOptions, Target, StrikeExtra (+27 more)
 
-### Community 101 - "waitSimSteps"
-Cohesion: 0.08
-Nodes (8): Pokaz i weryfikacja, ally(), AllyState, waitSimSteps(), Npc, openHub(), Loadout, Meta
+### Community 101 - "allies.spec.ts"
+Cohesion: 0.17
+Nodes (8): Drużyna — `src/allies/squad.ts`, Poziomy liniowe — `src/world/levelSchema.ts`, RoomScene, Sojusznicy, Wejście, Zdarzenia (`GameEvents`), ally(), AllyState
 
 ### Community 102 - "HubSoundscape"
-Cohesion: 0.18
-Nodes (8): Otoczenie kryjówki i przejazd pociągu, Źródła kryjówki, Dźwięk otoczenia i pociąg, Pył pociągu w kryjówce, HubSoundscape, TrainDust, hubAmbienceSources(), HubTrain
+Cohesion: 0.17
+Nodes (9): Otoczenie kryjówki i przejazd pociągu, Źródła kryjówki, Dźwięk otoczenia i pociąg, Pył pociągu w kryjówce, HubSoundscape, TrainDust, hubAmbienceSources(), HubTrain (+1 more)
 
 ### Community 103 - "Dokument projektowy mapy `run8` — ELEKTROWNIA FUZYJNA KUROGANE ARMS („KOMPLEKS TOKAMAKA HELIOS-IV”)"
 Cohesion: 0.08
-Nodes (25): 2.1. Priorytet P0 — MUSI BYĆ PRZED `run8`, 2.2. Priorytet P1 — Szlif po pierwszym odbiorze wizualnym, 2. Lista braków („fundamenty”) z priorytetem P0 / P1, 4.1. Wpis `setPieces` w danych pokoju `src/data/rooms/run8.json`, 4.2. Wygląd, anatomia 3D i warstwy animacji Tokamaka w `src/render/fusionReactor.ts`, 4.3. Kolizja podstawy w generatorze `run8.mjs` (`blocks[]`), 4.4. Decyzja projektowa: Reaktor jako czysta dekoracja i twarda osłona (BEZ hazardu wokół podstawy) — uzasadnienie, 4. Reaktor Fuzyjny (Tokamak „Helios-IV”) — specyfikacja wizualna, animacja, audio i kolizja podstawy (+17 more)
+Nodes (25): 1.2. Kluczowe nauczki z `run7` (oraz `run1`–`run6`) zastosowane w `run8`, 1. Analiza silnika i nauczki z `run1`–`run7`, 2.2. Priorytet P1 — Szlif po pierwszym odbiorze wizualnym, 2. Lista braków („fundamenty”) z priorytetem P0 / P1, 4.1. Wpis `setPieces` w danych pokoju `src/data/rooms/run8.json`, 4.2. Wygląd, anatomia 3D i warstwy animacji Tokamaka w `src/render/fusionReactor.ts`, 4.3. Kolizja podstawy w generatorze `run8.mjs` (`blocks[]`), 4.4. Decyzja projektowa: Reaktor jako czysta dekoracja i twarda osłona (BEZ hazardu wokół podstawy) — uzasadnienie (+17 more)
 
-### Community 104 - "threatLevel.test.ts"
-Cohesion: 0.06
-Nodes (20): blocks, Point, run3, blocks, Point, Goal, nav, occluders (+12 more)
+### Community 104 - "run7Navigation.test.ts"
+Cohesion: 0.12
+Nodes (10): blocks, Point, Goal, nav, occluders, stairEnds, stairsNav, surfaceNav (+2 more)
 
-### Community 105 - "math.ts"
-Cohesion: 0.03
-Nodes (156): Kontrakty F1 (zatwierdzone, do implementacji w zadaniach F1), Nowe typy, Zdarzenia dopisywane do `GameEvents`, 01 Kontrakty F2, 03 Tryby strzału i dane broni, @dimforge/rapier3d-compat, RapierModule, SquadCommandRegister (+148 more)
+### Community 105 - "EventBus"
+Cohesion: 0.02
+Nodes (195): ADR-0003, vitest, Attack, AttackRow, BossTimelineEvent, enemyDefinitions, evaluateGate(), SimulationOptions (+187 more)
 
 ### Community 106 - "HubFaunaRuntime"
-Cohesion: 0.14
-Nodes (7): HubFauna, HubFaunaRuntime, pose(), remember(), FaunaGround, hubLayoutSchema, standingNpcs()
+Cohesion: 0.06
+Nodes (17): HubFauna, CatRuntime, FaunaPose, HubFaunaRuntime, pose(), RatRuntime, remember(), FaunaGround (+9 more)
 
 ### Community 107 - "MissionScene"
 Cohesion: 0.18
@@ -866,39 +844,39 @@ Nodes (21): accessors, animations, bin, binHead, body, bufferViews, chunks, CLIP
 
 ### Community 109 - "Assety 3D — konwencje i katalog"
 Cohesion: 0.05
-Nodes (35): Assety 3D — konwencje i katalog, Biurowiec Kurogane Arms (run4), Budowanie i kontrola wizualna, Galeria handlowa (run2), `hub_cat.glb` (kot Węgielek), Katalog i odbiór wizualny, Konwencje (obowiązkowe dla nowych modeli), Kryjówka — cywil NPC i kot (+27 more)
+Nodes (38): Assety 3D — konwencje i katalog, Biurowiec Kurogane Arms (run4), Budowanie i kontrola wizualna, Galeria handlowa (run2), `hub_cat.glb` (kot Węgielek), Katalog, Katalog i odbiór wizualny, Konwencje (obowiązkowe dla nowych modeli) (+30 more)
 
-### Community 110 - "MissionScene"
-Cohesion: 0.16
-Nodes (4): Wyzwalacze i kolejka radia, MissionScene, MissionHintPanel, MissionDirection
+### Community 110 - ".registerCommands"
+Cohesion: 0.06
+Nodes (19): Audyt misji 1 „Maszty” (2026-11-22), Czego nie sprawdzono, Wnioski, Krzywa aktu I, M02 — uwolnienie kurierów, M05 — Adiutant, M08 — Kwarantanna, M09 — Brat (+11 more)
 
 ### Community 111 - "hubPowerDip.test.ts"
 Cohesion: 0.14
-Nodes (11): Spadek napięcia, DipTuning, HubEvents, hubEventsSchema, HubPowerDip, loadHubEvents(), pickDipComment(), PowerDipComment (+3 more)
+Nodes (12): Spadek napięcia, Paleta i materiały, DipTuning, HubEvents, hubEventsSchema, HubPowerDip, loadHubEvents(), pickDipComment() (+4 more)
 
 ### Community 112 - "Pomiar referencyjny (S1-04)"
 Cohesion: 0.40
 Nodes (5): Metryki, Pomiar referencyjny (S1-04), Scenariusze, Wnioski z liczb (cele do decyzji, bez wdrożeń), Wyniki z tego komputera (20 XI 2026)
 
 ### Community 113 - "3. Projekt mapy `run2` — GALERIA HANDLOWA „ATRIUM NOVA”"
-Cohesion: 0.15
-Nodes (13): 3.1. Idea, narracja miejsca i klimat „noc po zamknięciu”, 3.2. Wymiary główne i przekrój pionowy galerii, 3.3. Rzuty kondygnacji ze współrzędnymi (L0, L1, L2), 3.4. Lista 15 sklepów (każdy inny branżowo, z nazwą, neonem i ekspozycją widoczną za kratą), 3.5. Komunikacja pionowa i pozioma: ruchome schody, winda, klatki schodowe, mostki, start i wyjście, 3.6. Walka między piętrami, linie wzroku przez atrium, osłony i hazardy, 3.7. Rozmieszczenie 16 punktów spawnu wrogów (`spawnPoints`) na 3 kondygnacjach, 3.8. Oświetlenie nocne z oprawami, reklamy holograficzne, detale BHP i decale (+5 more)
+Cohesion: 0.14
+Nodes (14): 3.1. Idea, narracja miejsca i klimat „noc po zamknięciu”, 3.2. Wymiary główne i przekrój pionowy galerii, 3.3. Rzuty kondygnacji ze współrzędnymi (L0, L1, L2), 3.4. Lista 15 sklepów (każdy inny branżowo, z nazwą, neonem i ekspozycją widoczną za kratą), 3.5. Komunikacja pionowa i pozioma: ruchome schody, winda, klatki schodowe, mostki, start i wyjście, 3.6. Walka między piętrami, linie wzroku przez atrium, osłony i hazardy, 3.7. Rozmieszczenie 16 punktów spawnu wrogów (`spawnPoints`) na 3 kondygnacjach, 3.8. Oświetlenie nocne z oprawami, reklamy holograficzne, detale BHP i decale (+6 more)
 
-### Community 114 - "difficulty.ts"
-Cohesion: 0.09
-Nodes (23): Wybór i zamrożenie, definitionFor(), factories, bindCombatDifficulty(), chance, combatDifficulties, combatDifficulty(), difficultyModifiers() (+15 more)
+### Community 114 - "WaveDirector"
+Cohesion: 0.05
+Nodes (49): 3. Budżet zagrożenia i fale pokoju, 08 Budżet zagrożenia, Kontrakt integracji, Wybór i zamrożenie, Assignment, DirectorConfig, KINDS, positive (+41 more)
 
 ### Community 115 - "inputGlyphs.ts"
 Cohesion: 0.04
-Nodes (40): EventType, actionSchema, BindingOverrides, mouseBindings, resolveBindings(), TutorialMachine, TutorialCondition, tutorialConditionSchema (+32 more)
+Nodes (43): actionSchema, assignBinding(), BindingOverrides, isBindingCode(), mouseBindings, resolveBindings(), defaultSettings(), loadSettings() (+35 more)
 
 ### Community 116 - "weaponPreview.ts"
-Cohesion: 0.07
-Nodes (24): SkinDefinition, surfaceFor(), canCreateWeaponPreview(), framingBox(), HIGHLIGHT_COLOR, Lit, MAX_PITCH, PREVIEW_HEIGHT (+16 more)
+Cohesion: 0.08
+Nodes (18): Podgląd 3D w warsztacie (runda B), loadModel(), applyFppSurfaces(), FALLBACK_WEAPON_MODEL, loadWeaponScene(), surfaces, framingBox(), HIGHLIGHT_COLOR (+10 more)
 
 ### Community 117 - "crate"
-Cohesion: 0.06
-Nodes (37): 1. Ocena obecnego stanu, 4. Kryteria odbioru dla zrzutów po zmianach, Audyt level designu i plan przebudowy mapy `arena` (_Nielegalny Ring Walk „Klatka”_), Czytelność (2,5 / 5), Gameplay — analiza pod kątem długiej walki falowej (2,0 / 5), Klimat (1,0 / 5), Sensowność i narracja miejsca (1,0 / 5), Pomieszczenie 1 — Śluza Odpraw i Kordon Ochrony (`18 × 16 m`) (+29 more)
+Cohesion: 0.04
+Nodes (51): 1. Ocena obecnego stanu, 4. Kryteria odbioru dla zrzutów po zmianach, Czytelność (2,5 / 5), Gameplay — analiza pod kątem długiej walki falowej (2,0 / 5), Klimat (1,0 / 5), Sensowność i narracja miejsca (1,0 / 5), 1. Ocena obecnego stanu, 1. Osłony i linie strzału (Sightlines) (+43 more)
 
 ### Community 118 - "compilerOptions"
 Cohesion: 0.11
@@ -909,47 +887,47 @@ Cohesion: 0.12
 Nodes (16): 10. Dźwięk otoczenia i pociąg, 11. Migotanie świateł, napisów i spadek napięcia (`hub dip`), 12. Wydajność (licznik FPS w trybie debug), 13. Uwagi do „feel”, 1. Ekrany ładowania, 2. Spacer po strefach (`hub tp` / `hub look`), 3. Mieszkańcy (23 NPC), 4. Podsłuchane rozmowy (+8 more)
 
 ### Community 120 - "disposeCityGroup"
-Cohesion: 0.07
-Nodes (64): 1. Decyzja, 2. Realizacja na istniejącej pętli (bez przepisywania zapisu i nagród), 3. Segment, 4. Kolejność wdrożenia, 5. Konsekwencje, ADR 0010 — Misje jako liniowe poziomy, 10. `combatFloodedTunnel` — *Zalany tranzyt*, 11. `combatLaserYard` — *Plac bramek* (+56 more)
+Cohesion: 0.06
+Nodes (74): 1. Mapa sektora: graf warstwowy z seeda, 2. Realizacja na istniejącej pętli (bez przepisywania zapisu i nagród), 10. `combatFloodedTunnel` — *Zalany tranzyt*, 11. `combatLaserYard` — *Plac bramek*, 12. `combatPillars` — *Hala filarów*, 13. `combatPlatforms` — *Hala z podestami*, 14. `combatSubstation` — *Podstacja Iskra*, 15. `combatWarehouse` — *Magazyn kontenerowy* (+66 more)
 
 ### Community 121 - "ref_node_fs"
-Cohesion: 0.02
-Nodes (69): additionalSpecs, bounds, measured, originalHashes, report, specs, COMIC_ALIASES, COMIC_SURFACES (+61 more)
+Cohesion: 0.04
+Nodes (38): vite, GRIP, SOCKETS, dataDir, modelDir, filesBelow(), here, [output, ...ids] (+30 more)
 
 ### Community 122 - "Narzędzia i prompty tekstur NEORYDER"
-Cohesion: 0.14
+Cohesion: 0.12
 Nodes (14): Drugi pakiet — 17 tekstur (2026-11-15), Kontrola i ponowne generowanie, labels — chroma green background #00ff00, Narzędzia i prompty tekstur NEORYDER, Odtworzenie, Pakiet run3 — Etap C, Pakiet run5 — med, Pakiet run6 — targ (+6 more)
 
 ### Community 123 - "MissionObjectives"
-Cohesion: 0.12
-Nodes (11): MissionHud, MissionObjectives, ObjectiveHooks, MissionDefinition, MissionObjective, missionObjectiveSchema, objectives(), far (+3 more)
-
-### Community 124 - "cityPropsTest.ts"
 Cohesion: 0.06
-Nodes (24): CITY_PROP_MODELS, CONSTRUCTION_POWER_LIGHTS, constructionPowerSlots, LIGHT_COLORS, Mount, OVERPASS_ROOFS_DOCKS_BOUNDS, OVERPASS_ROOFS_DOCKS_GROUND, OVERPASS_ROOFS_DOCKS_LIGHTS (+16 more)
+Nodes (21): Szturm S2b-02, Tryby areny S2b-01, 5. Wdrożenie, Korekta po przeglądzie zrzutów, MissionView, SubdueMissionRoom, AssaultView, MissionHud (+13 more)
+
+### Community 124 - "Tutorial"
+Cohesion: 0.12
+Nodes (5): TutorialMachine, TutorialCondition, TutorialStep, Tutorial, TutorialPanel
 
 ### Community 125 - "fppInspect.ts"
-Cohesion: 0.17
-Nodes (9): blend(), FppInspect, InspectKey, inspectPose(), InspectTuning, Pose, smoothstep(), Triple (+1 more)
+Cohesion: 0.18
+Nodes (10): HeldKind, blend(), FppInspect, InspectKey, inspectPose(), InspectTuning, Pose, smoothstep() (+2 more)
 
 ### Community 126 - "metaSim.ts"
-Cohesion: 0.09
-Nodes (32): 11 Symulacja balansu meta, buyGreedy(), KILLS_BOSS, KILLS_PER_COMBAT, KILLS_PER_ELITE, MetaSimResult, MetaSimRow, renderDistrictComparison() (+24 more)
+Cohesion: 0.10
+Nodes (33): buyGreedy(), KILLS_BOSS, KILLS_PER_COMBAT, KILLS_PER_ELITE, MetaSimResult, MetaSimRow, renderDistrictComparison(), renderMetaSection() (+25 more)
 
 ### Community 127 - "LightningRenderer"
-Cohesion: 0.08
-Nodes (17): ArcSlot, at(), clamp(), DEFAULT_VFX, isArc(), isSource(), LightningArc, LightningRenderer (+9 more)
+Cohesion: 0.09
+Nodes (16): ArcSlot, at(), clamp(), DEFAULT_VFX, isArc(), isSource(), LightningArc, LightningRenderer (+8 more)
 
 ### Community 128 - "NEORYDER — backlog rozwoju (etapy po kolei)"
-Cohesion: 0.05
-Nodes (40): NEORYDER — backlog rozwoju (etapy po kolei), S10-01 Czytelność i pierwsze minuty, S10-02 Kandydat do wydania, S11-01 Publikacja dema, S11–S12 — publikacja, S12-01 Pierwsza aktualizacja, S2-01 Tablica misji, odprawa, cel w HUD, S2-02 „Maszty” — sabotaż trzech masztów (+32 more)
+Cohesion: 0.06
+Nodes (34): NEORYDER — backlog rozwoju (etapy po kolei), S10-01 Czytelność i pierwsze minuty, S10-02 Kandydat do wydania, S11-01 Publikacja dema, S11–S12 — publikacja, S12-01 Pierwsza aktualizacja, S1-01 ADR 0008: misje i kampania, S1-02 Schemat danych misji (+26 more)
 
 ### Community 129 - ".emit"
 Cohesion: 0.07
-Nodes (19): 6. AI: tokeny ataku i sloty flankowania, Wręcz (F2-10, F2-11), Walka i feel, Blok, Maszyna stanów, Ostrze plazmowe (F1 #07), Parowanie ciosów wręcz, Parowanie pocisków (F1 #10) (+11 more)
+Nodes (25): Wręcz (F2-10, F2-11), 11 Warianty ostrzy, Walka i feel, Blok, Maszyna stanów, Ostrze plazmowe (F1 #07), Parowanie ciosów wręcz, Parowanie pocisków (F1 #10) (+17 more)
 
 ### Community 130 - "Balans misji — fale i eskorta"
-Cohesion: 0.10
+Cohesion: 0.12
 Nodes (16): Balans misji — fale i eskorta, Dziesięć starć o najwyższej presji, Eskorty, Krzywa misji, m01-maszty — Maszty, m02-punkt-kontrolny — Punkt kontrolny, m03-list-przewozowy — List przewozowy, m04-ladunek-klasy-k — Ładunek klasy K (+8 more)
 
 ### Community 131 - "Misja 13 — Kamerton"
@@ -957,44 +935,40 @@ Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 13 — Kamerton, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka), Przebieg (+4 more)
 
 ### Community 132 - "PropPhysicsSystem"
-Cohesion: 0.05
-Nodes (19): Beczki i kredyt zabójstw, Cykl i trafienia, Dane i walidacja, Dodanie zagrożenia, Strojenie i prezentacja, Wywracalne dekoracje (fizyka B-P3), Z11: nowe pokoje z zagrożeniami, Zagrożenia w pokojach (Z2) (+11 more)
+Cohesion: 0.06
+Nodes (31): Integracja modeli portu, Estakada, dachy, doki (duże areny, ADR 0011), 5. Wdrożenie, Audyt level designu i plan przebudowy mapy `arena` (_Nielegalny Ring Walk „Klatka”_), Korekta po przeglądzie zrzutów „after”, Wymagane zmiany kodu (analiza obsługi pól w `src/scenes/arena.ts` względem `src/scenes/roomScene.ts`), 2.2. Priorytet P1 — MOŻE PÓŹNIEJ (po pierwszym wdrożeniu `run1`), 2. Lista braków („fundamenty”) z priorytetem (+23 more)
 
-### Community 133 - "sectorSchema.ts"
-Cohesion: 0.07
-Nodes (24): costs, enemies, enemyThreatCost(), intRangeSchema, loadSectorDefinition, nodeTypeSchema, nonnegative, positive (+16 more)
+### Community 133 - "BloomPass"
+Cohesion: 0.14
+Nodes (6): Gradient nieba w przebiegu koloru, Z20 — selektywna maska z głębią koloru, BloomPass, StylePipeline, ReflectionPass, fixture()
 
 ### Community 134 - "runInventory.ts"
-Cohesion: 0.06
-Nodes (29): Obserwacje (cytaty i zdarzenia), Playtest demo — testy nowych graczy (S5-01, S6-01), Pomoc prowadzącego, Przygotowanie (prowadzący), Pytania końcowe (1–5 i jedno zdanie), Scenariusz (czego nie mówisz, a co obserwujesz), Tabela testerów, Wynik tury (+21 more)
+Cohesion: 0.08
+Nodes (20): isAllyUnlocked(), SynergyDefinition, BuildOption, buildOptions(), BuildSelect, BuildSelectOptions, buildSelectSchema, BuildSelectText (+12 more)
 
 ### Community 135 - "3.5. Szczegółowy opis wszystkich 15 pomieszczeń — wyposażenie, osłony, linie strzału i rola w walce"
-Cohesion: 0.08
-Nodes (26): 10. `R10` — Sala Trofeów i Kolekcja Ostrzy „Sanktuarium Kurogane” (`L1`, `X ∈ [+12, +30], Z ∈ [-30, -18], y = +4.80 m`), 11. `R11` — Sypialnia Pułkownika i Garderoba „Apartament Główny” (`L1`, `X ∈ [-24, +4], Z ∈ [-42, -30], y = +4.80 m`), 12. `R12` — Prywatne Spa, Sauna i Łazienka Marmurowa (`L1`, `X ∈ [+4, +24], Z ∈ [-42, -30], y = +4.80 m`), 13. `R13` — Sala Tortur i Przesłuchań „Komora Wydobywania Danych” (`Piwnica B`, `X ∈ [-28, -10], Z ∈ [+16, +32], y = -4.80 m`), 14. `R14` — Prywatna Winiarnia i Degustatornia „Krypta Roczników” (`Piwnica B`, `X ∈ [-10, +10], Z ∈ [+16, +32], y = -4.80 m`), 15. `R15` — Podziemny Bunkier Ochrony, Serwerownia i Śluza Ewakuacyjna (`Piwnica B`, `X ∈ [+10, +28], Z ∈ [+16, +32], y = -4.80 m`), 1. `R1` — Hol Wejściowy i Foyer z Szatnią (`L0`, `X ∈ [-10, +10], Z ∈ [+4, +16], y = 0.00 m`), 2. `R2` — Wielki Dwukondygnacyjny Salon z Antresolą i Panoramą Lasu (`L0 + L1`, `X ∈ [-16, +16], Z ∈ [-18, +4], y = 0.00..9.60 m`) (+18 more)
+Cohesion: 0.07
+Nodes (27): 10. `R10` — Sala Trofeów i Kolekcja Ostrzy „Sanktuarium Kurogane” (`L1`, `X ∈ [+12, +30], Z ∈ [-30, -18], y = +4.80 m`), 11. `R11` — Sypialnia Pułkownika i Garderoba „Apartament Główny” (`L1`, `X ∈ [-24, +4], Z ∈ [-42, -30], y = +4.80 m`), 12. `R12` — Prywatne Spa, Sauna i Łazienka Marmurowa (`L1`, `X ∈ [+4, +24], Z ∈ [-42, -30], y = +4.80 m`), 13. `R13` — Sala Tortur i Przesłuchań „Komora Wydobywania Danych” (`Piwnica B`, `X ∈ [-28, -10], Z ∈ [+16, +32], y = -4.80 m`), 14. `R14` — Prywatna Winiarnia i Degustatornia „Krypta Roczników” (`Piwnica B`, `X ∈ [-10, +10], Z ∈ [+16, +32], y = -4.80 m`), 15. `R15` — Podziemny Bunkier Ochrony, Serwerownia i Śluza Ewakuacyjna (`Piwnica B`, `X ∈ [+10, +28], Z ∈ [+16, +32], y = -4.80 m`), 1. `R1` — Hol Wejściowy i Foyer z Szatnią (`L0`, `X ∈ [-10, +10], Z ∈ [+4, +16], y = 0.00 m`), 2. `R2` — Wielki Dwukondygnacyjny Salon z Antresolą i Panoramą Lasu (`L0 + L1`, `X ∈ [-16, +16], Z ∈ [-18, +4], y = 0.00..9.60 m`) (+19 more)
 
-### Community 136 - "DebugHandle"
-Cohesion: 0.15
-Nodes (8): Dodanie trybu, Nieskończona strefa, Prezentacja i sprawdzenie, Szturm (S2b-02), Tryby areny, Wyzwanie dnia, DebugHandle, Window
+### Community 136 - "Conquest"
+Cohesion: 0.11
+Nodes (11): Dane i reguły, Dodanie trybu, Nieskończona strefa, Prezentacja i sprawdzenie, Przejęcie, Szturm (S2b-02), Tryby areny, Wyzwanie dnia (+3 more)
 
 ### Community 137 - "_NpcBody"
 Cohesion: 0.27
 Nodes (3): _fill_rings(), _NpcBody, _support()
 
-### Community 138 - "contentZ11.test.ts"
-Cohesion: 0.07
-Nodes (10): color, inkDefaults, nonnegative, Theme, unit, rainShelterSchema, newRooms, newSynergies (+2 more)
-
-### Community 139 - "hud.ts"
-Cohesion: 0.15
-Nodes (14): CoolingPhase, HEALTH_SEGMENTS, heatLevel(), HudLoadout, HudOptions, segmentFill(), RunHudSeed, selectThreatIndicators() (+6 more)
+### Community 139 - "EntityId"
+Cohesion: 0.03
+Nodes (72): ADR 0003 — Kontrakty fazy F1, Decyzje, Kontrakty, Chwyt i rzut (F2-09), 02 StatusSystem, FeelSystem — czas gry (F1 #13), Fundamenty F0, Katalog zdarzeń (`GameEvents`) (+64 more)
 
 ### Community 140 - "Pakiet dużych aren — 2026-11-17"
 Cohesion: 0.14
 Nodes (14): container_corrugated_graphite — surfaces, 1024×1024, container_corrugated_navy — surfaces, 1024×1024, container_corrugated_ochre — surfaces, 1024×1024, container_corrugated_olive — surfaces, 1024×1024, crane_paint — surfaces, 1024×1024, market_tarp — surfaces, 1024×1024, overpass_concrete — surfaces, 1024×1024, Pakiet dużych aren — 2026-11-17 (+6 more)
 
-### Community 141 - "MissionObjectives"
-Cohesion: 0.12
-Nodes (8): Szturm S2b-02, Tryby areny S2b-01, MissionView, AssaultView, Assault, AssaultDefinition, advance(), create()
+### Community 141 - "Drone"
+Cohesion: 0.13
+Nodes (4): Drone, isOrbiting(), Hacker, factories
 
 ### Community 142 - "Misja 01 — Maszty"
 Cohesion: 0.15
@@ -1006,31 +980,31 @@ Nodes (12): Cel misji, Dialogi, Mapa, Misja 02 — Punkt kontrolny, Nagrody i ko
 
 ### Community 144 - "misje.md"
 Cohesion: 0.06
-Nodes (32): Akt I — Huty (Kurogane Arms), Akt II — Bulwar i Taras (Helixa Dynamics), Akt III — Korona (Orbis Grid), Materiał z gry do wykorzystania w opisach map, Cel misji, Dialogi, Mapa, Misja 03 — List przewozowy (+24 more)
+Nodes (32): Akt I — Huty (Kurogane Arms), Akt II — Bulwar i Taras (Helixa Dynamics), Akt III — Korona (Orbis Grid), Materiał z gry do wykorzystania w opisach map, Cel misji, Dialogi, Mapa, Misja 04 — Ładunek klasy K (+24 more)
 
-### Community 145 - "Misja 04 — Ładunek klasy K"
-Cohesion: 0.15
-Nodes (12): Cel misji, Dialogi, Mapa, Misja 04 — Ładunek klasy K, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka), Przebieg (+4 more)
+### Community 145 - "HazardSystem"
+Cohesion: 0.13
+Nodes (9): Cztery problemy czytelności zagrożenia i mechaniki zagadki na obecnych zrzutach, Czytelność zagadki i zagrożenia — analiza koloru wiązki lasera względem ADR 0006 (2,0 / 5), Rozwiązanie zgodne z ADR 0006 (czytelne zagrożenie i mechanika bez czerwieni), Weryfikacja koloru wiązki lasera ([hazardView.ts](file:///D:/AgenticProProjects/neoryder-maps/src/render/hazardView.ts), [hazards.md](file:///D:/AgenticProProjects/neoryder-maps/docs/systems/hazards.md)), Wymagane zmiany kodu (analiza `RoomScene`, `HazardView` i opcjonalnego `workArea`), HazardView, capsuleDistance(), HazardOptions (+1 more)
 
 ### Community 146 - "normalize"
-Cohesion: 0.17
-Nodes (10): ChainArc, ChainPower, PushTarget, directionInCone(), dot(), length(), normalize(), scale() (+2 more)
+Cohesion: 0.15
+Nodes (16): ChainArc, ChainPower, BeamPoints, Captured, Flight, PowerDeps, BarrierPowerDefinition, PushTarget (+8 more)
 
 ### Community 147 - "Misja 06 — Odlewnia"
 Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 06 — Odlewnia, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka), Przebieg (+4 more)
 
-### Community 148 - "missionSchema.ts"
-Cohesion: 0.12
-Nodes (16): MissionHints, base, count, dialogueLineSchema, hintEvent, HintEvent, hintEvents, id (+8 more)
+### Community 148 - "weaponModuleVisuals.ts"
+Cohesion: 0.16
+Nodes (22): ModuleDefinition, fppGlowMaterial(), ACCENTS, addMount(), addPad(), attachModuleVisuals(), batchDetails(), bounds() (+14 more)
 
 ### Community 149 - "Misja 07 — Nocny dyżur"
 Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 07 — Nocny dyżur, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka), Przebieg (+4 more)
 
-### Community 150 - "bossBar.ts"
-Cohesion: 0.28
-Nodes (7): HUD runu (F3-15), BossBar, element(), mountBossBar(), restartAnimation(), ROMAN, roman()
+### Community 150 - "bloom.ts"
+Cohesion: 0.11
+Nodes (18): bloomDepthVisible(), depthOffsets, isEmissive(), isEmissiveOne(), isSeeThrough(), Renderable, Unlit, variantOwnProperties (+10 more)
 
 ### Community 151 - "Misja 10 — Archiwum"
 Cohesion: 0.15
@@ -1045,12 +1019,12 @@ Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 12 — Śluza, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka), Przebieg (+4 more)
 
 ### Community 154 - "Ally"
-Cohesion: 0.16
-Nodes (3): Ally, horizontal(), Member
+Cohesion: 0.10
+Nodes (5): aimPoint(), Ally, AllyEnvironment, horizontal(), Member
 
-### Community 155 - "Zadania"
+### Community 155 - "EnemyDirector"
 Cohesion: 0.11
-Nodes (17): F2-09 — przegląd zewnętrzny, 04 Ciągły laser i granat EMP, 06 Skupienie, 07 Błyskawica, 09 Chwyt i rzut, 10 Rzut ostrzem i dash-cięcie, 12 EnemyDirector, 13 Snajper i Dron (+9 more)
+Nodes (9): F2-09 — przegląd zewnętrzny, Decyzje wspólne, Stan (2026-11-14), Tabela zadań, Zadania fazy F2 — Arsenał i ścieżki buildów, DirectorDeps, EnemyDirector, config() (+1 more)
 
 ### Community 156 - "Decyzje"
 Cohesion: 0.14
@@ -1064,133 +1038,137 @@ Nodes (12): Cel misji, Dialogi, Mapa, Misja 16 — Sala monitorów, Nagrody i ko
 Cohesion: 0.15
 Nodes (20): export(), palette(), export(), studio(), export(), elevator_shaft_door(), export(), fit_dimensions() (+12 more)
 
-### Community 159 - "roomTest.ts"
-Cohesion: 0.05
-Nodes (39): Strojenie i komendy debug runu (F3-01, zapowiedź F3-07/09/11), Testy, markTutorialDone(), allyTest, AllyTest, AllyTestDefinition, allyTestSchema, createAllyTest() (+31 more)
-
-### Community 160 - "lamps.ts"
-Cohesion: 0.11
-Nodes (20): Spadek napięcia w kryjówce, 6. Wdrożenie, Etap C — domknięcie i runda E1 (25 XI 2026), Runda E2 — kompozycja wejścia i ekspozycje (25 XI 2026), Runda E3 — bloom kasetonów, stropy i sylwetki towaru (25 XI 2026), 1.2. Kluczowe nauczki z audytów `run1` i `run2` zastosowane w `run3`, Naklejki i światła, Ocena świateł (poprawka oświetlenia) (+12 more)
+### Community 160 - "mapInspector.mjs"
+Cohesion: 0.10
+Nodes (16): args, inside(), maps, MAX, MIN_CONF, MODEL, nearby(), OLLAMA (+8 more)
 
 ### Community 161 - "Misja 20 — Cisza"
 Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 20 — Cisza, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka — epilog), Przebieg (+4 more)
 
-### Community 162 - "SettingsScreen"
-Cohesion: 0.18
-Nodes (7): assignBinding(), isBindingCode(), settingsSchema, uiRow(), getInputDevice(), percent(), SettingsScreen
+### Community 162 - "weaponModuleVisuals.test.ts"
+Cohesion: 0.12
+Nodes (12): addRim(), cache, fppMaterial(), FppSurface, SURFACES, compatiblePairs, expectAxialRecoil(), handTouchesBox() (+4 more)
 
 ### Community 163 - "hubCampaign.test.ts"
-Cohesion: 0.08
-Nodes (24): Reakcje mieszkańców na przybycie do kryjówki, Kryjówka po misjach (S2-03, S7-01), Reakcje na powrót, Znaczniki reakcji, createHubGreetings(), HubDialog, HubArrival, HubArrivalContext (+16 more)
+Cohesion: 0.06
+Nodes (38): Reakcje mieszkańców na przybycie do kryjówki, Kryjówka po misjach (S2-03, S7-01), Reakcje na powrót, Znaczniki reakcji, Radio w trakcie misji, createHubGreetings(), HubArrival, HubArrivalContext (+30 more)
 
 ### Community 164 - "fppBlade.ts"
-Cohesion: 0.14
-Nodes (16): BladeView, BladePose, easeInOut(), easeOut(), EXECUTION_SWING, Hand, HEAVY_SWING, lerpPose() (+8 more)
+Cohesion: 0.11
+Nodes (18): BladeDefinition, BladeView, BladePose, easeInOut(), easeOut(), EXECUTION_SWING, FppBlade, Hand (+10 more)
 
 ### Community 165 - "railPayload.ts"
-Cohesion: 0.09
-Nodes (11): M04 — Ładunek klasy K, Zalecenie kolejnych kroków (bez decyzji za właściciela), PayloadHooks, PayloadStop, RailPayload, payload(), create(), Input (+3 more)
+Cohesion: 0.08
+Nodes (14): horizontal(), PayloadHooks, PayloadInput, PayloadParams, PayloadSnapshot, PayloadStatus, PayloadStop, RailPayload (+6 more)
 
 ### Community 166 - "Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005)"
-Cohesion: 0.15
-Nodes (13): Generator mapy (F3-02) — `src/world/sectorMap.ts`, Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005), Render dłoni FPP, Schematy zod danych F3 (F3-01), TTK bossa — `src/balance/simulator.ts`, Wspólne typy runu — `src/core/runTypes.ts`, Zapis runu (F3-06) — `src/core/save.ts`, Zarządca stanu runu (F3-05) — `src/world/run.ts` (+5 more)
+Cohesion: 0.22
+Nodes (9): Generator mapy (F3-02) — `src/world/sectorMap.ts`, Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005), Render dłoni FPP, Schematy zod danych F3 (F3-01), Wspólne typy runu — `src/core/runTypes.ts`, Zapis runu (F3-06) — `src/core/save.ts`, Zarządca stanu runu (F3-05) — `src/world/run.ts`, Zdarzenia dopisywane do `GameEvents` (F3-01) — `src/core/events.ts` (+1 more)
 
 ### Community 167 - "buildM08.mjs"
-Cohesion: 0.10
-Nodes (13): DialogueSection, MissionDialogue, MissionDialogueCard, RadioCard, RadioLine, RadioQueue, splitDialogueText(), showDebrief() (+5 more)
+Cohesion: 0.07
+Nodes (18): Misje (ADR 0008), Wyzwalacze i kolejka radia, 14 Ekrany nagrody, sklepu i odpoczynku, Integracje i elementy tymczasowe, DialogueSection, MissionDialogue, MissionDialogueCard, RadioCard (+10 more)
 
 ### Community 168 - "Backlog — pomysły „po premierze / poza bieżącą fazą”"
 Cohesion: 0.15
 Nodes (13): Audio, UI i dostępność, Backlog — pomysły „po premierze / poza bieżącą fazą”, Jakość i narzędzia, Moce i bronie, Playtest 2026-11-23, Roguelite i progresja, Technologia i platforma, Tryby (+5 more)
 
-### Community 169 - "3.5. Szczegółowy opis 10 pomieszczeń i Atrium — wyposażenie, przeszklenia, osłony i walka"
-Cohesion: 0.06
-Nodes (32): 2.1. Priorytet P0 — MUSI BYĆ PRZED `run4`, 2.2. Priorytet P1 — Szlif po pierwszym odbiorze wizualnym, 2. Lista braków („fundamenty”) z priorytetem P0 / P1, 3.1. Idea, narracja miejsca i klimat wysokiego wieżowca Kurogane Arms, 3.2. Tabela wszystkich pomieszczeń — wymiary, współrzędne, rzędne wysokości i palety neonów, 3.3. Rzuty 3 kondygnacji i przekrój pionowy (ASCII), 3.4. Winda (`elevators[]`), reprezentacyjne schody i przejścia — weryfikacja nawigacji 3D, 3. Projekt architektoniczny mapy `run4` — 10 pomieszczeń + Atrium na 3 kondygnacjach (`L0`, `L1`, `L2`) (+24 more)
-
-### Community 170 - "arenaSpawns.ts"
+### Community 169 - "3. Projekt architektoniczny mapy `run4` — 10 pomieszczeń + Atrium na 3 kondygnacjach (`L0`, `L1`, `L2`)"
 Cohesion: 0.18
-Nodes (14): Pogoda i areny Przejęcia, Silnik dużych map, Determinizm i kolejność kroku (wszystkie tryby), distance(), arenaSpawnPoints(), distance(), GroundPoint, pickWaveSpawnByDistance() (+6 more)
+Nodes (11): 3.1. Idea, narracja miejsca i klimat wysokiego wieżowca Kurogane Arms, 3.2. Tabela wszystkich pomieszczeń — wymiary, współrzędne, rzędne wysokości i palety neonów, 3.3. Rzuty 3 kondygnacji i przekrój pionowy (ASCII), 3.4. Winda (`elevators[]`), reprezentacyjne schody i przejścia — weryfikacja nawigacji 3D, 3. Projekt architektoniczny mapy `run4` — 10 pomieszczeń + Atrium na 3 kondygnacjach (`L0`, `L1`, `L2`), A. Przekrój podłużny Północ–Południe (`X = 0 .. -8 m`, widok na Zachód `-X`) — kaskada 3 pięter i Atrium, A. Specyfikacja działającej windy w szybie Atrium (`elevators[0]`), B. Rzut Kondygnacji 0 — PIĘTRO 60 (`L0`, `y = 0.00 m`, `X ∈ [-30, +30], Z ∈ [-16, +30]`) (+3 more)
+
+### Community 170 - "outline.ts"
+Cohesion: 0.15
+Nodes (17): compileForPass(), createRenderPipeline(), disableCulling(), inkAt(), InkParameters, OutlineFade, outlineFadeAt(), planeDepthDelta() (+9 more)
 
 ### Community 171 - "enemyView.ts"
 Cohesion: 0.12
 Nodes (14): ADR 0011: Duże, zróżnicowane areny, D1. Skala i obrys, D2. Zróżnicowanie (każda duża arena), D3. Horyzont i zasięg widzenia, D4. Tryby na dużych arenach, D5. Autorstwo, D6. Pogoda, D7. Modele i tekstury (+6 more)
 
 ### Community 172 - "seed"
-Cohesion: 0.10
-Nodes (22): 1.1. Standardowy run sektorowy (`?scene=run` oraz Wyzwanie Dnia `?scene=challenge`), 1.2. Tryby wielkoobszarowe: Przejęcie, Szturm, Kradzież (`?scene=run&mode=conquest|assault|heist`, `?scene=conquest`), 1.3. Samodzielne tryby falowe Areny (`?scene=arena`, `?scene=endless`, `?scene=arena-mutators`), 1. Jak powstaje run (sektory → pokoje, losowanie, pule i wagi), 4.3. Sceny testowe JSON w `src/data/scenes/` (nieużywane w runach), 4.4. Proceduralne sceny debug i showcase w `src/scenes/` (bez własnych plików map w runach), 4. Lista pokoi i scen nieużywanych w runach (testowe, meta-gra, porzucone), 5.1. Krytyczne błędy konfiguracji pul, losowania i ekspozycji map (+14 more)
+Cohesion: 0.12
+Nodes (18): 1.2. Tryby wielkoobszarowe: Przejęcie, Szturm, Kradzież (`?scene=run&mode=conquest|assault|heist`, `?scene=conquest`), 1.3. Samodzielne tryby falowe Areny (`?scene=arena`, `?scene=endless`, `?scene=arena-mutators`), 1. Jak powstaje run (sektory → pokoje, losowanie, pule i wagi), Budowniczy, Determinizm, Generatory aren — ADR 0011 / D5, Jak czytać SVG i sprawdzić w 30 sekund, Jak dodać arenę (+10 more)
 
 ### Community 173 - "S0 — domknięcie podstaw"
 Cohesion: 0.18
 Nodes (11): S0-01 Bezpieczne rozliczenie runu po błędzie zapisu, S0-02 Playtest F2 — trzy czyste ścieżki, S0-03 Playtest F4 — 5 runów od zera, S0-04 Decyzje zakresowe D1, D2 (wstępnie), D4, S0-05 Splasharty wg aktu fabuły, S0-06 Róż podłogi areny bossa, S0-07 Celowanie pod PPM z bronią palną, S0-08 Przewracanie i wstawanie wrogów („kip-up”) (+3 more)
 
-### Community 174 - "audioFixes.test.ts"
-Cohesion: 0.11
-Nodes (16): filter, layerSchema, SfxDefinition, SfxLayer, sfxSchema, SfxSound, soundSchema, whenSchema (+8 more)
+### Community 174 - "ScatterProps"
+Cohesion: 0.16
+Nodes (6): Wywracalne dekoracje (fizyka B-P3), ScatterRenderer, rotate(), ScatterProps, yawQuat(), setup()
 
 ### Community 175 - "3.5. Szczegółowy opis wszystkich 8 pomieszczeń (`R1`..`R8`) — wyposażenie, osłony, linie strzału i rola w walce"
 Cohesion: 0.11
 Nodes (18): 1. `R1` — Szatnia i Śluza Dekontaminacyjna (`L0`, `X ∈ [-12, +12], Z ∈ [+22, +36], y = 0.00 m`), 2. `R2` — Główna Hala Reaktora Fuzyjnego „Komora Tokamaka Helios-IV” (`L0 + G1 + G2`, `X ∈ [-22, +22], Z ∈ [-22, +22], y = 0.00..19.20 m`), 3.1. Lore miejsca: Elektrownia Fuzyjna Kurogane Arms „Helios-IV” i projekt sztucznego zasilania Rezonansu, 3.2. Tabela wszystkich 8 pomieszczeń (`R1`..`R8`) oraz 2 poziomów galerii (`G1`, `G2`) — wymiary, współrzędne, wysokości i palety neonów, 3.3. Rzuty kondygnacji i przekrój pionowy (ASCII), 3.4. Portale przejściowe, rampy/schody na 2 poziomy galerii (`G1`, `G2`) i weryfikacja nawigacji 3D, 3.5. Szczegółowy opis wszystkich 8 pomieszczeń (`R1`..`R8`) — wyposażenie, osłony, linie strzału i rola w walce, 3. Projekt architektoniczny mapy `run8` — 1 Duża Hala Reaktora (`44 × 44 m`, `H = 19.2 m`, 2 poziomy galerii) + 7 średnich i małych pomieszczeń (+10 more)
 
-### Community 176 - "roomScene.ts"
-Cohesion: 0.03
-Nodes (116): Estakada, dachy, doki (duże areny, ADR 0011), 5. Wdrożenie, Korekta po przeglądzie zrzutów „after”, Wymagane zmiany kodu (analiza obsługi pól w `src/scenes/arena.ts` względem `src/scenes/roomScene.ts`), Wymagane zmiany kodu (analiza `RoomScene`, `HazardView` i opcjonalnego `workArea`), Wymagane zmiany kodu (analiza `RoomScene`, `GrabPuzzleView` i dokumentacji), 2.2. Priorytet P1 — MOŻE PÓŹNIEJ (po pierwszym wdrożeniu `run1`), 2. Lista braków („fundamenty”) z priorytetem (+108 more)
+### Community 176 - "three"
+Cohesion: 0.02
+Nodes (139): @dimforge/rapier3d-compat, lil-gui, three, withoutAction(), queryHurtboxes(), BLADE_GROUPS, queryBladeArc(), queryBladeSegment() (+131 more)
 
 ### Community 177 - "hubStationMarkers.ts"
 Cohesion: 0.18
 Nodes (7): labelTexture(), Marker, smooth(), STATION_MARKER_COLORS, StationMarkerDef, ADR-0006, ADR-0006
 
-### Community 178 - "devDependencies"
-Cohesion: 0.14
-Nodes (14): devDependencies, eslint@^10.15.0, fake-indexeddb@^6.2.8, jsdom@^29.1.1, @playwright/test@^1.65.1, prettier@^3.10.1, @types/stats.js@^0.17.4, @types/three@^0.187.0 (+6 more)
+### Community 178 - "package.json"
+Cohesion: 0.06
+Nodes (44): dependencies, @dimforge/rapier3d-compat@^0.21.0, @fontsource/chakra-petch@^5.3.0, @fontsource/inter@^5.3.0, lil-gui@^0.21.0, stats.js@^0.17.0, three@^0.187.0, zod@^4.6.7 (+36 more)
 
 ### Community 179 - "allies.test.ts"
-Cohesion: 0.12
-Nodes (4): Drużyna w innych trybach, AllyOrder, AllySquad, pose()
+Cohesion: 0.09
+Nodes (3): AllyOrder, AllySquad, pose()
 
 ### Community 180 - "buildM10.mjs"
-Cohesion: 0.06
-Nodes (38): B(), block(), floor(), gate(), level, light(), prop(), ramp() (+30 more)
+Cohesion: 0.05
+Nodes (40): blocks, Point, run3, B(), block(), floor(), gate(), level (+32 more)
+
+### Community 181 - "comicSurfaces.ts"
+Cohesion: 0.18
+Nodes (10): COMIC_ALIASES, COMIC_SURFACES, resolveTextureKey(), activeLook(), DEFAULT_LOOK, LOOK_PRESETS, LookId, ManifestEntry (+2 more)
 
 ### Community 182 - "NEORYDER — plan rozwoju (etapy po kolei, bez dat)"
-Cohesion: 0.10
-Nodes (14): 10. Kolejne rundy rozwoju (od 23 XI 2026), 1. Stan repozytorium — co potwierdzono, 2. Cel półrocza, 3. Założenia pojemności, 4. Etapy (kolejność), 5. Zależności (kolejność, której nie zmieniamy), 6. Decyzje właściciela, 7. Ryzyka (+6 more)
+Cohesion: 0.15
+Nodes (11): 10. Kolejne rundy rozwoju (od 23 XI 2026), 1. Stan repozytorium — co potwierdzono, 2. Cel półrocza, 3. Założenia pojemności, 4. Etapy (kolejność), 5. Zależności (kolejność, której nie zmieniamy), 6. Decyzje właściciela, 7. Ryzyka (+3 more)
 
 ### Community 183 - "Misja 11 — Nadajnik"
 Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 11 — Nadajnik, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka), Przebieg (+4 more)
 
+### Community 184 - "resonanceWaveFx.ts"
+Cohesion: 0.16
+Nodes (9): MAX_FRAME_STEP_S, ConeLike, isCone(), MAGENTA, material(), PALE, ResonanceWaveFx, Wave (+1 more)
+
 ### Community 185 - "PowerBase"
-Cohesion: 0.08
-Nodes (13): Konsekwencje dla kontraktów (`docs/api.md`, dopisać przy starcie F2), Chwyt i rzut (F2-09), Moce (F2-05 … F2-09), 05 Rejestr mocy, drugi slot, Fala uderzeniowa, Rejestr i wspólna baza, Skupienie (`focus.json`, `kind: 'focus'`, F2-06), ConePower, Power (+5 more)
+Cohesion: 0.05
+Nodes (23): Moce (F2-05 … F2-09), 01 Kontrakty F2, 03 Tryby strzału i dane broni, 04 Ciągły laser i granat EMP, 05 Rejestr mocy, drugi slot, Fala uderzeniowa, 06 Skupienie, 07 Błyskawica, 08 Bariera (+15 more)
 
 ### Community 186 - "PayloadTest"
-Cohesion: 0.14
-Nodes (6): PayloadMissionRoom, createPayloadTest(), PayloadTest, PayloadView, PrototypeHud, payloadScene()
+Cohesion: 0.18
+Nodes (4): PayloadTest, ZoneMarker, PrototypeHud, payloadScene()
 
-### Community 187 - "RunHud"
-Cohesion: 0.31
-Nodes (3): element(), restartAnimation(), RunHud
+### Community 187 - "Pipeline stylu"
+Cohesion: 0.16
+Nodes (8): Atmosfera i głębia, Kolejność w shaderze kompozycji, Kompozycja końcowa i impulsy, Koszt, Parametry `tuning.render`, Pipeline stylu, clamp01(), PostFxState
 
 ### Community 188 - ".render"
-Cohesion: 0.03
-Nodes (34): Scena ai-test i weryfikacja, HeldItemView, GrabBeam, createEnemyView(), CameraPose, FpsCamera, shakeAmplitude(), smoothNoise() (+26 more)
+Cohesion: 0.06
+Nodes (18): Menu i mapa (F3-13), Wspólny widok FPP, S10-01: zapowiedzi ataków, GrabBeam, smoothNoise(), PlayerState, FppLegs, legDirection() (+10 more)
 
-### Community 189 - "hub.ts"
-Cohesion: 0.03
-Nodes (59): Migotanie oprawy, Dodanie sceny debug, Migotanie i korytarz północny, Diagnoza (Terminal kontenerowy, widok ze startu, jakość medium), Dodawanie obiektu, Horyzont i zasięg widzenia, Integracja w main.ts, Kasetony emisyjne bez bloomu (run2, E3) (+51 more)
+### Community 189 - "CityDressing"
+Cohesion: 0.06
+Nodes (25): Diagnoza (Terminal kontenerowy, widok ze startu, jakość medium), Dodawanie obiektu, Horyzont i zasięg widzenia, Integracja w main.ts, Kasetony emisyjne bez bloomu (run2, E3), Profile jakości (Z9), Profilowanie, Reaktor fuzyjny — kosmetyczny tokamak (+17 more)
 
 ### Community 190 - "Misja 14 — Palacz"
 Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 14 — Palacz, Nagrody i konsekwencje, Odprawa (kryjówka, na zamkniętym kanale przy wejściu na poligon), Po misji (kryjówka, przy beczce na peronie B), Przebieg (+4 more)
 
 ### Community 191 - "MissionRadio"
-Cohesion: 0.17
-Nodes (21): ALLOWED_ERRORS, board(), clearEncounter(), command(), FirstClear, hub(), mission(), MissionState (+13 more)
+Cohesion: 0.14
+Nodes (24): missionHintSchema, ALLOWED_ERRORS, board(), clearEncounter(), command(), FirstClear, hub(), mission() (+16 more)
 
-### Community 192 - "meta.ts"
+### Community 192 - "zod"
 Cohesion: 0.04
-Nodes (83): Reguły, bladeDefinitions, bladeSchema, modules, powerDefinitions, ChainPowerDefinition, powerSchema, weaponDefinitions (+75 more)
+Nodes (75): zod, bladeDefinitions, fireProjectile(), spreadDirection(), ProjectileSpec, WeaponInput, IronSight, ironSightSchema (+67 more)
 
 ### Community 193 - "Korekty po kontroli podglądów 2×2"
 Cohesion: 0.22
@@ -1198,7 +1176,7 @@ Nodes (9): container_corrugated_graphite — końcowy prompt (1 ponowienie), con
 
 ### Community 194 - "hubSchema.ts"
 Cohesion: 0.04
-Nodes (47): Fauna kryjówki, HUB_STATION_IDS, BLOCK_MATERIALS, decorSchema, dressingFields, campaignGateFields, finite, hexColor (+39 more)
+Nodes (54): Fauna kryjówki, HUB_STATION_IDS, BLOCK_MATERIALS, decorSchema, dressingFields, campaignGateFields, finite, hexColor (+46 more)
 
 ### Community 195 - "buildM01.mjs"
 Cohesion: 0.21
@@ -1209,8 +1187,8 @@ Cohesion: 0.16
 Nodes (3): Pomiary nowych GLB, Rezydencja run7 — druga partia modeli, Weryfikacja
 
 ### Community 197 - "Vec3"
-Cohesion: 0.02
-Nodes (108): Wybór celów — `src/allies/targeting.ts`, STUNNED, Assaulter, copy(), BossDependencies, BossMinion, ChimeraBehavior, Config (+100 more)
+Cohesion: 0.04
+Nodes (71): STUNNED, Assaulter, copy(), BossDependencies, BossMinion, ChimeraBehavior, Config, copy() (+63 more)
 
 ### Community 198 - "Splasharty NEORYDER"
 Cohesion: 0.29
@@ -1236,25 +1214,25 @@ Nodes (21): box(), COLORS, container(), containerWall(), cover(), decal(), digit
 Cohesion: 0.25
 Nodes (7): Co jest w grze, Dokumentacja, Komendy, NEORYDER, Sterowanie, Uruchomienie, Wdrożenie
 
-### Community 204 - "HandRig"
-Cohesion: 0.15
-Nodes (11): Gest mocy i wolna lewa dłoń, Model rąk — taktyczna rękawica (szlif 2026-11-18), Render przegubowych dłoni, Wygląd przedmiotów FPP (czysto wizualny), Dłonie FPP — animacja, FppOffhand, HandPose, HandSocket (+3 more)
+### Community 204 - "fppViewModel.ts"
+Cohesion: 0.13
+Nodes (15): Gest mocy i wolna lewa dłoń, Render przegubowych dłoni, Wygląd przedmiotów FPP (czysto wizualny), Zamiana i kołysanie, Dłonie FPP — animacja, HeldItemView, twinBladesDefinition, FppBlasterOptions (+7 more)
 
 ### Community 205 - "arena"
-Cohesion: 0.06
-Nodes (37): 2. Koncepcja miejsca w świecie gry i różnica wobec `bossRoom`, Czym jest to miejsce: _Nielegalny Ring Walk „Klatka” (Podziemny Krąg Iskry w Dolnym Mieście)_, Dlaczego ta koncepcja idealnie pasuje do falowej areny (Arena / Endless / Mutatory), Różnica wobec `bossRoom` (_Sala zarządu Kurogane Arms_), 07 Scena kryjówki, 1.1. Jak dziś działają mapy runów (`rooms`) i poziomy misji (`levels`), 1.2. Decyzja architektoniczna: `run1` jako pokój (`rooms`) czy poziom (`levels`)?, 1.3. Wnętrza, materiały, oświetlenie, pogoda i instancing — stan obecny w kodzie (+29 more)
+Cohesion: 0.11
+Nodes (20): Kształt pokoju runu, Profil `run` i katalog `tools/arenas/run/`, Audyt danych i oględziny, Bulwar, Dane i sprawdzenie, Losowanie pokoju dla węzła (`RunScene.chooseRoom`), Mapy Neon Noir, Mapy w motywie neonStreet (+12 more)
 
 ### Community 206 - "EscortTest"
-Cohesion: 0.17
-Nodes (7): createEscortTest(), EscortTest, EscortNpcView, ZoneMarker, EscortMotion, EscortState, escortScene()
+Cohesion: 0.32
+Nodes (3): EscortTest, ViewPose, escortScene()
 
 ### Community 207 - "Balans F2 — symulacja TTK"
-Cohesion: 0.12
+Cohesion: 0.10
 Nodes (16): Balans F2 — symulacja TTK, Bossowie — pojedyncze starcia (informacyjnie), Decyzje i strojenie, Dzielnice runów (R5d), Każda broń, moc i ostrze — otwarta przestrzeń, Meta-progres (F4), Moce przy ścianie (tylko narzędzia, których wynik różni się od otwartej przestrzeni), Ograniczenie loadera nieznanych mocy (+8 more)
 
 ### Community 208 - "metaBar.ts"
-Cohesion: 0.18
-Nodes (10): progression, createMetaBar(), fill(), META_BAR_EVENTS, MetaBar, span(), text, active (+2 more)
+Cohesion: 0.24
+Nodes (7): createMetaBar(), fill(), META_BAR_EVENTS, MetaBar, span(), text, setup()
 
 ### Community 209 - "hud/process.py"
 Cohesion: 0.15
@@ -1267,10 +1245,6 @@ Nodes (5): Cel, [F1][Ruch i kamera] Kontroler FPP na character controllerze Rapi
 ### Community 211 - "[F1][Ruch i kamera] Kamera FPP: FOV i wstrząs"
 Cohesion: 0.33
 Nodes (5): Cel, [F1][Ruch i kamera] Kamera FPP: FOV i wstrząs, Kryteria akceptacji, Poza zakresem, Wymagania
-
-### Community 212 - "rooms.md"
-Cohesion: 0.30
-Nodes (5): ADR 0006 — Neon Noir (kierunek artystyczny), Decyzja, Konsekwencje, Kontekst, Rozważone alternatywy
 
 ### Community 213 - "[F1][Grafika, VFX i audio] Shader: biały świat, czerwoni wrogowie"
 Cohesion: 0.33
@@ -1321,12 +1295,12 @@ Cohesion: 0.16
 Nodes (19): B(), block(), box(), cover(), crates(), decal(), decor(), floor() (+11 more)
 
 ### Community 226 - "forestPanorama.ts"
-Cohesion: 0.16
-Nodes (16): buildForestLayout(), landmark(), point(), terrain(), trees(), ForestExclusion, ForestHill, ForestPoint (+8 more)
+Cohesion: 0.09
+Nodes (29): 1.2. Kluczowe nauczki z `run1`–`run4` zastosowane w `run7`, 1. Analiza silnika i nauczki z `run1`–`run4` oraz `bulwar1`, 2.1. Priorytet P0 — MUSI BYĆ PRZED `run7`, 2.2. Priorytet P1 — Szlif po pierwszym odbiorze wizualnym, 2. Lista braków („fundamenty”) z priorytetem P0 / P1, 6.1. Kryteria akceptacji (automatyczne CLI i wizualne na zrzutach audytu), 6.2. Etapy prac (A–E), 6. Kryteria akceptacji i etapy prac (A–E) (+21 more)
 
-### Community 228 - "HUD — F1 #15, F2-15, nowy HUD"
-Cohesion: 0.11
-Nodes (14): Ekran śmierci i wybór buildu, HUD — F1 #15, F2-15, nowy HUD, Integracja w scenie areny, Kontrola w 30 sekund, Kryjówka: przewodnik i objaśnienia — S10-01, Menu ulepszeń (Tab w runie), Styl — wizjer hełmu, Układ (+6 more)
+### Community 228 - "prototypeViews.ts"
+Cohesion: 0.20
+Nodes (8): CLIP_BY_MOTION, EscortNpcView, PRISONER_PARTS, ADR-0006, EscortMotion, EscortParams, EscortSnapshot, EscortState
 
 ### Community 229 - "[F1][Moce] Pchnięcie Rezonansu i pasek energii"
 Cohesion: 0.40
@@ -1336,17 +1310,17 @@ Nodes (4): Cel, [F1][Moce] Pchnięcie Rezonansu i pasek energii, Kryteria akcept
 Cohesion: 0.40
 Nodes (5): Bramka fazy, Proponowany podział na 3 równoległe sesje, Stan (2026-11-14), Tabela zadań, Zadania fazy F1 — Prototyp walki
 
-### Community 231 - "Tuning"
-Cohesion: 0.05
-Nodes (47): ambienceAttenuation(), POWERED_AMBIENCE, selectAmbience(), ambienceKindSchema, ambienceSchema, ambienceSourceSchema, loadAmbience(), AudioSystemOptions (+39 more)
+### Community 231 - "math.ts"
+Cohesion: 0.03
+Nodes (62): ambienceAttenuation(), POWERED_AMBIENCE, selectAmbience(), ambienceKindSchema, ambienceSchema, ambienceSourceSchema, loadAmbience(), AudioSystemOptions (+54 more)
 
 ### Community 232 - "textures/process.py"
-Cohesion: 0.20
-Nodes (14): black_key(), build(), corners(), destination(), dominant(), gallery_texture(), green_key(), manifest() (+6 more)
+Cohesion: 0.27
+Nodes (11): black_key(), build(), corners(), destination(), dominant(), gallery_texture(), green_key(), manifest() (+3 more)
 
 ### Community 233 - "4.1. Nowe modele 3D (`tools/blender/sets/kurogane_residence.py` → `public/assets/models/city/res_*.glb`)"
-Cohesion: 0.08
-Nodes (25): 1.2. Kluczowe nauczki z `run1`–`run4` zastosowane w `run7`, 1. Analiza silnika i nauczki z `run1`–`run4` oraz `bulwar1`, 2.1. Priorytet P0 — MUSI BYĆ PRZED `run7`, 2.2. Priorytet P1 — Szlif po pierwszym odbiorze wizualnym, 2. Lista braków („fundamenty”) z priorytetem P0 / P1, 4.1. Nowe modele 3D (`tools/blender/sets/kurogane_residence.py` → `public/assets/models/city/res_*.glb`), 4.2. Katalog 32 tekstur (`signs/`, `screens/`, `decals/`, `labels/`, `surfaces/`) oraz zestawienie Tablicy „Iskry” i 12 Easter Eggów, 4.3. Zasoby istniejące do ponownego użycia oraz zasoby zakazane na mapie `run7` (+17 more)
+Cohesion: 0.20
+Nodes (10): 4.1. Nowe modele 3D (`tools/blender/sets/kurogane_residence.py` → `public/assets/models/city/res_*.glb`), 4.2. Katalog 32 tekstur (`signs/`, `screens/`, `decals/`, `labels/`, `surfaces/`) oraz zestawienie Tablicy „Iskry” i 12 Easter Eggów, 4.3. Zasoby istniejące do ponownego użycia oraz zasoby zakazane na mapie `run7`, 4. Katalog zasobów: 38 nowych modeli `res_*`, 32 tekstury, tablica „Iskry” i 12 Easter Eggów, A. Dozwolone istniejące modele i materiały (spójne z rezydencją Pułkownika Kurogane Arms), B. Zasoby ZAKAZANE w `run7`, Tabela 1: Modele architektury willi, przeszkleń na las, windy, oświetlenia i ogrodu zimowego — 12 modeli (`res_01`..`res_12`), Tabela 2: Modele mebli Salonu (`R2`), Holu (`R1`), Jadalni (`R3`), Kuchni (`R4`), Garażu (`R6`) i Ochrony (`R7`) — 11 modeli (`res_13`..`res_23`) (+2 more)
 
 ### Community 234 - "Pakiet grafik HUD"
 Cohesion: 0.50
@@ -1356,17 +1330,17 @@ Nodes (3): Kontrola ręczna, Odtworzenie, Pakiet grafik HUD
 Cohesion: 0.10
 Nodes (21): boardwalk_planks — surfaces, 1024×1024, canal_stone_wall — surfaces, 1024×1024, concrete_raw_cast — surfaces, 1024×1024, cooling_tower_concrete — surfaces, 1024×1024, excavation_dirt — surfaces, 1024×1024, flood_brick_algae — surfaces, 1024×1024, formwork_plywood — surfaces, 1024×1024, gas_station_tiles — surfaces, 1024×1024 (+13 more)
 
-### Community 236 - "Tekstury uliczek NEORYDER — Neon Noir"
-Cohesion: 0.25
-Nodes (6): Atlasy (`atlas/`), Lista tekstur, Powierzchnie dużych aren — 2026-11-17, Powierzchnie dużych aren, pakiet 2 — 2026-11-18, Prompty i odtwarzanie, Tekstury uliczek NEORYDER — Neon Noir
+### Community 236 - "Misja 03 — List przewozowy"
+Cohesion: 0.15
+Nodes (12): Cel misji, Dialogi, Mapa, Misja 03 — List przewozowy, Nagrody i konsekwencje, Odprawa (kryjówka), Po misji (kryjówka), Przebieg (+4 more)
 
 ### Community 237 - "pull_request_template.md"
 Cohesion: 0.50
 Nodes (3): Cel i zachowanie, Definicja ukończenia, Sprawdzenie ręczne
 
 ### Community 238 - "achievements.ts"
-Cohesion: 0.12
-Nodes (21): AchievementsState, RunAchievementProgress, ACHIEVEMENT_IDS, ACHIEVEMENT_RULES, addCounter(), characterLevel(), DamageCategory, damageCategory() (+13 more)
+Cohesion: 0.08
+Nodes (32): AchievementsState, RunAchievementProgress, ACHIEVEMENT_IDS, ACHIEVEMENT_RULES, addCounter(), characterLevel(), DamageCategory, damageCategory() (+24 more)
 
 ### Community 239 - "backlog.md"
 Cohesion: 0.50
@@ -1377,16 +1351,16 @@ Cohesion: 0.40
 Nodes (4): Kryjówka (U2), Run i tryby (U3), System komponentów (U1), ui
 
 ### Community 262 - "Weather"
-Cohesion: 0.07
-Nodes (29): Przygotowanie modeli instancji dużych aren (ADR 0011), Profile pogody, Integracja ze sceną, Mapowanie jakości i tryb lite, Parametry i integracja, Pełne dane profili, Pogoda sterowana danymi, Płatki (snow, ash) (+21 more)
+Cohesion: 0.05
+Nodes (42): Profile śniegu i popiołu (ADR 0011 D6), Przygotowanie modeli instancji dużych aren (ADR 0011), Deszcz i efekty otoczenia, Strefy bez deszczu (Z21), Profile pogody, Integracja ze sceną, Mapowanie jakości i tryb lite, Opad smugowy (rain, drizzle) (+34 more)
 
 ### Community 263 - "json"
 Cohesion: 0.32
 Nodes (6): baseline(), cleanup(), digest(), measurements(), protected(), review()
 
 ### Community 264 - "MusicDirector"
-Cohesion: 0.22
-Nodes (5): MusicDirector, MusicDirectorOptions, JUKEBOX_LOOPS, MusicState, setup()
+Cohesion: 0.24
+Nodes (4): MusicDirector, MusicDirectorOptions, MusicState, setup()
 
 ### Community 265 - "Misja 08 — Kwarantanna"
 Cohesion: 0.15
@@ -1394,7 +1368,7 @@ Nodes (12): Cel misji, Dialogi, Mapa, Misja 08 — Kwarantanna, Nagrody i konsek
 
 ### Community 266 - "entry"
 Cohesion: 0.04
-Nodes (61): 3. Plan zmian gotowy dla programisty, Priorytet 1 — Motyw Neon Noir, materiały istniejących bloków i naprawa geometrii `blocks[0..15]`, Priorytet 2 — Rozbudowa geometrii `blocks` (bramownica ringu, zadaszenia doków, średnie podesty skokowe, wysokie osłony obwodowe i fasady tła), Priorytet 3 — Oświetlenie punktowe (`lights[0..7]`, dokładnie 8 źródeł w limicie ADR 0006 pkt 7), Priorytet 4 — Szyldy neonowe i hologramy (`signs[0..9]`), Priorytet 5 — Dekoracje bez kolizji (`decor[0..23]`) z dokładnymi współrzędnymi zaczepienia kabli i lampionów, Priorytet 6 — Kalkomanie (`decals[0..11]`) i efekty otoczenia (`ambientFx[0..5]`), 2. Koncepcja miejsca w świecie gry i unikalność wobec innych map (+53 more)
+Nodes (58): 10. Nowe zdarzenia (propozycja do `docs/api.md`, bez edycji teraz), 2. Pokoje: ręcznie zrobione moduły w danych, 6. Implanty per run, `Stats` i synergie na tagach, 7. Nagrody i ekonomia, 9. UI i przepływ ekranów, ADR 0005 — Pętla runu (F3), Poza zakresem F3, Rozważone alternatywy (+50 more)
 
 ### Community 267 - "Misja 19 — Pion"
 Cohesion: 0.15
@@ -1409,20 +1383,20 @@ Cohesion: 0.14
 Nodes (14): 1. Idea miejsca, 2.1. Przejścia (światło ≥ 4,0 × 3,2 m, bez drzwi; rama z belek i szyld strefy docelowej), 2.2. Poziom górny `y = 4.2`, 2.3. Deszcz i panorama, 2.4. Walka, 2. Układ, 3.1. Modele Blender — nowy zestaw `tools/blender/sets/bulwar_market.py` (id `bw_targ_*`, prefiks `bw_` już zarejestrowany), 3.2. Tekstury — zestaw `targ` (kategorie tylko `surfaces`, `komiks/surfaces`, `signs`, `decals`) (+6 more)
 
 ### Community 270 - "powerSchema.ts"
-Cohesion: 0.10
-Nodes (13): 08 Bariera, BarrierPower, BarrierPowerDefinition, barrierPowerSchema, chainPowerSchema, ConePowerDefinition, conePowerSchema, FocusPowerDefinition (+5 more)
+Cohesion: 0.12
+Nodes (11): FocusPower, barrierPowerSchema, chainPowerSchema, ConePowerDefinition, conePowerSchema, FocusPowerDefinition, focusPowerSchema, GrabPowerDefinition (+3 more)
 
-### Community 271 - "dressing.ts"
-Cohesion: 0.10
-Nodes (23): Koszt struktury pokoju po scalaniu Z19, DressingLayout, fusionPulse(), FusionReactor, ambientFxSchema, CityLightDef, DecalDef, decalSchema (+15 more)
+### Community 271 - "EnemyBatch"
+Cohesion: 0.23
+Nodes (4): EnemyBatch, MovingAgent, RouteGraph, waypoint()
 
 ### Community 272 - "EscortNpc"
-Cohesion: 0.13
-Nodes (8): EscortNavigation, EscortNpc, EscortParams, EscortSnapshot, horizontal(), evac, run(), straight
+Cohesion: 0.18
+Nodes (4): EscortNavigation, EscortNpc, horizontal(), run()
 
 ### Community 273 - "ArenaSurfaceNavigation"
-Cohesion: 0.22
-Nodes (3): Wzorzec dla kolejnych pokoi (z partii A), ArenaSurfaceNavigation, ElevatorRoutes
+Cohesion: 0.24
+Nodes (3): Wzorzec dla kolejnych pokoi (z partii A), ArenaSurfaceNavigation, topOf()
 
 ### Community 275 - "Misja 09 — Brat"
 Cohesion: 0.15
@@ -1440,49 +1414,49 @@ Nodes (5): Cel, [F1][AI wrogów] Archetyp Szturmowiec, Kryteria akceptacji, Poza
 Cohesion: 0.29
 Nodes (7): banner_iskra — posters, 512×512, mural_spark — posters, 1024×512, poster_iskra_recruit — posters, 512×512, poster_koalicja_defaced — posters, 512×512, Rozbudowa kryjówki Iskra — 2026-11-15, screen_comms — screens, 1024×512, sign_bar — signs, 512×256
 
-### Community 280 - "EnemyFlinch"
-Cohesion: 0.14
-Nodes (7): Katalog, Montaż bloków pokoju (skala do kolizji), Zestaw aren Przejęcia: estakada i targ na dachach, AimLaser, DroneView, EnemyFlinch, TurretView
+### Community 280 - "validate.mjs"
+Cohesion: 0.18
+Nodes (6): additionalSpecs, bounds, measured, originalHashes, report, specs
 
 ### Community 281 - "lib.rs"
 Cohesion: 0.21
 Nodes (5): FIELD_LIMIT, NONE, ordered_ties_unreachable_and_neighbors(), out_of_range_cells_and_empty_graph_are_ignored(), SimGraph
 
 ### Community 282 - "missionBalance.ts"
-Cohesion: 0.20
-Nodes (18): analyzeAct(), attackDps(), changes(), format(), lowReserve(), mean(), measureWave(), paths (+10 more)
-
-### Community 283 - "cityFx.test.ts"
-Cohesion: 0.10
-Nodes (22): Candidate, candidatePool, LightPriority, scratchFrustum, scratchMatrix, scratchOrigin, scratchSphere, cityColor() (+14 more)
-
-### Community 284 - "simulator.ts"
-Cohesion: 0.06
-Nodes (30): Wymagania, Sprawdzenie, Attack, AttackRow, BalanceResult, bladeInput(), BossTimelineEvent, damagingPowerIds() (+22 more)
-
-### Community 285 - "Hud"
 Cohesion: 0.16
-Nodes (7): createBar(), createFlash(), createHealth(), damageIndicatorAngle(), element(), Hud, setText()
+Nodes (22): TTK bossa — `src/balance/simulator.ts`, analyzeAct(), attackDps(), changes(), format(), lowReserve(), mean(), measureWave() (+14 more)
 
-### Community 286 - "prototypes.ts"
-Cohesion: 0.15
-Nodes (13): Prototypy eskorty więźnia i wagonu (S4-03), checkWaves(), escortTest, EscortTestDefinition, escortTestSchema, id, loadEscortTest(), loadPayloadTest() (+5 more)
+### Community 283 - "dressing.ts"
+Cohesion: 0.04
+Nodes (75): Kosmetyczne set pieces pokoju — reaktor fuzyjny, 1.4. Świetlik dachowy z deszczem, profil pogody wnętrza i budżet świateł, 6. Wdrożenie, Etap C — domknięcie i runda E1 (25 XI 2026), Runda E2 — kompozycja wejścia i ekspozycje (25 XI 2026), Runda E3 — bloom kasetonów, stropy i sylwetki towaru (25 XI 2026), 1.2. Kluczowe nauczki z audytów `run1` i `run2` zastosowane w `run3`, 7.1. Blok `arena`, dyrektor walki i 18 punktów spawnu wrogów Kurogane (`spawnPoints` na 3 poziomach) (+67 more)
 
-### Community 287 - "createPower"
-Cohesion: 0.15
-Nodes (12): Arena wyzwań z mutatorem (F6), Arena z falami (F1 #16, F2-15), Co łączy, Ekwipunek (F2-15), Fale (`WaveDirector`), Klatka w Dolnym Mieście, Konsola debug, Otwarte (do playtestu / kolejnych zadań) (+4 more)
+### Community 284 - "Playtest demo — testy nowych graczy (S5-01, S6-01)"
+Cohesion: 0.18
+Nodes (10): Obserwacje (cytaty i zdarzenia), Playtest demo — testy nowych graczy (S5-01, S6-01), Pomoc prowadzącego, Przygotowanie (prowadzący), Pytania końcowe (1–5 i jedno zdanie), Scenariusz (czego nie mówisz, a co obserwujesz), Tabela testerów, Wynik tury (+2 more)
+
+### Community 285 - "hud.ts"
+Cohesion: 0.04
+Nodes (45): Ekran śmierci i wybór buildu, HUD — F1 #15, F2-15, nowy HUD, HUD runu (F3-15), Integracja w scenie areny, Kontrola w 30 sekund, Kryjówka: przewodnik i objaśnienia — S10-01, Pauza i ustawienia, Styl — wizjer hełmu (+37 more)
+
+### Community 286 - "talents.ts"
+Cohesion: 0.24
+Nodes (8): DefinitionPatch, ImplantHealthTarget, ImplantTrigger, ResolvedTalents, TALENT_SOURCE_PREFIX, TalentSystemOptions, TalentTrigger, ADR-0007
+
+### Community 287 - ".init"
+Cohesion: 0.05
+Nodes (30): Co łączy, Bariera (`barrier.json`, `kind: 'barrier'`, F2-08), Odłamki drona, Odłamki otoczenia (fizyka B-P1), Odłamki wrogów — F1 #12, Podłączenie w scenie, Szlif efektów walki (Neon Noir), Zdarzenia i sylwetka (+22 more)
 
 ### Community 288 - "Dokument projektowy mapy `run5` — przychodnia Helixa Dynamics („Klinika na 61. piętrze”)"
-Cohesion: 0.15
-Nodes (13): 1. Idea miejsca, 2.1. Przejścia, 2.2. Atrium G8 — pion, szkło i miasto, 2.3. Walka, 2. Układ, 3.1. Kod i dane (mało), 3.2. Modele Blender — zestaw `tools/blender/sets/bulwar_clinic.py`, 3.3. Tekstury — zestaw `med` (Codex, potok jak `tools/textures/run3.py`) (+5 more)
+Cohesion: 0.14
+Nodes (14): 1. Idea miejsca, 2.1. Przejścia, 2.2. Atrium G8 — pion, szkło i miasto, 2.3. Walka, 2. Układ, 3.1. Kod i dane (mało), 3.2. Modele Blender — zestaw `tools/blender/sets/bulwar_clinic.py`, 3.3. Tekstury — zestaw `med` (Codex, potok jak `tools/textures/run3.py`) (+6 more)
 
 ### Community 289 - "Lekcje z historii NEORYDER"
 Cohesion: 0.15
 Nodes (11): Pętla gry — `src/core/loop.ts`, AI wrogów, Decyzje feel z playtestów, Determinizm, Fizyka i ruch, Lekcje z historii NEORYDER, Proces i testy, Render i styl (+3 more)
 
-### Community 290 - "Misje fabularne"
-Cohesion: 0.11
-Nodes (19): Krzywa aktu I, M01 — jedna mapa liniowa, M02 — uwolnienie kurierów, M05 — Adiutant, M08 — Kwarantanna, M09 — Brat, M10 — Archiwum, Misje fabularne (+11 more)
+### Community 290 - "weaponSkin.ts"
+Cohesion: 0.24
+Nodes (10): SkinDefinition, applyWeaponSkin(), visit(), ensureUvs(), materials, PATTERNED, patterns, patternTexture() (+2 more)
 
 ### Community 291 - "S10-02 — przejście dema na jednym zapisie"
 Cohesion: 0.20
@@ -1492,29 +1466,25 @@ Nodes (9): Czasy etapów, Dowód rozliczenia, Luki pokrycia, Nagrody i debug, S1
 Cohesion: 0.29
 Nodes (7): graffiti_iskra ? decals, 512?512, iskra ? signs, 512?256, metro ? signs, 512?256, Pakiet kryj?wki Iskra ? 2026-11-15, screen_missions ? screens, 1024?512, screen_talents ? screens, 512?512, warsztat ? signs, 512?256
 
-### Community 293 - "CityLights"
-Cohesion: 0.12
-Nodes (12): 1.4. Świetlik dachowy z deszczem, profil pogody wnętrza i budżet świateł, 7.1. Blok `arena`, dyrektor walki i 18 punktów spawnu wrogów Kurogane (`spawnPoints` na 3 poziomach), 7.2. Zestawienie zagrożeń środowiskowych (`hazards[]` — 4 hazardy), 7.3. Oświetlenie bez smug wolumetrycznych i budżet `CityLights`, 7. Konfiguracja walki, 18 spawnów wrogów, 4 hazardy, oświetlenie `CityLights` i plan generatora `run8.mjs`, Migotanie świateł i neonów, DecalRenderer, CityLights (+4 more)
-
 ### Community 294 - "hubCutaway.spec.ts"
 Cohesion: 0.38
 Nodes (5): distance(), expectBowlOnCounter(), Measurement, Point, query()
 
-### Community 295 - "missionM04.spec.ts"
-Cohesion: 0.38
-Nodes (4): assertPayloadLayout(), capture(), mission(), query()
+### Community 295 - "Dokument projektowy mapy `run4` — WIEŻOWIEC KORPORACYJNY KUROGANE ARMS („SEKTOR WYSOKI // PIĘTRA 60–62”)"
+Cohesion: 0.20
+Nodes (10): 1. Analiza silnika i nauczki z `run1`–`run3`, 5.1. Blok `arena`, dyrektor walki i 18 punktów spawnu wrogów (`spawnPoints` na 3 piętrach), 5.2. Zestawienie zagrożeń środowiskowych (`hazards[]` — 4 hazardy na 3 kondygnacjach), 5.3. Oświetlenie bez smug wolumetrycznych i budżet `CityLights`, 5. Konfiguracja walki, spawny, hazardy, oświetlenie i plan generatora `run4.mjs`, 6.1. Kryteria akceptacji (automatyczne CLI i wizualne na zrzutach audytu), 6. Kryteria akceptacji i etapy prac (A–E), A. Kryteria automatyczne (CLI i testy jednostkowe) (+2 more)
 
 ### Community 296 - "Areny Przejęcia, Szturmu i Kradzieży rdzenia"
-Cohesion: 0.17
-Nodes (12): Areny Przejęcia, Szturmu i Kradzieży rdzenia, Estakada w smogu, Kradzież rdzenia, Materiały, statyka i pomiary, Nawigacja nowych aren, Poziomy i trasy, Sprawdzenie Estakady w 30 sekund, Szturm (+4 more)
+Cohesion: 0.15
+Nodes (13): Areny Przejęcia, Szturmu i Kradzieży rdzenia, Estakada w smogu, Kradzież rdzenia, Materiały, statyka i pomiary, Nawigacja nowych aren, Poziomy i trasy, Sprawdzenie Estakady w 30 sekund, Szturm (+5 more)
 
 ### Community 297 - "buildM08.mjs"
 Cohesion: 0.15
 Nodes (15): B(), block(), briefing, debrief, enemy, gate(), groups, level (+7 more)
 
-### Community 298 - "roomSchema.ts"
-Cohesion: 0.05
-Nodes (42): elevatorSchema, assaultDefinition, assaultRoom, conquestDefinition, heistRoom, modeDefinitions, modeSources, room (+34 more)
+### Community 298 - "run8Navigation.test.ts"
+Cohesion: 0.20
+Nodes (7): Goal, nav, occluders, rampEnds, surfaceNav, targets, transparentModels
 
 ### Community 299 - "buildM04.mjs"
 Cohesion: 0.27
@@ -1524,37 +1494,41 @@ Nodes (9): B(), block(), decor(), encounters, level, light(), sections, v() (+1 
 Cohesion: 0.22
 Nodes (4): InitInput, InitOutput, SimGraph, SyncInitInput
 
-### Community 301 - "runScene.test.ts"
-Cohesion: 0.12
-Nodes (12): element(), RunInventoryMenu, active, advanceRewardDelay(), advanceVictoryHold(), bossRun(), bossRunState(), bossToLastPhase() (+4 more)
+### Community 301 - "runUiU3.test.ts"
+Cohesion: 0.10
+Nodes (9): ChallengeHistoryScreen, element(), RunInventoryMenu, cleanups, nodes, open(), screen(), view (+1 more)
 
 ### Community 302 - "Sterowanie, zapis i zgłaszanie problemów"
 Cohesion: 0.25
 Nodes (7): Co i gdzie jest zapisywane, Co kasuje wyczyszczenie danych witryny, Dodatkowe informacje o sterowaniu, Jak działa zapis, Jak zgłosić problem, Sterowanie domyślne, Sterowanie, zapis i zgłaszanie problemów
 
+### Community 303 - "System interfejsu („Neon Noir console”)"
+Cohesion: 0.22
+Nodes (8): Dźwięki UI, Ekrany U1, Menedżer warstw, Pasek akcji, Skala interfejsu, System interfejsu („Neon Noir console”), Tokeny, Ustawienia
+
 ### Community 304 - "ai.mjs"
 Cohesion: 0.18
 Nodes (5): Duże areny (ADR 0011), Materiały i generator Zajezdni Maglev, BlockMaterial, load(), loader
 
-### Community 305 - "arenaSurfaceNavigation.ts"
-Cohesion: 0.12
-Nodes (15): Block, Cell, nearRect(), pointRectSq(), pointSegmentSq(), Shape, topOf(), nearWall (+7 more)
+### Community 305 - "run4Navigation.test.ts"
+Cohesion: 0.25
+Nodes (6): Goal, nav, stairEnds, stairsNav, stairsTuning, surfaceNav
 
-### Community 306 - "Heist"
-Cohesion: 0.17
-Nodes (6): Kradzież rdzenia S2b-03, distance(), Heist, within(), HeistDefinition, create()
+### Community 306 - "4.1. Nowe modele 3D (`tools/blender/sets/kurogane_office.py` → `public/assets/models/city/off_*.glb`)"
+Cohesion: 0.25
+Nodes (8): 4.1. Nowe modele 3D (`tools/blender/sets/kurogane_office.py` → `public/assets/models/city/off_*.glb`), 4.2. Lista nowych tekstur (szyldy korporacyjne, ekrany, notatki/decale, etykiety i powierzchnie), 4.3. Zasoby istniejące do ponownego użycia oraz zasoby zakazane na mapie `run4`, 4. Katalog zasobów: nowe modele `off_*`, nowe tekstury, zasoby istniejące i zakazane, A. Dozwolone istniejące modele i materiały (spójne z wieżowcem korporacyjnym Kurogane Arms), B. Zasoby ZAKAZANE w `run4` (ochrona spójności stylistycznej i eliminacja smug światła), Tabela 1: Modele fasad szklanych, ścianek działowych, działającej windy, komunikacji i oświetlenia — 12 modeli, Tabela 2: Modele wyposażenia openspace'u (`R2`, `R3`), sal konferencyjnych (`R4`, `R5`), kuchni (`R6`), serwerowni/drukarni (`R7`) i gabinetów (`R8`–`R10`) — 13 modeli
 
-### Community 307 - "Warsztat modułów broni"
-Cohesion: 0.29
-Nodes (7): Dane i montaż, Dodatki specjalistyczne, Kontrola i testy, Moduły startowe, Rykoszet, Sklep warsztatu: bronie i dodatki, Warsztat modułów broni
+### Community 307 - "Łup z elity i wydobycie (zapis v7)"
+Cohesion: 0.14
+Nodes (9): Warsztat modułów broni, Łup z elity i wydobycie (zapis v7), Dane i montaż, Dodatki specjalistyczne, Kontrola i testy, Rozwiązanie ekwipunku i zapis, Rykoszet, Sklep warsztatu: bronie i dodatki (+1 more)
 
 ### Community 308 - "prototypes.spec.ts"
 Cohesion: 0.29
 Nodes (3): EscortState, PayloadState, Xz
 
-### Community 309 - "SynergyContext"
-Cohesion: 0.12
-Nodes (13): Bronie (F2-03, F2-04), Ekran wyboru buildu i fale F2 (F2-17), Ekwipunek i synergie (F2-15, F2-16), Kontrakty F2 (zatwierdzone 2026-11-14, ADR 0004), Przedmiot w ręku (arena), Skupienie — skala czasu gracza (F2-06), Statusy (F2-01, F2-02), Wejście (F2-01) (+5 more)
+### Community 309 - "SynergySystem"
+Cohesion: 0.03
+Nodes (61): Architektura (obowiązuje każdego agenta), 1. Bronie: tryby strzału w kodzie, liczby w danych, 2. Moce: jeden interfejs i rejestr, 3. Statusy przez obrażenia, 4. Skupienie: osobna skala czasu gracza, 5. Synergie na tagach (dane), 6. AI: tokeny ataku i sloty flankowania, 7. Balans: symulacja TTK z danych (+53 more)
 
 ### Community 310 - "missionM08.spec.ts"
 Cohesion: 0.53
@@ -1565,192 +1539,160 @@ Cohesion: 0.40
 Nodes (3): mission(), query(), State
 
 ### Community 312 - "fusionReactor.test.ts"
-Cohesion: 0.11
-Nodes (4): setPieceSchema, baseline, definition, disconnect()
+Cohesion: 0.10
+Nodes (6): fusionPulse(), FusionReactor, setPieceSchema, baseline, definition, disconnect()
 
 ### Community 313 - "missionOdlewnia.spec.ts"
 Cohesion: 0.40
 Nodes (3): mission(), MissionState, query()
 
-### Community 314 - "enemyHeldBoss.test.ts"
-Cohesion: 0.19
-Nodes (7): HeldShield, bossView(), chief, load(), shielder, snapshot(), views
-
-### Community 315 - "enemyHeldBoss.test.ts"
-Cohesion: 0.12
-Nodes (13): bodyPoint, boneInRoot, bonePosition, boneRotation, boneScale, identity, offset, partial (+5 more)
+### Community 315 - "6. Kryteria akceptacji i etapy prac (A–E)"
+Cohesion: 0.29
+Nodes (7): 6.1. Kryteria akceptacji (automatyczne CLI i wizualne), 6.2. Etapy prac (A–E), 6. Kryteria akceptacji i etapy prac (A–E), A. Kryteria automatyczne (CLI i testy jednostkowe), B. Kryteria wizualne (zrzuty `node tools/screens/mapAudit.mjs run3` i spacer `?scene=map-walk&map=run3`), Korekta kokonów i mocowań po teście (2026-11-26), Neutralni naukowcy Kurogane
 
 ### Community 316 - "NEORYDER"
 Cohesion: 0.50
 Nodes (3): Co cię czeka w demie, NEORYDER, Wymagania
 
 ### Community 317 - "Oprawa miasta — Neon Noir"
-Cohesion: 0.12
-Nodes (16): Profile śniegu i popiołu (ADR 0011 D6), Dane oprawy (kontrakt `src/world/dressingSchema.ts`), Deszcz i efekty otoczenia, Kontrakt integracji, Mapowanie jakości, Napisy i hologramy, Oprawa miasta — Neon Noir, Oprawa wnętrza przemysłowego (+8 more)
+Cohesion: 0.11
+Nodes (22): Dane oprawy (kontrakt `src/world/dressingSchema.ts`), Kontrakt integracji, Mapowanie jakości, Naklejki i światła, Napisy i hologramy, Okna budynków (atlasy), Oprawa miasta — Neon Noir, Oprawa wnętrza przemysłowego (+14 more)
 
-### Community 318 - "defeatMessage"
+### Community 318 - "Playtest F4 — bramka „meta-progres i kryjówka”"
+Cohesion: 0.29
+Nodes (6): Co mierzyć (wpisz do tabeli), Playtest F4 — bramka „meta-progres i kryjówka”, Pytania o feel (1–5 i jedno zdanie), Start, Tabela wyników, Wynik bramki
+
+### Community 320 - "Łatki definicji i ResolvedLoadout — F4-03"
+Cohesion: 0.29
+Nodes (6): Debug i testy, Format łatki, Przykłady, Reguły, Łatki definicji i ResolvedLoadout — F4-03, Ścieżki
+
+### Community 321 - "ui/hubChatter.ts"
+Cohesion: 0.43
+Nodes (3): HubChatterUi, ChatterLine, NpcTexts
+
+### Community 359 - "AGENTS.md — zasady dla agentów NEORYDER"
 Cohesion: 0.25
-Nodes (7): Czytelność tekstów — S10-01, Kody przyczyn (`DamageSystem.deathCause`), Kontrakt informacji o porażce, Pierwsze minuty w kryjówce, Podłączenia, Weryfikacja, defeatMessage()
-
-### Community 320 - "BossTest"
-Cohesion: 0.27
-Nodes (3): Dyrektor Systemów Orbis Grid, BossFieldView, BossTest
-
-### Community 359 - "scenes/run.ts"
-Cohesion: 0.05
-Nodes (35): AGENTS.md — zasady dla agentów NEORYDER, Architektura (obowiązuje każdego agenta), Definicja ukończenia (każdy PR), Gra w skrócie, Stack i komendy, Struktura i właściciele folderów, Styl kodu, Zasady pracy (+27 more)
+Nodes (7): AGENTS.md — zasady dla agentów NEORYDER, Definicja ukończenia (każdy PR), Gra w skrócie, Stack i komendy, Struktura i właściciele folderów, Styl kodu, Zasady pracy
 
 ### Community 360 - "missionM07.spec.ts"
 Cohesion: 0.40
 Nodes (3): mission(), MissionState, query()
 
-### Community 361 - "StatusSystem"
-Cohesion: 0.03
-Nodes (53): 1. Bronie: tryby strzału w kodzie, liczby w danych, 2. Moce: jeden interfejs i rejestr, 3. Statusy przez obrażenia, 4. Skupienie: osobna skala czasu gracza, 5. Synergie na tagach (dane), 7. Balans: symulacja TTK z danych, ADR 0004 — Architektura arsenału (F2), Menu i mapa (F3-13) (+45 more)
+### Community 361 - "Weapon"
+Cohesion: 0.05
+Nodes (34): Ekwipunek (F2-15), Dane, zdarzenia i widok, Kontrola w 30 sekund, Przedmiot w ręku, Sterowanie i zamiana, Dopasowanie do modelu broni, Sloty i optyka (S4c, runda A), Aktywne chłodzenie blastera (+26 more)
 
 ### Community 362 - "Misja liniowa M01 (kontrakt D1–D8)"
-Cohesion: 0.13
-Nodes (11): Audyt map, Chimera, Fundamenty wnętrz runu, Kosmetyczne set pieces pokoju — reaktor fuzyjny, Misja liniowa M01 (kontrakt D1–D8), Pojmanie w misji liniowej (M09), Progi kontrolne transferu M10, Skiny broni (+3 more)
+Cohesion: 0.08
+Nodes (23): Audyt map, Chimera, Fundamenty wnętrz runu, Misja liniowa M01 (kontrakt D1–D8), Progi kontrolne transferu M10, Windy pokojowe, Wykrywanie w spotkaniach, 05 Poziom zagrożenia (+15 more)
 
 ### Community 363 - "Vec3"
-Cohesion: 0.02
-Nodes (90): Wrogowie widzą sojuszników, Katalog zdarzeń (`GameEvents`), Cel wroga: gracz albo sojusznik, Debug i testy, AllyTargetCandidate, AllyTargetOptions, HostileCandidate, HostileTargetOptions (+82 more)
+Cohesion: 0.03
+Nodes (47): Kradzież rdzenia S2b-03, Wybór celów — `src/allies/targeting.ts`, Cywile — naukowcy Kurogane Arms, Dane i symulacja, Sprawdzenie ręczne (30 sekund), Cel wroga: gracz albo sojusznik, Determinizm (Rng), Ryzyka dla wersji produkcyjnej (+39 more)
 
 ### Community 364 - "ADR 0008 — Misje fabularne i postęp kampanii"
-Cohesion: 0.20
-Nodes (9): 1. Misja = run z warunkiem celu, 2. Dane: `src/data/missions/<id>.json` + `src/world/missionSchema.ts` (zod), 2a. Uzupełnienie 17 XI 2026 (po eskalacji wykonawcy), 3. Interakcja: strefy z paskiem postępu, bez nowego klawisza, 4. Mapa misji, 5. Stan próby (run) a stan kampanii (meta), 6. Interfejs, 7. Poza zakresem pierwszej implementacji (+1 more)
+Cohesion: 0.22
+Nodes (8): 1. Misja = run z warunkiem celu, 2. Dane: `src/data/missions/<id>.json` + `src/world/missionSchema.ts` (zod), 2a. Uzupełnienie 17 XI 2026 (po eskalacji wykonawcy), 3. Interakcja: strefy z paskiem postępu, bez nowego klawisza, 4. Mapa misji, 6. Interfejs, 7. Poza zakresem pierwszej implementacji, ADR 0008 — Misje fabularne i postęp kampanii
 
 ### Community 365 - "NEORYDER — audyt danych map"
 Cohesion: 0.33
 Nodes (5): Jak czytać wynik, NEORYDER — audyt danych map, Od czego zacząć oględziny, Odtworzenie, Zmienione pliki narzędzi, testów i dokumentacji
 
 ### Community 366 - "1. Ocena ogólna"
-Cohesion: 0.06
-Nodes (35): Motywy i miejska oprawa renderu (Neon Noir), 1. Ocena ogólna, 2. Lista konkretnych błędów w danych JSON, 3. Plan poprawek gotowy dla programisty, 4. Kryteria odbioru (co musi być widać po poprawkach), A. Obiekty bez zaczepienia (wiszące w powietrzu), Audyt level designu i plan poprawek mapy `bossRoom` (*Sala zarządu Kurogane Arms*), B. Modele bez kolizji w grywalnej przestrzeni i przenikanie (+27 more)
+Cohesion: 0.05
+Nodes (40): 1. Ocena ogólna, 2. Lista konkretnych błędów w danych JSON, 3. Plan poprawek gotowy dla programisty, 4. Kryteria odbioru (co musi być widać po poprawkach), A. Obiekty bez zaczepienia (wiszące w powietrzu), Audyt level designu i plan poprawek mapy `bossRoom` (*Sala zarządu Kurogane Arms*), B. Modele bez kolizji w grywalnej przestrzeni i przenikanie, C. Duplikaty w danych (+32 more)
 
-### Community 367 - "Dokument projektowy mapy `run3` — TAJNE LABORATORIUM KUROGANE ARMS („SEKTOR X-51”)"
-Cohesion: 0.12
-Nodes (16): 1. Analiza silnika i nauczki z `run1` oraz `run2`, 2.1. Priorytet P0 — MUSI BYĆ PRZED `run3`, 2.2. Priorytet P1 — Szlif po pierwszym odbiorze wizualnym, 2. Lista braków („fundamenty”) z priorytetem P0 / P1, 5.1. Blok `arena`, dyrektor walki i 16 punktów spawnu wrogów (`spawnPoints` z `y`), 5.2. Zestawienie zagrożeń środowiskowych (`hazards[]` — 4 hazardy na obu poziomach), 5.3. Oświetlenie bez smug wolumetrycznych i budżet `CityLights`, 5. Konfiguracja walki, spawny, hazardy i oświetlenie (bez smug) (+8 more)
+### Community 367 - "labels"
+Cohesion: 0.05
+Nodes (43): Motywy i miejska oprawa renderu (Neon Noir), 1. Analiza silnika i nauczki z `run1` oraz `run2`, 2.1. Priorytet P0 — MUSI BYĆ PRZED `run3`, 2.2. Priorytet P1 — Szlif po pierwszym odbiorze wizualnym, 2. Lista braków („fundamenty”) z priorytetem P0 / P1, 3.1. Idea, narracja miejsca i klimat „Strefy 51” Kurogane Arms, 3.2. Tabela wszystkich 8 pomieszczeń — wymiary, współrzędne, wysokości i palety neonów, 3.3. Rzuty kondygnacji i przekrój pionowy (ASCII) (+35 more)
 
-### Community 368 - "portModels.test.ts"
-Cohesion: 0.13
-Nodes (12): PORT_RAIL_PROP_MODELS, length(), folder, glowColors, lengths, materials, names, paints (+4 more)
+### Community 368 - "ADR 0010 — Misje jako liniowe poziomy"
+Cohesion: 0.33
+Nodes (5): 1. Decyzja, 3. Segment, 4. Kolejność wdrożenia, 5. Konsekwencje, ADR 0010 — Misje jako liniowe poziomy
 
 ### Community 369 - "[F1][Ruch i kamera] Dash i slide"
-Cohesion: 0.40
+Cohesion: 0.33
 Nodes (4): Cel, [F1][Ruch i kamera] Dash i slide, Kryteria akceptacji, Poza zakresem
 
 ### Community 370 - "patches.ts"
-Cohesion: 0.27
-Nodes (13): applyOne(), applyPatches(), describe(), FORBIDDEN_KEYS, formatIssues(), hasKey(), isContainer(), jsonEqual() (+5 more)
+Cohesion: 0.15
+Nodes (20): resolveLoadout, bladeSchema, ChainPowerDefinition, powerSchema, applyOne(), applyPatches(), describe(), FORBIDDEN_KEYS (+12 more)
 
 ### Community 371 - "Misja 15 — Kamienna"
 Cohesion: 0.15
 Nodes (12): Cel misji, Dialogi, Mapa, Misja 15 — Kamienna, Nagrody i konsekwencje, Odprawa (kryjówka, alarm nocny), Po misji (kryjówka, powrót na zalaną stację), Przebieg (+4 more)
 
-### Community 372 - "Synergie buildów (F2-16)"
-Cohesion: 0.17
-Nodes (10): 02 StatusSystem, Brak pętli, Dane w grze, Jak dodać synergię, Jak sprawdzić, Kolejność wykonania w `fire(event, facts)`, Model danych, Synergie buildów (F2-16) (+2 more)
-
-### Community 373 - "1. Ocena obecnego stanu"
-Cohesion: 0.18
-Nodes (11): 1. Ocena obecnego stanu, 1. Osłony i linie strzału (Sightlines), 2. Pętle ruchu (Movement Loops), 3. Wysokości i obiekty interaktywne (Wertykalność i Rezonans), 4. Czytelność wrogów i przestrzeni, Gameplay walki z falami wrogów (L1–L6) oraz trybu *Kradzież rdzenia* (2,0 / 5), Klimat (2,5 / 5), Ocena skali i rekomendacja: czy `combatRing` powinien zostać mały (`28 × 28 m`), czy zostać powiększony do `~70 × 120 m`? (+3 more)
-
-### Community 375 - "package.json"
-Cohesion: 0.18
-Nodes (10): @types/node@^22.20.5, typescript@^6.0.3, engines, node, name, private, type, version (+2 more)
-
-### Community 376 - "dependencies"
-Cohesion: 0.18
-Nodes (11): dependencies, @dimforge/rapier3d-compat@^0.21.0, @fontsource/chakra-petch@^5.3.0, @fontsource/inter@^5.3.0, lil-gui@^0.21.0, stats.js@^0.17.0, three@^0.187.0, zod@^4.6.7 (+3 more)
-
-### Community 377 - "Tuning"
-Cohesion: 0.03
-Nodes (52): Helixa Dynamics, Strzelec — F1 #09, Efekty statusów na wrogach, Iskry trafień, Odłamki drona, Odłamki otoczenia (fizyka B-P1), Odłamki wrogów — F1 #12, Podłączenie i weryfikacja (+44 more)
-
-### Community 383 - "ADR 0007 — Meta-progres i kryjówka (F4)"
-Cohesion: 0.20
-Nodes (9): 10. Kryjówka (hub), 11. Debug i testy, 3. Poziom postaci, 4. Drzewka talentów, 6. Odblokowania i ekwipunek z warsztatu, 7. Poziom zagrożenia, 9. Zdarzenia (do `GameEvents`), ADR 0007 — Meta-progres i kryjówka (F4) (+1 more)
-
-### Community 385 - "F1/README.md"
+### Community 372 - "S5–S6 — testy nowych graczy"
 Cohesion: 0.33
-Nodes (4): Cel, [F1][Architekt] Model obrażeń i komponenty Health / Hitbox / Hurtbox, Kryteria akceptacji, Poza zakresem
+Nodes (6): S5-01 Tura testów 1 (4–6 osób), S5-02 Poprawki po turze 1, S5–S6 — testy nowych graczy, S6-01 Tura testów 2 (4–6 osób), S6-02 (warunkowo) „Punkt kontrolny”, S6-03 Przebudowa 2–3 najsłabszych pokoi
 
-### Community 386 - "LevelRuntime"
-Cohesion: 0.33
-Nodes (3): 1.4. Misje fabularne M01–M10 (`?scene=mission&mission=<id>`), M10 — Archiwum, LevelRuntime
+### Community 375 - "ADR 0006 — Neon Noir (kierunek artystyczny)"
+Cohesion: 0.40
+Nodes (5): ADR 0006 — Neon Noir (kierunek artystyczny), Decyzja, Konsekwencje, Kontekst, Rozważone alternatywy
 
-### Community 387 - "windowAtlas.test.ts"
-Cohesion: 0.33
-Nodes (8): Okna budynków (atlasy), WINDOW_ATLAS_GRID, windowCellUv(), WindowChoice, windowChoice(), windowHash(), WindowParams, params
+### Community 376 - "ADR 0012 — wsadowa nawigacja i sąsiedztwo AI"
+Cohesion: 0.40
+Nodes (4): ADR 0012 — wsadowa nawigacja i sąsiedztwo AI, Pomiar i decyzja, Uruchamianie i powtarzanie pomiaru, Wynik na Windows, Node 22.13.0
 
-### Community 389 - "ui/hubGuide.ts"
-Cohesion: 0.33
-Nodes (4): HubGuide, text, HubGuideTarget, hubGuideTarget()
+### Community 377 - "StatusVfx"
+Cohesion: 0.07
+Nodes (28): Efekty statusów na wrogach, Iskry trafień, Podłączenie i weryfikacja, Wybuch ognia (Z21), FxInstance, makeInstance(), Particle, ParticlePool (+20 more)
+
+### Community 378 - "S7–S8 — zawartość i zamknięcie zakresu"
+Cohesion: 0.40
+Nodes (5): S7-01 Konsekwencje w kryjówce po misjach dema, S7-02 Audio walki i muzyka (spokój, walka, boss), S7–S8 — zawartość i zamknięcie zakresu, S8-01 (warunkowo) „Ładunek klasy K”, S8-02 Decyzja 3 vs 5 misji i zamrożenie zakresu
+
+### Community 379 - "2. Koncepcja miejsca w świecie gry i różnica wobec `bossRoom`"
+Cohesion: 0.50
+Nodes (4): 2. Koncepcja miejsca w świecie gry i różnica wobec `bossRoom`, Czym jest to miejsce: _Nielegalny Ring Walk „Klatka” (Podziemny Krąg Iskry w Dolnym Mieście)_, Dlaczego ta koncepcja idealnie pasuje do falowej areny (Arena / Endless / Mutatory), Różnica wobec `bossRoom` (_Sala zarządu Kurogane Arms_)
+
+### Community 380 - "nearRect"
+Cohesion: 0.67
+Nodes (3): nearRect(), pointRectSq(), pointSegmentSq()
+
+### Community 383 - "metaTypes.ts"
+Cohesion: 0.06
+Nodes (37): 10. Kryjówka (hub), 11. Debug i testy, 3. Poziom postaci, 7. Poziom zagrożenia, 8. Zapis, 9. Zdarzenia (do `GameEvents`), ADR 0007 — Meta-progres i kryjówka (F4), Rozważone alternatywy (+29 more)
 
 ### Community 390 - "Decyzje koordynatora (2026-11-14)"
 Cohesion: 0.50
 Nodes (4): Decyzje koordynatora (2026-11-14), Opcje rozważone, Wybrana opcja B (decyzja koordynatora), Wynik po zmianie ekwipunku (dane mocy bez zmian)
 
 ### Community 391 - "Boss — F3-16"
-Cohesion: 0.10
-Nodes (19): Boss (F3-16) — `src/enemies/boss.ts`, Boss — F3-16, Boss: wezwanie i tarcza łamana — F3-17, Chimera, Kontrola modeli CC0 w 30 sekund, Nawigacja, ruch i animacja, Przewrócenie i kip-up (S0-08), Reakcja widoku na trafienie (+11 more)
-
-### Community 392 - "eslint.config.js"
-Cohesion: 0.22
-Nodes (8): eslint-config-prettier@^10.1.8, @eslint/js@^10.0.1, globals@^17.14.0, typescript-eslint@^8.72.2, eslint-config-prettier, @eslint/js, globals, typescript-eslint
+Cohesion: 0.09
+Nodes (13): Pojmanie w misji liniowej (M09), Boss — F3-16, Chimera, Helixa Dynamics, Kontrola modeli CC0 w 30 sekund, Przewrócenie i kip-up (S0-08), Reakcja widoku na trafienie, Wykrywanie (+5 more)
 
 ### Community 393 - "pathlib"
 Cohesion: 0.29
 Nodes (3): joint(), point(), pose()
 
-### Community 395 - "Sojusznicy"
-Cohesion: 0.29
-Nodes (5): Drużyna — `src/allies/squad.ts`, Poziomy liniowe — `src/world/levelSchema.ts`, RoomScene, Sojusznicy, Wejście
-
-### Community 396 - "missions.md"
-Cohesion: 0.29
-Nodes (3): Audyt misji 1 „Maszty” (2026-11-22), Czego nie sprawdzono, Wnioski
-
 ### Community 397 - "Poziomy trudności i taktyczne AI"
-Cohesion: 0.29
+Cohesion: 0.18
 Nodes (5): Normalny trudniejszy niż dziś, Poziomy trudności i taktyczne AI, Symulacja poziomów, Wartości poziomów, Zachowania AI
 
 ### Community 398 - "Przepisy SFX (`sfx.json`, 29 dźwięków)"
-Cohesion: 0.38
-Nodes (7): Alerty progowe (`alerts` w `sfx.json`), Metryki odbioru (wariant 0, pitch 1; stan z renderu `render-sfx.mjs`), Odbiór offline, Przepisy SFX (`sfx.json`, 29 dźwięków), Reguły zdarzenie → dźwięk (stan obecny), lowHealth(), enemyShot()
-
-### Community 399 - "S1 — kontrakt misji i kampanii"
-Cohesion: 0.40
-Nodes (5): S1-01 ADR 0008: misje i kampania, S1-02 Schemat danych misji, S1-03 Stan kampanii w zapisie, S1-04 Pomiar referencyjny wydajności, S1 — kontrakt misji i kampanii
-
-### Community 400 - "4. Katalog zasobów: nowe modele `lab_*`, nowe tekstury, zasoby istniejące i zakazane"
-Cohesion: 0.40
-Nodes (5): 4.2. Lista nowych tekstur (szyldy, plakaty, notatki/decale, ekrany, powierzchnie), 4.3. Zasoby istniejące do ponownego użycia oraz zasoby zakazane na mapie `run3`, 4. Katalog zasobów: nowe modele `lab_*`, nowe tekstury, zasoby istniejące i zakazane, A. Dozwolone istniejące modele i tekstury (pasujące do tajnego ośrodka Kurogane Arms), B. Zasoby ZAKAZANE w `run3` (ochrona spójności stylistycznej oraz brak smug wolumetrycznych)
-
-### Community 401 - "Tekstury komiksowe NEORYDER"
-Cohesion: 0.40
-Nodes (4): Przebudowa lokalna, Tekstury komiksowe NEORYDER, Zasady użycia, Zawartość i skróty promptów
+Cohesion: 0.27
+Nodes (9): Alerty progowe (`alerts` w `sfx.json`), Dźwięki (F1 #14), Integracja, Metryki odbioru (wariant 0, pitch 1; stan z renderu `render-sfx.mjs`), Odbiór offline, Przepisy SFX (`sfx.json`, 29 dźwięków), Reguły zdarzenie → dźwięk (stan obecny), lowHealth() (+1 more)
 
 ## Knowledge Gaps
 - **82 isolated node(s):** `neoryder-sim`, `ADR-0006`, `ADR-0003`, `ADR-0007`, `ADR-0007` (+77 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3871 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **84 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3893 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **76 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `RoomScene` connect `RoomScene` to `.emit`, `LevelRuntime`, `DamageSystem`, `Arena`, `PropPhysicsSystem`, `mission.ts`, `Boss — F3-16`, `PlayerController`, `MetaManager`, `entry`, `vitest`, `Sojusznicy`, `_city_box`, `MissionObjectives`, `RunScene`, `simulator.ts`, `urbanMaterials.ts`, `ADR 0005 — Pętla runu (F3)`, `bossBar.ts`, `meta.ts`, `Hud`, `prototypes.ts`, `roomTest.ts`, `fppBlaster.ts`, `RunManager`, `Misje fabularne`, `createPower`, `elevatorCabin.ts`, `Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005)`, `arenaSpawns.ts`, `.off`, `runScene.test.ts`, `vec`, `roomScene.ts`, `Heist`, `allies.test.ts`, `RunState`, `SceneAtmosphere`, `Boss`, `PayloadTest`, `.render`, `hub.ts`, `TalentSystem`, `BossArenaFx`, `meta.ts`, `ImplantSystem`, `arena`, `panel`, `ArenaNavigation`, `Poziomy liniowe`, `runTypes.ts`, `arenaConstructionSite.mjs`, `MeleeTest`, `Prototypy eskorty więźnia i wagonu (S4-03)`, `scenes/run.ts`, `StatusSystem`, `Misja liniowa M01 (kontrakt D1–D8)`, `Vec3`, `math.ts`, `MissionScene`, `1. Ocena ogólna`, `Tuning`, `MissionObjectives`, `LightningRenderer`, `ADR 0007 — Meta-progres i kryjówka (F4)`?**
-  _High betweenness centrality (0.144) - this node is a cross-community bridge._
+- **Why does `RoomScene` connect `RoomScene` to `.emit`, `Rng`, `Stats`, `Arena`, `PropPhysicsSystem`, `save.ts`, `roomScene.ts`, `Conquest`, `MetaManager`, `entry`, `EntityId`, `PlayerController`, `_city_box`, `RunScene`, `HazardSystem`, `simulator.ts`, `Zadania`, `dressing.ts`, `hud.ts`, `.init`, `RunManager`, `elevatorCabin.ts`, `PrototypeScene`, `Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005)`, `buildM08.mjs`, `Areny Przejęcia, Szturmu i Kradzieży rdzenia`, `.off`, `vec`, `ScatterProps`, `three`, `math`, `Łup z elity i wydobycie (zapis v7)`, `allies.test.ts`, `SynergySystem`, `SceneAtmosphere`, `Boss`, `.render`, `TalentSystem`, `CityDressing`, `bossArenaFx.ts`, `Łatki definicji i ResolvedLoadout — F4-03`, `ImplantSystem`, `fppViewModel.ts`, `arena`, `panel`, `.path`, `Poziomy liniowe`, `arenaConstructionSite.mjs`, `MeleeTest`, `Prototypy eskorty więźnia i wagonu (S4-03)`, `Weapon`, `Misja liniowa M01 (kontrakt D1–D8)`, `Vec3`, `EventBus`, `1. Ocena ogólna`, `.registerCommands`, `Tutorial`, `WaveDirector`, `disposeCityGroup`, `StatusVfx`, `MissionObjectives`, `LightningRenderer`, `metaTypes.ts`?**
+  _High betweenness centrality (0.134) - this node is a cross-community bridge._
 - **Are the 17 inferred relationships involving `EventBus` (e.g. with `Architektura (obowiązuje każdego agenta)` and `4. Każdy pokój = nowy świat Rapier i nowa instancja sceny`) actually correct?**
   _`EventBus` has 17 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `neoryder-sim`, `ADR-0006`, `ADR-0003` to the rest of the system?**
   _82 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `mall_atrium.py` be split into smaller, more focused modules?**
   _Cohesion score 0.05938697318007663 - nodes in this community are weakly interconnected._
-- **Why does `neonStreet()` connect `disposeCityGroup` to `PropPhysicsSystem`, `Misja 08 — Kwarantanna`, `entry`, `Misja 19 — Pion`, `Misja 01 — Maszty`, `Misja 02 — Punkt kontrolny`, `misje.md`, `Misja 04 — Ładunek klasy K`, `dressing.ts`, `Misja 06 — Odlewnia`, `Misja 05 — Adiutant`, `Misja 07 — Nocny dyżur`, `Misja 09 — Brat`, `Misja 10 — Archiwum`, `Misja 17 — Przerwa w dostawie`, `urbanMaterials.ts`, `Misja 16 — Sala monitorów`, `Misja 20 — Cisza`, `HtmlRunScreens`, `seed`, `roomScene.ts`, `Misja 11 — Nadajnik`, `Oprawa miasta — Neon Noir`, `Misja 14 — Palacz`, `hub.ts`, `arena`, `panel`, `NEORYDER — Game Design Document`, `rooms.md`, `Poziomy liniowe`, `arenaConstructionSite.mjs`, `1. Ocena ogólna`, `crate`, `1. Ocena obecnego stanu`?**
-  _High betweenness centrality (0.062) - this node is a cross-community bridge._
-- **Are the 86 inferred relationships involving `RoomScene` (e.g. with `10. Nowe zdarzenia (propozycja do `docs/api.md`, bez edycji teraz)` and `4. Każdy pokój = nowy świat Rapier i nowa instancja sceny`) actually correct?**
-  _`RoomScene` has 86 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `EventBus` connect `EventBus` to `NEORYDER — backlog rozwoju (etapy po kolei)`, `.emit`, `Rng`, `Stats`, `Arena`, `save.ts`, `roomScene.ts`, `MusicDirector`, `MetaManager`, `entry`, `EntityId`, `FeelSystem`, `Conquest`, `PlayerController`, `RunScene`, `HazardSystem`, `normalize`, `RunState`, `HubScene`, `gamepad.ts`, `EnemyDirector`, `hud.ts`, `dressing.ts`, `.init`, `fppBlaster.ts`, `RunManager`, `elevatorCabin.ts`, `hubCampaign.test.ts`, `weaponModuleVisuals.test.ts`, `scenes/hubNpcs.ts`, `main.ts`, `outline.ts`, `.off`, `ScatterProps`, `three`, `AudioSystem`, `allies.test.ts`, `SynergySystem`, `hubScene.test.ts`, `resonanceWaveFx.ts`, `fusionReactor.test.ts`, `getMaterial`, `Pipeline stylu`, `bossArenaFx.ts`, `zod`, `musicSchema.ts`, `ImplantSystem`, `handRig.test.ts`, `fppViewModel.ts`, `runScreens.ts`, `metaBar.ts`, `RoomScene`, `hubStations.ts`, `textClarity.test.ts`, `implants.ts`, `MeleeTest`, `Prototypy eskorty więźnia i wagonu (S4-03)`, `synergies.ts`, `HubSoundscape`, `math.ts`, `Weapon`, `HubFaunaRuntime`, `Vec3`, `achievements.ts`, `.registerCommands`, `hubPowerDip.test.ts`, `WaveDirector`, `inputGlyphs.ts`, `StatusVfx`, `LightningRenderer`, `fppInspect.ts`, `metaTypes.ts`?**
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Should `_run7Kit.mjs` be split into smaller, more focused modules?**
-  _Cohesion score 0.08198648251542756 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07564822240042769 - nodes in this community are weakly interconnected._
+- **Why does `vitest` connect `EventBus` to `Rng`, `save.ts`, `roomScene.ts`, `cityPropsTest.ts`, `world/hubNpcs.ts`, `urbanMaterials.ts`, `RunState`, `HubScene`, `scenes/hubFauna.ts`, `meta.ts`, `Input`, `gamepad.ts`, `splash.test.ts`, `renderFixes.test.ts`, `scenes/hubNpcs.ts`, `workshopPanel.ts`, `main.ts`, `themes.test.ts`, `vec`, `world/hubMap.ts`, `viewmodelLayer.ts`, `hubScene.test.ts`, `flicker.test.ts`, `SceneAtmosphere`, `getMaterial`, `musicSchema.ts`, `hubScreens.ts`, `handRig.test.ts`, `workshopState.ts`, `frameProfiler`, `runScreens.ts`, `fppBladeFx.ts`, `hubStations.ts`, `renderMusic.mjs`, `textClarity.test.ts`, `implants.ts`, `synergies.ts`, `run7Navigation.test.ts`, `hubPowerDip.test.ts`, `WaveDirector`, `inputGlyphs.ts`, `weaponPreview.ts`, `ref_node_fs`, `MissionObjectives`, `metaSim.ts`, `LightningRenderer`, `PropPhysicsSystem`, `runInventory.ts`, `contentZ11.test.ts`, `EntityId`, `weaponModuleVisuals.test.ts`, `hubCampaign.test.ts`, `railPayload.ts`, `buildM08.mjs`, `outline.ts`, `three`, `hubStationMarkers.ts`, `package.json`, `buildM10.mjs`, `comicSurfaces.ts`, `.render`, `MissionRadio`, `zod`, `hubSchema.ts`, `Vec3`, `mapAudit.test.ts`, `fppViewModel.ts`, `arena`, `math.ts`, `achievements.ts`, `Weather`, `missionBalance.ts`, `dressing.ts`, `hud.ts`, `run8Navigation.test.ts`, `runUiU3.test.ts`, `run4Navigation.test.ts`, `fusionReactor.test.ts`, `Oprawa miasta — Neon Noir`, `Weapon`, `Vec3`, `patches.ts`, `StatusVfx`?**
+  _High betweenness centrality (0.065) - this node is a cross-community bridge._
