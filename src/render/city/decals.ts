@@ -32,6 +32,7 @@ export class DecalRenderer {
                 def.position.z * Math.cos(def.yaw),
             ];
       const key = JSON.stringify([
+        def.textureFolder,
         def.texture,
         def.tint ?? '#ffffff',
         def.opacity ?? 1,
@@ -50,17 +51,25 @@ export class DecalRenderer {
           side: DoubleSide,
         });
         shared.userData.bloom = false;
-        this.textures.request('decals', def.texture, (texture) => {
-          shared.map = texture;
-          shared.needsUpdate = true;
-        });
+        this.textures.request(
+          def.textureFolder ?? 'decals',
+          def.texture,
+          (texture) => {
+            shared.map = texture;
+            shared.needsUpdate = true;
+          },
+        );
         materials.set(key, shared);
         material = shared;
       }
-      const mesh = new Mesh(
-        new PlaneGeometry(def.size.w, def.size.h),
-        material,
-      );
+      const geometry = new PlaneGeometry(def.size.w, def.size.h);
+      if (def.textureBand) {
+        const [top, bottom] = def.textureBand;
+        const uv = geometry.getAttribute('uv');
+        for (let i = 0; i < uv.count; i++)
+          uv.setY(i, 1 - bottom + uv.getY(i) * (bottom - top));
+      }
+      const mesh = new Mesh(geometry, material);
       mesh.position.copy(def.position);
       if (def.surface === 'floor') {
         mesh.rotation.set(-Math.PI / 2, 0, def.yaw);

@@ -1,4 +1,40 @@
 {
+  "fus_reactor_floor": {
+    "texture": "fus_reactor_floor",
+    "scale": 0.4,
+    "roughness": 0.22,
+    "metalness": 0.24,
+    "bump": 0.28,
+    "wetness": 0.3,
+    "tint": "#55637a"
+  },
+  "fus_reactor_concrete": {
+    "texture": "fus_reactor_concrete",
+    "scale": 0.35,
+    "roughness": 0.44,
+    "metalness": 0.12,
+    "bump": 0.42,
+    "wetness": 0.2,
+    "tint": "#627089"
+  },
+  "fus_shield_panel": {
+    "texture": "fus_shield_panel",
+    "scale": 0.45,
+    "roughness": 0.3,
+    "metalness": 0.62,
+    "bump": 0.35,
+    "wetness": 0.35,
+    "tint": "#43526a"
+  },
+  "fus_control_tile": {
+    "texture": "fus_control_tile",
+    "scale": 0.5,
+    "roughness": 0.28,
+    "metalness": 0.3,
+    "bump": 0.26,
+    "wetness": 0.45,
+    "tint": "#354258"
+  },
   "overpass_concrete": {
     "texture": "overpass_concrete",
     "themeTint": "concrete",

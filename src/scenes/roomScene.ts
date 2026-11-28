@@ -1,3 +1,5 @@
+import { CivilianPopulation } from '../civilians/population';
+import { CivilianView } from '../render/civilianView';
 import { padAimTargets } from './padAimTargets';
 import { Conquest } from '../world/conquest';
 import { conquestMode, assaultMode, heistMode } from '../world/modes';
@@ -401,6 +403,8 @@ export class RoomScene implements Scene {
   private puzzleBeam?: GrabRenderer;
   private puzzleHud?: PuzzleHud;
   protected squad!: AllySquad;
+  private civilians?: CivilianPopulation;
+  private readonly civilianViews = new Map<EntityId, CivilianView>();
   private presenter?: SquadPresenter;
   /** Siatka dla sojuszników w pokojach bez nawigacji trybu; null, gdy nie da się jej zbudować. */
   private allyNav: AllyNavigation | null | undefined;
@@ -696,6 +700,20 @@ export class RoomScene implements Scene {
         return list;
       },
     });
+    if (this.layout.civilians?.length)
+      this.civilians = new CivilianPopulation(
+        {
+          ctx,
+          rapier: this.rapier,
+          world: this.world,
+          entities: this.entities,
+          damage: this.damage,
+          hurtboxes: this.hurtboxes,
+          playerId,
+          navigation: () => this.allyNavigation(),
+        },
+        this.layout,
+      );
     this.presenter = new SquadPresenter(
       this.squad,
       this.root,
@@ -1775,6 +1793,7 @@ export class RoomScene implements Scene {
                   },
                 });
             });
+            list.push(...(this.civilians?.targets() ?? []));
             return list;
           },
           castWall: (origin, dir, max) => this.castWall(origin, dir, max),
@@ -1946,6 +1965,7 @@ export class RoomScene implements Scene {
     this.dressing?.step(dt);
     this.previous = this.player.getState();
     if (this.state === 'dead') {
+      this.civilians?.step(dt, null);
       const arena = this.assault ?? this.heist;
       if (arena) {
         if (arena.stepRespawn(dt)) this.respawnAssault();
@@ -2193,6 +2213,18 @@ export class RoomScene implements Scene {
         ? this.navigation
         : undefined,
     );
+    if (this.civilians) {
+      const state = this.player.getState();
+      this.civilians.step(
+        dt,
+        this.health.dead
+          ? null
+          : {
+              ...state.position,
+              y: state.position.y - state.height / 2,
+            },
+      );
+    }
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
@@ -2235,6 +2267,20 @@ export class RoomScene implements Scene {
     frameDt = 1 / 60,
     cameraOverride?: { position: Vector3; rotation: Euler },
   ): void {
+    this.civilians?.forEachPose((civilian) => {
+      let view = this.civilianViews.get(civilian.current.id);
+      if (!view) {
+        view = new CivilianView(
+          civilian.definition,
+          civilian.current.variant,
+          this.ctx.tuning,
+        );
+        this.civilianViews.set(civilian.current.id, view);
+        this.root.add(view.root);
+        if (this.loadModels) void view.load();
+      }
+      view.render(civilian, alpha, frameDt);
+    });
     for (const view of this.elevatorViews)
       view.render(alpha, this.focusedButton);
     const executable = this.execute.readyIds();
@@ -2929,6 +2975,49 @@ export class RoomScene implements Scene {
         cabin.request(stop);
         return `Wezwanie na piętro ${stop}.`;
       });
+    if (this.civilians)
+      register('civilian spawn', 'civilian spawn scientist', (args) => {
+        if (args.length !== 1 || args[0] !== 'scientist')
+          return 'civilian spawn scientist';
+        const state = this.player.getState();
+        const distance = this.ctx.tuning.civilians.debugSpawnDistanceM;
+        this.civilians!.add(
+          args[0],
+          {
+            x: state.position.x - Math.sin(state.yaw) * distance,
+            y: state.position.y - state.height / 2,
+            z: state.position.z - Math.cos(state.yaw) * distance,
+          },
+          state.yaw,
+        );
+        return 'Dodano cywila.';
+      });
+    if (this.civilians) {
+      register('civilian status', 'civilian status', () =>
+        this.civilians!.snapshots()
+          .map(
+            (s) =>
+              `${s.id}: ${s.state} (${s.position.x.toFixed(1)}, ${s.position.y.toFixed(1)}, ${s.position.z.toFixed(1)})`,
+          )
+          .join('\n'),
+      );
+      register('civilian kill', 'civilian kill — najbliższy żywy cywil', () => {
+        const p = this.player.getState().position;
+        let best: { id: EntityId; d: number } | undefined;
+        for (const s of this.civilians!.snapshots()) {
+          if (s.state === 'dead') continue;
+          const d = Math.hypot(s.position.x - p.x, s.position.z - p.z);
+          if (!best || d < best.d) best = { id: s.id, d };
+        }
+        if (!best) return 'Brak żywych cywili.';
+        this.damage.deal(best.id, {
+          source: playerId,
+          amount: Number.MAX_VALUE,
+          tags: ['#debug'],
+        });
+        return `Trafiono cywila ${best.id}.`;
+      });
+    }
     this.squad.registerCommands(register);
     register('heist grab', 'heist grab', (args) => {
       const ok = args.length === 0 && this.heist?.grab();
@@ -3223,6 +3312,7 @@ export class RoomScene implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'civilians') return this.civilians?.snapshots() ?? [];
     if (name === 'horizon') return this.atmosphere?.horizon();
     if (name === 'weather') return this.dressing?.weatherId ?? null;
     if (name === 'executable') return this.execute.readyIds();
@@ -3433,6 +3523,9 @@ export class RoomScene implements Scene {
     this.hitSparksView?.dispose();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
+    for (const view of this.civilianViews.values()) view.dispose();
+    this.civilianViews.clear();
+    this.civilians?.dispose();
     this.presenter?.dispose();
     this.squad?.dispose();
     this.director?.dispose();

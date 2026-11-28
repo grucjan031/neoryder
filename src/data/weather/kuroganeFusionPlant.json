@@ -1,0 +1,67 @@
+{
+  "id": "kuroganeFusionPlant",
+  "title": "Elektrownia Fuzyjna Kurogane Arms — Kompleks Helios-IV",
+  "precipitation": {
+    "kind": "none",
+    "density": 0,
+    "speed": 18,
+    "color": "#8294b0",
+    "opacity": 0.26,
+    "exposureS": 0.025,
+    "widthM": 0.013
+  },
+  "wind": {
+    "direction": {
+      "x": 1,
+      "z": 0
+    },
+    "strength": 0,
+    "gustStrength": 0,
+    "gustPeriodS": 8
+  },
+  "fog": {
+    "color": "#0d1320",
+    "density": 0,
+    "heightM": 12,
+    "strength": 0,
+    "nearM": 40,
+    "farM": 180
+  },
+  "surface": {
+    "gloss": 0.74,
+    "reflections": 0.88,
+    "puddles": 0.16
+  },
+  "lighting": {
+    "hemiIntensity": 4.2,
+    "keyIntensity": 1.55,
+    "panoramaEnabled": false
+  },
+  "lightning": {
+    "enabled": false,
+    "minIntervalS": 25,
+    "maxIntervalS": 55,
+    "brightness": 1,
+    "color": "#fff1d6",
+    "decayS": 0.18
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.08,
+    "opacity": 0,
+    "color": "#9aa8c0",
+    "lifeS": 10
+  },
+  "ambience": [
+    {
+      "kind": "generator",
+      "gain": 0.16,
+      "radiusM": 120
+    },
+    {
+      "kind": "wind",
+      "gain": 0.09,
+      "radiusM": 90
+    }
+  ]
+}

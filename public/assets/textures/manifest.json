@@ -2928,5 +2928,225 @@
     "dominantColor": "#282b33",
     "description": "Gęsty miękki dywan wełniano-jedwabny z geometrycznym obrysem.",
     "bytes": 114676
+  },
+  {
+    "id": "fus_helios_reactor_hall",
+    "category": "signs",
+    "path": "signs/fus_helios_reactor_hall.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#ffc208",
+    "description": "Szyld głównej komory, portal R1–R2.",
+    "bytes": 15250
+  },
+  {
+    "id": "fus_main_control_room",
+    "category": "signs",
+    "path": "signs/fus_main_control_room.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0f4bf7",
+    "description": "Szyld sterowni R3 od galerii G1.",
+    "bytes": 9802
+  },
+  {
+    "id": "fus_plasma_lab",
+    "category": "signs",
+    "path": "signs/fus_plasma_lab.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#145af8",
+    "description": "Oznaczenie laboratorium R4.",
+    "bytes": 10422
+  },
+  {
+    "id": "fus_fuel_storage_dt",
+    "category": "signs",
+    "path": "signs/fus_fuel_storage_dt.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fab103",
+    "description": "Oznaczenie składu paliwa R5.",
+    "bytes": 9720
+  },
+  {
+    "id": "fus_turbine_exchanger_hall",
+    "category": "signs",
+    "path": "signs/fus_turbine_exchanger_hall.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#ffb503",
+    "description": "Oznaczenie maszynowni R6.",
+    "bytes": 11046
+  },
+  {
+    "id": "fus_quantum_diagnostics",
+    "category": "signs",
+    "path": "signs/fus_quantum_diagnostics.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#1fff1a",
+    "description": "Oznaczenie wejść do R7 i R8.",
+    "bytes": 12290
+  },
+  {
+    "id": "screen_fus_tokamak",
+    "category": "screens",
+    "path": "screens/screen_fus_tokamak.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#0f0027",
+    "description": "Telemetria torusa w R2, R3 i R8.",
+    "bytes": 31862
+  },
+  {
+    "id": "screen_fus_grid",
+    "category": "screens",
+    "path": "screens/screen_fus_grid.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#043e0b",
+    "description": "Bilans sieci w R3, R6 i R7.",
+    "bytes": 26838
+  },
+  {
+    "id": "screen_fus_tritium",
+    "category": "screens",
+    "path": "screens/screen_fus_tritium.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#032101",
+    "description": "Dozymetria w śluzie R1 i magazynie R5.",
+    "bytes": 25608
+  },
+  {
+    "id": "screen_fus_iskra_alert",
+    "category": "screens",
+    "path": "screens/screen_fus_iskra_alert.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#f8aa04",
+    "description": "EE-10. Alarm Orbis Grid w R3, R7 i R8.",
+    "bytes": 25636
+  },
+  {
+    "id": "fus_director_resonance_board",
+    "category": "decals",
+    "path": "decals/fus_director_resonance_board.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#efd4ae",
+    "description": "EE-08, 09 i 11. Tablica badawcza Moriego w R8.",
+    "bytes": 74118
+  },
+  {
+    "id": "fus_ee_run1_run2_logistics",
+    "category": "decals",
+    "path": "decals/fus_ee_run1_run2_logistics.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#f2deb6",
+    "description": "EE-01 i 02. Manifest K-09 w R5 i raport Atrium Nova w R6.",
+    "bytes": 36870
+  },
+  {
+    "id": "fus_ee_run3_run4_directives",
+    "category": "decals",
+    "path": "decals/fus_ee_run3_run4_directives.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#e2d1ba",
+    "description": "EE-03 i 04. Depesza z X-51 w R4 i okólnik zarządu w R8.",
+    "bytes": 43728
+  },
+  {
+    "id": "fus_ee_run5_run6_coalition",
+    "category": "decals",
+    "path": "decals/fus_ee_run5_run6_coalition.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#adc197",
+    "description": "EE-05 i 06. Skierowanie do Helixy w R1 i kwit z targu w R5.",
+    "bytes": 46028
+  },
+  {
+    "id": "fus_ee_run7_vane_memo",
+    "category": "decals",
+    "path": "decals/fus_ee_run7_vane_memo.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#d8c8ae",
+    "description": "EE-07. Rozkaz Vane’a na biurku w R8.",
+    "bytes": 44644
+  },
+  {
+    "id": "fus_floor_magnetic_hazard",
+    "category": "decals",
+    "path": "decals/fus_floor_magnetic_hazard.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#ffffff",
+    "description": "Pole 16 T. Oznakowanie posadzki w R2 i strefach R4–R6.",
+    "bytes": 22420
+  },
+  {
+    "id": "fus_dielectric_floor_mat",
+    "category": "decals",
+    "path": "decals/fus_dielectric_floor_mat.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#323233",
+    "description": "Mata dielektryczna w R3 i dywan techniczny w R8.",
+    "bytes": 55516
+  },
+  {
+    "id": "label_tritium_cask",
+    "category": "labels",
+    "path": "labels/label_tritium_cask.webp",
+    "width": 256,
+    "height": 256,
+    "dominantColor": "#f4a203",
+    "description": "EE-12. Etykieta trytu R5, kubka R8 i kod zrzutu R3.",
+    "bytes": 8344
+  },
+  {
+    "id": "fus_reactor_floor",
+    "category": "surfaces",
+    "path": "surfaces/fus_reactor_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#2d3849",
+    "description": "Posadzka epoksydowo-bazaltowa hali i stref roboczych.",
+    "bytes": 49366
+  },
+  {
+    "id": "fus_reactor_concrete",
+    "category": "surfaces",
+    "path": "surfaces/fus_reactor_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#778399",
+    "description": "Żebrowany beton radiacyjny ścian i kasetonów.",
+    "bytes": 46888
+  },
+  {
+    "id": "fus_shield_panel",
+    "category": "surfaces",
+    "path": "surfaces/fus_shield_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3d4b64",
+    "description": "Tytanowe płyty ekranowania ścian i konstrukcji.",
+    "bytes": 56848
+  },
+  {
+    "id": "fus_control_tile",
+    "category": "surfaces",
+    "path": "surfaces/fus_control_tile.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#2e3b52",
+    "description": "Podniesiona podłoga techniczna sterowni, serwerowni i biura.",
+    "bytes": 30902
   }
 ]

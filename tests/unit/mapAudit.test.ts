@@ -253,6 +253,9 @@ it('każda mapa ma próg błędów', () => {
 it('run7 przechodzi audyt także bez ostrzeżeń', () => {
   expect(auditMap(auditMaps.get('run7')!, { mapId: 'run7' })).toEqual([]);
 });
+it('run8 przechodzi audyt także bez ostrzeżeń', () => {
+  expect(auditMap(auditMaps.get('run8')!, { mapId: 'run8' })).toEqual([]);
+});
 it.each(Object.entries(baseline))(
   '%s mieści się w bazowej liczbie error (%i)',
   (mapId, limit) => {

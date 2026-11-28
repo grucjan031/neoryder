@@ -1,5 +1,54 @@
 # Render — styl F1 #05
 
+## Reaktor fuzyjny — kosmetyczny tokamak
+
+Opcjonalne `room.setPieces` obsługuje `fusionReactor` z pozycją podstawy,
+obrotem Y (`yaw`, radiany) i dodatnią skalą. `CityDressing` tworzy moduł
+`src/render/fusionReactor.ts` poza statycznym batchingiem. Nie powstają ciała
+Rapier, hazardy ani obiekty symulacji. Generator mapy musi osobno zabezpieczyć
+podstawę blokami; istniejące mapy nie otrzymują automatycznie reaktora.
+
+Przy skali 1 torus ma około 14 m średnicy, solenoid sięga około 10 m,
+a fundament, rury i zbiorniki zajmują około 23 m. Stal używa `MeshToonMaterial`
+ze wspólnym `gradientMap`, więc przechodzi przez istniejący kontur. Plazma,
+solenoid i bursztynowe lampy mają flagę selektywnego bloomu. Szkło i efekty
+nie mają konturu. Paleta: ciepła biel/bursztyn, refleksy fioletowe i królewski
+błękit, zgodnie z ADR 0006.
+
+Cała animacja zależy od absolutnego czasu renderu, bez wpływu na `step()`:
+płynący szum plazmy, puls około 3 s, krótkie drżenia, przeciwbieżne pierścienie,
+łuki między cewkami i para. Łuki przepisują stały bufor tylko po zmianie
+przedziału czasu; para to stała pula punktowych sprite'ów o cyklu życia w shaderze.
+`update(timeS)` nie tworzy obiektów ani tablic. Ustawienie `flashes=false`
+wyłącza łuki, wibrację i migotanie lamp ostrzegawczych.
+
+`tuning.render.fusionReactor`: `pulsePeriodS`, `pulseDepth`, `brightness`,
+`flowSpeed`, `tremorHz/Depth`, `vibrationM`, `arcFrequencyHz/Count/Segments`,
+`arcJitterM/Duty`, `ringSpeed/Count`, `steamCount/LifetimeS/RiseM/SizeM/Opacity`,
+`warningHz`, `lightIntensity/RangeM`, `humHz/Gain/RangeM/FilterHz`, kolory,
+wymiary i ustawienia hali/kamery testowej. Wszystkie pola są w ogólnym lil-gui;
+scena testowa ma dodatkowo cztery najważniejsze suwaki. Wymiary i liczebność
+geometrii/puli wymagają ponownego utworzenia sceny; parametry animacji, emisji
+i dźwięku działają na żywo.
+
+Powtarzalne cewki, mocowania, przewody i zbiorniki korzystają z `InstancedMesh`.
+Dwa pulsujące źródła trafiają do tej samej puli `CityLights` co lampy pokoju:
+obowiązują istniejące limity jakości i `tuning.city.maxLights`. Buczenie i szum
+powstają w WebAudio (`src/audio/fusionReactorHum.ts`) po odblokowaniu wspólnego
+kontekstu AudioSystem, przez wspólny master/SFX, z tłumieniem odległości,
+panoramą i obsługą pauzy. Zmiana pogody nie usuwa buczenia; opuszczenie pokoju
+zatrzymuje i odłącza źródła.
+
+Sprawdzenie w 30 s: `?scene=reactor-test&debug=1` — ciemna hala 44 × 44 × 19 m,
+kamera orbituje wokół reaktora. Ocenić czytelność plazmy przez okna, kierunki
+pierścieni (widoczne mocowania), skoki łuków, parę przy podstawie i siłę bloomu.
+Po kliknięciu sprawdzić niski szum, wyciszenie podczas pauzy i po wyjściu.
+Suwaki: okres pulsu, jasność, łuki/s, prędkość pierścieni. Testy Node:
+`tests/unit/fusionReactor.test.ts` — schemat, wymiary, ≤150 obiektów i draw calli
+(także konserwatywnie cztery przebiegi geometrii), deterministyczność czasu,
+wspólna pula świateł, zwalnianie zasobów i audio. Pomiar GPU/FPS oraz wizualny
+odbiór wymagają przeglądarki; test budowy nie zastępuje pomiaru renderera.
+
 ## Kasetony emisyjne bez bloomu (run2, E3)
 
 `light_panel` / `mat_light_panel` jest zarejestrowany w `mallKinds`/`urbanKinds`,

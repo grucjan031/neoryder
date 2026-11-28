@@ -125,14 +125,14 @@ Walidacja nie używa Three.js, DOM ani losowości.
 
 Pule `roomPools` w `src/data/sectors/kurogane.json`:
 
-| Typ    | Pokoje                                                                                    |
-| ------ | ----------------------------------------------------------------------------------------- |
-| combat | `run1` (magazyn), `run2` (galeria Atrium Nova), `run3` (laboratorium), `run4` (biurowiec), `run7` (leśna rezydencja pułkownika Kurogane). Losowanie wyklucza powtórkę pod rząd. |
-| elite  | `run1`, `run2`, `run3`, `run4`, `run7` (węzeł elitarny losuje mocniejsze fale na tych samych mapach) |
-| shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                           |
-| rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                          |
-| puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                          |
-| boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)    |
+| Typ    | Pokoje                                                                                                                                                                                                                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| combat | `run1` (magazyn), `run2` (galeria Atrium Nova), `run3` (laboratorium), `run4` (biurowiec), `run5` (przychodnia), `run6` (nocny targ), `run7` (leśna rezydencja pułkownika Kurogane), `run8` (elektrownia fuzyjna Helios-IV z neutralnymi naukowcami). Losowanie wyklucza powtórkę pod rząd. |
+| elite  | `run1`–`run8` (węzeł elitarny losuje mocniejsze fale na tych samych mapach)                                                                                                                                                                                                                 |
+| shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                                                                                                                                                                                                                             |
+| rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                                                                                                                                                                                                                            |
+| puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                                                                                                                                                                                                                            |
+| boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)                                                                                                                                                                                                      |
 
 Dawne pokoje walki (`combat*`, `alley*`, `elite*`, `plazaHolo`) są tymczasowo poza pulami;
 wrócą po przebudowie według wzorca `run1` ([../maps/run1.md](../maps/run1.md)). Pokoje `combatSubstation`,
@@ -248,7 +248,7 @@ Punkt w powietrzu, poza podestem albo w bloku jest odrzucany. Osiągalność tak
 
 ## Bulwar
 
-Walki i elity w obu sektorach (Kurogane i Bulwar) losują z jednej puli `run1`–`run7`: magazyn, galeria, laboratorium, biurowiec, przychodnia (`run5`), nocny targ (`run6`) i rezydencja pułkownika (`run7`). Kolejne sąsiadujące walki z tej puli zmieniają mapę. Targ ma 18 miejsc posiłków, w tym dwa na wysokości 4,2 m. Do sprawdzenia trzech zejść i przejść między poziomami służy `?scene=map-walk&map=run6&debug=1`.
+Walki i elity w obu sektorach (Kurogane i Bulwar) losują z jednej puli `run1`–`run8`: magazyn, galeria, laboratorium, biurowiec, przychodnia (`run5`), nocny targ (`run6`), rezydencja pułkownika (`run7`) i elektrownia fuzyjna (`run8`, z neutralnymi naukowcami — `docs/systems/civilians.md`). Kolejne sąsiadujące walki z tej puli zmieniają mapę. Targ ma 18 miejsc posiłków, w tym dwa na wysokości 4,2 m. Do sprawdzenia trzech zejść i przejść między poziomami służy `?scene=map-walk&map=run6&debug=1`.
 
 ## Wnętrza przemysłowe
 

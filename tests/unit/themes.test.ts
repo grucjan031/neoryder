@@ -39,6 +39,7 @@ afterEach(() => {
 it('waliduje oba motywy, zachowuje white i odrzuca niepoprawne parametry', () => {
   expect([...themeDefinitions.keys()].sort()).toEqual([
     'hideout',
+    'kuroganeFusion',
     'kuroganeResidence',
     'neonStreet',
     'white',
@@ -46,7 +47,9 @@ it('waliduje oba motywy, zachowuje white i odrzuca niepoprawne parametry', () =>
   for (const theme of themeDefinitions.values())
     expect(themeSchema.safeParse(theme).success).toBe(true);
   const white = themeDefinitions.get('white')!;
-  expect(white.render).toEqual(defaults);
+  const { fusionReactor, ...themeDefaults } = defaults;
+  expect(white.render).toEqual(themeDefaults);
+  expect(tuning.render.fusionReactor).toBe(fusionReactor);
   expect(() => loadThemeDefinitions([white, white])).toThrow('Powtórzony');
   expect(
     themeSchema.safeParse({ ...white, rain: { ...white.rain, density: 2 } })

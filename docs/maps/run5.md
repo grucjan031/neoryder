@@ -180,6 +180,16 @@ Nauczki run3 §1.2 wiążą: zero `cone: true`, zero `city_street_lamp` i `city_
 - **G7.** Dwa rzędy po cztery kapsuły: sześć `bw_regen_pod`, dwie `bw_regen_pod_open`. Taśmy `med_quarantine_tape` na posadzce i w poprzek jednego wejścia do rzędu (decal, bez kolizji), przewrócony `bw_med_cart` (obrót bryły), stanowisko nadzoru z `med_screen_vitals`. EE11.
 - **G8.** Posadzka `med_atrium_terrazzo`, w osi `med_floor_helix_logo` (⌀ 8 m). Dwie `bw_helix_sculpture` w (±14, −23). Osiem `bw_planter_bio`, cztery `bw_implant_showcase` jako galeria produktów, `bw_info_totem` × 2, kawiarenka przy galerii (lada, `city_vending`). Na antresoli siedziska zwrócone do szkła. EE12. Światło: chłodne oprawy na podciągach, błękitne i fioletowe akcenty przy rzeźbach, a głównym „obrazem” jest miasto za szkłem.
 
+### 4.1. Personel medyczny Kurogane
+
+Sześciu neutralnych naukowców pracuje w trzech salach. Wszystkie punkty leżą na posadzce (`y = 0`), a współrzędne w tabeli podano jako `(x, z)`.
+
+| Pomieszczenie | Stanowiska naukowców | Kryjówki |
+|---|---|---|
+| G3 — Gabinety zabiegowe | Przy leżankach `(16.25, 10.25)` i `(21.75, 22.25)` | `(11.25, 9.25)`, `(26.75, 15.25)`, `(24.25, 25.25)`, `(12.25, 31.75)` |
+| G4 — Diagnostyka obrazowa | Przy skanerze `(-21.25, 15.25)` i analizatorze `(-13.75, 16.75)` | `(-26.75, 18.75)`, `(-25.75, 9.75)`, `(-12.25, 7.75)`, `(-22.25, 17.75)` |
+| G5 — Blok operacyjny | Przy stołach operacyjnych `(-4.75, 5.25)` i `(2.75, 11.75)` | `(-8.25, -6.25)`, `(8.25, -5.75)`, `(-8.25, 17.75)`, `(7.75, 17.75)` |
+
 ## 5. Kryteria akceptacji
 
 1. `node tools/levels/mapAudit.mjs run5` → **`run5: 0 error, 0 warn`**; wpis `"run5": 0` w `tests/unit/mapAudit.baseline.json`; `npm run check` i `npm run e2e` zielone, bez 404.

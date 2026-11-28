@@ -1,0 +1,44 @@
+{
+  "id": "scientistTest",
+  "firstBreakS": 8,
+  "breakS": 1,
+  "maxAlive": 2,
+  "minSpawnDistance": 8,
+  "spawnPoints": [
+    {
+      "x": -8,
+      "y": 0,
+      "z": -8
+    },
+    {
+      "x": 8,
+      "y": 0,
+      "z": -8
+    },
+    {
+      "x": -8,
+      "y": 0,
+      "z": 8
+    },
+    {
+      "x": 8,
+      "y": 0,
+      "z": 8
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "gunner",
+          "count": 1
+        },
+        {
+          "enemy": "assaulter",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

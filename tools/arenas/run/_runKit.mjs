@@ -122,7 +122,10 @@ export function createRunRoom({
     decals = [],
     ambientFx = [],
     rainShelters = [],
-    hazards = [];
+    hazards = [],
+    setPieces = [],
+    civilians = [],
+    hideSpots = [];
   const taken = [];
   const k = {
     arena,
@@ -135,6 +138,9 @@ export function createRunRoom({
     ambientFx,
     rainShelters,
     hazards,
+    setPieces,
+    civilians,
+    hideSpots,
     /** Prostopadłościan od `bottom` do `top` w prostokącie rect. */
     solid(rect, bottom, top, material, opts = {}) {
       return arena.block({
@@ -380,7 +386,16 @@ export function createRunRoom({
       run(vec(maxX + t, 0, minZ), vec(maxX + t, 0, maxZ), [], 3);
     },
     /** Zapisuje dane oprawy zebrane w trakcie budowy; wywołaj raz, na końcu. */
-    finish({ points, zones, maxAlive, minSpawnDistance, spawnRing }) {
+    finish({
+      points,
+      zones,
+      maxAlive,
+      minSpawnDistance,
+      spawnRing,
+      setPieces: finishSetPieces = setPieces,
+      civilians: finishCivilians = civilians,
+      hideSpots: finishHideSpots = hideSpots,
+    }) {
       for (const [zoneName, rect, kind] of zones)
         arena.zone(zoneName, rect, kind);
       points.forEach(([, x, y, z], i) =>
@@ -398,6 +413,9 @@ export function createRunRoom({
         ambientFx,
         ...(rainShelters.length ? { rainShelters } : {}),
         ...(hazards.length ? { hazards } : {}),
+        ...(finishSetPieces.length ? { setPieces: finishSetPieces } : {}),
+        ...(finishCivilians.length ? { civilians: finishCivilians } : {}),
+        ...(finishHideSpots.length ? { hideSpots: finishHideSpots } : {}),
       });
       return arena;
     },

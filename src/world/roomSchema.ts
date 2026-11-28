@@ -28,6 +28,14 @@ export const positiveVec3Schema = z.object({
   z: positive,
 });
 
+export const setPieceSchema = z.object({
+  kind: z.literal('fusionReactor'),
+  position: vec3Schema,
+  yaw: finite.optional(),
+  scale: positive.optional(),
+});
+export type SetPieceDefinition = z.infer<typeof setPieceSchema>;
+
 const hazardCycleSchema = z.object({
   onS: positive,
   offS: positive,
@@ -204,6 +212,17 @@ export const roomSchema = z
     panoramaDropM: nonnegative.optional(),
     arena: arenaSchema.optional(),
     blocks: z.array(roomBlockSchema),
+    setPieces: z.array(setPieceSchema).optional(),
+    civilians: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          position: vec3Schema,
+          yaw: finite.optional(),
+        }),
+      )
+      .optional(),
+    hideSpots: z.array(vec3Schema).optional(),
     elevators: z.array(elevatorSchema).optional(),
     spawnPoints: z.array(roomSpawnPointSchema),
     doors: z.array(roomDoorSchema),

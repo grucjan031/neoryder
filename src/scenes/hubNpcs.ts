@@ -21,7 +21,6 @@ import {
   Vector3,
 } from 'three';
 import type {
-  AnimationClip,
   Camera,
   AnimationAction,
   BufferGeometry,
@@ -29,8 +28,9 @@ import type {
   Object3D,
   WebGLProgramParametersWithUniforms,
 } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { inOutfit, loadBody, loadClips } from '../render/npcAssets';
+export { inOutfit, loadBody, loadClips } from '../render/npcAssets';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { gradientMap } from '../render/materials';
@@ -104,29 +104,12 @@ export function npcOutfit(def: HubNpcDef): string[] {
   return [...ALWAYS_PARTS, ...TORSO_PARTS[torso], ...props, ...head];
 }
 
-/** Czy węzeł modelu należy do którejś z części stroju. */
-export const inOutfit = (name: string, parts: readonly string[]): boolean =>
-  parts.some((part) => name === part || name.startsWith(`${part}_`));
 /** Ciepła biel z palety ADR 0006 (obiekty interaktywne). */
 const MARKER_COLOR = '#fff1d6';
 const LOW_POSES: readonly NpcAnimation[] = [
   'Crouch_Idle_Loop',
   'Fixing_Kneeling',
 ];
-
-const loader = new GLTFLoader();
-let bodyTemplate: Promise<Object3D | null> | undefined;
-let clipLibrary: Promise<AnimationClip[]> | undefined;
-export const loadBody = (): Promise<Object3D | null> =>
-  (bodyTemplate ??= loader
-    .loadAsync('/assets/models/npc_civilian.glb')
-    .then(({ scene }) => scene)
-    .catch(() => null));
-export const loadClips = (): Promise<AnimationClip[]> =>
-  (clipLibrary ??= loader
-    .loadAsync('/assets/models/npc_anims.glb')
-    .then(({ animations }) => animations)
-    .catch(() => []));
 
 /** Deterministyczna liczba z [0, 1) z identyfikatora (przesunięcie animacji; to nie losowość symulacji). */
 /** Czy mixer NPC ma się teraz zaktualizować (dt sumuje się między aktualizacjami). */

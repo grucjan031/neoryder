@@ -358,5 +358,45 @@
     "dominantColor": "#272727",
     "description": "Komiksowy grafitowy dywan z kreskowanym splotem.",
     "bytes": 198100
+  },
+  {
+    "id": "komiks_fus_reactor_floor",
+    "category": "surfaces",
+    "path": "surfaces/komiks_fus_reactor_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#383838",
+    "description": "Wariant komiksowy. Posadzka epoksydowo-bazaltowa hali i stref roboczych.",
+    "bytes": 78958
+  },
+  {
+    "id": "komiks_fus_reactor_concrete",
+    "category": "surfaces",
+    "path": "surfaces/komiks_fus_reactor_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#929292",
+    "description": "Wariant komiksowy. Żebrowany beton radiacyjny ścian i kasetonów.",
+    "bytes": 99036
+  },
+  {
+    "id": "komiks_fus_shield_panel",
+    "category": "surfaces",
+    "path": "surfaces/komiks_fus_shield_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#494949",
+    "description": "Wariant komiksowy. Tytanowe płyty ekranowania ścian i konstrukcji.",
+    "bytes": 120740
+  },
+  {
+    "id": "komiks_fus_control_tile",
+    "category": "surfaces",
+    "path": "surfaces/komiks_fus_control_tile.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#464646",
+    "description": "Wariant komiksowy. Podniesiona podłoga techniczna sterowni, serwerowni i biura.",
+    "bytes": 87972
   }
 ]
