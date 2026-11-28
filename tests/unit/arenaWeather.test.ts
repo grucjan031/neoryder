@@ -99,6 +99,7 @@ describe('pogoda z danych', () => {
       'helixaClinic',
       'indoorIndustrial',
       'kuroganeForestResidence',
+      'kuroganeFusionPlant',
       'kuroganeOfficeTower',
       'kuroganeSecretLab',
       'kuroganeWarehouse',

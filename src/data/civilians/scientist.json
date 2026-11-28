@@ -1,0 +1,29 @@
+{
+  "id": "scientist",
+  "model": "/assets/models/npc_civilian.glb",
+  "clothingVariants": [
+    {
+      "parts": ["civ_skin", "civ_pants", "civ_boots", "top_coat"],
+      "coatColor": "#e3e1d9",
+      "pantsColor": "#293140",
+      "accent": "#6dff4a"
+    },
+    {
+      "parts": ["civ_skin", "civ_pants", "civ_boots", "top_coat"],
+      "coatColor": "#cdd1d4",
+      "pantsColor": "#303544",
+      "accent": "#ffae1a"
+    },
+    {
+      "parts": ["civ_skin", "civ_pants", "civ_boots", "top_coat"],
+      "coatColor": "#ede9df",
+      "pantsColor": "#252d3a",
+      "accent": "#3d7bff"
+    }
+  ],
+  "maxHealth": 40,
+  "fleeSpeedMps": 5,
+  "visionRangeM": 18,
+  "visionAngleDeg": 160,
+  "reactionS": 0.3
+}

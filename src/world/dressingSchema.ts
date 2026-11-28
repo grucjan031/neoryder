@@ -19,6 +19,10 @@ const size2 = z.object({ w: positive, h: positive });
 
 /** Materiał bloku układu; `world` = dotychczasowy materiał świata. */
 export const BLOCK_MATERIALS = [
+  'fus_reactor_floor',
+  'fus_reactor_concrete',
+  'fus_shield_panel',
+  'fus_control_tile',
   'res_arch_concrete',
   'res_dark_walnut',
   'res_nero_marble',
@@ -157,6 +161,11 @@ export type CityLightDef = z.infer<typeof cityLightSchema>;
 /** Naklejka na ścianę (graffiti, plakat) lub podłogę (kałuża, oznakowanie): `/assets/textures/decals/<texture>.webp` z kanałem alfa. */
 export const decalSchema = z.object({
   texture: textureId,
+  textureFolder: z.enum(['screens', 'labels']).optional(),
+  textureBand: z
+    .tuple([unit, unit])
+    .refine(([top, bottom]) => top < bottom)
+    .optional(),
   position: vec3,
   size: size2,
   yaw: finite,

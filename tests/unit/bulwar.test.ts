@@ -58,6 +58,7 @@ it('rozwiązuje pule i mierzy większą presję przy tym samym czasie trasy', ()
     'run5',
     'run6',
     'run7',
+    'run8',
   ]);
   expect(bulwarSector.roomPools?.elite).toEqual([
     'run1',
@@ -67,6 +68,7 @@ it('rozwiązuje pule i mierzy większą presję przy tym samym czasie trasy', ()
     'run5',
     'run6',
     'run7',
+    'run8',
   ]);
   for (const [type, ids] of Object.entries(bulwarSector.roomPools!))
     for (const id of ids!)

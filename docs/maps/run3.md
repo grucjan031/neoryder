@@ -514,6 +514,26 @@ Zgodnie z limitem puli `CityLights` (`8` aktywnych `PointLight` w kadrze na prof
 | **Etap D — Generator mapy `run3`** | 1. Implementacja `tools/arenas/run/run3.mjs` oraz modułów `_run3Kit.mjs`, `_run3Rooms.mjs`, `_run3Dress.mjs` według współrzędnych z `§3` i `§5`.<br>2. Wygenerowanie `src/data/rooms/run3.json` i dopisanie `"run3": 0` w `tests/unit/mapAudit.baseline.json`.<br>3. Napisanie testu `tests/unit/run3Navigation.test.ts` (osiągalność 16 spawnów, 8 pomieszczeń, pomostów, wyjścia i gęstości osłon). | `tools/arenas/run/run3.mjs`, `_run3*.mjs`, `src/data/rooms/run3.json`, `tests/unit/run3Navigation.test.ts` | `node tools/levels/mapAudit.mjs run3` → `0 error, 0 warn`; `npx vitest run tests/unit/run3Navigation.test.ts`; `npm run check` |
 | **Etap E — Zrzuty ekranu, audyt wizualny i szlif** | 1. Wygenerowanie 10 zrzutów `node tools/screens/mapAudit.mjs run3 --out artifacts/maps/run3/r1 --tag after` oraz dodatkowych kadrów z wnętrza 8 pomieszczeń i kokonów piwnicy.<br>2. Przegląd wizualny (czytelność sylwetek w kokonach, brak smug światła, ekspozycja easter eggów, jasność `#2a3344–#56627a`) i korekty do oceny Opusa `≥ 7/10`. | Zrzuty `artifacts/maps/run3/r1/*.png`, raport oceny wizualnej | Ocena Opusa `≥ 7/10`, `mapAudit` `0/0`, `npm run check` zielone |
 
+### Neutralni naukowcy Kurogane
+
+Mapa zawiera 6 cywilów `scientist`, po dwóch w trzech pomieszczeniach badawczych,
+oraz 12 kryjówek (po cztery na pomieszczenie). Współrzędne `(x, y, z)` oznaczają
+stopy postaci. Naukowcy korzystają z istniejącej mechaniki opisanej w
+[specyfikacji cywili](../systems/civilians.md).
+
+| Pomieszczenie | Pozycje naukowców | Kryjówki |
+|---|---|---|
+| P3 — Laboratorium Biochemii i Ksenobiologii | `(17, 0, 21.5)` przy stole z wirówką; `(22.5, 0, 24)` przy dygestorium | `(11.5, 0, 25.5)`, `(16, 0, 26.5)`, `(24, 0, 26.5)`, `(24, 0, 15.5)` |
+| P4 — Zbrojownia Prototypów i Komora Testów Anomalii | `(18, 0, 10)` przy komorze; `(22.2, 0, 11)` przy stole rusznikarskim | `(11.5, 0, 1.5)`, `(24, 0, 1.5)`, `(24, 0, 12)`, `(11.5, 0, 12)` |
+| B1 — Inkubator Chimera, posadzka piwnicy | `(-10, -5.2, -19)` przy kokonach; `(0, -5.2, -31)` przy konsoli | `(-9, -5.2, -39)`, `(9, -5.2, -39)`, `(-14, -5.2, -40)`, `(14, -5.2, -40)` |
+
+Kryjówki leżą w rogach lub za wyposażeniem, poza wejściami i rampami.
+`tests/unit/run3Civilians.test.ts` sprawdza liczebność, wolną przestrzeń kapsuły,
+podparcie, odstęp od spawnów, portali i ramp oraz trasy od każdego naukowca
+do wszystkich czterech kryjówek w jego pomieszczeniu. Kontrola ręczna:
+`?scene=room-test&room=run3` — podejść do P3 i sprawdzić reakcję naukowców
+oraz omijanie stołów podczas ucieczki.
+
 ### Korekta kokonów i mocowań po teście (2026-11-26)
 
 Bieżąca anatomia i budżety trzech pełnych kokonów zastępują pierwotny opis sylwetek w §4.1; szczegóły, liczby trójkątów i podglądy: [katalog assetów](../assets.md#tajne-laboratorium-kurogane-arms-run3).

@@ -1,5 +1,9 @@
 # Narzędzia i prompty tekstur NEORYDER
 
+## Pakiet run8 — elektrownia Helios-IV
+
+Zestaw obejmuje 6 szyldów, 4 ekrany, 7 dekali, etykietę i 4 powierzchnie z 4 odpowiednikami komiksowymi. Generuj obrazy pojedynczo według `run8-prompts.json`, z przezroczystością dla dekali i etykiety. Zapisz każdy zaakceptowany PNG w `raw/<id>.png`. Polecenie `python tools/textures/run8.py` buduje WebP, sprawdza ich paletę, szwy i budżet, aktualizuje oba katalogi i manifesty oraz zapisuje arkusz i raport w `artifacts/maps/run8/`.
+
 ## Pakiet run6 — targ
 
 Zestaw nocnego targu obejmuje 3 powierzchnie, 3 odpowiedniki komiksowe, 9 neonów i 18 decali, w tym 12 easter eggów. Prompty są w `run6-prompts.json`. Generuj obrazy po jednym we wbudowanym imagegen i kopiuj PNG do `raw/<id>.png`. Włącz przezroczyste tło dla decali, a szyldy generuj na czerni, którą kluczuje shader. `python tools/textures/run6.py` buduje WebP (powierzchnie w jakości 65), aktualizuje oba manifesty i zapisuje arkusz oraz raport palety w `artifacts/maps/run6/`.

@@ -8,6 +8,7 @@ import { createNoiseBuffer, playLayers } from './synth';
 import type { AudioBackend } from './synth';
 import { Ambience } from './ambience';
 import type { AmbienceSource } from './ambienceSchema';
+import { FusionReactorHum } from './fusionReactorHum';
 
 export interface Listener {
   position: Vec3;
@@ -73,6 +74,8 @@ export class AudioSystem {
   private readonly off: (() => void)[] = [];
   private unlockCleanup: (() => void) | null = null;
   private ambience: Ambience | null = null;
+  private reactorPositions: readonly Vec3[] = [];
+  private readonly reactorHums: FusionReactorHum[] = [];
   private ambienceSources: readonly AmbienceSource[] | null = null;
   private trainProgress: number | null = null;
   private powerLevel = 1;
@@ -149,6 +152,13 @@ export class AudioSystem {
     this.trainProgress = null;
   }
 
+  setFusionReactors(positions: readonly Vec3[] | null): void {
+    for (const hum of this.reactorHums) hum.dispose();
+    this.reactorHums.length = 0;
+    this.reactorPositions =
+      positions?.map((position) => ({ ...position })) ?? [];
+  }
+
   updateAmbienceSource(index: number, position: Vec3, gain: number): void {
     const source = this.ambienceSources?.[index];
     if (!source) return;
@@ -174,12 +184,27 @@ export class AudioSystem {
   updateAmbience(paused = false): void {
     if (
       this.disposed ||
-      (!this.ambienceSources && this.trainProgress === null && !this.ambience)
+      (!this.ambienceSources &&
+        this.trainProgress === null &&
+        !this.ambience &&
+        !this.reactorPositions.length)
     )
       return;
     const ctx = this.ensureContext();
     if (!ctx || !this.master || !this.noise) return;
     this.updateVolume();
+    if (ctx.state === 'running' && !this.reactorHums.length)
+      for (const position of this.reactorPositions)
+        this.reactorHums.push(
+          new FusionReactorHum(ctx, this.master, this.noise, position),
+        );
+    for (const hum of this.reactorHums)
+      hum.update(
+        this.opts.listener?.() ?? null,
+        paused || ctx.state !== 'running',
+      );
+    if (!this.ambienceSources && this.trainProgress === null && !this.ambience)
+      return;
     if (!this.ambience) {
       this.ambience = new Ambience(
         ctx,
@@ -292,6 +317,7 @@ export class AudioSystem {
 
   dispose(): void {
     this.disposed = true;
+    this.setFusionReactors(null);
     this.setAmbience(null);
     for (const off of this.off.splice(0)) off();
     this.unlockCleanup?.();

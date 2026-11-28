@@ -22,6 +22,43 @@ export default function generate() {
   dress(k);
   interiors(k, p);
   city(k);
+  // Gabinety zabiegowe: personel przy dwóch stanowiskach z leżankami.
+  k.civilians.push(
+    { id: 'scientist', position: vec(16.25, 0, 10.25), yaw: -Math.PI / 2 },
+    { id: 'scientist', position: vec(21.75, 0, 22.25), yaw: Math.PI / 2 },
+  );
+  k.hideSpots.push(
+    vec(11.25, 0, 9.25),
+    vec(26.75, 0, 15.25),
+    vec(24.25, 0, 25.25),
+    vec(12.25, 0, 31.75),
+  );
+  // Diagnostyka obrazowa: skaner i stół z analizatorem.
+  k.civilians.push(
+    {
+      id: 'scientist',
+      position: vec(-21.25, 0, 15.25),
+      yaw: (3 * Math.PI) / 4,
+    },
+    { id: 'scientist', position: vec(-13.75, 0, 16.75), yaw: 0 },
+  );
+  k.hideSpots.push(
+    vec(-26.75, 0, 18.75),
+    vec(-25.75, 0, 9.75),
+    vec(-12.25, 0, 7.75),
+    vec(-22.25, 0, 17.75),
+  );
+  // Blok operacyjny: dwa stanowiska chirurgiczne po obu stronach przeszklenia.
+  k.civilians.push(
+    { id: 'scientist', position: vec(-4.75, 0, 5.25), yaw: (3 * Math.PI) / 4 },
+    { id: 'scientist', position: vec(2.75, 0, 11.75), yaw: (3 * Math.PI) / 4 },
+  );
+  k.hideSpots.push(
+    vec(-8.25, 0, -6.25),
+    vec(8.25, 0, -5.75),
+    vec(-8.25, 0, 17.75),
+    vec(7.75, 0, 17.75),
+  );
   const spawns = [
     [-7.5, 30.4],
     [-24.4, 30.5],

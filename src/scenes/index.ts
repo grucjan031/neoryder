@@ -18,6 +18,10 @@ export type SceneFactory = () => Scene;
 export type SceneLoader = () => Promise<SceneFactory>;
 // Każda scena to osobny import(): menu i ekran ładowania nie pobierają kodu scen, Rapiera ani danych pokoi.
 export const scenes: Record<string, SceneLoader> = {
+  'reactor-test': () =>
+    import('./reactorTest').then((m) => () => new m.ReactorTest()),
+  'scientist-test': () =>
+    import('./scientistTest').then((m) => () => m.createScientistTest()),
   'map-audit': () =>
     import('./mapAuditScene').then((m) => () => new m.MapAuditScene()),
   'map-walk': () => import('./mapWalk').then((m) => () => new m.MapWalkScene()),

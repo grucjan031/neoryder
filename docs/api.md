@@ -1,5 +1,29 @@
 # API między modułami (kontrakty)
 
+## Cywile Kurogane Arms
+
+- `RoomDefinition.civilians?: { id: string; position: Vec3; yaw?: number }[]`
+  wskazuje definicje `src/data/civilians/*.json`; pozycja to stopy, yaw w radianach
+  (model patrzy w +Z). `hideSpots?: Vec3[]` podaje kryjówki; brak uruchamia
+  wybór z geometrii bloków. Każda instancja ma osobny `EntityId`.
+- `CivilianPopulation` (`src/civilians/population.ts`) tworzy neutralne encje,
+  `Stats`, `Health` i hurtboxy. `step(dt, playerFeet | null)` działa w stałym
+  kroku; `snapshots()` zwraca serializowalne pozycje, yaw, HP, stan,
+  kryjówkę, czas śmierci i kierunek upadku. `targets()` udostępnia żywych
+  cywilów wyłącznie jawnym zapytaniom mocy gracza. `dispose()` zwalnia zasoby.
+- Cywile nie należą do `EnemyManager`, list celów wrogów, dyrektora,
+  aim assist ani warunku ukończenia pokoju. Hurtbox używa grupy Enemy
+  wyłącznie dla zgodności z zapytaniami broni/ostrza; rejestr ma team neutral.
+  Obrażenia przez `DamageSystem`; strażnik przyjmuje tylko źródło gracza
+  (także jego odbite pociski/statusy). Śmierć nie emituje `enemy_killed`.
+- `GameEvents.civilianPanicked: { id: EntityId }` — jednokrotnie po reakcji
+  na widocznego gracza; `civilianKilled: { id: EntityId; by: EntityId | null }`
+  — jednokrotnie po śmiertelnym trafieniu. Brak nagród i kar.
+- Render `CivilianView` interpoluje stan, odtwarza Idle/Jog/Crouch i przewraca
+  zamrożoną pozę w kierunku trafienia. Ciało pozostaje do `dispose()` pokoju.
+- Scena `?scene=scientist-test`, zapytanie `query('civilians')`, komenda
+  `civilian spawn scientist` (przed graczem) służą sprawdzeniu mechaniki.
+
 ## Tło leśne rezydencji — run7 F-01–F-04
 
 - `WeatherProfile.lighting.panoramaKind?: 'city' | 'forest'` wybiera tło; brak oznacza `city`.
@@ -48,6 +72,11 @@ cooldownu i efektów co E, bez wymogu bliskości. Atak działa tylko na worek
 wybrany promieniem w zasięgu. Ruch worka nie ma collidera.
 
 `neonTexts[].flicker` używa `FlickerDef`, identycznie jak napisy stacji.
+
+`DecalDef.textureFolder?: 'screens' | 'labels'` pozwala umieścić na ścianie
+lub podłodze ten sam nadruk co na modelu. Bez tego pola renderer czyta `decals/`.
+Opcjonalne `textureBand: [top, bottom]` wybiera poziomy wycinek obrazu.
+Obie granice liczy się od góry w przedziale 0–1, a `bottom` musi być większe od `top`.
 
 ## Migotanie oprawy
 
@@ -2684,3 +2713,19 @@ EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `ele
 ## Chimera
 
 Snapshot wroga udostępnia widokowi tryb ruchu `chimeraMode` (skradanie, sprint, dezorientacja) i wariant ciosu `claw`. AI wybiera pobliskie cele z `getNeighbors()` według listy typów Kurogane z danych. Dostęp do sojuszniczych hurtboksów i tag `#friendly_fire` dotyczą wyłącznie zamachu na wybraną jednostkę.
+
+## Kosmetyczne set pieces pokoju — reaktor fuzyjny
+
+`RoomDefinition.setPieces?: { kind: 'fusionReactor'; position: Vec3;
+yaw?: number; scale?: number }[]`: współrzędne podstawy w metrach, obrót Y
+w radianach, dodatnia skala (domyślnie 1). Pole nie tworzy kolizji ani stanu
+symulacji; podstawę zabezpieczają bloki generatora mapy.
+
+`FusionReactor` (`src/render/fusionReactor.ts`): konstruktor przyjmuje definicję,
+`root: Group`, `lightDefs: CityLightDef[]`, `update(timeS, flashes?)`,
+`dispose()`. Czas absolutny pochodzi wyłącznie z renderu; ten sam czas i tuning
+dają ten sam stan. `CityDressing` tworzy i zwalnia reaktory, dodaje ich światła
+do wspólnej puli `CityLights` (bez zwiększenia limitu) i aktualizuje emisję.
+`AudioSystem.setFusionReactors(positions | null)` ustawia niezależne od pogody,
+proceduralne źródła buczenia; wspólny kontekst, master/SFX, pauza i odblokowanie
+audio pozostają w `AudioSystem`. Źródła mają tłumienie i panoramę względem słuchacza.

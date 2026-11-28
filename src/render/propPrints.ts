@@ -56,8 +56,17 @@ export function printMaterial(name: string): PrintMaterial | null {
   };
   material.customProgramCacheKey = () =>
     screen ? 'printScreen' : 'printLabel';
-  assetTexture(screen ? 'screens' : 'labels', match[1]!, (texture) => {
+  const textureId =
+    name === 'mat_label_fusion_director_mug' ? 'label_tritium_cask' : match[1]!;
+  assetTexture(screen ? 'screens' : 'labels', textureId, (texture) => {
     material.map = texture;
+    if (textureId === 'label_tritium_cask') {
+      // UV glTF liczą się od góry. Beczka i kubek dzielą obraz z kartką 0451.
+      const mug = name === 'mat_label_fusion_director_mug';
+      material.map = texture.clone();
+      material.map.offset.set(0.1, mug ? 0.39 : 0.095);
+      material.map.repeat.set(0.8, mug ? 0.33 : 0.295);
+    }
     material.visible = true;
     material.needsUpdate = true;
   });
