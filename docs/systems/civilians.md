@@ -69,4 +69,5 @@ Debug: `civilian spawn scientist` dodaje postać przed graczem,
 zadaje śmiertelne obrażenia najbliższemu żywemu (ta sama ścieżka co trafienie gracza:
 `damage_dealt` → upadek ciała → `civilianKilled`). Działa w każdej scenie pokoju
 z cywilami, np. `?scene=room-test&room=run8`.
+W spacerze `?scene=map-walk&map=run5` personel kliniki korzysta z tej samej symulacji i animacji ucieczki, kucania oraz śmierci, przy zatrzymanych falach wrogów.
 Testy: `tests/unit/civilians.test.ts`. Weryfikację obrazu wykonuje manager.

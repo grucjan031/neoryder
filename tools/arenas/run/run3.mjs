@@ -384,6 +384,33 @@ export default function generate() {
   buildRooms(k, placer);
   dress(k, placer);
 
+  // Personel P3 (biochemia), P4 (testy anomalii) i B1 (inkubator).
+  k.civilians.push(
+    { id: 'scientist', position: vec(17, Y_PARTER, 21.5), yaw: -Math.PI / 2 },
+    { id: 'scientist', position: vec(22.5, Y_PARTER, 24), yaw: Math.PI / 2 },
+    { id: 'scientist', position: vec(18, Y_PARTER, 10), yaw: Math.PI },
+    { id: 'scientist', position: vec(22.2, Y_PARTER, 11), yaw: 0 },
+    { id: 'scientist', position: vec(-10, Y_BASEMENT, -19), yaw: 0 },
+    { id: 'scientist', position: vec(0, Y_BASEMENT, -31), yaw: Math.PI },
+  );
+  k.hideSpots.push(
+    // P3: rogi i miejsca za wyposażeniem, poza portalami.
+    vec(11.5, Y_PARTER, 25.5),
+    vec(16, Y_PARTER, 26.5),
+    vec(24, Y_PARTER, 26.5),
+    vec(24, Y_PARTER, 15.5),
+    // P4: za skrzyniami, przy oknie i przy stole rusznikarskim.
+    vec(11.5, Y_PARTER, 1.5),
+    vec(24, Y_PARTER, 1.5),
+    vec(24, Y_PARTER, 12),
+    vec(11.5, Y_PARTER, 12),
+    // B1: przy tylnych osłonach i inkubatorach, z dala od ramp.
+    vec(-9, Y_BASEMENT, -39),
+    vec(9, Y_BASEMENT, -39),
+    vec(-14, Y_BASEMENT, -40),
+    vec(14, Y_BASEMENT, -40),
+  );
+
   // Punkt startu gracza na Parterze (0, 0, 25) oraz drzwi entry (Parter) i exit (Piwnica y = -5.2 m).
   k.arena.roomMeta({
     playerSpawn: vec(0, Y_PARTER, 25),
