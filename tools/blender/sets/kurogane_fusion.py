@@ -393,41 +393,74 @@ def plasma_test_chamber(r):
     gauge(r,-.73,.34,.62,.12)
 
 
+def marker_stroke(r, points, width, mat, z=.074):
+    """Linia pisaka: łamana z płaskich pasków, czytelna z kilku metrów bez tekstury."""
+    for a, b in zip(points, points[1:]):
+        start, end = Vector((a[0], a[1], z)), Vector((b[0], b[1], z))
+        if (end-start).length < 1e-4:
+            continue
+        normal = Vector((-(end-start).y, (end-start).x, 0)).normalized()*width/2
+        surface(r, "marker_stroke", [tuple(p) for p in
+                (start-normal, end-normal, end+normal, start+normal)], [(0,1,2,3)], mat)
+
+
 def whiteboard_equations(r):
     panel(r,"board_frame",0,.875,0,3.2,1.75,.14,.05,STEEL)
     face(r,"writing_surface",0,.875,.071,3.04,1.57,PAPER)
     face(r,"task_light",0,1.69,.072,2.9,.025,WHITE)
-    # Prosty alfabet kreskowy: wzory pozostają czytelne bez tekstury i fontów.
     glyphs = {
-        "D": [[(0,0),(0,1),(.6,1),(1,.75),(1,.25),(.6,0),(0,0)]],
+        "D": [[(0,0),(0,1),(.55,1),(1,.7),(1,.3),(.55,0),(0,0)]],
         "T": [[(0,1),(1,1)],[(.5,1),(.5,0)]],
         "H": [[(0,0),(0,1)],[(1,0),(1,1)],[(0,.5),(1,.5)]],
-        "E": [[(1,1),(0,1),(0,0),(1,0)],[(0,.5),(.8,.5)]],
+        "E": [[(1,1),(0,1),(0,0),(1,0)],[(0,.5),(.75,.5)]],
         "N": [[(0,0),(0,1),(1,0),(1,1)]],
         "M": [[(0,0),(0,1),(.5,.45),(1,1),(1,0)]],
         "C": [[(1,1),(0,1),(0,0),(1,0)]],
         "2": [[(0,1),(1,1),(1,.5),(0,.5),(0,0),(1,0)]],
-        "+": [[(0,.5),(1,.5)],[(.5,.1),(.5,.9)]],
-        "=": [[(0,.35),(1,.35)],[(0,.65),(1,.65)]],
+        "4": [[(.8,0),(.8,1),(0,.35),(1,.35)]],
+        "+": [[(0,.5),(1,.5)],[(.5,.15),(.5,.85)]],
+        "=": [[(0,.32),(1,.32)],[(0,.68),(1,.68)]],
+        ">": [[(0,1),(1,.5),(0,0)]],
     }
-    for row, text in enumerate(("D+T=HE+N","E=MC2")):
+    def write(text, x, y, size, mat):
         for col, char in enumerate(text):
-            for path in glyphs[char]:
-                for a,b in zip(path,path[1:]):
-                    start=Vector((-1.38+col*.18+a[0]*.12,1.12-row*.40+a[1]*.22,.074))
-                    end=Vector((-1.38+col*.18+b[0]*.12,1.12-row*.40+b[1]*.22,.074))
-                    normal=Vector((-(end-start).y,(end-start).x,0)).normalized()*.008
-                    surface(r,"equation_stroke",[tuple(p) for p in
-                            (start-normal,end-normal,end+normal,start+normal)],[(0,1,2,3)],PAINT)
-    beam(r,"plot_axis",(.28,.43,.074),(1.30,.43,.074),.012,.008,INK)
-    beam(r,"plot_axis",(.28,.43,.074),(.28,1.39,.074),.012,.008,INK)
-    points=[(.30+i*.08,.86+.32*math.sin(i*.55),.075) for i in range(13)]
-    for a,b in zip(points,points[1:]):
-        beam(r,"plasma_stability_curve",a,b,.019,.009,PAINT)
-    for x in (-1.15,-.50):
-        face(r,"pinned_report",x,.29,.076,.46,.30,HAZARD)
-        face(r,"report_clip",x,.43,.078,.08,.025,GREEN)
+            for path in glyphs.get(char, []):
+                marker_stroke(r, [(x+col*size*.82+u*size*.6, y+v*size) for u, v in path], size*.11, mat)
+    write("D+T=HE+N", -1.42, 1.30, .17, INK)
+    write("E=MC2", -1.42, 1.02, .17, BLUE)
+    write("T>4", -1.42, .74, .17, GOLD)
+    # Przekrój poloidalny tokamaka: dwa „D” komory i zagnieżdżone powierzchnie plazmy.
+    for sx in (-1, 1):
+        cx = -.18 + sx*.26
+        shell = [(cx+sx*(.02+.17*math.sin(t*math.pi/12)), .95+.36*math.cos(t*math.pi/12)) for t in range(13)]
+        shell.append(shell[0])
+        marker_stroke(r, shell, .02, BLUE)
+        for k, rr in enumerate((.11, .07, .035)):
+            oval = [(cx+sx*.07+rr*.8*math.cos(t*math.tau/10), .95+rr*1.6*math.sin(t*math.tau/10)) for t in range(11)]
+            marker_stroke(r, oval, .014, GOLD if k == 0 else VIOLET)
+    marker_stroke(r, [(-.18,.52),(-.18,1.40)], .018, INK)
+    marker_stroke(r, [(-.18,1.40),(-.22,1.33)], .016, INK)
+    marker_stroke(r, [(-.18,1.40),(-.14,1.33)], .016, INK)
+    # Wykres stabilności z progiem zapłonu.
+    beam(r,"plot_axis",(.38,.50,.074),(1.36,.50,.074),.014,.008,INK)
+    beam(r,"plot_axis",(.38,.50,.074),(.38,1.42,.074),.014,.008,INK)
+    marker_stroke(r, [(.40+i*.075, .62+.62*(1-math.exp(-i*.32))+.05*math.sin(i*1.7)) for i in range(13)], .022, BLUE)
+    for i in range(7):
+        marker_stroke(r, [(.42+i*.14, 1.18), (.49+i*.14, 1.18)], .016, GREEN)
+    face(r,"ignition_mark",1.18,1.25,.075,.10,.10,AMBER)
+    # Karteczki, wydruki na magnesach i półka z pisakami.
+    for x, y, mat in ((-1.30,.36,GOLD),(-1.10,.40,GREEN),(-.92,.34,GOLD),(1.10,.30,GREEN)):
+        face(r,"sticky_note",x,y,.076,.15,.15,mat)
+        marker_stroke(r, [(x-.05,y+.02),(x+.05,y+.02)], .012, INK, .078)
+        marker_stroke(r, [(x-.05,y-.03),(x+.03,y-.03)], .012, INK, .078)
+    for x in (-.55,-.05,.45):
+        face(r,"pinned_printout",x,.30,.076,.34,.26,WHITE if x == -.05 else PAPER)
+        face(r,"printout_photo",x,.33,.078,.22,.14,ENAMEL)
+        rod(r,"board_magnet",(x,.42,.074),(x,.42,.095),.03,AMBER if x < 0 else GREEN,8)
     box(r,"marker_tray",0,.04,.09,2.7,.05,.18,ALLOY)
+    for i, mat in enumerate((INK, BLUE, GREEN, AMBER)):
+        rod(r,"marker_pen",(-.9+i*.18,.08,.10),(-.76+i*.18,.08,.11),.016,mat,6)
+    box(r,"board_eraser",.8,.09,.10,.22,.05,.08,ENAMEL)
 
 
 def tritium_cask_pallet(r):
@@ -482,6 +515,23 @@ def fuel_gantry_crane(r):
             beam(r,"cask_grabber",(x,0,z),(x,.25,z),.065,.065,STEEL)
     for x in (-5,5):
         quad(r,"work_light",(x,.75,0),.65,.45,"-y",WHITE)
+    # Blok hakowy, sterownik na przewodzie, kurtyna kablowa i koguty ostrzegawcze.
+    for z in (-.34,.34):
+        ring(r,"hook_sheave",(.7,.50,z),.16,.16,.05,STEEL,"z",10)
+    box(r,"hook_block",.7,.50,0,.30,.34,.62,GOLD)
+    hazard(r,.7,.50,.311,.28,.14,4)
+    rod(r,"hook_shank",(.7,.33,0),(.7,.12,0),.035,STEEL,8)
+    tube(r,"lifting_hook",[(.7,.14,0),(.7,.08,0),(.78,.04,0),(.86,.08,0),(.84,.14,0)],.028,STEEL,8)
+    rod(r,"pendant_cable",(-.9,.80,.9),(-.9,.30,.9),.012,INK,5)
+    box(r,"control_pendant",-.9,.18,.9,.12,.24,.09,ENAMEL)
+    for i, mat in enumerate((GREEN, AMBER, ENAMEL)):
+        rod(r,"pendant_button",(-.9,.25-i*.07,.945),(-.9,.25-i*.07,.965),.022,mat,6)
+    for i in range(9):
+        x=-6+i*.75
+        tube(r,"festoon_cable",[(x,.80,1.45),(x+.37,.55,1.45),(x+.75,.80,1.45)],.025,INK,5)
+    for x in (-6.6,6.6):
+        rod(r,"beacon_base",(x,.84,1.0),(x,.79,1.0),.07,DARK,8)
+        rod(r,"warning_beacon",(x,.79,1.0),(x,.65,1.0),.06,AMBER,8,.045)
 
 
 def steam_turbine_generator(r):
@@ -659,10 +709,10 @@ CATALOG = {
     telemetry_screen_wall: ((4.8,2.6,.28),460,(.25,.2,1)),
     neutral_beam_injector: ((4.8,1.85,1.6),980,(.6,.5,1)),
     plasma_test_chamber: ((2.4,2.3,1.4),860,(.55,.4,1)),
-    whiteboard_equations: ((3.2,1.75,.18),340,(.2,.18,1)),
+    whiteboard_equations: ((3.2,1.75,.18),1400,(.2,.18,1)),
     tritium_cask_pallet: ((2.2,1.45,2.2),840,(.6,.65,1)),
     deuterium_cryo_tank: ((2.8,3.6,2.8),940,(.6,.4,1)),
-    fuel_gantry_crane: ((14,1.4,3.2),780,(.4,-.5,1)),
+    fuel_gantry_crane: ((14,1.4,3.2),1800,(.4,-.5,1)),
     steam_turbine_generator: ((3.8,2.8,7.2),1180,(.9,.65,1)),
     heat_exchanger_tower: ((2.4,4.6,2.4),760,(.6,.4,1)),
     quantum_server_rack: ((2.8,2.4,1.1),720,(.5,.35,1)),
