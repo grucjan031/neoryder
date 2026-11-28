@@ -65,4 +65,8 @@ osłony i fala dwóch wrogów po 8 sekundach. Sprawdź:
 
 Debug: `civilian spawn scientist` dodaje postać przed graczem,
 `query('civilians')` zwraca HP, pozycje, stan, kryjówki i kierunki upadku.
+`civilian status` wypisuje stan i pozycję każdego cywila, a `civilian kill`
+zadaje śmiertelne obrażenia najbliższemu żywemu (ta sama ścieżka co trafienie gracza:
+`damage_dealt` → upadek ciała → `civilianKilled`). Działa w każdej scenie pokoju
+z cywilami, np. `?scene=room-test&room=run8`.
 Testy: `tests/unit/civilians.test.ts`. Weryfikację obrazu wykonuje manager.

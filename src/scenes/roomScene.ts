@@ -2992,6 +2992,32 @@ export class RoomScene implements Scene {
         );
         return 'Dodano cywila.';
       });
+    if (this.civilians) {
+      register('civilian status', 'civilian status', () =>
+        this.civilians!.snapshots()
+          .map(
+            (s) =>
+              `${s.id}: ${s.state} (${s.position.x.toFixed(1)}, ${s.position.y.toFixed(1)}, ${s.position.z.toFixed(1)})`,
+          )
+          .join('\n'),
+      );
+      register('civilian kill', 'civilian kill — najbliższy żywy cywil', () => {
+        const p = this.player.getState().position;
+        let best: { id: EntityId; d: number } | undefined;
+        for (const s of this.civilians!.snapshots()) {
+          if (s.state === 'dead') continue;
+          const d = Math.hypot(s.position.x - p.x, s.position.z - p.z);
+          if (!best || d < best.d) best = { id: s.id, d };
+        }
+        if (!best) return 'Brak żywych cywili.';
+        this.damage.deal(best.id, {
+          source: playerId,
+          amount: Number.MAX_VALUE,
+          tags: ['#debug'],
+        });
+        return `Trafiono cywila ${best.id}.`;
+      });
+    }
     this.squad.registerCommands(register);
     register('heist grab', 'heist grab', (args) => {
       const ok = args.length === 0 && this.heist?.grab();

@@ -519,12 +519,16 @@ export function createUrbanMaterial(
         float cityHeight = 0.0;
         if (cityDetail > 0.0) {
           vec3 nCross = cross(dFdx(vCityWorld), dFdy(vCityWorld));
-          vec3 nCity = abs(dot(nCross, nCross) > 1e-12 ? normalize(nCross) : vec3(0.0, 1.0, 0.0));
+          vec3 nFacing = dot(nCross, nCross) > 1e-12 ? normalize(nCross) : vec3(0.0, 1.0, 0.0);
+          vec3 nCity = abs(nFacing);
+          // Mapy mają flipY=false: v = -y stawia napisy pionowo, znak normalnej usuwa odbicie lustrzane na ścianach +X i -Z.
+          vec2 uvSide = vec2(nFacing.x > 0.0 ? -vCityWorld.z : vCityWorld.z, -vCityWorld.y);
+          vec2 uvFront = vec2(nFacing.z < 0.0 ? -vCityWorld.x : vCityWorld.x, -vCityWorld.y);
           vec3 weights = pow(nCity,vec3(4.0)); weights /= max(dot(weights,vec3(1.0)),0.001);
           vec3 tex = vec3(0.0);
-          if (surfaceReady > 0.5) tex = texture2D(surfaceMap,vCityWorld.zy*${scale}).rgb*weights.x
+          if (surfaceReady > 0.5) tex = texture2D(surfaceMap,uvSide*${scale}).rgb*weights.x
             + texture2D(surfaceMap,vCityWorld.xz*${scale}).rgb*weights.y
-            + texture2D(surfaceMap,vCityWorld.xy*${scale}).rgb*weights.z;
+            + texture2D(surfaceMap,uvFront*${scale}).rgb*weights.z;
           cityHeight = dot(tex, vec3(0.299, 0.587, 0.114));
           float grain = cityNoise(vCityWorld.xz*18.0 + vCityWorld.y*7.0);
           float dirt = cityNoise(vCityWorld.xy*0.4);

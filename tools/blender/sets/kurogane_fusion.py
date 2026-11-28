@@ -18,7 +18,7 @@ from kurogane_lab import (
     REPO, ba, bpy, Vector, box, slab, panel, prism, rod,
     beam, form, drum, quad, face, print_on, materials, color, finish_glazing,
     studio, stripe, STEEL, DARK, ALLOY, INK, ENAMEL, GOLD, WHITE, GLASS,
-    GREEN, BLUE, AMBER, VIOLET, PAPER, STATUS,
+    GREEN, BLUE, AMBER, VIOLET, PAPER, STATUS, RUBBER,
 )
 from construction_power import surface
 
@@ -550,21 +550,69 @@ def decon_shower_arch(r):
     screen(r,-1.48,1.55,.83,.25,.40,TRITIUM)
 
 
+def hazmat_suit(r, x, sway=0.0):
+    """Wiszący kombinezon ochronny: owalne przekroje zamiast klocków, żeby czytał się jak tkanina."""
+    z = .02
+    rod(r,"hanger_hook",(x,2.04,z),(x,1.95,z),.012,STEEL,6)
+    beam(r,"hanger_bar",(x-.24,1.93,z),(x+.24,1.93,z),.03,.025,ALLOY)
+    # Kaptur-hełm: kopuła z miękkim przejściem w kołnierz.
+    form(r,"suit_hood",x+sway,z,[
+        (1.55,.15,.14,0),(1.62,.175,.165,0),(1.72,.185,.175,.005),
+        (1.81,.175,.165,.005),(1.88,.14,.135,0),(1.925,.08,.08,0),(1.94,.02,.02,0)],GOLD,8)
+    form(r,"hood_visor",x+sway,z,[
+        (1.63,.11,.03,.15),(1.68,.14,.045,.155),(1.76,.14,.045,.155),(1.81,.10,.03,.145)],INK,10)
+    beam(r,"visor_glint",(x+sway-.07,1.775,z+.205),(x+sway-.01,1.79,z+.205),.012,.006,WHITE)
+    form(r,"neck_seal",x+sway*.6,z,[(1.50,.13,.11,0),(1.55,.14,.12,0)],RUBBER,8)
+    # Tors: barki, klatka, zwężenie w pasie i lekkie opadnięcie materiału.
+    form(r,"suit_torso",x+sway*.4,z,[
+        (.96,.20,.13,0),(1.08,.205,.135,.005),(1.22,.215,.145,.012),
+        (1.36,.235,.15,.012),(1.46,.25,.14,.005),(1.51,.19,.12,0)],GOLD,8)
+    form(r,"utility_belt",x+sway*.3,z,[(1.00,.212,.142,0),(1.07,.212,.142,0)],RUBBER,8)
+    box(r,"belt_buckle",x+sway*.3,1.035,z+.15,.07,.05,.02,STEEL)
+    for y in (1.18,1.30):
+        form(r,"reflective_band",x+sway*.4,z,[(y,.222,.152,.012),(y+.035,.222,.152,.012)],ALLOY,8)
+    face(r,"chest_zip_flap",x+sway*.4,1.24,z+.163,.05,.46,INK)
+    face(r,"name_patch",x+sway*.4-.10,1.40,z+.158,.09,.05,PAPER)
+    face(r,"dosimeter_badge",x+sway*.4+.10,1.40,z+.158,.05,.06,AMBER)
+    # Rękawy zwisają wzdłuż ciała, mankiety i rękawice z gumy.
+    for s in (-1,1):
+        sh = (x+sway*.4+s*.23,1.44,z)
+        el = (x+sway*.2+s*.27,1.18,z+.03)
+        wr = (x+sway*.1+s*.26,.95,z+.05)
+        rod(r,"suit_upper_sleeve",sh,el,.078,GOLD,8,.07)
+        rod(r,"suit_forearm",el,wr,.07,GOLD,8,.062)
+        rod(r,"sleeve_band",(el[0],el[1]+.03,el[2]),(el[0],el[1]-.03,el[2]),.075,ALLOY,8)
+        rod(r,"rubber_cuff",wr,(wr[0],wr[1]-.05,wr[2]+.005),.066,RUBBER,8)
+        rod(r,"rubber_glove",(wr[0],wr[1]-.05,wr[2]+.005),(wr[0]-s*.01,wr[1]-.19,wr[2]+.02),.058,RUBBER,8,.04)
+        # Nogawki z workowatym kolanem i wysokie buty.
+        hip = (x+sway*.25+s*.10,.98,z)
+        kn = (x+sway*.1+s*.115,.62,z+.03)
+        an = (x+s*.12,.30,z+.02)
+        rod(r,"suit_thigh",hip,kn,.10,GOLD,8,.09)
+        rod(r,"suit_shin",kn,an,.09,GOLD,8,.08)
+        rod(r,"leg_band",(kn[0],kn[1]-.06,kn[2]),(kn[0],kn[1]-.11,kn[2]),.093,ALLOY,8)
+        form(r,"rubber_boot",x+s*.12,z+.02,[(.06,.075,.11,.03),(.16,.075,.10,.02),(.32,.085,.085,0)],RUBBER,8)
+        box(r,"boot_sole",x+s*.12,.03,z+.05,.16,.06,.25,DARK)
+    # Aparat oddechowy na plecach z wężem do kaptura.
+    rod(r,"scba_cylinder",(x+sway*.4,1.02,z-.22),(x+sway*.4,1.48,z-.22),.085,STEEL,8)
+    rod(r,"scba_valve",(x+sway*.4,1.48,z-.22),(x+sway*.4,1.53,z-.22),.03,DARK,6)
+    for s in (-1,1):
+        beam(r,"harness_strap",(x+sway*.4+s*.12,1.50,z-.14),(x+sway*.4+s*.12,1.05,z+.16),.04,.012,INK)
+    tube(r,"air_hose",[(x+sway*.4+.04,1.53,z-.22),(x+sway*.4+.17,1.58,z-.08),
+        (x+sway*.4+.16,1.47,z+.10),(x+sway+.08,1.62,z+.15)],.018,RUBBER,6)
+
+
 def suit_locker_bank(r):
     frame(r,3.2,2.3,.8)
     box(r,"locker_back",0,1.15,-.37,3,2.1,.06,ENAMEL)
-    for x in (-1.18,-.39,.39,1.18):
-        box(r,"locker_divider",x+.36,1.15,0,.035,2.1,.65,STEEL)
-        panel(r,"suit_torso",x,1.22,0,.44,.64,.21,.09,GOLD)
-        for s in (-1,1):
-            beam(r,"suit_sleeve",(x+s*.20,1.45,0),(x+s*.28,.98,0),.10,.14,GOLD)
-            beam(r,"suit_leg",(x+s*.11,.94,0),(x+s*.14,.38,.02),.15,.18,GOLD)
-        panel(r,"protective_helmet",x,1.76,.01,.42,.39,.28,.10,GOLD)
-        face(r,"helmet_visor",x,1.77,.152,.30,.16,INK)
-        face(r,"suit_zip",x,1.22,.106,.025,.44,INK)
-        rod(r,"oxygen_cylinder",(x+.24,1.12,-.20),(x+.24,1.64,-.20),.075,STEEL,6)
+    box(r,"locker_floor",0,.0,0,3,.03,.7,DARK)
+    for i,x in enumerate((-1.18,-.39,.39,1.18)):
+        box(r,"locker_divider",x+.39,1.15,0,.035,2.1,.65,STEEL)
+        hazmat_suit(r,x,(-.012,.01,-.006,.014)[i])
+        rod(r,"hanger_rail",(x-.36,2.06,.02),(x+.36,2.06,.02),.016,STEEL,6)
         face(r,"locker_glazing",x,1.18,.39,.70,2.06,GLASS)
         face(r,"locker_light",x,2.19,.391,.55,.025,WHITE)
+        face(r,"locker_tag",x,.18,.392,.22,.06,AMBER)
 
 
 def director_desk(r):
@@ -619,7 +667,7 @@ CATALOG = {
     heat_exchanger_tower: ((2.4,4.6,2.4),760,(.6,.4,1)),
     quantum_server_rack: ((2.8,2.4,1.1),720,(.5,.35,1)),
     decon_shower_arch: ((3.4,2.8,1.6),620,(.6,.4,1)),
-    suit_locker_bank: ((3.2,2.3,.8),760,(.4,.3,1)),
+    suit_locker_bank: ((3.2,2.3,.8),5000,(.4,.3,1)),
     director_desk: ((2.8,1.15,1.3),880,(.55,.75,1)),
 }
 
