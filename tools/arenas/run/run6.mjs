@@ -6,7 +6,9 @@ import { furnish } from './_run6Rooms.mjs';
 import { dress, city } from './_run6Dress.mjs';
 export { shots } from './_run6Dress.mjs';
 const WARM_LIGHT = '#fff1d6';
-const WARM_SCALE = 0.42;
+// Ciepła baza świeci słabo i żarowo: mocna, prawie biała przepalała strop i posadzkę w białe owale.
+const WARM_SCALE = 0.27;
+const WARM_TINT = '#ffd3a0';
 const ACCENT_SCALE = 1.7;
 const ACCENT_RANGE_M = 10;
 
@@ -28,7 +30,7 @@ export default function generate() {
           x,
           y,
           z,
-          color,
+          WARM_TINT,
           Math.round(intensity * WARM_SCALE),
           range,
           opts,

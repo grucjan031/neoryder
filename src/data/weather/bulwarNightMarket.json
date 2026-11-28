@@ -26,8 +26,8 @@
   },
   "surface": { "gloss": 0.1, "reflections": 0.7, "puddles": 0.45 },
   "lighting": {
-    "hemiIntensity": 4,
-    "keyIntensity": 1.6,
+    "hemiIntensity": 3.4,
+    "keyIntensity": 1.3,
     "panoramaEnabled": true
   },
   "sky": { "horizonColor": "#2b1f3d" },

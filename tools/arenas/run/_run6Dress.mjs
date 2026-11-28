@@ -154,11 +154,14 @@ export function dress(k, p) {
   box(k, 0, 4.96, -12.03, 3.4, 0.62, 0.12, 'rubber');
   k.neon('targ_sign_scena', 0, 4.96, -11.96, 3.2, 0.56, 0, COLOR.violet, 0);
   const surfaces = k.arena.toRoom().blocks.filter((b) => b.walkable);
-  const lightPower = [54, 70, 80, 90, 55, 100, 78, 100];
+  const lightPower = [54, 70, 80, 55, 60, 100, 190, 100];
   for (const [i, [, , r, h]] of rooms.entries()) {
     const warmHall = [0, 1, 6].includes(i);
     const xs = i === 6 ? 8 : i === 0 ? 2 : warmHall ? 4 : 3,
       zs = i === 6 ? 8 : i === 0 ? 10 : 4;
+    // Budżet 64 świateł: barwę stref niosą akcenty, więc z ciepłej bazy świeci co trzecia oprawa
+    // (w gabinecie co druga, w wysokiej herbaciarni każda).
+    let lit = 0;
     for (let a = 0; a < xs; a++)
       for (let b = 0; b < zs; b++) {
         const x =
@@ -201,7 +204,7 @@ export function dress(k, p) {
           });
           box(k, x, y, z, 1.44, 0.07, 0.28, 'light_panel', { ceiling: true });
         }
-        if (powered)
+        if (powered && lit++ % (i === 6 ? 1 : i === 4 ? 2 : 3) === 0)
           k.light(
             x,
             y - (warmHall ? 0.16 : 0.36),
@@ -242,14 +245,16 @@ export function dress(k, p) {
       chest(k, x, outer);
     }
     for (let z = r.minZ + 2.1; z < r.maxZ - 1; z += 5.4) {
-      k.decal(
-        'targ_floor_stall_marks',
-        (r.minX + r.maxX) / 2 + 0.7,
-        0.016,
-        z,
-        2.5,
-        0.59,
-      );
+      // Numery stanowisk tylko tam, gdzie stoją kramy: w alei garkuchni i na placu.
+      if (i === 1 || i === 5)
+        k.decal(
+          'targ_floor_stall_marks',
+          (r.minX + r.maxX) / 2 + 0.7,
+          0.016,
+          z,
+          2.5,
+          0.59,
+        );
       k.deco('city_vent_grate', r.minX + 1.3, 0, z);
     }
     if (i !== 7)
@@ -327,16 +332,100 @@ export function dress(k, p) {
     );
   }
   for (const x of [-2.33, 2.33])
-    k.light(x, 3.1, -11.94, COLOR.violet, 16, 12, {
+    k.light(x, 3.1, -11.94, COLOR.violet, 30, 16, {
       floorY: 1.2,
       groundGlow: false,
     });
+  // Rama sceny: świecące listwy na słupach i belce.
+  for (const s of [-1, 1])
+    box(k, s * 3.72, 3.17, -12.05, 0.07, 3.7, 0.07, 'neon_violet');
+  box(k, 0, 5.34, -12.03, 7.4, 0.07, 0.07, 'neon_violet');
+  // Ogłoszenia i ekrany na pustych ścianach hali rybnej i gabinetu.
+  for (const [texture, x, y, z, w, h, t] of [
+    ['targ_poster_wall', 13.6, 2.3, 6.34, 2.5, 1.22, 0],
+    ['targ_menu_board', 26.4, 2.2, 6.34, 1.2, 1.7, 0],
+    ['targ_screen_show', 10.34, 2.1, 21, 1.6, 2.16, 1],
+    ['targ_screen_show', 14, 2.05, -13.66, 1.5, 2.02, 0],
+    ['targ_poster_wall', 17.4, 2.3, -13.66, 2.5, 1.22, 0],
+    ['targ_screen_show', 27, 2.05, -13.66, 1.5, 2.02, 0],
+  ])
+    monitor(k, x, y, z, w, h, t, texture);
+  // Barwa stref: mocne akcenty bez opraw, z dala od ścian; wygrywają z ciepłą bazą o miejsce w puli świateł.
+  for (const [color, y, power, points] of ACCENTS)
+    for (const [x, z] of points) {
+      // Każdy akcent ma widoczne źródło: świetlówkę na lince od stropu albo spodu pomostu.
+      const zone = rooms.find(
+        ([, , r]) => x > r.minX && x < r.maxX && z > r.minZ && z < r.maxZ,
+      );
+      const top = zone[3] > 9 ? 3.92 : zone[3];
+      box(k, x, y + 0.15, z, 0.9, 0.07, 0.07, 'neon_' + color);
+      box(k, x, (y + 0.19 + top) / 2, z, 0.03, top - y - 0.19, 0.03, 'trim');
+      k.light(x, y, z, COLOR[color], power, 12, {
+        floorY: 0,
+        groundGlow: false,
+      });
+    }
   for (const z of [-21, -34]) {
     box(k, 24, 0.84, z, 0.36, 1.68, 0.36, 'metal');
     box(k, 24, 1.76, z, 0.38, 0.16, 0.38, 'neon_amber');
     k.light(24, 1.85, z, COLOR.amber, 14, 11, { floorY: 0, groundGlow: false });
   }
 }
+const ACCENTS = [
+  [
+    'amber',
+    2.7,
+    30,
+    [
+      [-6, 28.6],
+      [6, 28.6],
+      [-20, 20],
+      [-27, 14],
+      [-7.6, -9],
+      [7.6, -9],
+      [-7.6, 5],
+      [7.6, 5],
+      [-27, -24],
+      [-21.8, -23.8],
+      [-15.2, -23.8],
+      [-8.6, -23.8],
+    ],
+  ],
+  [
+    'blue',
+    2.7,
+    22,
+    [
+      [13, 12],
+      [13, 26],
+      [-20, -4],
+      [3, -20],
+      [10, -34],
+    ],
+  ],
+  [
+    'violet',
+    2.7,
+    38,
+    [
+      [-20, 0],
+      [-27.5, -11],
+      [-12.5, -10],
+      [-27.5, 3],
+    ],
+  ],
+  [
+    'green',
+    2.6,
+    8,
+    [
+      [13, -11],
+      [13, 3],
+      [27, 3],
+      [20, -5],
+    ],
+  ],
+];
 export function chest(k, x, z) {
   box(k, x, 0.48, z, 1.06, 0.96, 0.77, 'wood');
   box(k, x, 0.98, z, 1.1, 0.05, 0.81, 'metal');

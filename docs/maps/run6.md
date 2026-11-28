@@ -185,3 +185,14 @@ Paleta: bursztyn `#ffae1a`, ciepła biel `#fff1d6`, zieleń `#6dff4a`, błękit 
 5. **Easter eggi:** plakaty min. 1,2 × 1,8 m, tabliczki min. 0,9 × 0,45 m, karteczki 0,45 m, środek na 1,5–1,7 m (poza leżącymi), kadry `ee01…ee12` prostopadle z 1,8–2,2 m.
 6. **Tekstury** mapa wskazuje tylko z `decals/` (decal) i `signs/` (szyld); ekrany to decale na ciemnej bryle.
 7. Szkło modeli (`mat_clinic_glass`) jest prawie przezroczyste — nie używać jako nośnika koloru.
+
+## 7. Szlif i odbiór (2026-11-28)
+
+Ocena architekta po szlifie: **7,3/10** (brama 7,5 · garkuchnie 8 · hala rybna 7,5 · pasaż 7,5 · gabinet 7 · plac 7,5 · herbaciarnia 7 · dok 7). Audyt 0/0, 63 światła (limit testu 64), najcięższy kadr 672 wywołania rysowania i 0,88 mln trójkątów.
+
+Co zmienił szlif względem pierwszego przebiegu:
+
+1. **Białe owale na stropach i posadzce to przepalenie, nie połysk.** Mocne, prawie białe oprawy blisko powierzchni wychodzą poza zakres jasności; zmiana materiału stropu nic nie dawała. Ciepła baza świeci teraz barwą `#ffd3a0` z mocą 0,27 pierwotnej (`WARM_SCALE`, `WARM_TINT` w `run6.mjs`), a profil pogody ma słabsze `hemiIntensity` i `keyIntensity`.
+2. **Silnik zapala naraz tylko 8 świateł punktowych** (`tuning.city.maxLights`). Barwy strefy nie buduje się liczbą świateł: daje ją kilka mocnych akcentów z widocznym źródłem (świetlówka `neon_<barwa>` na lince) i świecąca listwa pod stropem na całym obwodzie strefy (`BAND` w `_run6Kit.mjs`).
+3. Bazę przerzedzono do co trzeciej oprawy (gabinet co drugiej, herbaciarnia każda), żeby zmieścić akcenty w limicie 64 świateł.
+4. Pomosty są z desek, stropy niskich stref z ciemnej papy z drewnianymi belkami w wysokich halach; numery stanowisk na posadzce zostały tylko w alei garkuchni i na placu; hala rybna i gabinet dostały ogłoszenia i ekrany na ścianach.
