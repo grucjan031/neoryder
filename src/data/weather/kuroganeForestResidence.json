@@ -1,0 +1,76 @@
+{
+  "id": "kuroganeForestResidence",
+  "title": "Rezydencja Pułkownika Kurogane w Nocnym Lesie",
+  "precipitation": {
+    "kind": "rain",
+    "density": 0.52,
+    "speed": 18.5,
+    "color": "#8ca0be",
+    "opacity": 0.32,
+    "exposureS": 0.026,
+    "widthM": 0.014
+  },
+  "wind": {
+    "direction": {
+      "x": 0.85,
+      "z": -0.52
+    },
+    "strength": 0.9,
+    "gustStrength": 0.32,
+    "gustPeriodS": 6.5
+  },
+  "fog": {
+    "color": "#0b111c",
+    "density": 0,
+    "heightM": 16,
+    "strength": 0,
+    "nearM": 80,
+    "farM": 220
+  },
+  "surface": {
+    "gloss": 0.68,
+    "reflections": 0.84,
+    "puddles": 0.14
+  },
+  "lighting": {
+    "hemiIntensity": 5.4,
+    "keyIntensity": 1.9,
+    "panoramaEnabled": true,
+    "panoramaKind": "forest"
+  },
+  "sky": {
+    "horizonColor": "#1d2238"
+  },
+  "lightning": {
+    "enabled": false,
+    "minIntervalS": 30,
+    "maxIntervalS": 60,
+    "brightness": 0,
+    "color": "#fff1d6",
+    "decayS": 0.2
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.08,
+    "opacity": 0,
+    "color": "#9aa8c0",
+    "lifeS": 10
+  },
+  "ambience": [
+    {
+      "kind": "rain",
+      "gain": 0.11,
+      "radiusM": 110
+    },
+    {
+      "kind": "wind",
+      "gain": 0.1,
+      "radiusM": 120
+    },
+    {
+      "kind": "generator",
+      "gain": 0.06,
+      "radiusM": 90
+    }
+  ]
+}

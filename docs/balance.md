@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-26. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-27. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -24,6 +24,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Ostrze paczki (s) | Moc paczki (s) | Strzelec paczki (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | assaulter | 3.083 | 1.683 | 2.683 | 2.683 | 1.149 | 0.627 | 1.000 | TAK |
+| chimera | 8.250 | 21.317 | 11.017 | 11.017 | 0.749 | 1.935 | 1.000 | TAK |
 | drone | 0.917 | 0.850 | 0.917 | 0.917 | 1.000 | 0.927 | 1.000 | TAK |
 | executor | 8.250 | 21.317 | 11.017 | 11.017 | 0.749 | 1.935 | 1.000 | TAK |
 | gunner | 2.083 | 1.683 | 2.683 | 2.083 | 1.000 | 0.808 | 1.288 | TAK |
@@ -38,6 +39,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
 | assaulter | plasmaBlade:combo | chain → push | scatter |
+| chimera | plasmaBlade:combo | chain → push | scatter |
 | drone | plasmaBlade:combo | chain → push | rifle |
 | executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
@@ -54,6 +56,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Ostrze TTK (s) | Moc TTK (s) | Strzelec TTK (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | assaulter | 0.417 | 0.017 | 0.017 | 0.017 | 25.000 | 1.000 | 1.000 | NIE |
+| chimera | 1.583 | 0.617 | 1.267 | 1.267 | 1.250 | 0.487 | 1.000 | NIE |
 | drone | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
 | executor | 1.583 | 0.617 | 1.267 | 1.267 | 1.250 | 0.487 | 1.000 | NIE |
 | gunner | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
@@ -68,6 +71,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
 | assaulter | plasmaBlade:combo | chain → push | scatter |
+| chimera | plasmaBlade:combo | chain → push | sniper |
 | drone | plasmaBlade:combo | chain → push | scatter |
 | executor | plasmaBlade:combo | chain → push | sniper |
 | gunner | plasmaBlade:combo | chain → push | scatter |
@@ -84,6 +88,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Narzędzie | Wróg | TTK (s) | DPS (HP/s) | TTK paczki ×5 (s) | DPS paczki (HP/s) |
 | --- | --- | ---: | ---: | ---: | ---: |
 | Laser ciągły (beam) | assaulter | 1.500 | 40.000 | 19.883 | 15.088 |
+| Laser ciągły (beam) | chimera | 13.233 | 16.625 | 78.633 | 13.989 |
 | Laser ciągły (beam) | drone | 0.500 | 36.000 | 5.583 | 16.119 |
 | Laser ciągły (beam) | executor | 13.233 | 16.625 | 78.633 | 13.989 |
 | Laser ciągły (beam) | gunner | 1.200 | 37.500 | 15.283 | 14.722 |
@@ -95,6 +100,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Laser ciągły (beam) | sniper | 0.900 | 38.889 | 10.683 | 16.381 |
 | Laser ciągły (beam) | turret | 3.333 | 21.000 | 24.483 | 14.295 |
 | Blaster (blaster) | assaulter | 0.350 | 171.429 | 5.017 | 59.801 |
+| Blaster (blaster) | chimera | 3.017 | 72.928 | 22.350 | 49.217 |
 | Blaster (blaster) | drone | 0.017 | 1080.000 | 0.683 | 131.707 |
 | Blaster (blaster) | executor | 3.017 | 72.928 | 22.350 | 49.217 |
 | Blaster (blaster) | gunner | 0.350 | 128.571 | 5.017 | 44.850 |
@@ -106,6 +112,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Blaster (blaster) | sniper | 0.183 | 190.909 | 2.850 | 61.404 |
 | Blaster (blaster) | turret | 0.517 | 135.484 | 7.183 | 48.724 |
 | Kusza magnetyczna (crossbow) | assaulter | 0.017 | 3600.000 | 4.483 | 66.914 |
+| Kusza magnetyczna (crossbow) | chimera | 0.017 | 13200.000 | 4.483 | 245.353 |
 | Kusza magnetyczna (crossbow) | drone | 0.017 | 1080.000 | 4.483 | 20.074 |
 | Kusza magnetyczna (crossbow) | executor | 0.017 | 13200.000 | 4.483 | 245.353 |
 | Kusza magnetyczna (crossbow) | gunner | 0.017 | 2700.000 | 4.483 | 50.186 |
@@ -117,6 +124,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Kusza magnetyczna (crossbow) | sniper | 0.017 | 2100.000 | 4.483 | 39.033 |
 | Kusza magnetyczna (crossbow) | turret | 0.017 | 4200.000 | 4.483 | 78.067 |
 | Granat EMP (emp) | assaulter | 5.267 | 11.392 | 35.267 | 8.507 |
+| Granat EMP (emp) | chimera | 24.767 | 8.883 | ∞ | 8.250 |
 | Granat EMP (emp) | drone | 1.267 | 14.211 | 12.767 | 7.050 |
 | Granat EMP (emp) | executor | 24.767 | 8.883 | ∞ | 8.250 |
 | Granat EMP (emp) | gunner | 3.767 | 11.947 | 27.767 | 8.103 |
@@ -128,6 +136,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Granat EMP (emp) | sniper | 2.517 | 13.907 | 20.267 | 8.635 |
 | Granat EMP (emp) | turret | 6.767 | 10.345 | 42.767 | 8.184 |
 | Pistolet (pistol) | assaulter | 0.267 | 225.000 | 2.267 | 132.353 |
+| Pistolet (pistol) | chimera | 1.517 | 145.055 | 13.517 | 81.381 |
 | Pistolet (pistol) | drone | 0.017 | 1080.000 | 1.017 | 88.525 |
 | Pistolet (pistol) | executor | 1.517 | 145.055 | 13.517 | 81.381 |
 | Pistolet (pistol) | gunner | 0.267 | 168.750 | 2.267 | 99.265 |
@@ -139,6 +148,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pistolet (pistol) | sniper | 0.267 | 131.250 | 2.267 | 77.206 |
 | Pistolet (pistol) | turret | 0.517 | 135.484 | 4.767 | 73.427 |
 | Rewolwer (revolver) | assaulter | 0.017 | 3600.000 | 2.150 | 139.535 |
+| Rewolwer (revolver) | chimera | 1.083 | 203.077 | 8.450 | 130.178 |
 | Rewolwer (revolver) | drone | 0.017 | 1080.000 | 2.150 | 41.860 |
 | Rewolwer (revolver) | executor | 1.083 | 203.077 | 8.450 | 130.178 |
 | Rewolwer (revolver) | gunner | 0.017 | 2700.000 | 2.150 | 104.651 |
@@ -150,6 +160,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Rewolwer (revolver) | sniper | 0.017 | 2100.000 | 2.150 | 81.395 |
 | Rewolwer (revolver) | turret | 0.017 | 4200.000 | 2.150 | 162.791 |
 | Karabin (rifle) | assaulter | 0.417 | 144.000 | 6.617 | 45.340 |
+| Karabin (rifle) | chimera | 4.617 | 47.653 | 30.417 | 36.164 |
 | Karabin (rifle) | drone | 0.117 | 154.286 | 0.917 | 98.182 |
 | Karabin (rifle) | executor | 4.617 | 47.653 | 30.417 | 36.164 |
 | Karabin (rifle) | gunner | 0.317 | 142.105 | 4.717 | 47.703 |
@@ -161,6 +172,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Karabin (rifle) | sniper | 0.217 | 161.538 | 2.817 | 62.130 |
 | Karabin (rifle) | turret | 0.517 | 135.484 | 8.517 | 41.096 |
 | Rozpraszacz (scatter) | assaulter | 0.017 | 3600.000 | 2.683 | 111.801 |
+| Rozpraszacz (scatter) | chimera | 1.350 | 162.963 | 11.017 | 99.849 |
 | Rozpraszacz (scatter) | drone | 0.017 | 1080.000 | 2.683 | 33.540 |
 | Rozpraszacz (scatter) | executor | 1.350 | 162.963 | 11.017 | 99.849 |
 | Rozpraszacz (scatter) | gunner | 0.017 | 2700.000 | 2.683 | 83.851 |
@@ -172,6 +184,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Rozpraszacz (scatter) | sniper | 0.017 | 2100.000 | 2.683 | 65.217 |
 | Rozpraszacz (scatter) | turret | 0.017 | 4200.000 | 2.683 | 130.435 |
 | Pistolet maszynowy (smg) | assaulter | 0.483 | 124.138 | 5.483 | 54.711 |
+| Pistolet maszynowy (smg) | chimera | 3.250 | 67.692 | 25.050 | 43.912 |
 | Pistolet maszynowy (smg) | drone | 0.150 | 120.000 | 0.950 | 94.737 |
 | Pistolet maszynowy (smg) | executor | 3.250 | 67.692 | 25.050 | 43.912 |
 | Pistolet maszynowy (smg) | gunner | 0.350 | 128.571 | 3.383 | 66.502 |
@@ -183,6 +196,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pistolet maszynowy (smg) | sniper | 0.283 | 123.529 | 3.050 | 57.377 |
 | Pistolet maszynowy (smg) | turret | 0.550 | 127.273 | 7.250 | 48.276 |
 | Snajperka (sniper) | assaulter | 0.017 | 3600.000 | 5.017 | 59.801 |
+| Snajperka (sniper) | chimera | 1.267 | 173.684 | 11.267 | 97.633 |
 | Snajperka (sniper) | drone | 0.017 | 1080.000 | 5.017 | 17.940 |
 | Snajperka (sniper) | executor | 1.267 | 173.684 | 11.267 | 97.633 |
 | Snajperka (sniper) | gunner | 0.017 | 2700.000 | 5.017 | 44.850 |
@@ -194,6 +208,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Snajperka (sniper) | sniper | 0.017 | 2100.000 | 5.017 | 34.884 |
 | Snajperka (sniper) | turret | 0.017 | 4200.000 | 5.017 | 69.767 |
 | Błyskawica (chain) | assaulter | 0.017 | 3600.000 | 1.683 | 178.218 |
+| Błyskawica (chain) | chimera | 0.850 | 258.824 | 15.783 | 69.694 |
 | Błyskawica (chain) | drone | 0.017 | 1080.000 | 1.683 | 53.465 |
 | Błyskawica (chain) | executor | 0.850 | 258.824 | 15.783 | 69.694 |
 | Błyskawica (chain) | gunner | 0.017 | 2700.000 | 1.683 | 133.663 |
@@ -205,6 +220,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Błyskawica (chain) | sniper | 0.017 | 2100.000 | 1.683 | 103.960 |
 | Błyskawica (chain) | turret | 0.433 | 161.538 | 3.767 | 92.920 |
 | Pchnięcie Rezonansu (push) | assaulter | 0.617 | 97.297 | 5.417 | 55.385 |
+| Pchnięcie Rezonansu (push) | chimera | 3.617 | 60.829 | 65.433 | 16.811 |
 | Pchnięcie Rezonansu (push) | drone | 0.017 | 1080.000 | 2.417 | 37.241 |
 | Pchnięcie Rezonansu (push) | executor | 3.617 | 60.829 | 65.433 | 16.811 |
 | Pchnięcie Rezonansu (push) | gunner | 0.617 | 72.973 | 5.417 | 41.538 |
@@ -216,6 +232,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
 | Pchnięcie Rezonansu (push) | turret | 0.617 | 113.514 | 5.417 | 64.615 |
 | Fala uderzeniowa (shockwave) | assaulter | 15.150 | 3.960 | 101.550 | 2.954 |
+| Fala uderzeniowa (shockwave) | chimera | 72.750 | 3.024 | ∞ | 2.917 |
 | Fala uderzeniowa (shockwave) | drone | 1.533 | 11.739 | 29.550 | 3.046 |
 | Fala uderzeniowa (shockwave) | executor | 72.750 | 3.024 | ∞ | 2.917 |
 | Fala uderzeniowa (shockwave) | gunner | 11.550 | 3.896 | 83.550 | 2.693 |
@@ -227,6 +244,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Fala uderzeniowa (shockwave) | sniper | 7.950 | 4.403 | 65.550 | 2.670 |
 | Fala uderzeniowa (shockwave) | turret | 18.750 | 3.733 | 119.550 | 2.928 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | assaulter | 0.417 | 144.000 | 3.083 | 97.297 |
+| Ostrze: combo lekkie (plasmaBlade:combo) | chimera | 1.583 | 138.947 | 8.250 | 133.333 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | drone | 0.083 | 216.000 | 0.917 | 98.182 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | executor | 1.583 | 138.947 | 8.250 | 133.333 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | gunner | 0.250 | 180.000 | 2.083 | 108.000 |
@@ -238,6 +256,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Ostrze: combo lekkie (plasmaBlade:combo) | sniper | 0.250 | 140.000 | 1.583 | 110.526 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | turret | 0.417 | 168.000 | 3.083 | 113.514 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | assaulter | 0.667 | 90.000 | 5.333 | 56.250 |
+| Ostrze: ciężki atak (plasmaBlade:heavy) | chimera | 2.417 | 91.034 | 14.083 | 78.107 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | drone | 0.083 | 216.000 | 2.417 | 37.241 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | executor | 2.417 | 91.034 | 14.083 | 78.107 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | gunner | 0.667 | 67.500 | 5.333 | 42.188 |
@@ -254,6 +273,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Ostrze paczki (s) | Moc paczki (s) | Strzelec paczki (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | assaulter | 3.083 | 2.433 | 2.683 | 2.683 | 1.149 | 0.907 | 1.000 | TAK |
+| chimera | 8.250 | 29.433 | 11.017 | 11.017 | 0.749 | 2.672 | 1.000 | NIE |
 | drone | 0.917 | 2.417 | 0.917 | 0.917 | 1.000 | 2.636 | 1.000 | NIE |
 | executor | 8.250 | 29.433 | 11.017 | 11.017 | 0.749 | 2.672 | 1.000 | NIE |
 | gunner | 2.083 | 2.433 | 2.683 | 2.433 | 0.856 | 1.000 | 1.103 | TAK |
@@ -268,6 +288,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
 | assaulter | plasmaBlade:combo | chain → push | scatter |
+| chimera | plasmaBlade:combo | chain → push | scatter |
 | drone | plasmaBlade:combo | chain → push | rifle |
 | executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
@@ -284,6 +305,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Ostrze TTK (s) | Moc TTK (s) | Strzelec TTK (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | assaulter | 0.417 | 0.033 | 0.017 | 0.033 | 12.500 | 1.000 | 0.500 | NIE |
+| chimera | 1.583 | 1.817 | 1.267 | 1.583 | 1.000 | 1.147 | 0.800 | TAK |
 | drone | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
 | executor | 1.583 | 1.817 | 1.267 | 1.583 | 1.000 | 1.147 | 0.800 | TAK |
 | gunner | 0.250 | 0.033 | 0.017 | 0.033 | 7.500 | 1.000 | 0.500 | NIE |
@@ -298,6 +320,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
 | assaulter | plasmaBlade:combo | chain → push | scatter |
+| chimera | plasmaBlade:combo | chain → push | sniper |
 | drone | plasmaBlade:combo | chain → push | scatter |
 | executor | plasmaBlade:combo | chain → push | sniper |
 | gunner | plasmaBlade:combo | chain → push | scatter |
@@ -314,6 +337,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Narzędzie | Wróg | TTK (s) | DPS (HP/s) | TTK paczki ×5 (s) | DPS paczki (HP/s) |
 | --- | --- | ---: | ---: | ---: | ---: |
 | Błyskawica (chain) | assaulter | ∞ | 0.000 | ∞ | 0.000 |
+| Błyskawica (chain) | chimera | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | drone | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | executor | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | gunner | ∞ | 0.000 | ∞ | 0.000 |
@@ -325,6 +349,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Błyskawica (chain) | sniper | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | turret | ∞ | 0.000 | ∞ | 0.000 |
 | Pchnięcie Rezonansu (push) | assaulter | 0.033 | 1800.000 | 2.433 | 123.288 |
+| Pchnięcie Rezonansu (push) | chimera | 1.817 | 121.101 | 29.433 | 37.373 |
 | Pchnięcie Rezonansu (push) | drone | 0.017 | 1080.000 | 2.417 | 37.241 |
 | Pchnięcie Rezonansu (push) | executor | 1.817 | 121.101 | 29.433 | 37.373 |
 | Pchnięcie Rezonansu (push) | gunner | 0.033 | 1350.000 | 2.433 | 92.466 |
@@ -336,6 +361,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
 | Pchnięcie Rezonansu (push) | turret | 0.617 | 113.514 | 5.417 | 64.615 |
 | Fala uderzeniowa (shockwave) | assaulter | 1.550 | 38.710 | 29.567 | 10.147 |
+| Fala uderzeniowa (shockwave) | chimera | 22.350 | 9.843 | ∞ | 8.083 |
 | Fala uderzeniowa (shockwave) | drone | 0.033 | 540.000 | 11.567 | 7.781 |
 | Fala uderzeniowa (shockwave) | executor | 22.350 | 9.843 | ∞ | 8.083 |
 | Fala uderzeniowa (shockwave) | gunner | 1.550 | 29.032 | 29.567 | 7.610 |
@@ -443,7 +469,7 @@ Symulacja korzysta z progów HP i wzorców faz z danych bossa oraz długości ni
 
 ## Wnioski
 
-- Bramka (paczka ×5, otwarta przestrzeń): 0/11 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 11/11. Przy ścianie (informacyjnie, paczka): 4/11.
+- Bramka (paczka ×5, otwarta przestrzeń): 0/12 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 12/12. Przy ścianie (informacyjnie, paczka): 5/12.
 - Pojedyncze TTK jest bardzo wrażliwe na obrażenia jednego trafienia (zabójstwo w 1/60 s wobec 0,4 s ostrza); dlatego bramkę liczy paczka.
 - Wynik jest liczbową podstawą decyzji o danych. Nie zastępuje playtestu 12 fal ani oceny feel.
 
@@ -476,10 +502,10 @@ Typowa trasa ma osiem warstw. Czas to suma projektowych czasów pokoi. Presja to
 
 | Dzielnica | Czas modelowy (s) | Presja | Kredyty / zagrożenie |
 | --- | ---: | ---: | ---: |
-| Kurogane Arms | 1275 | 47.52 | 5 |
+| Kurogane Arms | 1275 | 47.44 | 5 |
 | Bulwar · Helixa Dynamics | 1275 | 56.03 | 6 |
 
-Wzrost presji na Bulwarze wynosi 17.9%.
+Wzrost presji na Bulwarze wynosi 18.1%.
 
 ## Decyzje i strojenie
 

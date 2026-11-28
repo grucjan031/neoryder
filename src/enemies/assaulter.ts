@@ -1,8 +1,10 @@
+import { ChimeraBehavior } from './chimera';
 import { deathDirection, deathDuration } from './enemyDeath';
 import { arrivalSpeed, turnToward, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import { Cuboid } from '@dimforge/rapier3d-compat';
 import {
+  FRIENDLY_FIRE_TAG,
   Health,
   Hitbox,
   PIERCE_BLOCK_TAG,
@@ -53,6 +55,7 @@ export class Assaulter implements Enemy {
   private readonly off: (() => void)[] = [];
   private readonly geometry;
   private readonly rng;
+  private readonly chimera?: ChimeraBehavior;
   private cooldown = 0;
   private stunS = 0;
   private shieldDownS = 0;
@@ -74,6 +77,12 @@ export class Assaulter implements Enemy {
     this.id = deps.entities.create(definition.kind, 'enemy');
     // ctx.rng to strumień konkretnego spawnu (EnemyManager) — bez ID encji w etykiecie.
     this.rng = ctx.rng.fork('ai');
+    if (definition.chimera)
+      this.chimera = new ChimeraBehavior(
+        definition.chimera,
+        ctx.rng.fork('chimera'),
+        this.geometry.headY,
+      );
     this.stats = new Stats({
       maxHealth: definition.maxHealth,
       moveSpeed: definition.moveSpeed,
@@ -105,6 +114,7 @@ export class Assaulter implements Enemy {
       ctx.bus.on('melee_swing', ({ attacker, stage }) => {
         const t = ctx.tuning.enemies;
         if (
+          this.chimera ||
           stage !== 'heavy' ||
           attacker !== deps.getTarget()?.id ||
           !['idle', 'chase', 'telegraph'].includes(this.current.state) ||
@@ -302,6 +312,7 @@ export class Assaulter implements Enemy {
 
   private transition(state: EnemyState): void {
     this.current.state = state;
+    this.chimera?.transition(this.current, this.deps);
     this.current.stateTimeS = 0;
     delete this.current.knockdown;
     this.body.resetHurtboxes();
@@ -322,7 +333,9 @@ export class Assaulter implements Enemy {
         owner: this.id,
         team: 'enemy',
         damage: this.stats.get('damage'),
-        tags: this.definition.attackTags ?? ['#melee'],
+        tags: this.chimera?.friendlyStrike
+          ? ['#melee', FRIENDLY_FIRE_TAG]
+          : (this.definition.attackTags ?? ['#melee']),
         lifetimeS: this.definition.swingActiveS,
       });
     if (state === 'recovery') this.cooldown = this.definition.cooldownS;
@@ -335,6 +348,15 @@ export class Assaulter implements Enemy {
 
   /** Bez dyrektora zawsze true. Z dyrektorem: token prosi wróg w zasięgu krążenia + ciosu. */
   private engage(distance: number, flank: number, ready = false): boolean {
+    if (
+      this.chimera &&
+      (this.chimera.friendlyStrike ||
+        distance > this.definition.attackRange + epsilon ||
+        this.cooldown > epsilon)
+    ) {
+      this.releaseToken();
+      return true;
+    }
     if (this.tacticalGoal) {
       this.releaseToken();
       return false;
@@ -461,8 +483,22 @@ export class Assaulter implements Enemy {
     this.parryCooldownS = Math.max(0, this.parryCooldownS - dt);
     this.holdStun();
     this.updateShield();
-    const target = this.deps.getTarget();
+    const previousMode = s.chimeraMode;
+    this.chimera?.tick(dt, s, this.deps);
+    if (d.chimera && previousMode !== s.chimeraMode)
+      this.stats.setBase(
+        'moveSpeed',
+        s.chimeraMode === 'sprint' ? d.chimera.sprintSpeed : d.moveSpeed,
+      );
+    const lost = s.chimeraMode === 'lost';
+    const target = lost
+      ? null
+      : this.chimera
+        ? this.chimera.target(this.deps)
+        : this.deps.getTarget();
     const march =
+      !lost &&
+      !this.chimera?.friendlyStrike &&
       this.moveGoal &&
       (!target ||
         (this.routeToPlayer && this.moveGoalFinal === false) ||
@@ -479,6 +515,7 @@ export class Assaulter implements Enemy {
     const distance = Math.hypot(dx, dz);
     const flank = d.flankDistanceM ?? d.attackRange;
     if (
+      !this.chimera &&
       !march &&
       target &&
       !this.tacticalGoal &&
@@ -503,8 +540,9 @@ export class Assaulter implements Enemy {
     } else if (march) {
       this.releaseToken();
       if (s.state !== 'chase') this.transition('chase');
-    } else if (!target) this.transition('idle');
-    else {
+    } else if (!target) {
+      if (!this.chimera || s.state !== 'idle') this.transition('idle');
+    } else {
       if (s.state === 'idle') this.transition('chase');
       const yaw = Math.atan2(dx, dz);
       const delta = Math.atan2(Math.sin(yaw - s.yaw), Math.cos(yaw - s.yaw));
@@ -683,7 +721,9 @@ export class Assaulter implements Enemy {
   private strike(): void {
     const d = this.definition;
     const s = this.current;
-    const target = this.deps.getTarget();
+    const target = this.chimera
+      ? this.chimera.target(this.deps)
+      : this.deps.getTarget();
     if (
       !target ||
       Math.hypot(
@@ -709,7 +749,12 @@ export class Assaulter implements Enemy {
       ),
       position,
       { x: 0, y: Math.sin(s.yaw / 2), z: 0, w: Math.cos(s.yaw / 2) },
-      interactionGroups(CollisionGroup.Enemy, CollisionGroup.Player),
+      interactionGroups(
+        CollisionGroup.Enemy,
+        this.chimera?.friendlyStrike
+          ? CollisionGroup.Enemy
+          : CollisionGroup.Player,
+      ),
     )) {
       if (box.entity !== target.id) continue;
       this.hitbox?.strike(box.entity, this.deps.damage, {

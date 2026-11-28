@@ -127,8 +127,8 @@ Pule `roomPools` w `src/data/sectors/kurogane.json`:
 
 | Typ    | Pokoje                                                                                    |
 | ------ | ----------------------------------------------------------------------------------------- |
-| combat | `run1` (magazyn Kurogane Arms), `run2` (galeria Atrium Nova), `run3` (tajne laboratorium Kurogane Arms), `run4` (biurowiec Kurogane Arms, 60.–62. piętro z windą); losowane bez powtórki pod rząd |
-| elite  | `run1`, `run2`, `run3`, `run4` (węzeł elitarny losuje mocniejsze fale na tych samych mapach)              |
+| combat | `run1` (magazyn), `run2` (galeria Atrium Nova), `run3` (laboratorium), `run4` (biurowiec), `run7` (leśna rezydencja pułkownika Kurogane). Losowanie wyklucza powtórkę pod rząd. |
+| elite  | `run1`, `run2`, `run3`, `run4`, `run7` (węzeł elitarny losuje mocniejsze fale na tych samych mapach) |
 | shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                           |
 | rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                          |
 | puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                          |
@@ -248,7 +248,7 @@ Punkt w powietrzu, poza podestem albo w bloku jest odrzucany. Osiągalność tak
 
 ## Bulwar
 
-Walki i elity losują `run5` (przychodnia) lub `run6` (nocny targ). Kolejne sąsiadujące walki z tej puli zmieniają mapę. Targ ma 18 miejsc posiłków, w tym dwa na wysokości 4,2 m. Do sprawdzenia trzech zejść i przejść między poziomami służy `?scene=map-walk&map=run6&debug=1`.
+Walki i elity w obu sektorach (Kurogane i Bulwar) losują z jednej puli `run1`–`run7`: magazyn, galeria, laboratorium, biurowiec, przychodnia (`run5`), nocny targ (`run6`) i rezydencja pułkownika (`run7`). Kolejne sąsiadujące walki z tej puli zmieniają mapę. Targ ma 18 miejsc posiłków, w tym dwa na wysokości 4,2 m. Do sprawdzenia trzech zejść i przejść między poziomami służy `?scene=map-walk&map=run6&debug=1`.
 
 ## Wnętrza przemysłowe
 

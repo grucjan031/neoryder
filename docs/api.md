@@ -1,5 +1,24 @@
 # API między modułami (kontrakty)
 
+## Tło leśne rezydencji — run7 F-01–F-04
+
+- `WeatherProfile.lighting.panoramaKind?: 'city' | 'forest'` wybiera tło; brak oznacza `city`.
+  Schemat motywu również uzupełnia `render.panoramaKind` domyślnym `city`.
+  `CityDressing.setWeather()` ustawia `tuning.render.panoramaKind`, przy wyjściu przywraca stan.
+  `SceneAtmosphere.sync()` zwalnia poprzednią panoramę przy zmianie rodzaju.
+- `buildForestLayout(seed, { floorY, exclusion? })` (`src/render/forestLayout.ts`) to czysty TS:
+  `exclusion` ma pola `minX/maxX/minZ/maxZ` w metrach świata. Zwraca drzewa trzech warstw,
+  liściaste, podszyt, pagórki, mgłę, słupy, światła, lądowisko, maszt, drony, przeloty i oczy.
+  Całe bryły wraz z marginesem z `tuning.forest` omijają obrys; strumień `Rng.fork('forest')`
+  jest niezależny od symulacji. Limity i parametry oprawy znajdują się w `tuning.forest` (GUI).
+- `forestTerrainHeight(point, hills, floorY)` w `forestLayout.ts` podaje wysokość gruntu w metrach.
+  Panorama próbkuje tę funkcję przy budowie siatki terenu i rozmieszczaniu roślin.
+- `ForestPanorama(seed, floorY, exclusion?: Box3)` ma `sync(dt, horizon?)` i `dispose()` jak
+  miejska `Panorama`; nie tworzy fizyki ani świateł punktowych. Wyłącznie tło renderu.
+- Modele `res_*` obsługuje loader miasta. Materiały bloków i GLB `mat_res_*`:
+  `res_arch_concrete`, `res_dark_walnut`, `res_nero_marble`, `res_plush_carpet`.
+  Do etapu C tekstury używają istniejących zamienników; docelowe identyfikatory są zachowane.
+
 ## Rekwizyty kryjówki
 
 `HubLayout.props?`: `{ id: string, kind: 'jukebox' | 'noodles' | 'radio' | 'bag',
@@ -2659,3 +2678,7 @@ EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `ele
 `skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.
 
 `ownedSkins(meta, weaponId)` zwraca pasujące, posiadane definicje. `skinSource(skinId)` wskazuje ofertę sklepu, naszywkę albo brak źródła. `equipSkin(meta, weaponId, skinId | null)` zwraca nowy `LoadoutChoice` do przekazania do `MetaManager.setLoadout`. Przymiarka w warsztacie korzysta bezpośrednio z renderera i nie zapisuje zmiany wyposażenia.
+
+## Chimera
+
+Snapshot wroga udostępnia widokowi tryb ruchu `chimeraMode` (skradanie, sprint, dezorientacja) i wariant ciosu `claw`. AI wybiera pobliskie cele z `getNeighbors()` według listy typów Kurogane z danych. Dostęp do sojuszniczych hurtboksów i tag `#friendly_fire` dotyczą wyłącznie zamachu na wybraną jednostkę.

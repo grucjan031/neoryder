@@ -6,6 +6,10 @@
       "label": "Nieustalone źródło ostatniego trafienia",
       "tips": ["Zmieniaj pozycję i wykorzystuj osłony, gdy zdrowie spada."]
     },
+    "chimera": {
+      "label": "Chimera",
+      "tips": ["Uskocz przed łapami. Gdy chimera zacznie się rozglądać, masz chwilę na kontratak."]
+    },
     "assaulter": {
       "label": "Szturmowiec",
       "tips": ["Uskocz poza zasięg ciosu, potem odpowiedz ostrzem."]

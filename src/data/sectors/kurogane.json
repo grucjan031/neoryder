@@ -78,6 +78,7 @@
     "pools": {
       "combat": {
         "assaulter": 4,
+        "chimera": 1,
         "gunner": 3,
         "drone": 2,
         "shielder": 1,
@@ -87,6 +88,7 @@
       },
       "elite": {
         "assaulter": 3,
+        "chimera": 1,
         "gunner": 2,
         "drone": 1,
         "shielder": 3,
@@ -116,8 +118,8 @@
     }
   },
   "roomPools": {
-    "combat": ["run1", "run2", "run3", "run4"],
-    "elite": ["run1", "run2", "run3", "run4"],
+    "combat": ["run1", "run2", "run3", "run4", "run5", "run6", "run7"],
+    "elite": ["run1", "run2", "run3", "run4", "run5", "run6", "run7"],
     "shop": ["noodleShop", "shopRoom"],
     "rest": ["restRoom", "rooftopRest"],
     "puzzle": ["puzzlePlate", "puzzleLaser"],

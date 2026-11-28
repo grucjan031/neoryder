@@ -2,6 +2,7 @@ import { Color, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three';
 import type { Box3, PerspectiveCamera, Scene } from 'three';
 import { tuning } from '../core/tuning';
 import { Panorama } from './panorama';
+import { ForestPanorama } from './forestPanorama';
 import { horizonParameters, type WorldEnvelope } from './horizon';
 import { applyTheme, resolveTheme } from './themes';
 
@@ -13,7 +14,8 @@ export class SceneAtmosphere {
   private readonly previousClip: { near: number; far: number } | undefined;
   private ground?: Mesh<PlaneGeometry, MeshBasicMaterial>;
   private waterPlane?: Mesh<PlaneGeometry, MeshBasicMaterial>;
-  private panorama?: Panorama;
+  private panorama?: Panorama | ForestPanorama;
+  private panoramaKind = '';
   private disposed = false;
   constructor(
     private readonly scene: Scene,
@@ -42,6 +44,19 @@ export class SceneAtmosphere {
       nearM: tuning.render.fogNear,
       farM: tuning.render.fogFar,
     });
+    if (tuning.render.panoramaKind === 'forest') {
+      const domeRadiusM = tuning.forest.skyRadiusM;
+      const far = Math.max(
+        base.far,
+        domeRadiusM + base.radiusM + tuning.horizon.clipClearanceM,
+      );
+      return {
+        ...base,
+        domeRadiusM,
+        far,
+        near: Math.max(base.near, far / tuning.horizon.nearRatio),
+      };
+    }
     const h = tuning.horizon;
     if (this.panoramaDropM < h.elevated.minDropM) return base;
     // Wysoko położona mapa (np. 60. piętro): dalekie pierścienie leżą głęboko w kanionie,
@@ -70,7 +85,9 @@ export class SceneAtmosphere {
     }
     this.scene.userData.horizon = horizon?.expanded ? horizon : undefined;
     const elevated = this.panoramaDropM >= tuning.horizon.elevated.minDropM;
-    const showGround = !!(horizon && (horizon.expanded || elevated));
+    const showGround =
+      tuning.render.panoramaKind !== 'forest' &&
+      !!(horizon && (horizon.expanded || elevated));
     if (showGround) {
       if (!this.ground) {
         this.ground = new Mesh(
@@ -115,13 +132,22 @@ export class SceneAtmosphere {
     }
     if (this.ground) this.ground.visible = showGround;
     if (this.waterPlane) this.waterPlane.visible = !!horizon?.expanded;
+    const kind = tuning.render.panoramaKind === 'forest' ? 'forest' : 'city';
+    if (this.panoramaKind !== kind) {
+      this.panorama?.dispose();
+      this.panorama = undefined;
+      this.panoramaKind = kind;
+    }
     if (!this.panorama && tuning.render.panoramaEnabled > 0) {
-      this.panorama = new Panorama(
-        this.seed,
-        this.floorY - this.panoramaDropM,
-        this.panoramaExclusion,
-        this.panoramaDropM,
-      );
+      this.panorama =
+        kind === 'forest'
+          ? new ForestPanorama(this.seed, this.floorY, this.panoramaExclusion)
+          : new Panorama(
+              this.seed,
+              this.floorY - this.panoramaDropM,
+              this.panoramaExclusion,
+              this.panoramaDropM,
+            );
       this.scene.add(this.panorama);
     }
     this.panorama?.sync(dt, horizon);

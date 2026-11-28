@@ -39,6 +39,7 @@ afterEach(() => {
 it('waliduje oba motywy, zachowuje white i odrzuca niepoprawne parametry', () => {
   expect([...themeDefinitions.keys()].sort()).toEqual([
     'hideout',
+    'kuroganeResidence',
     'neonStreet',
     'white',
   ]);

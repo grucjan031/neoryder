@@ -311,9 +311,11 @@ export class EnemyView {
       const mesh = new Mesh(
         geometry,
         getMaterial(
-          name === 'baton_tip' || name === 'muzzle' || name === 'visor'
-            ? 'enemyGlow'
-            : 'enemy',
+          enemy.definition.chimera
+            ? 'snow'
+            : name === 'baton_tip' || name === 'muzzle' || name === 'visor'
+              ? 'enemyGlow'
+              : 'enemy',
         ),
       );
       mesh.position.y = offsetY;
@@ -378,7 +380,7 @@ export class EnemyView {
         { x: 0, y: -body.halfHeight, z: 0 },
         { x: body.radius / 2, y: body.radius / 2, z: body.radius / 2 },
       );
-      if (side === 'R') {
+      if (side === 'R' && !enemy.definition.chimera) {
         const baton = part(
           hand,
           rifleman(this.enemy.definition) ? 'rifle' : 'baton',
@@ -1126,6 +1128,7 @@ export class EnemyView {
     this.animationPending = this.root.visible;
     const selection = selectEnemyAnimation(definition, b);
     const locomotion =
+      b.chimeraMode !== 'lost' &&
       !b.attack &&
       !b.controlled &&
       (b.state === 'idle' || b.state === 'chase' || b.state === 'reposition');
@@ -1154,7 +1157,7 @@ export class EnemyView {
       const speed = a.speed + (b.speed - a.speed) * alpha;
       const weights = gaitWeights(
         speed,
-        definition.moveSpeed,
+        definition.chimera?.sprintSpeed ?? definition.moveSpeed,
         definition.animation?.jogFromSpeedFrac ?? 0.5,
       );
       this.gaitFade = Math.min(

@@ -11,6 +11,7 @@ import { createRoomTest } from './roomTest';
 import { mountWeatherControls } from './weatherTest';
 
 const OFFICE_TOWER_PROFILE = 'kuroganeOfficeTower';
+const FOREST_PROFILE = 'kuroganeForestResidence';
 const OFFICE_TOWER_DROP_M = 180;
 
 const idle: InputSnapshot = {
@@ -43,6 +44,94 @@ export function horizonTestLayout(
       ? weatherParam
       : undefined;
   const drop = parseDropM(params.get('drop'));
+  if (profile === FOREST_PROFILE) {
+    return loadRoom({
+      id: 'horizonTestForestResidence',
+      name: 'Horyzont — nocny las za szybą rezydencji',
+      type: 'combat',
+      theme: 'neonStreet',
+      weather: weather ?? FOREST_PROFILE,
+      playerSpawn: { x: 0, y: 0, z: -7 },
+      blocks: [
+        {
+          position: { x: 0, y: -0.4, z: 0 },
+          size: { x: 24, y: 0.8, z: 22 },
+          material: 'res_dark_walnut',
+          walkable: true,
+        },
+        {
+          position: { x: 0, y: 4.8, z: -10.9 },
+          size: { x: 22, y: 9.6, z: 0.2 },
+          material: 'glass_clear',
+        },
+        {
+          position: { x: -11.9, y: 4.8, z: 0 },
+          size: { x: 0.2, y: 9.6, z: 22 },
+          material: 'glass_clear',
+        },
+        {
+          position: { x: 11.9, y: 4.8, z: 0 },
+          size: { x: 0.2, y: 9.6, z: 22 },
+          material: 'glass_clear',
+        },
+        {
+          position: { x: 0, y: 4.8, z: 10.9 },
+          size: { x: 24, y: 9.6, z: 0.2 },
+          material: 'res_arch_concrete',
+        },
+        {
+          position: { x: 0, y: 9.8, z: 0 },
+          size: { x: 24, y: 0.4, z: 22 },
+          material: 'res_arch_concrete',
+          ceiling: true,
+        },
+        {
+          position: { x: -7, y: 0.05, z: 3 },
+          size: { x: 4, y: 0.1, z: 4 },
+          material: 'res_plush_carpet',
+          walkable: true,
+        },
+        {
+          position: { x: 7, y: 0.1, z: 3 },
+          size: { x: 4, y: 0.2, z: 4 },
+          material: 'res_nero_marble',
+          walkable: true,
+        },
+      ],
+      rainShelters: [
+        { position: { x: 0, y: 4.8, z: 0 }, size: { x: 24, y: 9.6, z: 22 } },
+      ],
+      lights: [
+        {
+          position: { x: 0, y: 7, z: 2 },
+          color: '#fff1d6',
+          intensity: 26,
+          range: 16,
+          floorY: 0,
+        },
+      ],
+      spawnPoints: [
+        { x: -6, z: -3 },
+        { x: 6, z: -3 },
+        { x: -6, z: 6 },
+        { x: 6, z: 6 },
+      ],
+      doors: [
+        {
+          id: 'entry',
+          role: 'entry',
+          position: { x: -4, y: 1.5, z: 9 },
+          size: { x: 2, y: 3, z: 1 },
+        },
+        {
+          id: 'exit',
+          role: 'exit',
+          position: { x: 4, y: 1.5, z: 9 },
+          size: { x: 2, y: 3, z: 1 },
+        },
+      ],
+    });
+  }
   if (profile === OFFICE_TOWER_PROFILE) {
     const panoramaDropM = drop ?? OFFICE_TOWER_DROP_M;
     return loadRoom({
@@ -176,16 +265,22 @@ export class HorizonTest implements Scene {
     this.controls = mountWeatherControls(ctx);
     if (this.controls && typeof location !== 'undefined') {
       const elevated = this.layout.id === 'horizonTestOfficeTower';
+      const forest = this.layout.id === 'horizonTestForestResidence';
       const modes = [
         {
           id: 'default',
           label: 'Horyzont bazowy (drop 0 m)',
-          active: !elevated,
+          active: !elevated && !forest,
         },
         {
           id: OFFICE_TOWER_PROFILE,
           label: `Wieżowiec 60p (drop ${OFFICE_TOWER_DROP_M} m)`,
           active: elevated,
+        },
+        {
+          id: FOREST_PROFILE,
+          label: 'Rezydencja — las za szybą',
+          active: forest,
         },
       ] as const;
       for (const mode of modes) {
@@ -254,6 +349,11 @@ export class HorizonTest implements Scene {
 
   query(name: string): unknown {
     if (name === 'panoramaDropM') return this.layout.panoramaDropM ?? 0;
+    if (
+      name === 'horizonProfile' &&
+      this.layout.id === 'horizonTestForestResidence'
+    )
+      return FOREST_PROFILE;
     if (name === 'horizonProfile')
       return this.layout.id === 'horizonTestOfficeTower'
         ? OFFICE_TOWER_PROFILE

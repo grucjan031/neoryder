@@ -59,6 +59,7 @@ export const weatherSchema = z
         hemiIntensity: z.number().finite().nonnegative(),
         keyIntensity: z.number().finite().nonnegative(),
         panoramaEnabled: z.boolean(),
+        panoramaKind: z.enum(['city', 'forest']).optional(),
       })
       .optional(),
     sky: z.object({ horizonColor: color }).optional(),

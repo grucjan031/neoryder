@@ -95,7 +95,7 @@ export class CityDressing {
   weatherId?: string;
   private baseLighting?: Pick<
     typeof tuning.render,
-    'hemiIntensity' | 'keyIntensity' | 'panoramaEnabled'
+    'hemiIntensity' | 'keyIntensity' | 'panoramaEnabled' | 'panoramaKind'
   >;
   private baseSkyHorizon = tuning.render.skyHorizon;
   private restoreWeather?: () => void;
@@ -189,6 +189,7 @@ export class CityDressing {
         hemiIntensity: r.hemiIntensity,
         keyIntensity: r.keyIntensity,
         panoramaEnabled: r.panoramaEnabled,
+        panoramaKind: r.panoramaKind,
       };
       const previous = {
         ...this.baseLighting,
@@ -236,6 +237,7 @@ export class CityDressing {
             panoramaEnabled: Number(profile.lighting.panoramaEnabled),
           }
         : this.baseLighting),
+      panoramaKind: profile.lighting?.panoramaKind ?? 'city',
       skyHorizon: profile.sky?.horizonColor ?? this.baseSkyHorizon,
       fogColor: profile.fog.color,
       heightFogDensity: profile.fog.density,
