@@ -5,8 +5,8 @@
     "roughness": 0.22,
     "metalness": 0.24,
     "bump": 0.28,
-    "wetness": 0.72,
-    "tint": "#2d3748"
+    "wetness": 0.3,
+    "tint": "#55637a"
   },
   "fus_reactor_concrete": {
     "texture": "fus_reactor_concrete",
@@ -15,7 +15,7 @@
     "metalness": 0.12,
     "bump": 0.42,
     "wetness": 0.2,
-    "tint": "#505c72"
+    "tint": "#627089"
   },
   "fus_shield_panel": {
     "texture": "fus_shield_panel",
