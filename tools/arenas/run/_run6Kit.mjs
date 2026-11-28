@@ -67,6 +67,17 @@ export const rooms = [
   ],
   ['Dok maglevu', 'dostawy', R(-4, 30, -38, -14), 10, 'blue', 'metal', 'open'],
 ];
+// Barwa świecącej listwy pod stropem każdej strefy (plac zostaje bez listwy).
+const BAND = [
+  'amber',
+  'amber',
+  'blue',
+  'violet',
+  'green',
+  null,
+  'amber',
+  'blue',
+];
 // Środek, ćwierćobrót, szerokość w świetle i cel widziany od strony + / −.
 export const portals = [
   [0, 34, 0, 4, 1, 1],
@@ -101,7 +112,7 @@ export function roof(k, r, h, mat) {
       r.maxX - r.minX,
       0.18,
       0.18,
-      mat === 'roof_tar' ? 'wood' : 'metal',
+      mat === 'roof_tar' && h > 7 ? 'wood' : 'metal',
       { ceiling: true },
     );
 }
@@ -126,7 +137,8 @@ export function shell(k) {
       ])
         roof(k, R(a, b, -14, 22), 10, 'concrete');
     else if (i === 7) roof(k, R(-4, 24, -38, -14), 10, 'concrete');
-    else roof(k, r, h, i === 6 ? 'roof_tar' : i === 1 ? 'concrete' : 'metal');
+    // Stropy ciemne i matowe: na jasnym oprawy zostawiały białe owalne plamy.
+    else roof(k, r, h, i === 1 ? 'concrete' : 'roof_tar');
     for (const [axis, at, a, b, side] of [
       ['x', r.minZ, r.minX, r.maxX, 1],
       ['x', r.maxZ, r.minX, r.maxX, -1],
@@ -169,6 +181,16 @@ export function shell(k) {
       )) {
         strip((lo + hi) / 2, 0.1, hi - lo, 0.2, 0.06, 'metal');
         strip((lo + hi) / 2, 1.07, hi - lo, 0.17, 0.05, 'wood');
+        // Świecąca listwa w barwie strefy pod stropem albo pod antresolą.
+        if (BAND[i] && hi - lo > 1.2)
+          strip(
+            (lo + hi) / 2,
+            Math.min(h, 4.2) - 0.3,
+            hi - lo - 0.3,
+            0.07,
+            0.05,
+            'neon_' + BAND[i],
+          );
         for (let c = lo + 0.45; c < hi - 0.15; c += 3.3)
           strip(c, h / 2, 0.14, h, 0.07, 'trim');
       }
@@ -253,8 +275,9 @@ export function upper(k) {
     [5.8, 9.6, -14, 16],
     [-5.8, 5.8, 4, 7],
   ];
-  for (const [i, r] of decks.entries())
-    deck(k, R(...r), 4.2, i < 3 ? 'targ_wood_planks' : 'steel_grating', 0.28);
+  for (const r of decks)
+    // Pomosty z desek: na stalowej kracie oprawy placu zostawiały białe odbicia.
+    deck(k, R(...r), 4.2, 'targ_wood_planks', 0.28);
   for (const [a, b, w] of [
     [[-28, 0, -16], [-28, 4.2, -26], 3.5],
     [[27.5, 0, -16], [17.5, 4.2, -16], 3.5],
