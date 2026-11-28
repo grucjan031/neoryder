@@ -73,9 +73,11 @@ idle ◀──drzwi zamknięte (door = 0)── doorsClosing ◀──koniec pos
 
 - **Kolejka i wybór celu:** `request(stop)` odrzuca nieistniejące indeksy i duplikaty. Gdy kabina stoi z zamkniętymi drzwiami na żądanym piętrze, od razu otwiera drzwi. W ruchu (`moving`) kabina utrzymuje bieżący kierunek (`direction`), obsługuje przystanki po drodze, jeśli pozostały dystans pozwala wyhamować z przyspieszeniem `elevatorAccelMps2`, a po wyczerpaniu żądań w danym kierunku odwraca zwrot.
 - **Kinematyka:** prędkość rośnie z przyspieszeniem `elevatorAccelMps2` do `elevatorSpeedMps` i maleje przed przystankiem docelowym zgodnie z analityczną krzywą hamowania.
-- **Drzwi i blokada szybu (`ElevatorCabin`):** kabina jest kinematycznym ciałem pozycyjnym Rapiera (`RigidBodyDesc.kinematicPositionBased()`) z podłogą, sufitem i ścianami. Szyb otaczają stałe kolidery ścian oraz drzwi szybowych na każdym przystanku. Kolider drzwi kabiny i drzwi szybowych danego przystanku jest wyłączany wyłącznie wtedy, gdy drzwi są w pełni otwarte (`door === 1`) na tym przystanku — do pustego szybu nie da się wpaść.
+- **Drzwi i blokada szybu (`ElevatorCabin`):** kabina jest kinematycznym ciałem pozycyjnym Rapiera (`RigidBodyDesc.kinematicPositionBased()`) z podłogą, sufitem i ścianami. Szyb otaczają stałe kolidery ścian oraz drzwi szybowych na każdym przystanku. Kolider drzwi kabiny i drzwi szybowych danego przystanku jest wyłączany, gdy rozsunięcie drzwi na tym przystanku osiągnie `elevatorDoorPassFraction` — przejście jest wolne wtedy, gdy na oko już widać prześwit, a do pustego szybu nadal nie da się wpaść (drzwi otwierają się tylko przy stojącej kabinie).
+- **Pasażer w kabinie (`holdOpen`):** dopóki gracz stoi w obrysie kabiny i kolejka wezwań jest pusta, drzwi nie zamykają się po postoju, a zamknięte drzwi stojącej kabiny same się otwierają. Wezwanie z panelu lub z innego piętra zamyka drzwi i rusza kabinę. Dzięki temu gracza nie da się zamknąć w kabinie bez przycisku otwierania.
+- **Pauza i hitstop:** przy kroku z `dt = 0` scena woła `cabin.hold()`, więc interpolacja widoku kabiny i drzwi stoi w miejscu razem z graczem.
 - **Fotokomórka:** gdy gracz lub żywy wróg stoi w progu (`inDoorway`) albo wróg jest w fazie wsiadania (`boardingAt`), stan `open` nie przechodzi do zamykania, a stan `doorsClosing` cofa się do `doorsOpening`.
-- **Przenoszenie pasażerów (`src/physics/platformMotion.ts`):** w stałym kroku `step()` scena najpierw aktualizuje kabiny (`previousY` → `state.y`), a następnie `PlayerController` i `EnemyBody` wykrywają podparcie na podłodze kabiny (`supportingPlatform`), wykluczają jej kolider z pionowego zapytania KCC i ustawiają wysokość stóp dokładnie na nowej pozycji podłogi z marginesem `platformSkinM`. Zapobiega to drganiom, odrywaniu stóp przy zjeździe i podwójnemu dodaniu prędkości kinematycznej przez Rapiera.
+- **Przenoszenie pasażerów (`src/physics/platformMotion.ts`):** w stałym kroku `step()` scena najpierw aktualizuje kabiny (`previousY` → `state.y`), a następnie `PlayerController` i `EnemyBody` wykrywają podparcie na podłodze kabiny (`supportingPlatform`), wykluczają jej kolider z pionowego zapytania KCC i ustawiają wysokość stóp dokładnie na nowej pozycji podłogi z marginesem `platformSkinM`. Zapobiega to drganiom, odrywaniu stóp przy zjeździe i podwójnemu dodaniu prędkości kinematycznej przez Rapiera. Kontroler zapisuje w `PlayerState.platformDy` pionowe przesunięcie z jazdy, a filtr schodów kamery (`FpsCamera.updateSteps`) odejmuje je od skoku stóp — bez tego każdy krok jazdy był traktowany jak stopień i obraz skakał.
 - **Zdarzenia `EventBus`:**
   - `elevatorCalled: { id, stop }` — przyjęcie nowego żądania;
   - `elevatorDeparted: { id, from, to }` — start jazdy między przystankami (`sfx.json` → `elevatorMotor`);
@@ -85,6 +87,8 @@ idle ◀──drzwi zamknięte (door = 0)── doorsClosing ◀──koniec pos
 ## Panele, HUD i render — `src/render/elevatorView.ts`, `src/ui/hud.ts`
 
 - Na każdym przystanku obok ościeżnicy znajduje się zewnętrzny przycisk wezwania (`action: 'call'`), a wewnątrz kabiny w narożniku — dwa przyciski kierunku (`action: 'up'` oraz `action: 'down'`, zmieniające piętro o `+1` / `-1`).
+- Wezwanie z podestu ma powiększone pole trafienia (`ElevatorButton.reach`): cały portal drzwi i pas po bokach, więc działa także panel ustawiony przez mapę obok ościeżnicy. Podpowiedź znika, gdy kabina stoi na tym piętrze z otwartymi drzwiami.
+- **Zestaw modeli:** dla `model: "<prefiks>_elevator_cab"` widok sam wstawia na każdym przystanku portal `<prefiks>_elevator_shaft_door` z ruchomymi skrzydłami `door_left` / `door_right` oraz panel `<prefiks>_elevator_call_panel` (chyba że mapa ma już własny panel obok). Statyczny portal o tej nazwie wpisany w `decor` mapy na przystanku jest pomijany przy ładowaniu (`isElevatorPortalDecor`), bo jego zamknięte skrzydła zasłaniały otwarte przejście.
 - W `RoomScene.focusElevator` promień z kamery gracza ograniczony do `elevatorPanelReachM` (i zasłonięć ścianami) testuje trafienie w AABB przycisków (`hitButton`). Zewnętrzne przyciski działają tylko spoza obrysu kabiny, a wewnętrzne — tylko z jej wnętrza, gdy kabina nie jest w ruchu i istnieje sąsiedni przystanek w danym kierunku.
 - Naciśnięcie klawisza interakcji (`power2`, domyślnie `E`) podczas celowania w aktywny przycisk wywołuje `request(target)` i przechwytuje klawisz przed użyciem mocy.
 - HUD wyświetla podpowiedź z `src/data/ui/hud.pl.json`: `Wezwij windę`, `Winda · GÓRA` lub `Winda · DÓŁ`.
@@ -100,6 +104,7 @@ Wszystkie parametry są w `src/core/tuning.ts` i można je stroić na żywo w pa
 | `elevatorAccelMps2`   | `3.5`     | przyspieszenie i opóźnienie hamowania kabiny (m/s²)                       |
 | `elevatorDoorOpenS`   | `0.55`    | czas pełnego otwarcia i zamknięcia drzwi (s)                              |
 | `elevatorDoorDwellS`  | `2.5`     | czas postoju otwartych drzwi przed zamknięciem (s)                        |
+| `elevatorDoorPassFraction` | `0.7` | rozsunięcie drzwi (0..1), od którego przestają blokować przejście         |
 | `elevatorPanelReachM` | `1.6`     | maksymalny zasięg interakcji gracza z przyciskiem panelu (m)              |
 | `maxEnemies`          | `2`       | maksymalna liczba wrogów mogących jednocześnie zajmować sloty w kabinie   |
 | `waitTimeoutS`        | `12`      | limit oczekiwania wroga na wejście lub wyjście przed odejściem na schody  |
@@ -122,4 +127,6 @@ Wszystkie parametry są w `src/core/tuning.ts` i można je stroić na żywo w pa
 ## Testy
 
 - `tests/unit/elevator.test.ts` — kolejka i zbieranie wezwań po drodze, fotokomórka i zamykanie drzwi przed odjazdem, walidacja schematu `zod` i układu (`validateLayout`, w tym wielkie litery `doorSide`), porównanie kosztu jazdy windą ze schodami w `ArenaNavigation`, przenoszenie kapsuły gracza w Rapierze, zjazd wrogów z piętra w `ElevatorTest`, blokada szybu przez kolidery drzwi, celowanie w przyciski panelu oraz limit `maxEnemies` i timeout na schody w `ElevatorPassengers`.
+- `tests/unit/elevatorExit.test.ts` — gracz w pełnej scenie pokoju (`run4`, `run7`) dojeżdża na każdy przystanek i wychodzi przez otwarte drzwi na podest.
+- `tests/unit/fpsCamera.test.ts` — jazda windą nie uruchamia filtra schodów kamery.
 - `tests/e2e/elevator.spec.ts` — uruchomienie `?scene=elevator-test&debug=1`, sprawdzenie komendy `elevator call` i zapytania `query('elevators')` bez błędów konsoli.

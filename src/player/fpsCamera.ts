@@ -248,7 +248,8 @@ export class FpsCamera {
     }
     if (curMoved) {
       if (last && prev.grounded && cur.grounded && !cur.sliding) {
-        const delta = feet - this.lastFeet;
+        // Jazda windą przesuwa stopy co krok; to nie stopień schodów.
+        const delta = feet - this.lastFeet - (cur.platformDy ?? 0);
         const rampRise =
           Math.hypot(cur.velocity.x, cur.velocity.z) *
             SIM_DT *

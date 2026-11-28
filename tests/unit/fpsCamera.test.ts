@@ -268,4 +268,24 @@ describe('FpsCamera: wygładzanie (C-P2)', () => {
       expect(ys[i]! - ys[i - 1]!).toBeLessThan(0.1);
     }
   });
+
+  it('jazda windą nie uruchamia filtra schodów: oczy trzymają się stóp', () => {
+    const t = structuredClone(tuning);
+    t.camera.bobEnabled = 0;
+    const cam = new FpsCamera(t, 1, new EventBus());
+    const dy = (t.elevator.elevatorSpeedMps * 1) / 60;
+    let prev = state();
+    cam.update(0, prev, prev, 1);
+    for (let i = 1; i <= 120; i++) {
+      const cur = state({
+        position: { x: 0, y: 0.92 + i * dy, z: 0 },
+        platformDy: dy,
+      });
+      const pose = cam.update(1 / 60, prev, cur, 1);
+      const feet = cur.position.y - cur.height / 2;
+      expect(pose.position.y - feet).toBeCloseTo(t.player.eyeHeight, 5);
+      prev = cur;
+    }
+    cam.dispose();
+  });
 });

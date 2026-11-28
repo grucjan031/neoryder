@@ -2673,6 +2673,8 @@ Opcjonalne `encounters[].stealth` przyjmuje `alarmGroup` (domyślnie id spotkani
 
 EventBus publikuje `elevatorCalled { id, stop }` przy przyjęciu żądania, `elevatorDeparted { id, from, to }` przy rozpoczęciu jazdy, `elevatorArrived { id, stop }` po wyrównaniu podłogi i `elevatorDoors { id, stop, opening }` przy rozpoczęciu ruchu drzwi. Graf powierzchni udostępnia przejazd z id windy oraz indeksami wejścia i wyjścia. AI może osobno zapytać o trasę pieszą po przekroczeniu czasu oczekiwania.
 
+`Elevator.step(dt, doorwayOccupied, holdOpen)`: `holdOpen` zgłasza pasażera w kabinie — przy pustej kolejce drzwi zostają otwarte. `ElevatorCabin.hold()` zamraża interpolację w kroku bez upływu czasu, `holds(feet)` sprawdza obrys kabiny. `PlayerState.platformDy?` niesie pionowe przesunięcie z jazdy na platformie w ostatnim kroku (kamera odejmuje je w filtrze schodów). `elevatorKit(model)` i `isElevatorPortalDecor(decor, elevators)` z `elevatorSchema.ts` opisują zestaw modeli `<prefiks>_elevator_cab|shaft_door|call_panel`.
+
 ## Skiny broni
 
 `skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.
